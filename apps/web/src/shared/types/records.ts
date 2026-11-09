@@ -91,3 +91,18 @@ export const ROLE_LABELS: Record<Role, string> = {
   head_judge: 'Head judge',
   judge: 'Judge',
 }
+
+export type RulesetStatus = 'draft' | 'published'
+
+export interface RulesetRecord extends BaseRecord {
+  category: string
+  version: number
+  status: RulesetStatus
+  /** Ruleset definition (see @judge26/scoring-engine). Drafts may be invalid. */
+  definition: unknown
+  notes: string
+  fingerprint: string
+  published_at: string
+  published_by: string
+  source: string
+}

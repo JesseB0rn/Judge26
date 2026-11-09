@@ -54,6 +54,14 @@ Without SMTP in development and test, emails are **not sent**. They are printed 
 console (`[dev mail] link: …`) and available at `GET /api/dev/mails?to=<email>`. Tests use
 this to follow verification and reset links.
 
+### Scoring engine in hooks
+
+`packages/scoring-engine` is bundled into `apps/backend/hooks/lib/scoring-engine.js` by
+`pnpm --filter @judge26/scoring-engine build:hooks`. The file is generated and git-ignored; the
+backend's `dev`, `serve:test` and `test` scripts and the Docker build regenerate it. After
+changing the engine while `pnpm dev` runs, run `pnpm --filter @judge26/backend engine` (the
+hooks watcher then restarts PocketBase).
+
 ### Hooks and hot reload
 
 In development PocketBase restarts automatically when a file in `hooks/` changes. This is

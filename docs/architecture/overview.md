@@ -22,9 +22,10 @@
 - **Backend** (`apps/backend`): PocketBase as a prebuilt, version-pinned binary. The schema is
   defined by JavaScript migrations, server-side behaviour by JS hooks. Authorization is enforced
   with PocketBase API rules; the frontend never relies on hiding UI for security.
-- **Domain packages** (`packages/`, added from M2): scoring, ranking and scheduling engines as
-  framework-independent TypeScript packages with their own unit and property-based tests. The
-  roadmap requires these engines to operate independently of Vue and PocketBase.
+- **Domain packages** (`packages/`): framework-independent TypeScript with their own unit and
+  property-based tests. `packages/scoring-engine` (M2) validates and evaluates scoring
+  rulesets; it is used directly by the frontend and bundled into the PocketBase hooks
+  (`hooks/lib/scoring-engine.js`, generated). Ranking and scheduling engines follow in M3/M4.
 
 ## Frontend structure
 
@@ -40,7 +41,8 @@ apps/web/src/
 Modules: `auth` (sign-in, registration, verification, password reset), `events` (events
 and competition days), `categories` (event categories and the template library), `teams`
 (registration, review, CSV import), `administration` (users and event staff) and `system`
-(dashboard, status, error pages). Planned: `scoring`, `rankings`, `scheduling`, `judging`.
+(dashboard, status, error pages) and `scoring` (versioned rulesets, JSON editor, generated
+score sheet preview). Planned: `rankings`, `scheduling`, `judging`.
 
 Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
 

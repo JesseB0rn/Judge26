@@ -58,7 +58,7 @@ Before the first E2E run, install the browser: `pnpm --filter @judge26/e2e insta
 apps/
   web/        Vue 3 SPA (feature modules in src/modules, shared code in src/shared)
   backend/    PocketBase configuration: migrations/, hooks/, integration tests
-packages/     Framework-independent domain logic (scoring, ranking, scheduling engines)
+packages/     Framework-independent domain logic (scoring-engine; ranking, scheduling to come)
 e2e/          Playwright end-to-end tests
 docs/         Architecture, API notes, specifications and test plans
 ```
@@ -69,9 +69,11 @@ docs/         Architecture, API notes, specifications and test plans
 - [Development guide](docs/development.md)
 - [API conventions](docs/api/README.md)
 - Specifications: [M1 permissions](docs/specifications/M1-permissions.md),
-  [M1 team registration](docs/specifications/M1-teams.md)
+  [M1 team registration](docs/specifications/M1-teams.md),
+  [M2 scoring rulesets](docs/specifications/M2-scoring-rulesets.md)
 - Test plans: [M0 foundation](docs/test-plans/M0-foundation.md),
-  [M1 identity and events](docs/test-plans/M1-identity-events.md)
+  [M1 identity and events](docs/test-plans/M1-identity-events.md),
+  [M2 scoring engine](docs/test-plans/M2-scoring-engine.md)
 - [Architecture decision records](docs/architecture/decisions/)
 
 ## Production

@@ -8,6 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { RouterLink } from 'vue-router'
+import { CalculatorIcon } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
 import type { CategoryRecord } from '@/shared/types/records'
 
 defineProps<{ categories: CategoryRecord[] | undefined; loading?: boolean; empty: string }>()
@@ -35,9 +38,17 @@ const range = (min: number, max: number) =>
         <TableCell>{{ range(c.min_team_size, c.max_team_size) }}</TableCell>
         <TableCell>{{ range(c.min_age, c.max_age) }}</TableCell>
         <TableCell class="hidden md:table-cell">{{ c.max_teams || '∞' }}</TableCell>
-        <TableCell class="text-right whitespace-nowrap"
-          ><slot name="actions" :category="c"
-        /></TableCell>
+        <TableCell class="text-right whitespace-nowrap">
+          <Button as-child variant="ghost" size="icon-sm">
+            <RouterLink
+              :to="{ name: 'category-scoring', params: { id: c.id } }"
+              :aria-label="`Scoring rules for ${c.code}`"
+            >
+              <CalculatorIcon />
+            </RouterLink>
+          </Button>
+          <slot name="actions" :category="c" />
+        </TableCell>
       </TableRow>
       <TableEmpty v-if="!loading && !categories?.length" :colspan="6">{{ empty }}</TableEmpty>
     </TableBody>

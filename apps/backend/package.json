@@ -4,15 +4,17 @@
   "type": "module",
   "scripts": {
     "install-pocketbase": "node scripts/install-pocketbase.mjs",
-    "dev": "node scripts/pocketbase.mjs serve",
-    "serve:test": "PB_ENV=test node scripts/pocketbase.mjs serve",
+    "dev": "pnpm engine && node scripts/pocketbase.mjs serve",
+    "serve:test": "pnpm engine && PB_ENV=test node scripts/pocketbase.mjs serve",
     "migrate": "node scripts/pocketbase.mjs migrate",
     "superuser": "node scripts/pocketbase.mjs superuser",
     "type-check": "tsc --noEmit",
-    "test": "vitest run",
-    "seed": "node scripts/seed-dev.mjs"
+    "test": "pnpm engine && vitest run",
+    "seed": "node scripts/seed-dev.mjs",
+    "engine": "pnpm --filter @judge26/scoring-engine build:hooks"
   },
   "devDependencies": {
+    "@judge26/scoring-engine": "workspace:^",
     "@tsconfig/node24": "^24.0.5",
     "@types/node": "^24",
     "pocketbase": "0.28.2",
