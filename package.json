@@ -1,0 +1,28 @@
+{
+  "name": "judge26",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.5.2",
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @judge26/web --filter @judge26/backend dev",
+    "dev:web": "pnpm --filter @judge26/web dev",
+    "dev:backend": "pnpm --filter @judge26/backend dev",
+    "setup:backend": "pnpm --filter @judge26/backend setup",
+    "build": "pnpm -r build",
+    "type-check": "pnpm -r type-check",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --filter \"!@judge26/backend\" --filter \"!@judge26/e2e\" test",
+    "test:coverage": "pnpm -r --filter \"!@judge26/backend\" --filter \"!@judge26/e2e\" test:coverage",
+    "test:integration": "pnpm --filter @judge26/backend test",
+    "test:e2e": "pnpm --filter @judge26/e2e test",
+    "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
+}

@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+ROADMAP.md
+**/dist/**
+**/coverage/**
+apps/backend/pb_data*/**
+apps/backend/bin/**
+e2e/playwright-report/**
+e2e/test-results/**

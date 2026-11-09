@@ -1,0 +1,15 @@
+# Production-like deployment: a single container serving API + SPA.
+#   docker compose up --build
+# Then create the first superuser:
+#   docker compose exec app /pb/pocketbase superuser upsert admin@example.com <password> --dir=/pb/pb_data
+services:
+  app:
+    build: .
+    ports:
+      - '8090:8090'
+    volumes:
+      - pb_data:/pb/pb_data
+    restart: unless-stopped
+
+volumes:
+  pb_data:

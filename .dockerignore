@@ -1,0 +1,7 @@
+**/node_modules
+**/dist
+**/coverage
+apps/backend/bin
+apps/backend/pb_data*
+e2e
+.git

@@ -1,0 +1,1282 @@
+# WRO Competition Management Platform --- Development Roadmap
+
+**Document type:** Developer-ready implementation roadmap\
+**Stack:** Vue 3, TypeScript, Vite, Tailwind CSS, PocketBase\
+**Scope:** Multi-event, multi-category, multi-round World Robot Olympiad
+competition management
+
+## 1. Project organization
+
+### Development principles
+
+-   Every requirement receives a unique ID.
+-   Every feature has explicit acceptance criteria.
+-   Every acceptance criterion has at least one verifiable test.
+-   Business logic has automated unit tests.
+-   Critical workflows have integration and end-to-end tests.
+-   Database changes include migration tests.
+-   Completed features require documented evidence.
+-   Scoring and ranking calculations are deterministic and explainable.
+-   Historical results remain tied to the ruleset under which they were
+    produced.
+
+### Priority definitions
+
+  Priority   Meaning
+  ---------- ----------------------------------------
+  P0         Essential for a functional competition
+  P1         Required for production readiness
+  P2         Important improvement
+  P3         Optional future extension
+
+### Milestones
+
+  -----------------------------------------------------------------------
+  Milestone         Name              Scope             Priority
+  ----------------- ----------------- ----------------- -----------------
+  M0                Project           Architecture,     P0
+                    foundation        repository, CI    
+                                      and development   
+                                      environment       
+
+  M1                Identity and      Users, roles,     P0
+                    event management  events,           
+                                      categories and    
+                                      teams             
+
+  M2                Configurable      Criteria, scoring P0
+                    scoring engine    expressions and   
+                                      calculation tests 
+
+  M3                Rounds and        Aggregation,      P0
+                    ranking engine    points/time       
+                                      association and   
+                                      tie-breaking      
+
+  M4                Tables and        Time slots,       P0
+                    scheduling        assignments and   
+                                      conflict          
+                                      detection         
+
+  M5                Judge application Score entry,      P0
+                                      stopwatch,        
+                                      submission and    
+                                      validation        
+
+  M6                Live competition  Realtime results, P1
+                                      public displays   
+                                      and multi-day     
+                                      operation         
+
+  M7                Production        Emails, exports,  P1
+                    readiness         security, backups 
+                                      and deployment    
+  -----------------------------------------------------------------------
+
+Milestones are dependency-oriented, not fixed calendar commitments. A
+milestone is complete only when its exit criteria are satisfied.
+
+------------------------------------------------------------------------
+
+## 2. M0 --- Project foundation
+
+**Priority:** P0\
+**Objective:** Establish a maintainable application architecture and
+repeatable development workflow.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Task                    Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M0-01                   Initialize repository   Repository contains
+                                                  frontend, backend
+                                                  configuration and
+                                                  documentation
+
+  M0-02                   Configure Vue           Vue 3, TypeScript, Vite
+                                                  and Tailwind compile
+                                                  successfully
+
+  M0-03                   Configure PocketBase    Backend starts
+                                                  reproducibly and
+                                                  database persists
+
+  M0-04                   Configure environments  Development, test and
+                                                  production
+                                                  configurations are
+                                                  separated
+
+  M0-05                   Configure CI            Automated checks
+                                                  execute on every pull
+                                                  request
+
+  M0-06                   Error handling          API and frontend errors
+                                                  are handled
+                                                  consistently
+
+  M0-07                   Database migrations     Schema changes can be
+                                                  applied to a fresh and
+                                                  an existing database
+  -----------------------------------------------------------------------
+
+### Tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Procedure               Expected result
+  ----------------------- ----------------------- -----------------------
+  M0-T01                  Clone repository and    Installation succeeds
+                          install dependencies    
+
+  M0-T02                  Start frontend and      Both services start
+                          backend                 without errors
+
+  M0-T03                  Build production        Build succeeds
+                          frontend                
+
+  M0-T04                  Apply migrations to an  All collections and
+                          empty database          indexes exist
+
+  M0-T05                  Restart backend         Previously stored data
+                                                  remains
+
+  M0-T06                  Introduce a TypeScript  CI fails
+                          error                   
+
+  M0-T07                  Run unit test suite     CI reports test results
+  -----------------------------------------------------------------------
+
+**Exit criteria:** All seven tests pass in CI. A new developer can start
+the project using the documented instructions.
+
+------------------------------------------------------------------------
+
+## 3. M1 --- Identity, permissions and event management
+
+**Priority:** P0\
+**Objective:** Implement the core organizational structure of the
+platform.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M1-01                   User registration       Users can register
+                                                  using email and
+                                                  password
+
+  M1-02                   Email verification      Unverified accounts
+                                                  cannot access protected
+                                                  functionality
+
+  M1-03                   Authentication          Users can log in and
+                                                  log out
+
+  M1-04                   Password reset          Password reset works
+                                                  through email
+
+  M1-05                   Role management         Users can have multiple
+                                                  scoped roles
+
+  M1-06                   Event management        Admin can create, edit
+                                                  and archive events
+
+  M1-07                   Competition days        Events support multiple
+                                                  days
+
+  M1-08                   Category management     Categories can be
+                                                  created and assigned to
+                                                  events
+
+  M1-09                   Category templates      Existing category
+                                                  configurations can be
+                                                  copied
+
+  M1-10                   Team registration       Coaches can create and
+                                                  submit team
+                                                  registrations
+
+  M1-11                   Team approval           Admin can approve,
+                                                  reject and edit
+                                                  registrations
+
+  M1-12                   Team import             Teams can be imported
+                                                  using CSV
+  -----------------------------------------------------------------------
+
+### Tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M1-T01                  Register with valid     Account is created
+                          credentials             
+
+  M1-T02                  Register with an        Duplicate is rejected
+                          existing email          
+
+  M1-T03                  Log in with an invalid  Access is denied
+                          password                
+
+  M1-T04                  Access an admin route   API authorization
+                          as a judge              denies access
+
+  M1-T05                  Judge accesses another  Access is denied
+                          event                   
+
+  M1-T06                  Create an event with    Both days are stored
+                          two days                correctly
+
+  M1-T07                  Duplicate a category    Independent
+                          template                configuration is
+                                                  created
+
+  M1-T08                  Submit team             Status changes to
+                          registration            submitted
+
+  M1-T09                  Reject team             Status changes to
+                          registration            rejected
+
+  M1-T10                  Import CSV with invalid Invalid records are
+                          rows                    reported; valid rows
+                                                  follow the defined
+                                                  import policy
+
+  M1-T11                  Coach accesses another  Access is denied
+                          coach's team            
+
+  M1-T12                  Archive an event        Historical records
+                                                  remain accessible to
+                                                  authorized users
+  -----------------------------------------------------------------------
+
+**Exit criteria:** Users with different roles can access only their
+authorized event resources. The complete registration-to-approval
+workflow works.
+
+------------------------------------------------------------------------
+
+## 4. M2 --- Configurable scoring engine
+
+**Priority:** P0 --- critical business logic\
+**Objective:** Implement a generic scoring engine that can represent
+different WRO competition rules without changing application code.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M2-01                   Criterion definitions   Criteria have
+                                                  configurable type,
+                                                  limits and instructions
+
+  M2-02                   Boolean criteria        Yes/no values calculate
+                                                  correctly
+
+  M2-03                   Numeric criteria        Integer and decimal
+                                                  values are validated
+
+  M2-04                   Selection criteria      Predefined options can
+                                                  have individual point
+                                                  values
+
+  M2-05                   Exclusive groups        Only permitted
+                                                  combinations can be
+                                                  selected
+
+  M2-06                   Additive groups         Values are summed
+                                                  correctly
+
+  M2-07                   Deduction criteria      Penalties reduce the
+                                                  score correctly
+
+  M2-08                   MAX groups              Highest eligible value
+                                                  is selected
+
+  M2-09                   MIN groups              Lowest eligible value
+                                                  is selected
+
+  M2-10                   Conditional criteria    Criteria activate only
+                                                  when their conditions
+                                                  are met
+
+  M2-11                   Nested groups           Groups can contain
+                                                  other groups
+
+  M2-12                   Validation engine       Invalid scoring
+                                                  configurations are
+                                                  rejected
+
+  M2-13                   Score explanation       Every result can be
+                                                  traced to its source
+                                                  criteria
+
+  M2-14                   Configuration           Changes do not alter
+                          versioning              finalized historical
+                                                  results
+  -----------------------------------------------------------------------
+
+### Mandatory scoring test fixtures
+
+#### M2-F01 --- Additive scoring
+
+Input:
+
+-   Criterion A = 10
+-   Criterion B = 15
+-   Criterion C = 20
+
+Expected result: **45 points**.
+
+#### M2-F02 --- Mutually exclusive criteria
+
+Options:
+
+-   Option A = 10
+-   Option B = 25
+
+Expected results:
+
+-   Selecting A produces 10.
+-   Selecting B produces 25.
+-   Selecting both is rejected.
+-   A required group cannot be submitted empty.
+
+#### M2-F03 --- Penalties
+
+Input:
+
+-   Base score = 50
+-   Penalty A = 5
+-   Penalty B = 10
+
+Expected result: **35 points**.
+
+#### M2-F04 --- Nested groups
+
+``` text
+Group A = ADD(10, 20) = 30
+Group B = MAX(5, 15) = 15
+Final   = ADD(Group A, Group B) = 45
+```
+
+Expected result: **45 points**.
+
+#### M2-F05 --- Conditional bonus
+
+``` text
+Task completed = true
+Bonus = 15
+```
+
+Expected result: 15 bonus points. When task completion is false, the
+bonus is zero and the criterion is not eligible for selection.
+
+### Additional tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M2-T01                  Submit negative value   Rejected
+                          to positive-only        
+                          criterion               
+
+  M2-T02                  Submit value above      Rejected
+                          maximum                 
+
+  M2-T03                  Submit decimal to       Rejected
+                          integer criterion       
+
+  M2-T04                  Select two exclusive    Rejected
+                          options                 
+
+  M2-T05                  Evaluate nested         Correct result
+                          expression              
+
+  M2-T06                  Evaluate empty optional Configured default
+                          group                   behaviour
+
+  M2-T07                  Evaluate negative final Follows category
+                          score                   configuration
+
+  M2-T08                  Reference nonexistent   Configuration rejected
+                          criterion               
+
+  M2-T09                  Create circular         Configuration rejected
+                          expression reference    
+
+  M2-T10                  Modify active template  Existing version
+                                                  remains unchanged
+
+  M2-T11                  Recalculate historical  Original ruleset is
+                          score                   used
+
+  M2-T12                  Evaluate identical      Identical result
+                          input twice             
+  -----------------------------------------------------------------------
+
+**Exit criteria:** All fixtures and automated tests pass. The scoring
+engine operates independently of Vue and PocketBase.
+
+------------------------------------------------------------------------
+
+## 5. M3 --- Rounds and ranking engine
+
+**Priority:** P0 --- critical business logic\
+**Objective:** Aggregate game results into round results and calculate
+overall category rankings.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M3-01                   Round configuration     Arbitrary number of
+                                                  rounds can be created
+
+  M3-02                   Game-to-round           Games belong to exactly
+                          relationship            one round
+
+  M3-03                   Round result            Round results are
+                          calculation             derived from game
+                                                  scores
+
+  M3-04                   ADD aggregation         Values are summed
+
+  M3-05                   MAX aggregation         Highest value is
+                                                  selected
+
+  M3-06                   MIN aggregation         Lowest value is
+                                                  selected
+
+  M3-07                   DIFFERENCE aggregation  Operand order is
+                                                  configurable
+
+  M3-08                   BEST_BY                 Entire result is
+                                                  selected based on one
+                                                  field
+
+  M3-09                   WORST_BY                Entire result is
+                                                  selected based on one
+                                                  field
+
+  M3-10                   SUM_BEST_N              Best N results are
+                                                  summed
+
+  M3-11                   Points/time association Selected result retains
+                                                  its original time
+
+  M3-12                   Nested aggregation      Aggregations can
+                                                  reference other
+                                                  calculations
+
+  M3-13                   Ranking calculation     Teams are sorted by
+                                                  configured rules
+
+  M3-14                   Tie-breaking            Multiple tie-breaking
+                                                  rules are evaluated in
+                                                  order
+
+  M3-15                   Shared rankings         Equal teams can receive
+                                                  equal ranks
+
+  M3-16                   Calculation preview     Administrators can
+                                                  inspect intermediate
+                                                  results
+
+  M3-17                   Ranking snapshots       Published results can
+                                                  be preserved
+  -----------------------------------------------------------------------
+
+### Mandatory ranking test fixtures
+
+#### M3-F01 --- Addition
+
+``` text
+Round 1: 50 points
+Round 2: 30 points
+Round 3: 20 points
+Aggregation: ADD
+Expected: 100 points
+```
+
+#### M3-F02 --- Maximum
+
+``` text
+Round 1: 50 points
+Round 2: 80 points
+Round 3: 30 points
+Aggregation: MAX
+Expected: 80 points
+```
+
+#### M3-F03 --- Difference
+
+``` text
+Round 1: 80 points
+Round 2: 30 points
+Aggregation: DIFFERENCE(R1, R2)
+Expected: 50 points
+```
+
+#### M3-F04 --- Best result with associated time
+
+``` text
+Round 1: 100 points / 120 seconds
+Round 2:  80 points /  90 seconds
+Round 3: 100 points / 110 seconds
+
+Aggregation: BEST_BY(points)
+Tie-break: LOWEST_TIME
+
+Expected: 100 points / 110 seconds
+```
+
+The time must come from the selected round, not from an independently
+calculated minimum.
+
+#### M3-F05 --- Sum of best two rounds
+
+``` text
+Round 1: 100 points
+Round 2:  80 points
+Round 3:  60 points
+Aggregation: SUM_BEST_N(2)
+Expected: 180 points
+```
+
+#### M3-F06 --- Nested aggregation
+
+``` text
+Group A = MAX(100, 80) = 100
+Group B = ADD(20, 30) = 50
+Overall = ADD(Group A, Group B)
+Expected: 150 points
+```
+
+### Ranking test matrix
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M3-T01                  Aggregate three rounds  100
+                          using ADD               
+
+  M3-T02                  Aggregate using MAX     80
+
+  M3-T03                  Aggregate using MIN     30
+
+  M3-T04                  Calculate ordered       50
+                          difference              
+
+  M3-T05                  Select best result by   Correct round selected
+                          points                  
+
+  M3-T06                  Two rounds have equal   Correct time-based
+                          points                  selection
+
+  M3-T07                  Select best two of      180
+                          three                   
+
+  M3-T08                  Aggregate nested        150
+                          expressions             
+
+  M3-T09                  Apply two tie-breaking  Correct ordering
+                          rules                   
+
+  M3-T10                  All tie-breakers        Shared rank or
+                          exhausted               configured fallback
+
+  M3-T11                  Missing round result    Configured
+                                                  missing-result policy
+                                                  applied
+
+  M3-T12                  Round result changes    Overall ranking
+                                                  recalculated
+
+  M3-T13                  Recalculate published   Historical snapshot
+                          ranking                 remains unchanged
+
+  M3-T14                  Two teams have          Correct shared ranking
+                          identical results       behaviour
+  -----------------------------------------------------------------------
+
+### Additional correctness requirements
+
+-   Points and time have explicit units and types.
+-   Time comparisons use consistent precision.
+-   Difference operations have defined operand order.
+-   Missing, incomplete, disqualified and zero-point results are
+    distinguishable.
+-   Rounding happens at explicitly defined calculation boundaries.
+-   Circular calculation dependencies are prevented.
+
+**Exit criteria:** Every mandatory fixture passes, including points/time
+association tests. Calculation explanations are available for every
+ranking result.
+
+------------------------------------------------------------------------
+
+## 6. M4 --- Tables and scheduling
+
+**Priority:** P0\
+**Objective:** Enable administrators to organize all games across
+physical tables and time slots.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M4-01                   Table management        Admin can create, edit
+                                                  and deactivate tables
+
+  M4-02                   Table compatibility     Tables can be
+                                                  restricted to
+                                                  categories
+
+  M4-03                   Time slot management    Admin can define
+                                                  availability periods
+
+  M4-04                   Break management        Breaks and unavailable
+                                                  periods are respected
+
+  M4-05                   Manual scheduling       Admin can assign games
+                                                  manually
+
+  M4-06                   Automatic scheduling    Scheduler generates
+                                                  valid assignments
+
+  M4-07                   Team conflict detection Teams cannot have
+                                                  overlapping games
+
+  M4-08                   Table conflict          Tables cannot host
+                          detection               overlapping games
+
+  M4-09                   Judge conflict          Judges cannot be
+                          detection               assigned simultaneously
+
+  M4-10                   Rest intervals          Minimum team rest time
+                                                  is respected
+
+  M4-11                   Schedule editing        Assignments can be
+                                                  moved
+
+  M4-12                   Locked assignments      Locked games remain
+                                                  unchanged during
+                                                  regeneration
+
+  M4-13                   Schedule validation     Invalid configurations
+                                                  produce actionable
+                                                  errors
+
+  M4-14                   Multi-day scheduling    Games can be
+                                                  distributed across
+                                                  multiple days
+  -----------------------------------------------------------------------
+
+### Mandatory scheduling tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M4-T01                  Assign one game to an   Assignment succeeds
+                          available table         
+
+  M4-T02                  Assign two simultaneous Second assignment
+                          games to one table      rejected
+
+  M4-T03                  Assign one team to      Conflict detected
+                          simultaneous games      
+
+  M4-T04                  Assign judge to         Conflict detected
+                          overlapping games       
+
+  M4-T05                  Schedule game during    Rejected
+                          lunch break             
+
+  M4-T06                  Schedule incompatible   Rejected
+                          category on table       
+
+  M4-T07                  Apply minimum rest      Constraint respected
+                          interval                
+
+  M4-T08                  Generate schedule with  Clear infeasibility
+                          insufficient capacity   report
+
+  M4-T09                  Regenerate schedule     Locked games remain
+                          with locked games       unchanged
+
+  M4-T10                  Schedule games across   All assignments retain
+                          two days                correct dates
+
+  M4-T11                  Move game to another    Conflicts re-evaluated
+                          table                   
+
+  M4-T12                  Two administrators edit Concurrent change
+                          same schedule           detected
+  -----------------------------------------------------------------------
+
+### Scheduler fairness fixture
+
+Input:
+
+``` text
+Teams: 12
+Tables: 3
+Rounds: 2
+Games per team per round: 1
+Duration per game: 15 minutes
+Available time: 120 minutes
+```
+
+Expected:
+
+-   24 total games.
+-   8 slots of 15 minutes.
+-   3 simultaneous games per slot.
+-   Every team appears exactly twice.
+-   No team is assigned simultaneously.
+-   No table is double-booked.
+
+The scheduler must produce a valid solution, but does not need to
+produce one specific team ordering.
+
+**Exit criteria:** All conflict tests pass and the scheduling engine
+generates a complete valid schedule for the test fixture.
+
+------------------------------------------------------------------------
+
+## 7. M5 --- Judge interface and scoring workflow
+
+**Priority:** P0\
+**Objective:** Deliver a functional interface for judges to conduct and
+score games.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M5-01                   Judge dashboard         Displays assigned games
+
+  M5-02                   Assignment filtering    Games can be filtered
+                                                  by day and table
+
+  M5-03                   Game identification     Correct team, round and
+                                                  table are displayed
+
+  M5-04                   Dynamic score sheet     UI is generated from
+                                                  category configuration
+
+  M5-05                   Score entry             Judges can enter all
+                                                  supported criterion
+                                                  types
+
+  M5-06                   Live score calculation  Score updates
+                                                  immediately
+
+  M5-07                   Stopwatch               Start, pause and stop
+                                                  are supported
+
+  M5-08                   Manual time entry       Judges can correct
+                                                  recorded times
+
+  M5-09                   Autosave                Draft scores survive
+                                                  page reload
+
+  M5-10                   Submission              Scores can be submitted
+
+  M5-11                   Validation              Authorized users can
+                                                  approve or reject
+
+  M5-12                   Score correction        Corrections require
+                                                  authorization and
+                                                  reason
+
+  M5-13                   Audit history           All score changes are
+                                                  traceable
+
+  M5-14                   Offline support         Draft scores
+                                                  synchronize when online
+  -----------------------------------------------------------------------
+
+### Mandatory workflow tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M5-T01                  Judge logs in           Judge dashboard shown
+
+  M5-T02                  Judge opens assigned    Correct game displayed
+                          game                    
+
+  M5-T03                  Judge opens unassigned  Access denied
+                          game                    
+
+  M5-T04                  Enter additive score    Correct live total
+
+  M5-T05                  Change exclusive option Previous option
+                                                  deselected
+
+  M5-T06                  Start and stop          Correct duration
+                          stopwatch               recorded
+
+  M5-T07                  Reload page with        Draft restored
+                          unsaved draft           
+
+  M5-T08                  Submit valid score      Status changes to
+                          sheet                   submitted
+
+  M5-T09                  Submit incomplete       Submission rejected
+                          required criteria       
+
+  M5-T10                  Head judge approves     Status changes to
+                          score                   finalized
+
+  M5-T11                  Judge changes finalized Change denied
+                          score                   
+
+  M5-T12                  Authorized correction   Old and new values
+                                                  recorded
+
+  M5-T13                  Disconnect during       Draft remains available
+                          scoring                 
+
+  M5-T14                  Reconnect               Draft synchronizes
+
+  M5-T15                  Synchronize outdated    Finalized score is not
+                          draft                   overwritten
+  -----------------------------------------------------------------------
+
+### Usability acceptance criteria
+
+-   A judge can access an assigned game within two interactions after
+    login.
+-   Score changes require no page reload.
+-   The current total is always visible.
+-   Submission status is clearly displayed.
+-   The interface is usable at a tablet viewport of 768 × 1024 pixels.
+-   No critical scoring action depends on hover.
+
+**Exit criteria:** A complete game can be scored, submitted, approved
+and reflected in the ranking.
+
+------------------------------------------------------------------------
+
+## 8. M6 --- Live competition and public interface
+
+**Priority:** P1\
+**Objective:** Enable the platform to operate as the central information
+source during an actual competition.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M6-01                   Live rankings           Rankings update after
+                                                  finalized score changes
+
+  M6-02                   Provisional rankings    Incomplete results can
+                                                  be identified
+
+  M6-03                   Public leaderboard      Published rankings are
+                                                  publicly accessible
+
+  M6-04                   Schedule display        Upcoming games and
+                                                  tables are displayed
+
+  M6-05                   TV mode                 Full-screen display is
+                                                  supported
+
+  M6-06                   Category filtering      Public can switch
+                                                  categories
+
+  M6-07                   Day filtering           Public can view
+                                                  individual competition
+                                                  days
+
+  M6-08                   Competition progress    Completed and remaining
+                                                  games are shown
+
+  M6-09                   Multi-day continuation  Competition can resume
+                                                  on another day
+
+  M6-10                   Result publication      Admin controls when
+                                                  official rankings are
+                                                  published
+  -----------------------------------------------------------------------
+
+### Tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M6-T01                  Finalize score          Ranking updates
+
+  M6-T02                  Change authorized score Ranking recalculated
+
+  M6-T03                  Publish results         Public can access them
+
+  M6-T04                  Unpublished results     Hidden from public
+
+  M6-T05                  Filter category         Only selected category
+                                                  displayed
+
+  M6-T06                  Switch competition day  Correct games displayed
+
+  M6-T07                  Open TV mode            No administration
+                                                  controls visible
+
+  M6-T08                  Restart event after     All existing results
+                          overnight break         preserved
+
+  M6-T09                  Refresh public          Current published data
+                          leaderboard             retained
+  -----------------------------------------------------------------------
+
+**Exit criteria:** Judges, administrators and public displays can
+operate simultaneously without inconsistent result states.
+
+------------------------------------------------------------------------
+
+## 9. M7 --- Communication, security and production readiness
+
+**Priority:** P1\
+**Objective:** Make the application suitable for deployment at an actual
+WRO event.
+
+### Tasks and acceptance criteria
+
+  -----------------------------------------------------------------------
+  ID                      Feature                 Acceptance criteria
+  ----------------------- ----------------------- -----------------------
+  M7-01                   Email service           Transactional emails
+                                                  can be sent
+
+  M7-02                   Email templates         Templates can be
+                                                  configured
+
+  M7-03                   Registration            Registration events
+                          notifications           trigger emails
+
+  M7-04                   Schedule notifications  Schedule changes can
+                                                  trigger notifications
+
+  M7-05                   CSV export              Teams, games and
+                                                  results export
+                                                  correctly
+
+  M7-06                   XLSX export             Structured spreadsheets
+                                                  are generated
+
+  M7-07                   PDF results             Printable ranking
+                                                  reports are generated
+
+  M7-08                   Audit log               Important
+                                                  administrative actions
+                                                  are recorded
+
+  M7-09                   Backup                  Database backup can be
+                                                  created
+
+  M7-10                   Recovery                Backup can be restored
+
+  M7-11                   Security testing        Permission boundaries
+                                                  are verified
+
+  M7-12                   Load testing            Target concurrent users
+                                                  are supported
+
+  M7-13                   Monitoring              Errors and backend
+                                                  availability are
+                                                  observable
+
+  M7-14                   Deployment              Production deployment
+                                                  is reproducible
+  -----------------------------------------------------------------------
+
+### Tests
+
+  -----------------------------------------------------------------------
+  Test ID                 Scenario                Expected result
+  ----------------------- ----------------------- -----------------------
+  M7-T01                  Submit registration     Confirmation email
+                                                  delivered
+
+  M7-T02                  Reset password          Reset email delivered
+
+  M7-T03                  Change schedule         Affected participants
+                                                  notified
+
+  M7-T04                  Export ranking to CSV   Correct data and values
+
+  M7-T05                  Export ranking to XLSX  Correct columns and
+                                                  formatting
+
+  M7-T06                  Generate PDF ranking    Correct category and
+                                                  ranking
+
+  M7-T07                  Create backup           Backup file is valid
+
+  M7-T08                  Restore backup          Records and
+                                                  relationships preserved
+
+  M7-T09                  Unauthorized API        Access denied
+                          request                 
+
+  M7-T10                  Concurrent score        No lost or silently
+                          submissions             overwritten updates
+
+  M7-T11                  Simulate server restart Application recovers
+
+  M7-T12                  Simulate email provider Failure recorded and
+                          failure                 retry policy applied
+  -----------------------------------------------------------------------
+
+**Exit criteria:** Production deployment, backup restoration, security
+and operational tests all pass.
+
+------------------------------------------------------------------------
+
+## 10. Cross-project quality requirements
+
+These requirements apply to every milestone.
+
+### Test coverage targets
+
+Coverage is a supporting metric, not a substitute for meaningful test
+cases.
+
+  Area                                          Minimum target
+  ------------------------- ----------------------------------
+  Scoring engine                             95% line coverage
+  Ranking engine                             95% line coverage
+  Scheduling engine                          90% line coverage
+  Backend services                           80% line coverage
+  Frontend components                        70% line coverage
+  Critical user workflows     100% of defined workflows tested
+
+Critical calculations should also have branch coverage and
+property-based tests.
+
+### Required test layers
+
+  Layer             Suggested tool                      Purpose
+  ----------------- ----------------------------------- -------------------------------
+  Unit              Vitest                              Pure business logic
+  Integration       Vitest + PocketBase test instance   Database and API
+  E2E               Playwright                          Complete user workflows
+  API security      Automated API tests                 Permission enforcement
+  Load              k6                                  Concurrent users and requests
+  Static analysis   TypeScript / ESLint                 Code quality
+
+### System invariants
+
+The following properties must be continuously checked:
+
+1.  A finalized score cannot change without an authorized correction.
+2.  A game cannot have more than one active team assignment.
+3.  A table cannot host overlapping games.
+4.  A judge cannot have overlapping assignments.
+5.  A ranking result must be reproducible from its source scores and
+    ruleset.
+6.  A selected points result retains its associated time.
+7.  Changing a template does not mutate historical competition results.
+8.  An unauthorized user cannot read or modify restricted competition
+    data.
+
+------------------------------------------------------------------------
+
+## 11. Definition of Done
+
+A task may only be marked complete when all applicable conditions are
+satisfied.
+
+-   [ ] Implementation merged into the main branch.
+-   [ ] Acceptance criteria fulfilled.
+-   [ ] Unit tests pass.
+-   [ ] Integration tests pass where applicable.
+-   [ ] E2E tests pass where applicable.
+-   [ ] No unresolved critical or high-severity bugs.
+-   [ ] Permissions verified.
+-   [ ] Documentation updated.
+-   [ ] Manual verification completed.
+-   [ ] Test evidence linked to the task.
+
+A task is not complete merely because its code has been merged. Its
+acceptance tests must also pass.
+
+------------------------------------------------------------------------
+
+## 12. Project tracking model
+
+Track progress at three levels:
+
+-   **Milestone:** Overall delivery stage.
+-   **Task:** Individual development unit.
+-   **Acceptance criterion:** Independently verifiable requirement.
+
+### Task statuses
+
+  Status        Meaning
+  ------------- -------------------------------
+  Backlog       Not yet started
+  Ready         Requirements clarified
+  In progress   Currently being implemented
+  In review     Awaiting code review
+  Testing       Acceptance tests underway
+  Blocked       Cannot proceed
+  Done          All completion conditions met
+
+### Recommended task fields
+
+  Field                 Example
+  --------------------- -----------------------
+  ID                    M3-08
+  Title                 Implement BEST_BY
+  Milestone             M3
+  Priority              P0
+  Status                Testing
+  Assignee              Developer
+  Acceptance criteria   AC-M3-08-01
+  Test cases            M3-T05, M3-T06
+  Dependencies          M2 complete
+  Evidence              CI run / pull request
+  Estimated effort      Developer estimate
+
+### Project KPIs
+
+  KPI                                   Target
+  ----------------------------------- --------
+  P0 acceptance criteria passed           100%
+  Critical calculation tests passed       100%
+  Critical workflow tests passed          100%
+  Unauthorized access tests passed        100%
+  Open critical bugs                         0
+  Historical score integrity              100%
+  Automated test execution in CI          100%
+
+------------------------------------------------------------------------
+
+## 13. Suggested repository structure
+
+Keep business logic independent of the user interface.
+
+``` text
+wro-platform/
+├── apps/
+│   ├── web/
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   ├── events/
+│   │   │   │   ├── teams/
+│   │   │   │   ├── categories/
+│   │   │   │   ├── scoring/
+│   │   │   │   ├── rankings/
+│   │   │   │   ├── scheduling/
+│   │   │   │   ├── judging/
+│   │   │   │   └── administration/
+│   │   │   └── shared/
+│   │   └── tests/
+│   └── backend/
+│       ├── migrations/
+│       ├── hooks/
+│       └── tests/
+├── packages/
+│   ├── scoring-engine/
+│   ├── ranking-engine/
+│   ├── scheduling-engine/
+│   ├── domain-types/
+│   └── validation/
+├── e2e/
+│   ├── registration/
+│   ├── scoring/
+│   ├── scheduling/
+│   └── rankings/
+├── docs/
+│   ├── architecture/
+│   ├── specifications/
+│   ├── api/
+│   └── test-plans/
+└── docker-compose.yml
+```
+
+------------------------------------------------------------------------
+
+## 14. Recommended implementation order
+
+Do not begin by building the full dashboard or registration experience.
+First validate the three riskiest parts of the application with vertical
+slices.
+
+### Vertical slice 1 --- Scoring prototype
+
+-   Configure a category.
+-   Create scoring criteria.
+-   Evaluate a game score.
+-   Verify additive, exclusive, deduction and conditional criteria.
+-   Test invalid configurations.
+
+### Vertical slice 2 --- Ranking prototype
+
+-   Create three rounds.
+-   Enter sample scores and times.
+-   Verify ADD, MAX, MIN and DIFFERENCE.
+-   Verify BEST_BY and points/time association.
+-   Verify tie-breaking and calculation explanations.
+
+### Vertical slice 3 --- Competition prototype
+
+-   Create teams and tables.
+-   Generate or manually create a schedule.
+-   Assign a judge.
+-   Execute and score a game.
+-   Submit and finalize the result.
+-   Verify the ranking updates correctly.
+
+These prototypes validate the core domain model before significant
+investment in the complete user interface.
+
+------------------------------------------------------------------------
+
+## 15. Key architectural decisions to resolve
+
+The following questions should be settled before or during the relevant
+implementation milestone:
+
+1.  **Multiple games per round:** Can a team play multiple attempts in
+    one round, with the round selecting the best, worst or sum of those
+    attempts?
+2.  **Team registration:** Can coaches register multiple teams under one
+    account?
+3.  **Schedule generation:** Should the system support randomized
+    assignments, balanced table distribution and predefined matchups?
+4.  **Score approval:** Must every score require head-judge approval, or
+    is approval configurable per category?
+5.  **Ranking visibility:** Are provisional rankings publicly visible
+    during competition?
+6.  **Ruleset versioning:** Are categories versioned per competition
+    year, with the ability to copy and modify a previous year's
+    configuration?
+
+Make these behaviours configurable where practical, while keeping the
+initial implementation straightforward.
+
+## 16. Primary implementation recommendation
+
+Build and thoroughly test the scoring and ranking engines before
+implementing the complete administration interface. They contain the
+most complex business logic, and the rest of the application depends on
+their correctness.
+
+The first production milestone should be a complete vertical workflow:
+
+**Register team → Schedule game → Assign judge → Score game → Validate
+result → Calculate ranking.**
+
+Once this works reliably, expand the platform with multi-day scheduling,
+public displays, email communication and operational tooling.
