@@ -27,18 +27,26 @@ Traceability from roadmap tests to automated checks. CI job names refer to
 
 ## Manual verification of M0-T06
 
-M0-T06 requires demonstrating that CI fails on a type error. Open a throwaway PR adding e.g.
-`const x: number = 'a'` to `apps/web/src/main.ts`, confirm the **checks** job fails at
-`pnpm type-check`, then close the PR and link the run here as evidence.
+M0-T06 was verified with throwaway PR [#2](https://github.com/JesseB0rn/Judge26/pull/2), which
+added `export const m0t06: number = 'not a number'` to `apps/web/src/main.ts`. The **checks** job
+failed at `pnpm type-check` ([run 42661830190](https://github.com/JesseB0rn/Judge26/actions/runs/42661830190)); the PR was closed without merging.
+
+Note: the **docker** job does not type-check (it runs `vite build` only) and passed on that PR.
+The **checks** job is the gate for type errors.
+
+To repeat: open a draft PR with a deliberate type error, confirm **checks** fails at
+`pnpm type-check`, close the PR and link the run here.
 
 ## Status
 
-| Test ID | Local result | CI evidence          |
-| ------- | ------------ | -------------------- |
-| M0-T01  | pass         | pending first CI run |
-| M0-T02  | pass         | pending first CI run |
-| M0-T03  | pass         | pending first CI run |
-| M0-T04  | pass         | pending first CI run |
-| M0-T05  | pass         | pending first CI run |
-| M0-T06  | pass (local) | pending manual PR    |
-| M0-T07  | pass         | pending first CI run |
+Evidence recorded on 2026-11-09 from PR [#1](https://github.com/JesseB0rn/Judge26/pull/1).
+
+| Test ID | Result | CI evidence                                                                                                           |
+| ------- | ------ | --------------------------------------------------------------------------------------------------------------------- |
+| M0-T01  | pass   | [run 42661508012](https://github.com/JesseB0rn/Judge26/actions/runs/42661508012) (all jobs: `pnpm install`)           |
+| M0-T02  | pass   | [run 42661508012](https://github.com/JesseB0rn/Judge26/actions/runs/42661508012) (integration, e2e)                   |
+| M0-T03  | pass   | [run 42661508012](https://github.com/JesseB0rn/Judge26/actions/runs/42661508012) (checks: build-only; docker)         |
+| M0-T04  | pass   | [run 42661508012](https://github.com/JesseB0rn/Judge26/actions/runs/42661508012) (integration)                        |
+| M0-T05  | pass   | [run 42661508012](https://github.com/JesseB0rn/Judge26/actions/runs/42661508012) (integration)                        |
+| M0-T06  | pass   | [run 42661830190](https://github.com/JesseB0rn/Judge26/actions/runs/42661830190) (checks failed at `pnpm type-check`) |
+| M0-T07  | pass   | [run 42661508012](https://github.com/JesseB0rn/Judge26/actions/runs/42661508012) (checks: `pnpm test:coverage`)       |
