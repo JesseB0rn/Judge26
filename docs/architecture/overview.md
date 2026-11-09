@@ -24,8 +24,9 @@
   with PocketBase API rules; the frontend never relies on hiding UI for security.
 - **Domain packages** (`packages/`): framework-independent TypeScript with their own unit and
   property-based tests. `packages/scoring-engine` (M2) validates and evaluates scoring
-  rulesets; it is used directly by the frontend and bundled into the PocketBase hooks
-  (`hooks/lib/scoring-engine.js`, generated). Ranking and scheduling engines follow in M3/M4.
+  rulesets; `packages/ranking-engine` (M3) aggregates round results and ranks teams. Both are
+  used directly by the frontend and bundled into the PocketBase hooks (`hooks/lib/*-engine.js`,
+  generated). The scheduling engine follows in M4.
 
 ## Frontend structure
 
@@ -42,7 +43,8 @@ Modules: `auth` (sign-in, registration, verification, password reset), `events` 
 and competition days), `categories` (event categories and the template library), `teams`
 (registration, review, CSV import), `administration` (users and event staff) and `system`
 (dashboard, status, error pages) and `scoring` (versioned rulesets, JSON editor, generated
-score sheet preview). Planned: `rankings`, `scheduling`, `judging`.
+score sheet preview) and `rankings` (rounds, results, ranking configuration, live ranking,
+snapshots). Planned: `scheduling`, `judging`.
 
 Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
 

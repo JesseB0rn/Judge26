@@ -58,7 +58,7 @@ onMounted(load)
     </template>
   </PageHeader>
   <ErrorAlert :error="error ?? remove.error.value ?? events.error.value" />
-  <CategoryTable :categories="templates" :loading="loading" empty="No templates yet.">
+  <CategoryTable :categories="templates" :loading="loading" empty="No templates yet." show-ranking>
     <template #actions="{ category }">
       <Button
         variant="ghost"

@@ -3,7 +3,8 @@
 // M1-09: copy a category (template or event category) into an event or the
 // template library. The copy is fully independent: settings are deep-copied and
 // later changes to the source never affect it. The source's active (latest
-// published) scoring ruleset is copied as version 1 of the new category (M2).
+// published) scoring ruleset is copied as version 1 of the new category (M2);
+// rounds and the ranking configuration are copied too (M3).
 //
 // POST /api/categories/{id}/copy  { event?: string, name?: string, code?: string }
 routerAdd(
@@ -57,9 +58,22 @@ routerAdd(
     // Deep copy via JSON round-trip so no structure is shared.
     const settings = source.getString('settings')
     copy.set('settings', settings ? JSON.parse(settings) : null)
+    const ranking = source.getString('ranking')
+    copy.set('ranking', ranking ? JSON.parse(ranking) : null)
 
     e.app.runInTransaction((txApp) => {
       txApp.save(copy)
+      // Rounds (M3) are part of the category's structure.
+      txApp
+        .findRecordsByFilter('rounds', 'category = {:c}', 'position', 0, 0, { c: source.id })
+        .forEach((r) => {
+          const round = new Record(r.collection())
+          round.set('category', copy.id)
+          round.set('key', r.getString('key'))
+          round.set('name', r.getString('name'))
+          round.set('position', r.getInt('position'))
+          txApp.save(round)
+        })
       const active = require(`${__hooks}/lib/rulesets.js`).activeRuleset(txApp, source.id)
       if (active) {
         const ruleset = new Record(active.collection())

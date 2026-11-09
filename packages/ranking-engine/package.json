@@ -1,0 +1,27 @@
+{
+  "name": "@judge26/ranking-engine",
+  "private": true,
+  "type": "module",
+  "description": "Framework-independent round aggregation and ranking engine (M3).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "build:hooks": "node scripts/build-hooks.mjs"
+  },
+  "dependencies": {
+    "@judge26/scoring-engine": "workspace:^"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.5",
+    "@types/node": "^24",
+    "@vitest/coverage-v8": "4.1.12",
+    "esbuild": "^0.28.2",
+    "fast-check": "^4.10.2",
+    "typescript": "~6.0.0",
+    "vitest": "4.1.12"
+  }
+}

@@ -6,3 +6,4 @@ apps/backend/pb_data*
 e2e
 .git
 apps/backend/hooks/lib/scoring-engine.js
+apps/backend/hooks/lib/ranking-engine.js
