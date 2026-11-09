@@ -11,6 +11,7 @@
     "dev:web": "pnpm --filter @judge26/web dev",
     "dev:backend": "pnpm --filter @judge26/backend dev",
     "setup:backend": "pnpm --filter @judge26/backend run install-pocketbase",
+    "seed": "pnpm --filter @judge26/backend seed",
     "build": "pnpm -r build",
     "type-check": "pnpm -r type-check",
     "lint": "pnpm -r lint",

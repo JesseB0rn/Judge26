@@ -37,9 +37,12 @@ apps/web/src/
   router/             assembles module routes
 ```
 
-Planned modules (from the roadmap): `events`, `teams`, `categories`, `scoring`, `rankings`,
-`scheduling`, `judging`, `administration`. Currently only `system` exists (status page and
-not-found route).
+Modules: `auth` (sign-in, registration, verification, password reset), `events` (events
+and competition days), `categories` (event categories and the template library), `teams`
+(registration, review, CSV import), `administration` (users and event staff) and `system`
+(dashboard, status, error pages). Planned: `scoring`, `rankings`, `scheduling`, `judging`.
+
+Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
 
 ## Backend structure
 
@@ -47,7 +50,7 @@ not-found route).
 apps/backend/
   pocketbase.version  pinned PocketBase release
   migrations/         JS migrations (schema, indexes, API rules)
-  hooks/              JS hooks and custom routes (*.pb.js)
+  hooks/              JS hooks and custom routes (*.pb.js); shared code in hooks/lib/
   scripts/            install + run wrappers (environment-aware)
   tests/              integration tests against a real PocketBase instance
 ```

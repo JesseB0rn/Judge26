@@ -14,7 +14,7 @@ export default defineConfig((env) =>
           provider: 'v8',
           include: ['src/**/*.{ts,vue}'],
           // Generated shadcn-vue primitives are vendored and not tested directly.
-          exclude: ['src/components/ui/**', 'src/main.ts', '**/__tests__/**'],
+          exclude: ['src/components/ui/**', 'src/main.ts', 'src/test/**', '**/__tests__/**'],
           reporter: ['text', 'html', 'json-summary'],
           // Minimum for frontend code per ROADMAP §10.
           thresholds: { lines: 70 },

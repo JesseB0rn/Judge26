@@ -34,4 +34,5 @@ VOLUME /pb/pb_data
 EXPOSE 8090
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://127.0.0.1:8090/api/health || exit 1
 CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/pb/pb_data", \
-     "--migrationsDir=/pb/migrations", "--hooksDir=/pb/hooks", "--publicDir=/pb/pb_public"]
+     "--migrationsDir=/pb/migrations", "--hooksDir=/pb/hooks", "--hooksWatch=false", \
+     "--publicDir=/pb/pb_public"]

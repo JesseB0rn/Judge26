@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import PocketBase from 'pocketbase'
 import { binaryPath, hooksDir, migrationsDir } from '../../scripts/paths.mjs'
 
+export const TEST_APP_URL = 'http://app.test'
 export const SUPERUSER = { email: 'superuser@test.local', password: 'test-password-123' }
 
 export interface TestServer {
@@ -61,7 +62,7 @@ async function waitForHealthy(url: string, proc: ChildProcess, output: () => str
 export async function startPocketBase(options: { dataDir?: string } = {}): Promise<TestServer> {
   const dataDir = options.dataDir ?? mkdtempSync(join(tmpdir(), 'judge26-pb-'))
   const common = [`--dir=${dataDir}`, `--migrationsDir=${migrationsDir}`, `--hooksDir=${hooksDir}`]
-  const env = { ...process.env, PB_ENV: 'test' }
+  const env = { ...process.env, PB_ENV: 'test', APP_URL: TEST_APP_URL }
 
   execFileSync(
     binaryPath,
@@ -74,15 +75,30 @@ export async function startPocketBase(options: { dataDir?: string } = {}): Promi
 
   const port = await freePort()
   const url = `http://127.0.0.1:${port}`
-  const proc = spawn(binaryPath, ['serve', `--http=127.0.0.1:${port}`, ...common], { env })
+  // --hooksWatch=false: otherwise editing a hook restarts the server mid-test.
+  const proc = spawn(
+    binaryPath,
+    ['serve', `--http=127.0.0.1:${port}`, '--hooksWatch=false', ...common],
+    { env },
+  )
   let output = ''
   proc.stdout?.on('data', (d) => (output += d))
   proc.stderr?.on('data', (d) => (output += d))
 
   await waitForHealthy(url, proc, () => output)
 
+  let stopping = false
+  proc.once('exit', (code, signal) => {
+    if (!stopping) {
+      console.error(
+        `PocketBase exited unexpectedly (code ${code}, signal ${signal}):\n${output.slice(-5000)}`,
+      )
+    }
+  })
+
   const stop = () =>
     new Promise<void>((resolve) => {
+      stopping = true
       if (proc.exitCode !== null) return resolve()
       proc.once('exit', () => resolve())
       proc.kill('SIGTERM')

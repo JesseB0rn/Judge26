@@ -2,6 +2,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
+import { API_URL, SUPERUSER } from './support/backend'
 
 const isCI = !!process.env.CI
 
@@ -12,7 +13,6 @@ const dataDir = process.env.JUDGE26_E2E_DATA_DIR
 
 // Ports match apps/web/.env.test and the PB_ENV=test defaults in apps/backend.
 const WEB_URL = 'http://127.0.0.1:4173'
-const API_URL = 'http://127.0.0.1:8091'
 
 export default defineConfig({
   testDir: '.',
@@ -36,9 +36,10 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'pnpm --filter @judge26/backend serve:test',
+      // Creates the superuser used for seeding (support/backend.ts), then serves.
+      command: `pnpm --filter @judge26/backend exec node scripts/pocketbase.mjs superuser upsert ${SUPERUSER.email} ${SUPERUSER.password} && pnpm --filter @judge26/backend serve:test`,
       url: `${API_URL}/api/health`,
-      env: { PB_DATA_DIR: dataDir },
+      env: { PB_DATA_DIR: dataDir, PB_ENV: 'test' },
       reuseExistingServer: !isCI,
     },
     {
