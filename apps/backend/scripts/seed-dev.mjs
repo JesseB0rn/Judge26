@@ -10,6 +10,8 @@ import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import PocketBase from 'pocketbase'
 import { backendDir, binaryPath } from './paths.mjs'
+// Node strips TypeScript types natively; example.ts has no runtime dependencies.
+import { EXAMPLE_RULESET } from '../../../packages/scoring-engine/src/example.ts'
 
 const url = process.env.PB_URL ?? 'http://127.0.0.1:8090'
 const SUPERUSER = { email: 'superuser@judge26.local', password: 'superuser-password' }
@@ -71,6 +73,16 @@ for (const [code, name, minAge, maxAge] of [
       max_team_size: 3,
     }),
   )
+}
+
+// Published example ruleset for every template (copied into events with the category).
+for (const template of templates) {
+  await upsert('rulesets', pb.filter('category = {:c}', { c: template.id }), {
+    category: template.id,
+    status: 'published',
+    definition: EXAMPLE_RULESET,
+    notes: 'Example ruleset from the seed script.',
+  })
 }
 
 const event = await upsert('events', pb.filter('name = {:name}', { name: 'WRO Demo Final 2026' }), {

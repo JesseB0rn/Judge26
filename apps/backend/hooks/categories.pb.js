@@ -2,7 +2,8 @@
 
 // M1-09: copy a category (template or event category) into an event or the
 // template library. The copy is fully independent: settings are deep-copied and
-// later changes to the source never affect it.
+// later changes to the source never affect it. The source's active (latest
+// published) scoring ruleset is copied as version 1 of the new category (M2).
 //
 // POST /api/categories/{id}/copy  { event?: string, name?: string, code?: string }
 routerAdd(
@@ -57,7 +58,22 @@ routerAdd(
     const settings = source.getString('settings')
     copy.set('settings', settings ? JSON.parse(settings) : null)
 
-    e.app.save(copy)
+    e.app.runInTransaction((txApp) => {
+      txApp.save(copy)
+      const active = require(`${__hooks}/lib/rulesets.js`).activeRuleset(txApp, source.id)
+      if (active) {
+        const ruleset = new Record(active.collection())
+        ruleset.set('category', copy.id)
+        ruleset.set('status', 'published')
+        ruleset.set('definition', JSON.parse(active.getString('definition')))
+        ruleset.set(
+          'notes',
+          `Copied from version ${active.getInt('version')} of ${source.getString('code')}.`,
+        )
+        ruleset.set('source', active.id)
+        txApp.save(ruleset)
+      }
+    })
     return e.json(201, copy)
   },
   $apis.requireAuth('users', '_superusers'),

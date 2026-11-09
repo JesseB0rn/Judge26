@@ -316,7 +316,19 @@ different WRO competition rules without changing application code.
   M2-14                   Configuration           Changes do not alter
                           versioning              finalized historical
                                                   results
+
+  M2-15                   Visual rule builder     Administrators can
+                                                  create and edit scoring
+                                                  rulesets without
+                                                  writing JSON
   -----------------------------------------------------------------------
+
+M2-15 is **P2** and does not block the M2 exit criteria. The first
+release edits rulesets as validated JSON with a live score sheet preview
+(see ADR 0003). The visual builder edits the same ruleset format: adding,
+removing, reordering and nesting criteria and groups, configuring
+selection limits, clamps, deductions and conditions, with the same
+validation messages and live preview. The JSON editor remains available.
 
 ### Mandatory scoring test fixtures
 
@@ -415,6 +427,18 @@ bonus is zero and the criterion is not eligible for selection.
 
   M2-T12                  Evaluate identical      Identical result
                           input twice             
+
+  M2-T13                  Build the example       Definition equals the
+                          ruleset in the visual   JSON-authored ruleset
+                          builder                 
+
+  M2-T14                  Open an existing JSON   Ruleset round-trips
+                          ruleset in the builder  without changes
+                          and save                
+
+  M2-T15                  Create a circular       Error is shown and
+                          condition in the        publishing is blocked
+                          builder                 
   -----------------------------------------------------------------------
 
 **Exit criteria:** All fixtures and automated tests pass. The scoring
@@ -488,7 +512,17 @@ overall category rankings.
 
   M3-17                   Ranking snapshots       Published results can
                                                   be preserved
+
+  M3-18                   Visual aggregation      Administrators can
+                          builder                 configure round
+                                                  aggregation, tie-breaks
+                                                  and ranking rules
+                                                  without writing JSON
   -----------------------------------------------------------------------
+
+M3-18 is **P2** and does not block the M3 exit criteria. Like M2-15, it
+edits the same configuration format as the text editor, with identical
+validation and a live calculation preview (M3-16).
 
 ### Mandatory ranking test fixtures
 
@@ -601,6 +635,18 @@ Expected: 150 points
 
   M3-T14                  Two teams have          Correct shared ranking
                           identical results       behaviour
+
+  M3-T15                  Build fixtures M3-F01   Configurations equal the
+                          to M3-F06 in the        text-authored ones
+                          visual builder          
+
+  M3-T16                  Open an existing        Configuration
+                          configuration in the    round-trips without
+                          builder and save        changes
+
+  M3-T17                  Create a circular       Error is shown and
+                          aggregation reference   saving is blocked
+                          in the builder          
   -----------------------------------------------------------------------
 
 ### Additional correctness requirements

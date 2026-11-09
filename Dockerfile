@@ -5,9 +5,12 @@ WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
-RUN pnpm install --frozen-lockfile --filter @judge26/web
+COPY packages/scoring-engine/package.json packages/scoring-engine/
+RUN pnpm install --frozen-lockfile --filter @judge26/web --filter @judge26/scoring-engine
+COPY packages/scoring-engine packages/scoring-engine
 COPY apps/web apps/web
-RUN pnpm --filter @judge26/web build-only
+# SPA build, and the scoring engine bundle for PocketBase hooks (apps/backend/hooks/lib).
+RUN pnpm --filter @judge26/web build-only && pnpm --filter @judge26/scoring-engine build:hooks
 
 FROM alpine:3 AS pocketbase
 ARG TARGETARCH
@@ -27,6 +30,7 @@ WORKDIR /pb
 COPY --from=pocketbase /pb/pocketbase /pb/pocketbase
 COPY apps/backend/migrations /pb/migrations
 COPY apps/backend/hooks /pb/hooks
+COPY --from=web /app/apps/backend/hooks/lib/scoring-engine.js /pb/hooks/lib/scoring-engine.js
 COPY --from=web /app/apps/web/dist /pb/pb_public
 
 ENV PB_ENV=production
