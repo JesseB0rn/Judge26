@@ -1,11 +1,32 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { authRoutes } from '@/modules/auth/routes'
+import { administrationRoutes } from '@/modules/administration/routes'
+import { categoryRoutes } from '@/modules/categories/routes'
+import { eventRoutes } from '@/modules/events/routes'
 import { systemRoutes } from '@/modules/system/routes'
+import { teamRoutes } from '@/modules/teams/routes'
+import { useSessionStore } from '@/shared/auth/session'
+import { resolveAccess } from './guards'
+
+export const routes = [
+  ...authRoutes,
+  ...eventRoutes,
+  ...categoryRoutes,
+  ...teamRoutes,
+  ...administrationRoutes,
+  // Contains the catch-all route and must stay last.
+  ...systemRoutes,
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  // Feature modules register their routes here. The system module contains the
-  // catch-all route and must stay last.
-  routes: [...systemRoutes],
+  routes,
+})
+
+router.beforeEach(async (to) => {
+  const session = useSessionStore()
+  await session.ensureInitialized()
+  return resolveAccess(to, session)
 })
 
 export default router

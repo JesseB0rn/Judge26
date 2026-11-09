@@ -12,8 +12,18 @@ import { join } from 'node:path'
 import { backendDir, binaryPath, hooksDir, migrationsDir } from './paths.mjs'
 
 const environments = {
-  development: { dataDir: 'pb_data', http: '127.0.0.1:8090', dev: true },
-  test: { dataDir: 'pb_data_test', http: '127.0.0.1:8091', dev: false },
+  development: {
+    dataDir: 'pb_data',
+    http: '127.0.0.1:8090',
+    dev: true,
+    appUrl: 'http://127.0.0.1:5173',
+  },
+  test: {
+    dataDir: 'pb_data_test',
+    http: '127.0.0.1:8091',
+    dev: false,
+    appUrl: 'http://127.0.0.1:4173',
+  },
 }
 
 const envName = process.env.PB_ENV ?? 'development'
@@ -40,12 +50,14 @@ const args = [
 if (command === 'serve') {
   args.push(`--http=${process.env.PB_HTTP ?? env.http}`)
   if (env.dev) args.push('--dev')
+  // Restart on hook changes only in development (hot reload); never mid-test.
+  else args.push('--hooksWatch=false')
 }
 args.push(...rest)
 
 const child = spawn(binaryPath, args, {
   stdio: 'inherit',
-  env: { ...process.env, PB_ENV: envName },
+  env: { APP_URL: env.appUrl, ...process.env, PB_ENV: envName },
 })
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal))
 child.on('exit', (code, signal) => process.exit(code ?? (signal ? 1 : 0)))

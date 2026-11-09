@@ -7,6 +7,16 @@ services:
     build: .
     ports:
       - '8090:8090'
+    environment:
+      # Public URL of the app, used in verification and password-reset emails.
+      APP_URL: ${APP_URL:-http://localhost:8090}
+      MAIL_SENDER_ADDRESS: ${MAIL_SENDER_ADDRESS:-}
+      MAIL_SENDER_NAME: ${MAIL_SENDER_NAME:-Judge26}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_TLS: ${SMTP_TLS:-false}
     volumes:
       - pb_data:/pb/pb_data
     restart: unless-stopped

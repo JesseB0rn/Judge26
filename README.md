@@ -19,6 +19,7 @@ full requirements and milestones.
 pnpm install          # install all workspace dependencies
 pnpm setup:backend    # download the pinned PocketBase binary into apps/backend/bin
 pnpm dev              # start backend (:8090) and frontend (:5173)
+pnpm seed             # (other terminal) demo accounts and data, password "password123"
 ```
 
 - Frontend: http://127.0.0.1:5173
@@ -67,7 +68,10 @@ docs/         Architecture, API notes, specifications and test plans
 - [Architecture overview](docs/architecture/overview.md)
 - [Development guide](docs/development.md)
 - [API conventions](docs/api/README.md)
-- [Test plan: M0 foundation](docs/test-plans/M0-foundation.md)
+- Specifications: [M1 permissions](docs/specifications/M1-permissions.md),
+  [M1 team registration](docs/specifications/M1-teams.md)
+- Test plans: [M0 foundation](docs/test-plans/M0-foundation.md),
+  [M1 identity and events](docs/test-plans/M1-identity-events.md)
 - [Architecture decision records](docs/architecture/decisions/)
 
 ## Production

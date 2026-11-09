@@ -9,7 +9,8 @@
     "migrate": "node scripts/pocketbase.mjs migrate",
     "superuser": "node scripts/pocketbase.mjs superuser",
     "type-check": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "node scripts/seed-dev.mjs"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.5",
