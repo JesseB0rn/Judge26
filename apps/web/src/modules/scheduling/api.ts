@@ -60,10 +60,14 @@ export function listEventCategories(eventId: string) {
     .getFullList({ filter: byEvent(eventId), sort: 'name' })
 }
 
-/** All games of the event with their round and team (for the schedule). */
+/**
+ * All games of the event with their round and team (for the schedule). Filters by the team's
+ * event, which equals the round's event (M3-02): filtering through `round` together with the
+ * games access rule made the query take seconds even on a handful of records.
+ */
 export function listScheduleGames(eventId: string) {
   return pb.collection<GameRecord>('games').getFullList({
-    filter: pb.filter('round.category.event = {:event}', { event: eventId }),
+    filter: pb.filter('team.event = {:event}', { event: eventId }),
     expand: 'round,team',
   })
 }

@@ -112,6 +112,13 @@ panel:
 - Editing a placement sends the `updated` value that was loaded, so a concurrent edit is refused
   with a message to reload.
 
+Coaches see the placed games of their teams (start, round, table) on **My teams**.
+
+**Query note.** The games list is filtered through the team (`team.event`, `team.category`), not
+through the round. Combined with the games access rule, a filter through `round` produced a SQL
+query that took seconds on a handful of games and stalled the page under parallel load. Both paths
+reach the same event, because a game's team must be in the round's category (M3-02).
+
 ## Out of scope for this release
 
 - Table-specific availability periods (availability is event-wide).

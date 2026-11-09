@@ -34,9 +34,13 @@ export function listApprovedTeams(categoryId: string) {
   })
 }
 
+/**
+ * Games of a category. Filters by the team's category, which equals the round's category (M3-02):
+ * filtering through `round` together with the games access rule made the query take seconds.
+ */
 export function listGames(categoryId: string) {
   return pb.collection<GameRecord>('games').getFullList({
-    filter: pb.filter('round.category = {:category}', { category: categoryId }),
+    filter: pb.filter('team.category = {:category}', { category: categoryId }),
     sort: 'attempt',
   })
 }

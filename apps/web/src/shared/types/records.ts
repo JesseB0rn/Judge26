@@ -139,7 +139,7 @@ export interface GameRecord extends BaseRecord {
   starts_at: string
   locked: boolean
   judges: string[]
-  expand?: { round?: RoundRecord; team?: TeamRecord }
+  expand?: { round?: RoundRecord; team?: TeamRecord; table?: TableRecord }
 }
 
 export interface TableRecord extends BaseRecord {

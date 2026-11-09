@@ -3,7 +3,7 @@
 - **Engine** = `packages/scheduling-engine/tests/*` (unit; thresholds 95% lines, 90% branches)
 - **Integration** = `apps/backend/tests/m4-scheduling.test.ts` (real PocketBase, hooks, routes)
 - **Unit** = `apps/web/src/modules/scheduling/__tests__/*` (helpers, API mapping, schedule tab)
-- **E2E** = not yet implemented
+- **E2E** = `e2e/scheduling/schedule.spec.ts` (desktop and tablet)
 
 ## Mandatory fixtures
 
@@ -44,9 +44,13 @@
 | M4-13    | Actionable errors               | Integration › field and code per rule; validation endpoint     |
 | M4-14    | Multi-day                       | Integration › M4-T10                                           |
 
+The E2E flow covers setup of a table and an availability period, preview and generation, manual
+judge assignment, a rejected move onto an occupied slot (M4-T11), read-only access for judges,
+and the coach's view of their team's schedule. The placement dialog has its own unit tests
+(prefill, save with version, 409 reload message, field conflict message).
+
 ## Not covered yet
 
-- E2E scheduling flow (staff sets up tables and games, previews, generates, edits a placement).
-- Placement dialog interaction is covered only by its composition in the schedule tab test.
 - No dedicated migration rollback test.
+- Query performance of the games list with large data volumes (see the query note in the spec).
 - Performance with large events: not measured. Generation loads the event for every saved game.
