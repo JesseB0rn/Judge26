@@ -6,6 +6,8 @@ import { useSessionStore } from '@/shared/auth/session'
 import type {
   CategoryRecord,
   EventRecord,
+  GameRecord,
+  RoundRecord,
   Role,
   RoleAssignmentRecord,
   TeamRecord,
@@ -78,6 +80,7 @@ export async function mountView<C extends Component>(
     'verify-email',
     'events',
     'category-scoring',
+    'category-ranking',
     'category-library',
   ]) {
     if (!router.hasRoute(name))
@@ -130,6 +133,7 @@ export function makeCategory(overrides: Partial<CategoryRecord> = {}): CategoryR
     max_team_size: 3,
     max_teams: 0,
     settings: null,
+    ranking: null,
     source: '',
     ...overrides,
   }
@@ -184,4 +188,30 @@ export function buttonByText(text: string, root: ParentNode = document.body) {
 export async function click(el: HTMLElement) {
   el.click()
   await flushPromises()
+}
+
+export function makeRound(key: string, position = 1): RoundRecord {
+  return {
+    ...base(`round-${key}`, 'rounds'),
+    category: 'cat1',
+    key,
+    name: `Round ${key.slice(1)}`,
+    position,
+  }
+}
+
+export function makeGame(overrides: Partial<GameRecord> = {}): GameRecord {
+  return {
+    ...base(`game-${Math.random().toString(36).slice(2)}`, 'games'),
+    round: 'round-R1',
+    team: 'team1',
+    attempt: 1,
+    status: 'completed',
+    points: 0,
+    time_ms: 0,
+    ruleset: '',
+    values: null,
+    notes: '',
+    ...overrides,
+  }
 }

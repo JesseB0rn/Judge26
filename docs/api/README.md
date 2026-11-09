@@ -4,6 +4,10 @@ The backend is PocketBase. Collection CRUD endpoints follow the
 [PocketBase Web API](https://pocketbase.io/docs/api-records/); access is controlled by each
 collection's API rules (defined in migrations).
 
+## Caching
+
+API responses must never be cached; see [M3 spec](../specifications/M3-rounds-and-ranking.md#caching).
+
 ## Error format
 
 All errors use PocketBase's format:

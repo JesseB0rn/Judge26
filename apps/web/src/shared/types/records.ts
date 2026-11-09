@@ -57,6 +57,8 @@ export interface CategoryRecord extends BaseRecord {
   max_team_size: number
   max_teams: number
   settings: unknown
+  /** Ranking configuration (see @judge26/ranking-engine). */
+  ranking: unknown
   source: string
   expand?: { event?: EventRecord }
 }
@@ -105,4 +107,38 @@ export interface RulesetRecord extends BaseRecord {
   published_at: string
   published_by: string
   source: string
+}
+
+export interface RoundRecord extends BaseRecord {
+  category: string
+  key: string
+  name: string
+  position: number
+}
+
+export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'
+
+export interface GameRecord extends BaseRecord {
+  round: string
+  team: string
+  attempt: number
+  status: GameStatus
+  /** Derived from `values` when `ruleset` is set. */
+  points: number
+  /** 0 = no time recorded. */
+  time_ms: number
+  ruleset: string
+  values: Record<string, unknown> | null
+  notes: string
+}
+
+export interface RankingSnapshotRecord extends BaseRecord {
+  category: string
+  title: string
+  config: unknown
+  config_fingerprint: string
+  inputs: unknown
+  result: import('@judge26/ranking-engine').Ranking
+  fingerprint: string
+  created_by: string
 }

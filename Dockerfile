@@ -6,11 +6,14 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 COPY packages/scoring-engine/package.json packages/scoring-engine/
-RUN pnpm install --frozen-lockfile --filter @judge26/web --filter @judge26/scoring-engine
-COPY packages/scoring-engine packages/scoring-engine
+COPY packages/ranking-engine/package.json packages/ranking-engine/
+RUN pnpm install --frozen-lockfile --filter @judge26/web --filter @judge26/scoring-engine --filter @judge26/ranking-engine
+COPY packages packages
 COPY apps/web apps/web
-# SPA build, and the scoring engine bundle for PocketBase hooks (apps/backend/hooks/lib).
-RUN pnpm --filter @judge26/web build-only && pnpm --filter @judge26/scoring-engine build:hooks
+# SPA build, and the engine bundles for PocketBase hooks (apps/backend/hooks/lib).
+RUN pnpm --filter @judge26/web build-only \
+ && pnpm --filter @judge26/scoring-engine build:hooks \
+ && pnpm --filter @judge26/ranking-engine build:hooks
 
 FROM alpine:3 AS pocketbase
 ARG TARGETARCH
@@ -30,7 +33,7 @@ WORKDIR /pb
 COPY --from=pocketbase /pb/pocketbase /pb/pocketbase
 COPY apps/backend/migrations /pb/migrations
 COPY apps/backend/hooks /pb/hooks
-COPY --from=web /app/apps/backend/hooks/lib/scoring-engine.js /pb/hooks/lib/scoring-engine.js
+COPY --from=web /app/apps/backend/hooks/lib/scoring-engine.js /app/apps/backend/hooks/lib/ranking-engine.js /pb/hooks/lib/
 COPY --from=web /app/apps/web/dist /pb/pb_public
 
 ENV PB_ENV=production

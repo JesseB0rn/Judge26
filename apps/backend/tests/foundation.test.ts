@@ -24,6 +24,11 @@ describe('M0 backend foundation', () => {
     expect(await res.json()).toEqual({ name: 'judge26', environment: 'test' })
   })
 
+  it('API responses are never cached', async () => {
+    const res = await fetch(`${server.url}/api/collections/app_settings/records`)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
   it('M0-T04: applies migrations to an empty database (collections and indexes)', async () => {
     const pb = await server.superuserClient()
     const collection = await pb.collections.getOne('app_settings')

@@ -54,13 +54,14 @@ Without SMTP in development and test, emails are **not sent**. They are printed 
 console (`[dev mail] link: …`) and available at `GET /api/dev/mails?to=<email>`. Tests use
 this to follow verification and reset links.
 
-### Scoring engine in hooks
+### Engines in hooks
 
-`packages/scoring-engine` is bundled into `apps/backend/hooks/lib/scoring-engine.js` by
-`pnpm --filter @judge26/scoring-engine build:hooks`. The file is generated and git-ignored; the
-backend's `dev`, `serve:test` and `test` scripts and the Docker build regenerate it. After
-changing the engine while `pnpm dev` runs, run `pnpm --filter @judge26/backend engine` (the
-hooks watcher then restarts PocketBase).
+`packages/scoring-engine` and `packages/ranking-engine` are bundled into
+`apps/backend/hooks/lib/scoring-engine.js` and `ranking-engine.js` by their `build:hooks`
+scripts. The files are generated and git-ignored; the backend's `dev`, `serve:test` and `test`
+scripts (`pnpm --filter @judge26/backend engine`) and the Docker build regenerate them. After
+changing an engine while `pnpm dev` runs, run `pnpm --filter @judge26/backend engine` (the hooks
+watcher then restarts PocketBase).
 
 ### Hooks and hot reload
 
@@ -83,7 +84,8 @@ and one team:
 | `judge@judge26.local`     | Judge of the demo event         |
 | `coach@judge26.local`     | Coach of "Robo Rangers"         |
 
-The script is idempotent and also creates the superuser `superuser@judge26.local` /
+The demo categories also get rounds R1–R3, an example ranking configuration and an example
+ruleset; three approved RM-J teams have results. The script is idempotent and also creates the superuser `superuser@judge26.local` /
 `superuser-password` for the dashboard at http://127.0.0.1:8090/_/.
 
 ## Frontend

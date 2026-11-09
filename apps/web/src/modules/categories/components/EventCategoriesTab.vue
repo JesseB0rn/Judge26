@@ -62,7 +62,12 @@ onMounted(load)
       <Button @click="edit()"><PlusIcon /> New category</Button>
     </div>
     <ErrorAlert :error="error ?? remove.error.value ?? templates.error.value" />
-    <CategoryTable :categories="categories" :loading="loading" empty="No categories yet.">
+    <CategoryTable
+      :categories="categories"
+      :loading="loading"
+      empty="No categories yet."
+      :show-ranking="session.isEventStaff(event.id)"
+    >
       <template #actions="{ category }">
         <template v-if="editable">
           <Button

@@ -9,11 +9,17 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { RouterLink } from 'vue-router'
-import { CalculatorIcon } from '@lucide/vue'
+import { CalculatorIcon, TrophyIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import type { CategoryRecord } from '@/shared/types/records'
 
-defineProps<{ categories: CategoryRecord[] | undefined; loading?: boolean; empty: string }>()
+defineProps<{
+  categories: CategoryRecord[] | undefined
+  loading?: boolean
+  empty: string
+  /** Show the rounds & ranking link (event staff and admins). */
+  showRanking?: boolean
+}>()
 
 const range = (min: number, max: number) =>
   min && max ? `${min}–${max}` : min ? `≥ ${min}` : max ? `≤ ${max}` : 'any'
@@ -45,6 +51,14 @@ const range = (min: number, max: number) =>
               :aria-label="`Scoring rules for ${c.code}`"
             >
               <CalculatorIcon />
+            </RouterLink>
+          </Button>
+          <Button v-if="showRanking" as-child variant="ghost" size="icon-sm">
+            <RouterLink
+              :to="{ name: 'category-ranking', params: { id: c.id } }"
+              :aria-label="`Rounds and ranking for ${c.code}`"
+            >
+              <TrophyIcon />
             </RouterLink>
           </Button>
           <slot name="actions" :category="c" />
