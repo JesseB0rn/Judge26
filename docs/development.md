@@ -56,9 +56,9 @@ this to follow verification and reset links.
 
 ### Engines in hooks
 
-`packages/scoring-engine` and `packages/ranking-engine` are bundled into
-`apps/backend/hooks/lib/scoring-engine.js` and `ranking-engine.js` by their `build:hooks`
-scripts. The files are generated and git-ignored; the backend's `dev`, `serve:test` and `test`
+`packages/scoring-engine`, `packages/ranking-engine` and `packages/scheduling-engine` are bundled
+into `apps/backend/hooks/lib/scoring-engine.js`, `ranking-engine.js` and `scheduling-engine.js` by
+their `build:hooks` scripts. The files are generated and git-ignored; the backend's `dev`, `serve:test` and `test`
 scripts (`pnpm --filter @judge26/backend engine`) and the Docker build regenerate them. After
 changing an engine while `pnpm dev` runs, run `pnpm --filter @judge26/backend engine` (the hooks
 watcher then restarts PocketBase).

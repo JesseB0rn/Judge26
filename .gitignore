@@ -55,3 +55,4 @@ e2e/.cache/
 # Generated scoring engine bundle for PocketBase hooks
 apps/backend/hooks/lib/scoring-engine.js
 apps/backend/hooks/lib/ranking-engine.js
+apps/backend/hooks/lib/scheduling-engine.js

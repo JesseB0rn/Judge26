@@ -17,6 +17,7 @@ function prepareGame(app, game) {
   if (team.getString('status') !== 'approved') {
     fieldError('team', 'team_not_approved', 'Only approved teams can play games.')
   }
+  require(`${__hooks}/lib/schedule.js`).checkPlacement(app, game, round)
 
   const status = game.getString('status')
   if (status !== 'completed') {
