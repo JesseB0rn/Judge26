@@ -28,6 +28,8 @@ export interface EventRecord extends BaseRecord {
   /** PocketBase datetime string ("YYYY-MM-DD HH:mm:ss.SSSZ") or "". */
   registration_opens_at: string
   registration_closes_at: string
+  /** Minimum rest between two games of one team, in minutes (schedule). */
+  min_rest_minutes: number
 }
 
 export interface RoleAssignmentRecord extends BaseRecord {
@@ -114,6 +116,8 @@ export interface RoundRecord extends BaseRecord {
   key: string
   name: string
   position: number
+  /** Length of one game in minutes (schedule); empty = 15. */
+  duration_minutes: number
 }
 
 export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'
@@ -130,6 +134,32 @@ export interface GameRecord extends BaseRecord {
   ruleset: string
   values: Record<string, unknown> | null
   notes: string
+  /** Schedule (M4): table id or "", PocketBase datetime or "", locked games are never moved. */
+  table: string
+  starts_at: string
+  locked: boolean
+  judges: string[]
+  expand?: { round?: RoundRecord; team?: TeamRecord }
+}
+
+export interface TableRecord extends BaseRecord {
+  event: string
+  name: string
+  position: number
+  active: boolean
+  /** Empty = accepts every category of the event. */
+  categories: string[]
+}
+
+export type TimeSlotKind = 'play' | 'break'
+
+export interface TimeSlotRecord extends BaseRecord {
+  event: string
+  kind: TimeSlotKind
+  label: string
+  /** PocketBase datetime strings. */
+  starts_at: string
+  ends_at: string
 }
 
 export interface RankingSnapshotRecord extends BaseRecord {

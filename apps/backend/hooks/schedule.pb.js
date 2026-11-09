@@ -75,3 +75,41 @@ routerAdd(
   },
   $apis.requireAuth('users', '_superusers'),
 )
+
+// GET /api/events/{id}/judges -> [{ id, name }] of the judges of the event.
+// Users and role assignments are not listable by staff, so the schedule reads names from here.
+routerAdd(
+  'GET',
+  '/api/events/{id}/judges',
+  (e) => {
+    const access = require(`${__hooks}/lib/access.js`)
+    const eventId = e.request.pathValue('id')
+    if (
+      !access.isVerifiedUser(e.auth) ||
+      !(
+        access.isAdmin(e.app, e.auth) ||
+        access.hasEventRole(e.app, e.auth, eventId, ['event_manager', 'head_judge', 'judge'])
+      )
+    ) {
+      throw new ForbiddenError('Only event staff can list judges.')
+    }
+    const assignments = e.app.findRecordsByFilter(
+      'role_assignments',
+      'event = {:event} && (role = "judge" || role = "head_judge")',
+      'created',
+      0,
+      0,
+      { event: eventId },
+    )
+    const seen = {}
+    const judges = []
+    for (const assignment of assignments) {
+      const id = assignment.getString('user')
+      if (seen[id]) continue
+      seen[id] = true
+      judges.push({ id, name: e.app.findRecordById('users', id).getString('name') })
+    }
+    return e.json(200, judges)
+  },
+  $apis.requireAuth('users', '_superusers'),
+)

@@ -93,14 +93,30 @@ message.
 | `time_slots` | Like the event                                       | Event managers, admins |
 | `games`      | Unchanged from M3 (staff and the team's coach)       | Event managers, admins |
 
-Generation and validation routes apply the same rules as the collections. Schedule data is
+Generation, validation and judge routes apply the same rules as the collections. Schedule data is
 visible to coaches through the games collection; public schedule displays follow in M6.
+
+`GET /api/events/{id}/judges` returns `{ id, name }` of the event's judges for event staff. Users
+and role assignments are not listable by staff, so the schedule reads judge names from here.
+
+## Staff interface
+
+The event page has a **Schedule** tab for event staff. It shows the tables and time slots (event
+managers edit them), the games with their table, start time and judges, and a check and generation
+panel:
+
+- **Preview** runs generation with `dry_run` and reports what would be placed, without saving.
+- **Generate schedule** saves a complete schedule. If the games do not fit, nothing is saved and
+  each unplaced game lists its reasons.
+- The conflict list shows the current validation issues with the team concerned.
+- Editing a placement sends the `updated` value that was loaded, so a concurrent edit is refused
+  with a message to reload.
 
 ## Out of scope for this release
 
 - Table-specific availability periods (availability is event-wide).
 - Automatic judge assignment and judge workload fairness.
 - Travel or changeover time between tables.
-- Visual schedule editor and public schedule display (frontend, M4 follow-up and M6).
+- Drag-and-drop schedule editing and the public schedule display (M6).
 - Retroactive re-validation when time slots change: validation runs on writes of games, and the
   validation endpoint reports anything left over.

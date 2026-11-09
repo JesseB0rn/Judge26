@@ -2,7 +2,8 @@
 
 - **Engine** = `packages/scheduling-engine/tests/*` (unit; thresholds 95% lines, 90% branches)
 - **Integration** = `apps/backend/tests/m4-scheduling.test.ts` (real PocketBase, hooks, routes)
-- **Frontend and E2E** = not yet implemented; the schedule editor is a follow-up
+- **Unit** = `apps/web/src/modules/scheduling/__tests__/*` (helpers, API mapping, schedule tab)
+- **E2E** = not yet implemented
 
 ## Mandatory fixtures
 
@@ -45,6 +46,7 @@
 
 ## Not covered yet
 
-- Frontend schedule editor and its unit tests; E2E scheduling flow.
+- E2E scheduling flow (staff sets up tables and games, previews, generates, edits a placement).
+- Placement dialog interaction is covered only by its composition in the schedule tab test.
 - No dedicated migration rollback test.
 - Performance with large events: not measured. Generation loads the event for every saved game.

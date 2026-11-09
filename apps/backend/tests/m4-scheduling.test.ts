@@ -388,6 +388,17 @@ describe('M4 tables and scheduling', () => {
     ).toEqual([])
   })
 
+  it('judges of an event are listed to its staff only', async () => {
+    const ctx = await setup()
+    const judge = await fx.user({ roles: [{ role: 'judge', event: ctx.event.id }] })
+    const judges = await ctx.manager.pb.send<{ id: string; name: string }[]>(
+      `/api/events/${ctx.event.id}/judges`,
+      { method: 'GET' },
+    )
+    expect(judges).toEqual([{ id: judge.id, name: judge.email.split('@')[0] }])
+    await expectDenied(coach.pb.send(`/api/events/${ctx.event.id}/judges`, { method: 'GET' }))
+  })
+
   it('only event managers may generate, and never for an archived event', async () => {
     const ctx = await setup()
     await expectDenied(
