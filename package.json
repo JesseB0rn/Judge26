@@ -10,7 +10,7 @@
     "dev": "pnpm --parallel --filter @judge26/web --filter @judge26/backend dev",
     "dev:web": "pnpm --filter @judge26/web dev",
     "dev:backend": "pnpm --filter @judge26/backend dev",
-    "setup:backend": "pnpm --filter @judge26/backend setup",
+    "setup:backend": "pnpm --filter @judge26/backend run install-pocketbase",
     "build": "pnpm -r build",
     "type-check": "pnpm -r type-check",
     "lint": "pnpm -r lint",

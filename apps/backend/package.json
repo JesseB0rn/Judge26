@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "setup": "node scripts/install-pocketbase.mjs",
+    "install-pocketbase": "node scripts/install-pocketbase.mjs",
     "dev": "node scripts/pocketbase.mjs serve",
     "serve:test": "PB_ENV=test node scripts/pocketbase.mjs serve",
     "migrate": "node scripts/pocketbase.mjs migrate",
