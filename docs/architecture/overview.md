@@ -46,7 +46,8 @@ and competition days), `categories` (event categories and the template library),
 score sheet preview) and `rankings` (rounds, results, ranking configuration, live ranking,
 snapshots), `scheduling` (tables and per-table game order) and `judging` (judge dashboard, score
 sheets with stopwatch and offline drafts, review and corrections; see
-[M5 judging](../specifications/M5-judging.md)).
+[M5 judging](../specifications/M5-judging.md)) and `live` (public results, schedule, progress and TV
+mode; result publication; see [M6 live competition](../specifications/M6-live.md)).
 
 Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
 
@@ -60,6 +61,13 @@ apps/backend/
   scripts/            install + run wrappers (environment-aware)
   tests/              integration tests against a real PocketBase instance
 ```
+
+## Live updates
+
+Public displays and staff ranking pages subscribe (PocketBase realtime, server-sent events) to the
+event's `live_revisions` record, which hooks increase after every committed change, and reload
+through the public endpoints. A light poll of the same record covers missed messages. See
+[ADR 0007](decisions/0007-live-results-and-publication.md).
 
 ## Error model
 

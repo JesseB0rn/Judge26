@@ -240,6 +240,9 @@ for (const [i, name] of ['Bot Builders', 'Circuit Breakers', 'Gear Grinders'].en
     )
 }
 
+// Live competition (M6): the RM-J live ranking is public at /live/{event}.
+await pb.collection('categories').update(categories['RM-J'].id, { public_live: true })
+
 await upsert('teams', pb.filter('name = "Robo Rangers"'), {
   event: event.id,
   category: categories['RM-J'].id,
@@ -260,3 +263,4 @@ console.log(`Seeded ${url}. All demo accounts use the password "${PASSWORD}":`)
 for (const u of [admin, manager, headJudge, judge, coach])
   console.log(`  ${u.email.padEnd(26)} ${u.name}`)
 console.log(`Superuser dashboard: ${url}/_/  (${SUPERUSER.email} / ${SUPERUSER.password})`)
+console.log(`Public live results: http://127.0.0.1:5173/live/${event.id} (TV mode: …/tv)`)

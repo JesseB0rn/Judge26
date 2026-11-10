@@ -8,7 +8,7 @@ import { useLoader } from '@/shared/composables/useSubmit'
 import { listEventScores } from '../api'
 import { filterAssignments, scoreState, tableOptions, type ScoreState } from '../lib'
 import AssignmentList from './AssignmentList.vue'
-import FilterChips from './FilterChips.vue'
+import FilterChips from '@/shared/components/FilterChips.vue'
 
 /**
  * Score board of an event for head judges and event managers (M5-11): sheets waiting for

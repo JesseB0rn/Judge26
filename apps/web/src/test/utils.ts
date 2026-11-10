@@ -85,6 +85,9 @@ export async function mountView<C extends Component>(
     'category-library',
     'judging',
     'judging-game',
+    'live',
+    'live-event',
+    'live-tv',
   ]) {
     if (!router.hasRoute(name))
       router.addRoute({ path: `/__${name}/:id?/:eventId?`, name, component: stub })

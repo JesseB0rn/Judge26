@@ -23,31 +23,32 @@ const activeClass = '!text-foreground font-medium'
     <header class="border-b">
       <div class="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <RouterLink to="/" class="font-semibold">{{ config.appName }}</RouterLink>
-        <nav
-          v-if="session.isAuthenticated && session.isVerified"
-          class="flex items-center gap-4"
-          aria-label="Main"
-        >
-          <RouterLink to="/events" :class="linkClass" :active-class="activeClass"
-            >Events</RouterLink
+        <nav class="flex items-center gap-4" aria-label="Main">
+          <RouterLink to="/live" :class="linkClass" :active-class="activeClass"
+            >Live results</RouterLink
           >
-          <RouterLink
-            v-if="session.isJudge"
-            to="/judging"
-            :class="linkClass"
-            :active-class="activeClass"
-            >Judging</RouterLink
-          >
-          <RouterLink to="/teams" :class="linkClass" :active-class="activeClass"
-            >My teams</RouterLink
-          >
-          <template v-if="session.isAdmin">
-            <RouterLink to="/admin/categories" :class="linkClass" :active-class="activeClass">
-              Categories
-            </RouterLink>
-            <RouterLink to="/admin/users" :class="linkClass" :active-class="activeClass"
-              >Users</RouterLink
+          <template v-if="session.isAuthenticated && session.isVerified">
+            <RouterLink to="/events" :class="linkClass" :active-class="activeClass"
+              >Events</RouterLink
             >
+            <RouterLink
+              v-if="session.isJudge"
+              to="/judging"
+              :class="linkClass"
+              :active-class="activeClass"
+              >Judging</RouterLink
+            >
+            <RouterLink to="/teams" :class="linkClass" :active-class="activeClass"
+              >My teams</RouterLink
+            >
+            <template v-if="session.isAdmin">
+              <RouterLink to="/admin/categories" :class="linkClass" :active-class="activeClass">
+                Categories
+              </RouterLink>
+              <RouterLink to="/admin/users" :class="linkClass" :active-class="activeClass"
+                >Users</RouterLink
+              >
+            </template>
           </template>
         </nav>
         <div class="ml-auto flex items-center gap-2">

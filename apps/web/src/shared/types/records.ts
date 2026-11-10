@@ -60,6 +60,13 @@ export interface CategoryRecord extends BaseRecord {
   /** Ranking configuration (see @judge26/ranking-engine). */
   ranking: unknown
   source: string
+  /** M6-10: the public sees the live (provisional) ranking. */
+  public_live?: boolean
+  /** M6-10: id of the ranking snapshot published as the official ranking, or "". */
+  published_snapshot?: string
+  /** Set by the server when the official ranking is published. */
+  results_published_at?: string
+  results_published_by?: string
   expand?: { event?: EventRecord }
 }
 

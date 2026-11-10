@@ -35,13 +35,17 @@ All errors use PocketBase's format:
 | GET     | `/api/events/{id}/judging`             | reviewers              | All games of the event with their score status (M5)                                                |
 | GET/PUT | `/api/games/{id}/sheet`                | table judge, reviewers | Score sheet page data / autosave a draft (M5)                                                      |
 | POST    | `/api/games/{id}/sheet/{action}`       | see spec               | `submit`, `approve`, `reject`, `correct` ([M5 spec](../specifications/M5-judging.md#api))          |
+| GET     | `/api/public/events`                   | public                 | Published and archived events with their days (M6)                                                 |
+| GET     | `/api/public/events/{id}`              | public                 | Schedule, game states, categories and publication state ([M6 spec](../specifications/M6-live.md))  |
+| GET     | `/api/public/categories/{id}/ranking`  | public                 | Published official and live ranking, progress (M6)                                                 |
 
 ## Collections
 
-| Collection     | Purpose                          | Access             | Migration                                                              |
-| -------------- | -------------------------------- | ------------------ | ---------------------------------------------------------------------- |
-| `users`        | Built-in auth collection         | PocketBase default | –                                                                      |
-| `app_settings` | Platform-wide key/value settings | superusers only    | `1762700000_create_app_settings.js`                                    |
-| `tables`       | Event tables with a fixed judge  | event managers     | `1763100000_m4_scheduling.js`, `1763200000_m5_round_table_sequence.js` |
-| `score_sheets` | Judge score sheets (M5)          | read-only via API  | `1763300000_m5_judging.js`                                             |
-| `score_audit`  | Append-only score audit (M5)     | read-only via API  | `1763300000_m5_judging.js`                                             |
+| Collection       | Purpose                          | Access             | Migration                                                              |
+| ---------------- | -------------------------------- | ------------------ | ---------------------------------------------------------------------- |
+| `users`          | Built-in auth collection         | PocketBase default | –                                                                      |
+| `app_settings`   | Platform-wide key/value settings | superusers only    | `1762700000_create_app_settings.js`                                    |
+| `tables`         | Event tables with a fixed judge  | event managers     | `1763100000_m4_scheduling.js`, `1763200000_m5_round_table_sequence.js` |
+| `score_sheets`   | Judge score sheets (M5)          | read-only via API  | `1763300000_m5_judging.js`                                             |
+| `score_audit`    | Append-only score audit (M5)     | read-only via API  | `1763300000_m5_judging.js`                                             |
+| `live_revisions` | Change counter per event (M6)    | read-only via API  | `1763400000_m6_live.js`                                                |

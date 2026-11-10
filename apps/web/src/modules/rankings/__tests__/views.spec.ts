@@ -1,5 +1,7 @@
+import { ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import { EXAMPLE_RANKING_CONFIG } from '@judge26/ranking-engine'
 import { EXAMPLE_RULESET } from '@judge26/scoring-engine'
 import {
@@ -19,6 +21,9 @@ import * as api from '../api'
 import * as scoringApi from '@/modules/scoring/api'
 import RankingView from '../views/RankingView.vue'
 
+vi.mock('@/modules/live/useLiveUpdates', () => ({
+  useLiveUpdates: vi.fn<() => unknown>(() => ({ status: ref('live'), check: vi.fn<() => void>() })),
+}))
 vi.mock('../api')
 vi.mock('@/modules/scoring/api')
 const mocked = vi.mocked(api)
@@ -85,6 +90,30 @@ describe('RankingView', () => {
     const explanation = wrapper.get('[data-testid=explain-Alpha]').text()
     expect(explanation).toContain('BEST_BY(points ↓, time ↑) → R3')
     expect(explanation).toContain('ADD(100, 80, 100) = 280')
+  })
+
+  it('M6-01 / M6-T01 / M6-02: reloads the ranking when results change elsewhere and flags open games', async () => {
+    const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: judge })
+    const live = vi.mocked(useLiveUpdates)
+    expect(live).toHaveBeenCalled()
+    const [eventId, reload] = live.mock.calls[live.mock.calls.length - 1]!
+    expect(eventId()).toBe('event1')
+    expect(wrapper.find('[data-testid=provisional]').exists()).toBe(false)
+
+    // A head judge finalizes Alpha's R1 correction on another device; Bravo's R2 is open.
+    mocked.listGames.mockResolvedValue([
+      makeGame({ team: 'alpha', round: 'round-R1', points: 10, time_ms: 120_000 }),
+      makeGame({ team: 'bravo', round: 'round-R1', points: 100, time_ms: 100_000 }),
+      makeGame({ team: 'bravo', round: 'round-R2', status: 'scheduled' }),
+    ])
+    await reload()
+    await flushPromises()
+    expect(rows(wrapper)).toEqual([
+      ['Bravo', '1'],
+      ['Alpha', '2'],
+    ])
+    expect(wrapper.get('[data-team=Alpha]').text()).toContain('10')
+    expect(wrapper.get('[data-testid=provisional]').text()).toContain('1 of 3 games')
   })
 
   it('staff without management rights cannot edit', async () => {

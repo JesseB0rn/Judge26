@@ -21,7 +21,7 @@ import {
 import { dayOptions, filterAssignments, isToDo, scoreState, tableOptions } from '../lib'
 import type { Assignment } from '../types'
 import AssignmentList from '../components/AssignmentList.vue'
-import FilterChips from '../components/FilterChips.vue'
+import FilterChips from '@/shared/components/FilterChips.vue'
 import ReviewQueue from '../components/ReviewQueue.vue'
 import ScoreStateBadge from '../components/ScoreStateBadge.vue'
 

@@ -8,6 +8,8 @@ declare module 'vue-router' {
     guestOnly?: boolean
     /** Requires the global admin role. */
     requiresAdmin?: boolean
+    /** `bare`: rendered without the application shell (TV mode). */
+    layout?: 'bare'
   }
 }
 

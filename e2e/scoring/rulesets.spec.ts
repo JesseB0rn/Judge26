@@ -2,6 +2,12 @@ import { expect, test, type Page } from '@playwright/test'
 import { createEvent, createUser } from '../support/backend'
 import { login } from '../support/pages'
 
+// Saving a ruleset reloads the rulesets list, whose M2 access rule slows down with the amount of
+// events, roles and teams in the shared test database (~1.5 s per list by the end of a full run;
+// see docs/test-plans/M5-judging.md, "Not covered yet"). Until those rules are rewritten, waits
+// after a save get more time than the 5 s default.
+const afterSave = expect.configure({ timeout: 15_000 })
+
 const sheet = (page: Page) => page.getByTestId('score-sheet')
 const criterion = (page: Page, id: string) => page.locator(`[data-node="${id}"]`)
 
@@ -18,7 +24,7 @@ test.describe('M2 scoring rulesets', () => {
 
     // First draft starts from the example ruleset.
     await page.getByRole('button', { name: 'Create first draft' }).click()
-    await expect(page.getByTestId('ruleset-status')).toHaveText('Draft')
+    await afterSave(page.getByTestId('ruleset-status')).toHaveText('Draft')
     await expect(page.getByTestId('ruleset-valid')).toBeVisible()
 
     // Live preview (M2-13, M5-04/06 groundwork).
@@ -56,12 +62,12 @@ test.describe('M2 scoring rulesets', () => {
 
     page.on('dialog', (dialog) => dialog.accept())
     await page.getByRole('button', { name: 'Publish' }).click()
-    await expect(page.getByTestId('ruleset-status')).toHaveText('Published')
+    await afterSave(page.getByTestId('ruleset-status')).toHaveText('Published')
     await expect(editor).toHaveAttribute('readonly', '')
 
     // A new version does not change the published one (M2-T10, M2-T11).
     await page.getByRole('button', { name: 'New draft from selected' }).click()
-    await expect(page.getByTestId('ruleset-status')).toHaveText('Draft')
+    await afterSave(page.getByTestId('ruleset-status')).toHaveText('Draft')
     await editor.fill(
       (await editor.inputValue()).replace(
         '"points": 10,\n            "required": true',

@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArchiveIcon, ArchiveRestoreIcon, PencilIcon, PlusIcon, SendIcon } from '@lucide/vue'
+import {
+  ArchiveIcon,
+  ArchiveRestoreIcon,
+  PencilIcon,
+  PlusIcon,
+  RadioIcon,
+  SendIcon,
+} from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +19,7 @@ import EventTeamsTab from '@/modules/teams/components/EventTeamsTab.vue'
 import EventScheduleTab from '@/modules/scheduling/components/EventScheduleTab.vue'
 import EventStaffTab from '@/modules/administration/components/EventStaffTab.vue'
 import ReviewQueue from '@/modules/judging/components/ReviewQueue.vue'
+import PublicationPanel from '@/modules/live/components/PublicationPanel.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
@@ -77,6 +85,11 @@ watch(() => props.id, load)
             <ArchiveRestoreIcon /> Restore
           </Button>
         </template>
+        <Button v-if="event.status !== 'draft'" as-child variant="outline">
+          <RouterLink :to="{ name: 'live-event', params: { id: event.id } }">
+            <RadioIcon /> Live results
+          </RouterLink>
+        </Button>
         <Button v-if="registrationOpen" as-child>
           <RouterLink :to="{ name: 'team-new', params: { eventId: event.id } }">
             <PlusIcon /> Register a team
@@ -97,6 +110,7 @@ watch(() => props.id, load)
         <TabsTrigger value="teams">Teams</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="schedule">Schedule</TabsTrigger>
         <TabsTrigger v-if="canReview" value="scores">Scores</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="publication">Public results</TabsTrigger>
         <TabsTrigger v-if="session.isAdmin" value="staff">Staff</TabsTrigger>
       </TabsList>
 
@@ -134,6 +148,10 @@ watch(() => props.id, load)
 
       <TabsContent v-if="canReview" value="scores">
         <ReviewQueue :events="[{ id: event.id, name: event.name }]" />
+      </TabsContent>
+
+      <TabsContent v-if="canManage" value="publication">
+        <PublicationPanel :event="event" :editable="!archived" />
       </TabsContent>
 
       <TabsContent v-if="session.isAdmin" value="staff">
