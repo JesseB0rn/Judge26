@@ -45,9 +45,10 @@ through the judging routes. Audit entries cannot be changed, not even by superus
 
 - **Outcome** is `completed` (scored), `disqualified` or `absent`. Only completed games have values
   and time; the others need no sheet values.
-- **Ruleset version.** The first save pins the category's active published ruleset to the sheet;
-  the game references that version, so recalculation uses it (M2-T11). Without a published ruleset,
-  points are entered directly.
+- **Ruleset version.** The first save pins the active published ruleset of the round's
+  [game rule](M2-scoring-rulesets.md#game-rules) to the sheet; the game references that version,
+  so recalculation uses it (M2-T11). Without a published ruleset, points are entered directly.
+  With several games in the category, the sheet payload names the game (`ruleset.game_rule`).
 - **Points** are always computed by the server from the values (the same engine runs live in the
   browser for M5-06).
 - **Approval is always required** (answers roadmap question 15.4 for now). A reviewer who scores a

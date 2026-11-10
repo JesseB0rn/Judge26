@@ -2,8 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { ClientResponseError } from 'pocketbase'
 import { EXAMPLE_RULESET } from '@judge26/scoring-engine'
-import { buttonByText, click, makeCategory, makeEvent, makeRole, mountView } from '@/test/utils'
-import type { RulesetRecord } from '@/shared/types/records'
+import {
+  buttonByText,
+  click,
+  fill,
+  makeCategory,
+  makeEvent,
+  makeRole,
+  mountView,
+} from '@/test/utils'
+import type { GameRuleRecord, RulesetRecord } from '@/shared/types/records'
 import * as api from '../api'
 import RulesetsView from '../views/RulesetsView.vue'
 import BlockDiagram from '@/shared/diagram/BlockDiagram.vue'
@@ -41,6 +49,19 @@ const version = (overrides: Partial<RulesetRecord>): RulesetRecord => ({
 })
 
 const manager = { roles: [makeRole('event_manager', 'event1')] }
+
+const gameRule = (id: string, name: string, position: number): GameRuleRecord => ({
+  id,
+  collectionId: 'game_rules',
+  collectionName: 'game_rules',
+  created: '',
+  updated: '',
+  category: 'cat1',
+  key: id,
+  name,
+  description: '',
+  position,
+})
 
 /** Reka tabs activate on mousedown. */
 /** The Definition tab in JSON mode (the visual builder is the default). */
@@ -101,7 +122,7 @@ describe('RulesetsView', () => {
     expect(wrapper.text()).not.toContain('Save draft')
 
     await click(buttonByText('New draft from selected'))
-    expect(mocked.createDraft).toHaveBeenCalledWith('cat1', simple(10), 'rs1')
+    expect(mocked.createDraft).toHaveBeenCalledWith('cat1', simple(10), 'rs1', '')
   })
 
   it('saves and publishes drafts', async () => {
@@ -211,7 +232,7 @@ describe('RulesetsView', () => {
     const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
     expect(wrapper.text()).toContain('No scoring ruleset yet')
     await click(buttonByText('Create first draft'))
-    expect(mocked.createDraft).toHaveBeenCalledWith('cat1', EXAMPLE_RULESET, '')
+    expect(mocked.createDraft).toHaveBeenCalledWith('cat1', EXAMPLE_RULESET, '', '')
   })
 
   it('a slow earlier list load does not hide a just-created draft', async () => {
@@ -247,5 +268,50 @@ describe('RulesetsView', () => {
     const history = wrapper.get('[data-testid=ruleset-history]')
     expect(history.text()).toContain('published (active)')
     expect(history.text()).toContain('abcdef0123456789')
+  })
+  it('switches between the games of a category; each has its own versions', async () => {
+    mocked.listGameRules.mockResolvedValue([
+      gameRule('gA', 'Obstacle course', 1),
+      gameRule('gB', 'Sumo', 2),
+    ])
+    mocked.listRulesets.mockResolvedValue([
+      version({ id: 'b1', game_rule: 'gB', version: 1, definition: simple(30) }),
+      version({ id: 'a2', game_rule: 'gA', version: 2, definition: simple(20) }),
+      version({ id: 'a1', game_rule: 'gA', version: 1 }),
+    ])
+    mocked.createDraft.mockResolvedValue(version({ id: 'b2', game_rule: 'gB', status: 'draft' }))
+    const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
+    const versionSelect = () => wrapper.get('select[aria-label=Version]')
+    expect(
+      versionSelect()
+        .findAll('option')
+        .map((o) => o.text()),
+    ).toEqual(['Version 2 – active', 'Version 1 – published'])
+    await wrapper.get('select[aria-label=Game]').setValue('gB')
+    await flushPromises()
+    expect(
+      versionSelect()
+        .findAll('option')
+        .map((o) => o.text()),
+    ).toEqual(['Version 1 – active'])
+    await click(buttonByText('New draft from selected'))
+    expect(mocked.createDraft).toHaveBeenCalledWith('cat1', simple(30), 'b1', 'gB')
+  })
+
+  it('creates a new game', async () => {
+    mocked.listGameRules.mockResolvedValue([gameRule('gA', 'Obstacle course', 1)])
+    mocked.createGameRule.mockResolvedValue(gameRule('gB', 'Sumo', 2))
+    await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
+    await click(buttonByText('New game'))
+    const dialog = document.querySelector('[role=dialog]')!
+    await fill('[role=dialog] input[required]:not([pattern])', 'Sumo')
+    await fill('[role=dialog] input[pattern]', 'sumo')
+    await click(buttonByText('Create game', dialog))
+    expect(mocked.createGameRule).toHaveBeenCalledWith('cat1', {
+      key: 'sumo',
+      name: 'Sumo',
+      description: '',
+      position: 2,
+    })
   })
 })

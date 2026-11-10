@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
-import { FilePlusIcon, SaveIcon, SendIcon, Trash2Icon } from '@lucide/vue'
+import { FilePlusIcon, PencilIcon, PlusIcon, SaveIcon, SendIcon, Trash2Icon } from '@lucide/vue'
 import { evaluate, EXAMPLE_RULESET, type ScoreValues } from '@judge26/scoring-engine'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -23,23 +23,45 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
+import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
-import type { CategoryRecord, RulesetRecord } from '@/shared/types/records'
-import { createDraft, deleteDraft, getCategory, listRulesets, publish, saveDraft } from '../api'
-import { parseRuleset, toEditorText } from '../lib'
+import type { CategoryRecord, GameRuleRecord, RulesetRecord } from '@/shared/types/records'
+import {
+  createDraft,
+  createGameRule,
+  deleteDraft,
+  deleteGameRule,
+  getCategory,
+  listGameRules,
+  listRulesets,
+  publish,
+  saveDraft,
+  updateGameRule,
+  type GameRuleInput,
+} from '../api'
+import { activeVersion, parseRuleset, toEditorText } from '../lib'
+import GameRuleDialog from '../components/GameRuleDialog.vue'
 import ExplanationTree from '../components/ExplanationTree.vue'
 import RulesetBuilder from '../components/RulesetBuilder.vue'
 import RulesetEditor from '../components/RulesetEditor.vue'
 import EditorModeToggle from '@/shared/diagram/EditorModeToggle.vue'
 import ScoreSheet from '../components/ScoreSheet.vue'
 
-/** Versioned scoring rulesets of a category (M2), with a live score sheet preview. */
+/**
+ * Games of a category, each with its own versioned scoring ruleset (M2) and a live score sheet
+ * preview. Rounds choose the game they play (Rounds tab of the ranking page).
+ */
 const props = defineProps<{ id: string }>()
 const session = useSessionStore()
 
 const category = ref<CategoryRecord>()
+const rules = ref<GameRuleRecord[]>([])
+/** All versions of the category; `shown` are those of the selected game. */
 const versions = ref<RulesetRecord[]>([])
+const { game } = useQueryRefs({ game: '' })
 const selectedId = ref('')
+const ruleDialog = ref(false)
+const editingRule = ref<GameRuleRecord>()
 const text = ref('')
 const values = ref<ScoreValues>({})
 const tab = ref('preview')
@@ -47,8 +69,15 @@ const editor = ref<'visual' | 'json'>('visual')
 const loading = ref(true)
 const loadError = ref<AppError>()
 
-const selected = computed(() => versions.value.find((v) => v.id === selectedId.value))
-const active = computed(() => versions.value.find((v) => v.status === 'published'))
+const selectedRule = computed(() => rules.value.find((r) => r.id === game.value) ?? rules.value[0])
+// Without game rules (older data) all versions belong to the one implicit game.
+const shown = computed(() =>
+  selectedRule.value
+    ? versions.value.filter((v) => v.game_rule === selectedRule.value!.id)
+    : versions.value,
+)
+const selected = computed(() => shown.value.find((v) => v.id === selectedId.value))
+const active = computed(() => activeVersion(shown.value, selectedRule.value?.id))
 const event = computed(() => category.value?.expand?.event)
 const canManage = computed(() => {
   if (!category.value) return false
@@ -74,18 +103,32 @@ async function load(select?: string) {
   const version = ++loadVersion
   loading.value = true
   try {
-    const c = await getCategory(props.id)
-    const list = await listRulesets(props.id)
+    const [c, list, r] = await Promise.all([
+      getCategory(props.id),
+      listRulesets(props.id),
+      listGameRules(props.id),
+    ])
     if (version !== loadVersion) return
     category.value = c
     versions.value = list
-    selectedId.value = select ?? active.value?.id ?? versions.value[0]?.id ?? ''
+    rules.value = r ?? []
+    const picked = select ? list.find((v) => v.id === select) : undefined
+    if (picked?.game_rule) game.value = picked.game_rule
+    selectedId.value = picked ? picked.id : (active.value?.id ?? shown.value[0]?.id ?? '')
   } catch (e) {
     loadError.value = toAppError(e)
   } finally {
     loading.value = false
   }
 }
+
+// Switching the game shows its active (else latest) version.
+watch(
+  () => selectedRule.value?.id,
+  () => {
+    if (!selected.value) selectedId.value = active.value?.id ?? shown.value[0]?.id ?? ''
+  },
+)
 
 watch(selected, (version) => {
   text.value = version ? toEditorText(version.definition) : ''
@@ -94,7 +137,12 @@ watch(selected, (version) => {
 
 const newDraft = useSubmit(async () => {
   const base = selected.value ?? active.value
-  const draft = await createDraft(props.id, base?.definition ?? EXAMPLE_RULESET, base?.id ?? '')
+  const draft = await createDraft(
+    props.id,
+    base?.definition ?? EXAMPLE_RULESET,
+    base?.id ?? '',
+    selectedRule.value?.id ?? '',
+  )
   await load(draft.id)
   tab.value = 'definition'
 })
@@ -129,8 +177,42 @@ const remove = useSubmit(async () => {
   await load()
 })
 
+function openRuleDialog(rule?: GameRuleRecord) {
+  editingRule.value = rule
+  ruleDialog.value = true
+}
+
+async function saveRule(data: GameRuleInput) {
+  if (editingRule.value) {
+    await updateGameRule(editingRule.value.id, data)
+    await load(selectedId.value || undefined)
+  } else {
+    const position = Math.max(0, ...rules.value.map((r) => r.position)) + 1
+    const created = await createGameRule(props.id, { ...data, position })
+    game.value = created.id
+    await load()
+  }
+}
+
+const removeRule = useSubmit(
+  async () => {
+    const rule = selectedRule.value
+    if (!rule) return
+    if (!confirm(`Delete the game “${rule.name}” with all its versions?`)) return
+    await deleteGameRule(rule.id)
+    game.value = ''
+    await load()
+  },
+  { success: 'Game deleted.' },
+)
+
 const actionError = computed(
-  () => newDraft.error.value ?? save.error.value ?? publishSubmit.error.value ?? remove.error.value,
+  () =>
+    newDraft.error.value ??
+    save.error.value ??
+    publishSubmit.error.value ??
+    remove.error.value ??
+    removeRule.error.value,
 )
 const label = (v: RulesetRecord) =>
   `Version ${v.version} – ${v.status === 'published' ? (v.id === active.value?.id ? 'active' : 'published') : 'draft'}`
@@ -154,14 +236,59 @@ onMounted(() => load())
           <RouterLink :to="{ name: 'category-library' }">Back to library</RouterLink>
         </Button>
         <Button v-if="canManage" :disabled="newDraft.pending.value" @click="newDraft.run()">
-          <FilePlusIcon /> {{ versions.length ? 'New draft from selected' : 'Create first draft' }}
+          <FilePlusIcon /> {{ shown.length ? 'New draft from selected' : 'Create first draft' }}
         </Button>
       </template>
     </PageHeader>
 
     <ErrorAlert :error="actionError" class="mb-4" />
 
-    <Alert v-if="!versions.length" class="mb-4">
+    <div
+      v-if="rules.length || canManage"
+      class="mb-4 flex flex-wrap items-center gap-2"
+      data-testid="game-rules"
+    >
+      <span class="text-sm font-medium">Game</span>
+      <NativeSelect v-if="rules.length" v-model="game" aria-label="Game">
+        <NativeSelectOption v-for="r in rules" :key="r.id" :value="r.id">{{
+          r.name
+        }}</NativeSelectOption>
+      </NativeSelect>
+      <template v-if="canManage">
+        <Button
+          v-if="selectedRule"
+          variant="ghost"
+          size="icon"
+          aria-label="Edit game"
+          @click="openRuleDialog(selectedRule)"
+          ><PencilIcon
+        /></Button>
+        <Button
+          v-if="selectedRule && rules.length > 1"
+          variant="ghost"
+          size="icon"
+          aria-label="Delete game"
+          :disabled="removeRule.pending.value"
+          @click="removeRule.run()"
+          ><Trash2Icon
+        /></Button>
+        <Button variant="outline" size="sm" @click="openRuleDialog()"><PlusIcon /> New game</Button>
+      </template>
+      <p v-if="rules.length > 1" class="basis-full text-sm text-muted-foreground">
+        A category can play different games in different rounds. Choose each round's game in the
+        <RouterLink
+          class="underline"
+          :to="{ name: 'category-ranking', params: { id: category.id }, query: { tab: 'rounds' } }"
+          >rounds</RouterLink
+        >.
+      </p>
+      <p v-if="selectedRule?.description" class="basis-full text-sm text-muted-foreground">
+        {{ selectedRule.description }}
+      </p>
+    </div>
+    <GameRuleDialog v-model:open="ruleDialog" :rule="editingRule" :save="saveRule" />
+
+    <Alert v-if="!shown.length" class="mb-4">
       <AlertDescription>
         No scoring ruleset yet.
         <template v-if="canManage"
@@ -173,7 +300,7 @@ onMounted(() => load())
     <template v-else>
       <div class="mb-4 flex flex-wrap items-center gap-2">
         <NativeSelect v-model="selectedId" aria-label="Version">
-          <NativeSelectOption v-for="v in versions" :key="v.id" :value="v.id">{{
+          <NativeSelectOption v-for="v in shown" :key="v.id" :value="v.id">{{
             label(v)
           }}</NativeSelectOption>
         </NativeSelect>
@@ -271,7 +398,7 @@ onMounted(() => load())
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="v in versions" :key="v.id">
+              <TableRow v-for="v in shown" :key="v.id">
                 <TableCell>{{ v.version }}</TableCell>
                 <TableCell>{{ v.status }}{{ v.id === active?.id ? ' (active)' : '' }}</TableCell>
                 <TableCell>{{ formatDateTime(v.published_at) }}</TableCell>

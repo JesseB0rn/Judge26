@@ -66,10 +66,11 @@ onMounted(() => {
 
 const context = computed(() => {
   if (!p.value) return ''
-  const { category, round, table, game } = p.value
+  const { category, round, table, game, ruleset } = p.value
   return [
     category.code,
     round.name,
+    ruleset?.game_rule?.name,
     table?.name,
     game.sequence > 0 ? `#${game.sequence}` : '',
     game.attempt > 1 ? `Attempt ${game.attempt}` : '',
@@ -260,7 +261,8 @@ function setManualPoints(raw: string | number) {
       </Alert>
       <Alert v-if="!p.ruleset && s.input.value.outcome === 'completed'">
         <AlertDescription
-          >This category has no published score sheet. Enter the points directly.</AlertDescription
+          >This round's game has no published score sheet. Enter the points
+          directly.</AlertDescription
         >
       </Alert>
 

@@ -2,9 +2,9 @@
 
 // M1-09: copy a category (template or event category) into an event or the
 // template library. The copy is fully independent: settings are deep-copied and
-// later changes to the source never affect it. The source's active (latest
-// published) scoring ruleset is copied as version 1 of the new category (M2);
-// rounds and the ranking configuration are copied too (M3).
+// later changes to the source never affect it. The source's game rules are copied,
+// each with its active (latest published) ruleset as version 1 (M2); rounds keep
+// their game rule, and the ranking configuration is copied too (M3).
 //
 // POST /api/categories/{id}/copy  { event?: string, name?: string, code?: string }
 routerAdd(
@@ -63,7 +63,32 @@ routerAdd(
 
     e.app.runInTransaction((txApp) => {
       txApp.save(copy)
-      // Rounds (M3) are part of the category's structure.
+      // Game rules (each with its active version as version 1) and rounds are part of the
+      // category's structure.
+      const lib = require(`${__hooks}/lib/rulesets.js`)
+      const ruleIds = {}
+      lib.gameRules(txApp, source.id).forEach((r) => {
+        const rule = new Record(r.collection())
+        rule.set('category', copy.id)
+        for (const field of ['key', 'name', 'description', 'position'])
+          rule.set(field, r.get(field))
+        txApp.save(rule)
+        ruleIds[r.id] = rule.id
+        const active = lib.activeRuleset(txApp, r.id)
+        if (active) {
+          const ruleset = new Record(active.collection())
+          ruleset.set('category', copy.id)
+          ruleset.set('game_rule', rule.id)
+          ruleset.set('status', 'published')
+          ruleset.set('definition', JSON.parse(active.getString('definition')))
+          ruleset.set(
+            'notes',
+            `Copied from version ${active.getInt('version')} of ${source.getString('code')}.`,
+          )
+          ruleset.set('source', active.id)
+          txApp.save(ruleset)
+        }
+      })
       txApp
         .findRecordsByFilter('rounds', 'category = {:c}', 'position', 0, 0, { c: source.id })
         .forEach((r) => {
@@ -72,21 +97,9 @@ routerAdd(
           round.set('key', r.getString('key'))
           round.set('name', r.getString('name'))
           round.set('position', r.getInt('position'))
+          round.set('game_rule', ruleIds[r.getString('game_rule')] || '')
           txApp.save(round)
         })
-      const active = require(`${__hooks}/lib/rulesets.js`).activeRuleset(txApp, source.id)
-      if (active) {
-        const ruleset = new Record(active.collection())
-        ruleset.set('category', copy.id)
-        ruleset.set('status', 'published')
-        ruleset.set('definition', JSON.parse(active.getString('definition')))
-        ruleset.set(
-          'notes',
-          `Copied from version ${active.getInt('version')} of ${source.getString('code')}.`,
-        )
-        ruleset.set('source', active.id)
-        txApp.save(ruleset)
-      }
     })
     return e.json(201, copy)
   },

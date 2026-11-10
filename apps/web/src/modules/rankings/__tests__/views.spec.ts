@@ -16,7 +16,7 @@ import {
   makeTeam,
   mountView,
 } from '@/test/utils'
-import type { RankingSnapshotRecord, RulesetRecord } from '@/shared/types/records'
+import type { GameRuleRecord, RankingSnapshotRecord, RulesetRecord } from '@/shared/types/records'
 import * as api from '../api'
 import * as scoringApi from '@/modules/scoring/api'
 import BlockDiagram from '@/shared/diagram/BlockDiagram.vue'
@@ -334,5 +334,51 @@ describe('RankingView', () => {
     })
     expect(wrapper.findAll('[role=tab]').map((t) => t.text())).toEqual(['Rounds', 'Configuration'])
     expect(mocked.listGames).not.toHaveBeenCalled()
+  })
+  it("assigns each round a game; manual results use the round's game", async () => {
+    const rule = (id: string, name: string) =>
+      ({ id, name, key: id, category: 'cat1', position: 1 }) as unknown as GameRuleRecord
+    vi.mocked(scoringApi.listGameRules).mockResolvedValue([
+      rule('gA', 'Game A'),
+      rule('gB', 'Game B'),
+    ])
+    vi.mocked(scoringApi.listRulesets).mockResolvedValue([{ ...publishedRuleset, game_rule: 'gA' }])
+    mocked.listRounds.mockResolvedValue([
+      { ...makeRound('R1', 1), game_rule: 'gA' },
+      { ...makeRound('R2', 2), game_rule: 'gA' },
+      { ...makeRound('R3', 3), game_rule: 'gB' },
+    ])
+    mocked.createRound.mockResolvedValue(makeRound('R4', 4))
+    const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: manager })
+    await openTab(wrapper, 'Rounds')
+    expect(wrapper.findAll('[data-testid=round-game]').map((c) => c.text())).toEqual([
+      'Game A',
+      'Game A',
+      'Game B',
+    ])
+    await fill('input[pattern]', 'R4')
+    await fill('input[required]:not([pattern])', 'Final')
+    const forms = wrapper.findAll('form')
+    await forms[forms.length - 1]!.trigger('submit')
+    await flushPromises()
+    // A new round defaults to the game of the previous round.
+    expect(mocked.createRound).toHaveBeenCalledWith(
+      'cat1',
+      expect.objectContaining({ key: 'R4', game_rule: 'gB' }),
+    )
+
+    await openTab(wrapper, 'Results')
+    const dialog = () => document.querySelector('[role=dialog]')
+    await click(
+      wrapper.get('button[aria-label="Results of Bravo in Round 2"]').element as HTMLElement,
+    )
+    expect(dialog()!.querySelector('[data-testid=score-sheet]')).not.toBeNull()
+    await click(buttonByText('Cancel', dialog()!))
+    await flushPromises()
+    // Game B has no published version: points are entered directly.
+    await click(
+      wrapper.get('button[aria-label="Results of Bravo in Round 3"]').element as HTMLElement,
+    )
+    expect(dialog()!.querySelector('[data-testid=score-sheet]')).toBeNull()
   })
 })

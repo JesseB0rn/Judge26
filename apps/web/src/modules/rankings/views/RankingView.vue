@@ -15,7 +15,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import LiveIndicator from '@/modules/live/components/LiveIndicator.vue'
 import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
-import { getCategory, listRulesets } from '@/modules/scoring/api'
+import { getCategory, listGameRules, listRulesets } from '@/modules/scoring/api'
+import { activeVersionForRound } from '@/modules/scoring/lib'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
@@ -29,6 +30,7 @@ import type {
   GameRecord,
   RankingSnapshotRecord,
   RoundRecord,
+  GameRuleRecord,
   RulesetRecord,
   TeamRecord,
 } from '@/shared/types/records'
@@ -60,7 +62,8 @@ const days = ref<CompetitionDayRecord[]>([])
 const teams = ref<TeamRecord[]>([])
 const games = ref<GameRecord[]>([])
 const snapshots = ref<RankingSnapshotRecord[]>([])
-const ruleset = ref<RulesetRecord>()
+const rulesets = ref<RulesetRecord[]>([])
+const gameRules = ref<GameRuleRecord[]>([])
 const text = ref('')
 const loading = ref(true)
 const loadError = ref<AppError>()
@@ -123,12 +126,13 @@ async function load() {
     const template = !category.value.event
     // Days only add a field to the rounds form; they must not delay the rounds themselves.
     if (!template) void loadDays(category.value.event)
-    const [r, t, g, s, rs] = await Promise.all([
+    const [r, t, g, s, rs, gr] = await Promise.all([
       listRounds(props.id),
       template ? [] : listApprovedTeams(props.id),
       template ? [] : listGames(props.id),
       template ? [] : listSnapshots(props.id),
       listRulesets(props.id),
+      listGameRules(props.id),
     ])
     if (version === resultsVersion) {
       rounds.value = r
@@ -136,7 +140,8 @@ async function load() {
     }
     teams.value = t
     snapshots.value = s
-    ruleset.value = rs.find((v) => v.status === 'published')
+    rulesets.value = rs ?? []
+    gameRules.value = gr ?? []
     if (template) tab.value = 'rounds'
   } catch (e) {
     loadError.value = toAppError(e)
@@ -174,6 +179,12 @@ const openGames = computed(() => games.value.filter((g) => g.status === 'schedul
 const dialogOpen = ref(false)
 const dialogTeam = ref<TeamRecord>()
 const dialogRound = ref<RoundRecord>()
+/** Manually recorded results are scored with the active version of the round's game. */
+const dialogRuleset = computed(() =>
+  dialogRound.value
+    ? activeVersionForRound(dialogRound.value, gameRules.value, rulesets.value)
+    : undefined,
+)
 function openGame(team: TeamRecord, round: RoundRecord) {
   dialogTeam.value = team
   dialogRound.value = round
@@ -302,6 +313,7 @@ onMounted(load)
           :category-id="category.id"
           :rounds="rounds"
           :days="days"
+          :game-rules="gameRules"
           :editable="canManage"
           @changed="loadResults"
         />
@@ -380,7 +392,7 @@ onMounted(load)
       :team="dialogTeam"
       :round="dialogRound"
       :games="games"
-      :ruleset="ruleset"
+      :ruleset="dialogRuleset"
       @saved="loadResults"
     />
   </template>

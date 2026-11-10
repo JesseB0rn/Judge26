@@ -18,12 +18,13 @@ snapshots). The configuration is edited in a visual builder (M3-18) or as JSON; 
 **Games.** A game belongs to exactly one round, and its team must be an approved team of the
 round's category. `status` is `scheduled`, `completed`, `disqualified` or `absent`. Points of a
 completed game are either entered directly (0 is a valid zero-point result) or, when a published
-ruleset of the category is attached, **computed on the server from the score sheet values**
+ruleset of the category is attached (by default the active version of the round's
+[game rule](M2-scoring-rulesets.md#game-rules)), **computed on the server from the score sheet values**
 (M3-03); invalid score sheets are rejected. Disqualified and absent games carry no points.
 `time_ms = 0` means "no time recorded" (PocketBase stores empty numbers as 0).
 
-Copying a category copies its rounds and ranking configuration (and, from M2, its active
-ruleset).
+Copying a category copies its rounds and ranking configuration (and, from M2, its game rules
+with their active rulesets; rounds keep their game rule).
 
 ## Configuration format (schema version 1)
 

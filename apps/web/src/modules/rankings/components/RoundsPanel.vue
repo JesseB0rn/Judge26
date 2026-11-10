@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { PencilIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,8 @@ import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
 import { formatDay } from '@/shared/format'
-import type { CompetitionDayRecord, RoundRecord } from '@/shared/types/records'
+import type { CompetitionDayRecord, GameRuleRecord, RoundRecord } from '@/shared/types/records'
+import { gameRuleIdForRound } from '@/modules/scoring/lib'
 import { createRound, deleteRound, updateRound } from '../api'
 
 /** Rounds of a category (M3-01). Keys are referenced by the ranking configuration. */
@@ -26,16 +27,39 @@ const props = defineProps<{
   rounds: RoundRecord[]
   /** Competition days of the event; a round can be assigned to one (M5-02). */
   days?: CompetitionDayRecord[]
+  /** Games of the category; each round is scored with the ruleset of one game. */
+  gameRules?: GameRuleRecord[]
   editable: boolean
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
-const form = reactive({ key: '', name: '', testing_minutes: 0, scoring_minutes: 15, day: '' })
+const form = reactive({
+  key: '',
+  name: '',
+  testing_minutes: 0,
+  scoring_minutes: 15,
+  day: '',
+  game_rule: '',
+})
+const rules = () => props.gameRules ?? []
+const gameLabel = (round: RoundRecord) =>
+  rules().find((r) => r.id === gameRuleIdForRound(round, rules()))?.name ?? 'Not set'
+/** A new round plays the game of the previous round (or the only game). */
+const defaultGame = () => props.rounds.at(-1)?.game_rule || (rules().length ? rules()[0]!.id : '')
 const dayLabel = (id: string | undefined) => {
   const day = props.days?.find((d) => d.id === id)
   return day ? day.label || formatDay(day.date) : '–'
 }
 const editingId = ref<string>()
+// Preselect a game once the games are known.
+watch(
+  () => props.gameRules,
+  () => {
+    if (!editingId.value && !rules().some((r) => r.id === form.game_rule))
+      form.game_rule = defaultGame()
+  },
+  { immediate: true },
+)
 
 const add = useSubmit(async () => {
   const data = {
@@ -45,6 +69,7 @@ const add = useSubmit(async () => {
     testing_minutes: form.testing_minutes,
     scoring_minutes: form.scoring_minutes,
     ...(props.days?.length ? { day: form.day } : {}),
+    ...(rules().length ? { game_rule: form.game_rule } : {}),
   }
   if (editingId.value) {
     const round = props.rounds.find((item) => item.id === editingId.value)
@@ -64,6 +89,7 @@ function resetForm() {
   form.testing_minutes = 0
   form.scoring_minutes = 15
   form.day = ''
+  form.game_rule = defaultGame()
 }
 
 function edit(round: RoundRecord) {
@@ -73,6 +99,7 @@ function edit(round: RoundRecord) {
   form.testing_minutes = round.testing_minutes
   form.scoring_minutes = round.scoring_minutes
   form.day = round.day ?? ''
+  form.game_rule = gameRuleIdForRound(round, rules())
   add.reset()
 }
 
@@ -93,6 +120,7 @@ const remove = useSubmit(async (round: RoundRecord) => {
             <TableHead class="w-16">#</TableHead>
             <TableHead>Key</TableHead>
             <TableHead>Name</TableHead>
+            <TableHead v-if="gameRules?.length">Game</TableHead>
             <TableHead v-if="days?.length">Day</TableHead>
             <TableHead>Phases</TableHead>
             <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
@@ -103,6 +131,9 @@ const remove = useSubmit(async (round: RoundRecord) => {
             <TableCell>{{ i + 1 }}</TableCell>
             <TableCell class="font-mono">{{ round.key }}</TableCell>
             <TableCell>{{ round.name }}</TableCell>
+            <TableCell v-if="gameRules?.length" class="text-sm" data-testid="round-game">{{
+              gameLabel(round)
+            }}</TableCell>
             <TableCell v-if="days?.length" class="text-sm">{{ dayLabel(round.day) }}</TableCell>
             <TableCell class="text-sm">
               Testing {{ round.testing_minutes }}m · Scoring {{ round.scoring_minutes }}m · Total
@@ -129,7 +160,9 @@ const remove = useSubmit(async (round: RoundRecord) => {
               </Button>
             </TableCell>
           </TableRow>
-          <TableEmpty v-if="!rounds.length" :colspan="days?.length ? 6 : 5"
+          <TableEmpty
+            v-if="!rounds.length"
+            :colspan="5 + (days?.length ? 1 : 0) + (gameRules?.length ? 1 : 0)"
             >No rounds yet.</TableEmpty
           >
         </TableBody>
@@ -148,6 +181,20 @@ const remove = useSubmit(async (round: RoundRecord) => {
       </FormField>
       <FormField v-slot="{ id }" label="Round name" name="name" :errors="add.fieldErrors.value">
         <Input :id="id" v-model="form.name" required />
+      </FormField>
+      <FormField
+        v-if="gameRules?.length"
+        v-slot="{ id }"
+        label="Game"
+        name="game_rule"
+        :errors="add.fieldErrors.value"
+        description="The score sheet judges use in this round."
+      >
+        <NativeSelect :id="id" v-model="form.game_rule" class="w-full" required>
+          <NativeSelectOption v-for="r in gameRules" :key="r.id" :value="r.id">{{
+            r.name
+          }}</NativeSelectOption>
+        </NativeSelect>
       </FormField>
       <FormField
         v-if="days?.length"

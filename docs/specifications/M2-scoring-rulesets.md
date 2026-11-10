@@ -134,12 +134,13 @@ deduction), a formula such as `3 × 5 = 15`, `MAX(7, 12) = 12` or
 
 ## Versioning (M2-14)
 
-Rulesets are stored per category in the `rulesets` collection:
+Rulesets are stored per game rule (see [Game rules](#game-rules)) in the `rulesets` collection:
 
 | Field                          | Notes                                             |
 | ------------------------------ | ------------------------------------------------- |
 | `category`                     | Owning category (event category or template)      |
-| `version`                      | 1, 2, 3, … assigned by the server                 |
+| `game_rule`                    | The game this version belongs to; never changes   |
+| `version`                      | 1, 2, 3, … per game rule, assigned by the server  |
 | `status`                       | `draft` or `published`                            |
 | `definition`                   | The ruleset; drafts may be invalid                |
 | `fingerprint`                  | Stable hash of the definition, set on publication |
@@ -149,15 +150,43 @@ Rulesets are stored per category in the `rulesets` collection:
 - Publishing validates the definition with the engine; invalid rulesets cannot be published.
 - **Published versions are immutable** for everyone, including superusers, and cannot be
   deleted. Changes are made in a new draft version (M2-T10).
-- The **active** ruleset of a category is its highest published version.
+- The **active** ruleset of a game rule is its highest published version.
 - Results (from M5) will reference the ruleset version they were scored with, so recalculation
   always uses the original ruleset (M2-T11). `POST /api/rulesets/{id}/evaluate` evaluates
   values with exactly that version.
-- Copying a category (M1-09) copies its active ruleset as published version 1 of the copy.
+- Copying a category (M1-09) copies every game rule, each with its active ruleset as published
+  version 1; copied rounds keep their game rule.
 
 Access follows the category: anyone who can see the category can read its rulesets; managers
 of the event (admins for templates) create and edit drafts and publish; nothing changes in
 archived events.
+
+## Game rules
+
+A category can play different games in different rounds. Each game is a `game_rules` record
+with its own score sheet, i.e. its own line of ruleset versions:
+
+| Field         | Notes                                                        |
+| ------------- | ------------------------------------------------------------ |
+| `category`    | Owning category; never changes                               |
+| `key`         | Identifier, unique per category (`^[A-Za-z][A-Za-z0-9_-]*$`) |
+| `name`        | Shown to managers and, with several games, to judges         |
+| `description` | Optional                                                     |
+| `position`    | Display order                                                |
+
+- **Rounds choose their game** (`rounds.game_rule`). A round without one uses the category's
+  only game rule; with several game rules and none chosen, points are entered directly.
+- The score sheet of a game is the **active version of the round's game rule**. As before, the
+  first save pins that version to the sheet/result (M2-T11), so changing a round's game later
+  does not change already scored results.
+- A ruleset created without `game_rule` joins the category's only game rule; a category without
+  one gets a "Main game" (`main`) created automatically. With several game rules, `game_rule`
+  is required. A game rule must belong to the ruleset's (or round's) category.
+- Deleting a game rule deletes its versions. It is refused once one of its published versions
+  scored a result (game or score sheet). Deleting the category still cascades.
+- Game rules have the same access rules as rounds.
+- Migration `1763500000_game_rules` creates a `main` game rule for every category that had
+  rulesets and assigns it to all of its versions and rounds.
 
 ## Example
 
