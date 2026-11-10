@@ -7,6 +7,11 @@ export const judgingRoutes: RouteRecordRaw[] = [
     component: () => import('./views/JudgeDashboardView.vue'),
   },
   {
+    path: '/review',
+    name: 'review',
+    component: () => import('./views/ReviewView.vue'),
+  },
+  {
     path: '/judging/games/:id',
     name: 'judging-game',
     component: () => import('./views/ScoreGameView.vue'),

@@ -32,4 +32,5 @@ already establishes the pattern of a pure package bundled into PocketBase.
 
 - The live ranking preview and published snapshots use identical code and input mapping (the
   frontend mirrors the backend's game → input mapping, covered by tests on both sides).
-- The ranking configuration is edited as JSON for now; a visual builder is roadmap item M3-18.
+- The ranking configuration is edited in the visual aggregation builder (M3-18) or as JSON;
+  both edit the same text.

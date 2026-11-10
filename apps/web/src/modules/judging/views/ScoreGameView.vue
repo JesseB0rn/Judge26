@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import {
   ArrowLeftIcon,
@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import ScoreSheet from '@/modules/scoring/components/ScoreSheet.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import { backTarget } from '@/shared/composables/useQueryRefs'
 import { formatDay } from '@/shared/format'
 import { installAutoSync } from '../drafts'
 import { formatTime, scoreState } from '../lib'
@@ -39,6 +40,19 @@ import SubmitDialog from '../components/SubmitDialog.vue'
 const props = defineProps<{ id: string }>()
 const s = useScoreSheet(props.id)
 const p = computed(() => s.payload.value)
+const route = useRoute()
+const router = useRouter()
+
+// Back always leads to the list this sheet was opened from, with its filters. A reviewer who
+// opened the sheet without such a list (e.g. a shared link) goes to the review queue.
+const back = computed(() => {
+  const from = backTarget(route.query.from)
+  if (from) return { to: from, label: from.startsWith('/review') ? 'Review queue' : 'My games' }
+  if (p.value?.permissions.canReview || p.value?.permissions.canCorrect) {
+    return { to: `/review?event=${p.value.event.id}`, label: 'Review queue' }
+  }
+  return { to: '/judging', label: 'My games' }
+})
 
 const submitOpen = ref(false)
 const rejectOpen = ref(false)
@@ -102,14 +116,22 @@ async function confirmSubmit() {
   } else submitOpen.value = false
 }
 
+// After a review decision the head judge's next task is the next sheet in the queue, so the
+// sheet closes itself; the toast names the team so the decision can be checked at a glance.
 async function approve() {
-  if (await s.approve()) toast.success('Score approved and final.')
+  const team = p.value?.team.name
+  if (await s.approve()) {
+    toast.success(`${team}: score approved and final.`)
+    await router.push(back.value.to)
+  }
 }
 
 async function reject(reason: string) {
+  const team = p.value?.team.name
   if (await s.reject(reason)) {
     rejectOpen.value = false
-    toast.success('Score returned to the judge.')
+    toast.success(`${team}: score returned to the judge.`)
+    await router.push(back.value.to)
   }
 }
 
@@ -134,10 +156,11 @@ function setManualPoints(raw: string | number) {
 <template>
   <div class="mx-auto flex max-w-3xl flex-col gap-4 pb-32" data-testid="score-game">
     <RouterLink
-      :to="{ name: 'judging' }"
+      :to="back.to"
       class="-mt-4 inline-flex min-h-11 items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
+      data-testid="back-link"
     >
-      <ArrowLeftIcon class="size-4" /> My games
+      <ArrowLeftIcon class="size-4" /> {{ back.label }}
     </RouterLink>
 
     <ErrorAlert :error="s.loadError.value" />
@@ -371,8 +394,8 @@ function setManualPoints(raw: string | number) {
             <template v-else>
               <span class="flex-1" />
               <Button size="touch" as-child>
-                <RouterLink :to="{ name: 'judging' }"
-                  ><ArrowLeftIcon /> Back to my games</RouterLink
+                <RouterLink :to="back.to"
+                  ><ArrowLeftIcon /> Back to {{ back.label.toLowerCase() }}</RouterLink
                 >
               </Button>
             </template>

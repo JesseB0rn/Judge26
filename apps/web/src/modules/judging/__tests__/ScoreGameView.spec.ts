@@ -15,8 +15,8 @@ const judge = { roles: [makeRole('judge', 'event1')] }
 const headJudge = { roles: [makeRole('head_judge', 'event1')] }
 const COMPLETE = { flag: true, blocks: 3, full: true }
 
-const mountGame = async (session = judge) => {
-  const view = await mountView(ScoreGameView, { props: { id: 'game1' }, session })
+const mountGame = async (session = judge, path?: string) => {
+  const view = await mountView(ScoreGameView, { props: { id: 'game1' }, session, path })
   await flushPromises()
   return view
 }
@@ -272,10 +272,14 @@ describe('ScoreGameView', () => {
       }),
     )
     mocked.approveSheet.mockResolvedValue({ sheet: makeSheet({ status: 'finalized' }) })
-    const { wrapper } = await mountGame(headJudge)
+    const from = '/review?event=event1&table=tA'
+    const { wrapper, router } = await mountGame(headJudge, `/?from=${encodeURIComponent(from)}`)
     expect(total(wrapper)).toBe('40')
+    expect(wrapper.get('[data-testid=back-link]').text()).toBe('Review queue')
     await click(buttonByText('Approve'))
     expect(mocked.approveSheet).toHaveBeenCalledWith('game1')
+    // The decision closes the sheet: back to the same queue, filters included.
+    expect(router.currentRoute.value.fullPath).toBe(from)
 
     await click(buttonByText('Return'))
     await fill('#reason', 'Recount the blocks')
@@ -284,6 +288,18 @@ describe('ScoreGameView', () => {
       buttonByText('Return sheet', document.querySelector('[role=dialog]') as HTMLElement),
     )
     expect(mocked.rejectSheet).toHaveBeenCalledWith('game1', 'Recount the blocks')
+  })
+
+  it('links back to the list the sheet was opened from, never to another site', async () => {
+    mocked.getSheet.mockResolvedValue(makePayload())
+    const mine = await mountGame(judge, `/?from=${encodeURIComponent('/judging?day=sat')}`)
+    const link = mine.wrapper.get('[data-testid=back-link]')
+    expect(link.text()).toBe('My games')
+    expect(link.attributes('href')).toBe('/judging?day=sat')
+    mine.wrapper.unmount()
+
+    const evil = await mountGame(judge, `/?from=${encodeURIComponent('//evil.example')}`)
+    expect(evil.wrapper.get('[data-testid=back-link]').attributes('href')).toBe('/judging')
   })
 
   it('a returned sheet shows the reason to the judge', async () => {

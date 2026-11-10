@@ -45,20 +45,21 @@ const range = (min: number, max: number) =>
         <TableCell>{{ range(c.min_age, c.max_age) }}</TableCell>
         <TableCell class="hidden md:table-cell">{{ c.max_teams || '∞' }}</TableCell>
         <TableCell class="text-right whitespace-nowrap">
-          <Button as-child variant="ghost" size="icon-sm">
-            <RouterLink
-              :to="{ name: 'category-scoring', params: { id: c.id } }"
-              :aria-label="`Scoring rules for ${c.code}`"
-            >
-              <CalculatorIcon />
-            </RouterLink>
-          </Button>
-          <Button v-if="showRanking" as-child variant="ghost" size="icon-sm">
+          <!-- Labelled, not icon-only: under time pressure nobody should guess what a glyph means. -->
+          <Button v-if="showRanking" as-child variant="outline" size="sm">
             <RouterLink
               :to="{ name: 'category-ranking', params: { id: c.id } }"
               :aria-label="`Rounds and ranking for ${c.code}`"
             >
-              <TrophyIcon />
+              <TrophyIcon /> Ranking
+            </RouterLink>
+          </Button>
+          <Button as-child variant="ghost" size="sm">
+            <RouterLink
+              :to="{ name: 'category-scoring', params: { id: c.id } }"
+              :aria-label="`Scoring rules for ${c.code}`"
+            >
+              <CalculatorIcon /> Rules
             </RouterLink>
           </Button>
           <slot name="actions" :category="c" />

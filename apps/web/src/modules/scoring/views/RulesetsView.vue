@@ -28,7 +28,9 @@ import type { CategoryRecord, RulesetRecord } from '@/shared/types/records'
 import { createDraft, deleteDraft, getCategory, listRulesets, publish, saveDraft } from '../api'
 import { parseRuleset, toEditorText } from '../lib'
 import ExplanationTree from '../components/ExplanationTree.vue'
+import RulesetBuilder from '../components/RulesetBuilder.vue'
 import RulesetEditor from '../components/RulesetEditor.vue'
+import EditorModeToggle from '@/shared/diagram/EditorModeToggle.vue'
 import ScoreSheet from '../components/ScoreSheet.vue'
 
 /** Versioned scoring rulesets of a category (M2), with a live score sheet preview. */
@@ -41,6 +43,7 @@ const selectedId = ref('')
 const text = ref('')
 const values = ref<ScoreValues>({})
 const tab = ref('preview')
+const editor = ref<'visual' | 'json'>('visual')
 const loading = ref(true)
 const loadError = ref<AppError>()
 
@@ -63,11 +66,19 @@ const result = computed(() =>
     : undefined,
 )
 
+// A slower earlier load (e.g. the initial one, still running when the first draft is created)
+// must not overwrite the result of a newer one.
+let loadVersion = 0
+
 async function load(select?: string) {
+  const version = ++loadVersion
   loading.value = true
   try {
-    category.value = await getCategory(props.id)
-    versions.value = await listRulesets(props.id)
+    const c = await getCategory(props.id)
+    const list = await listRulesets(props.id)
+    if (version !== loadVersion) return
+    category.value = c
+    versions.value = list
     selectedId.value = select ?? active.value?.id ?? versions.value[0]?.id ?? ''
   } catch (e) {
     loadError.value = toAppError(e)
@@ -238,7 +249,14 @@ onMounted(() => load())
               keep using the version they were scored with.
             </AlertDescription>
           </Alert>
-          <RulesetEditor v-model="text" :readonly="!editable" />
+          <EditorModeToggle v-model="editor" class="mb-3" />
+          <RulesetBuilder
+            v-if="editor === 'visual'"
+            v-model="text"
+            :readonly="!editable"
+            :explanation="Object.keys(values).length ? result?.explanation : undefined"
+          />
+          <RulesetEditor v-else v-model="text" :readonly="!editable" />
         </TabsContent>
 
         <TabsContent value="history">

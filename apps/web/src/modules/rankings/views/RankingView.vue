@@ -21,6 +21,7 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
+import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
 import type {
   CategoryRecord,
@@ -42,7 +43,9 @@ import {
 } from '../api'
 import { parseRankingConfig, toTeamInputs } from '../lib'
 import GameDialog from '../components/GameDialog.vue'
+import RankingBuilder from '../components/RankingBuilder.vue'
 import RankingConfigEditor from '../components/RankingConfigEditor.vue'
+import EditorModeToggle from '@/shared/diagram/EditorModeToggle.vue'
 import RankingTable from '../components/RankingTable.vue'
 import ResultsMatrix from '../components/ResultsMatrix.vue'
 import RoundsPanel from '../components/RoundsPanel.vue'
@@ -61,7 +64,8 @@ const ruleset = ref<RulesetRecord>()
 const text = ref('')
 const loading = ref(true)
 const loadError = ref<AppError>()
-const tab = ref('ranking')
+const { tab } = useQueryRefs({ tab: 'ranking' })
+const editor = ref<'visual' | 'json'>('visual')
 
 const event = computed(() => category.value?.expand?.event)
 const isTemplate = computed(() => !!category.value && !category.value.event)
@@ -204,7 +208,10 @@ onMounted(load)
     >
       <template #actions>
         <Button v-if="event" as-child variant="outline">
-          <RouterLink :to="{ name: 'event', params: { id: event.id } }">Back to event</RouterLink>
+          <RouterLink
+            :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
+            >Back to event</RouterLink
+          >
         </Button>
         <Button v-else as-child variant="outline">
           <RouterLink :to="{ name: 'category-library' }">Back to library</RouterLink>
@@ -331,7 +338,14 @@ onMounted(load)
             {{ unknownRounds.join(', ') }}. Their results count as missing.
           </AlertDescription>
         </Alert>
-        <RankingConfigEditor v-model="text" :readonly="!canManage" />
+        <EditorModeToggle v-model="editor" />
+        <RankingBuilder
+          v-if="editor === 'visual'"
+          v-model="text"
+          :readonly="!canManage"
+          :ranking="ranking"
+        />
+        <RankingConfigEditor v-else v-model="text" :readonly="!canManage" />
       </TabsContent>
 
       <TabsContent v-if="!isTemplate" value="snapshots" class="flex flex-col gap-3">
