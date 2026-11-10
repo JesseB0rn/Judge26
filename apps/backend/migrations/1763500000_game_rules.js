@@ -77,6 +77,8 @@ migrate(
     const updated = app.findCollectionByNameOrId('rulesets')
     updated.indexes.push(
       'CREATE UNIQUE INDEX `idx_rulesets_game_rule_version` ON `rulesets` (`game_rule`, `version`)',
+      // Replaces the dropped (category, version) index for listing a category's versions.
+      'CREATE INDEX `idx_rulesets_category` ON `rulesets` (`category`)',
     )
     // The game rule of a version never changes.
     updated.updateRule = `${updated.updateRule} && (@request.body.game_rule:isset = false || @request.body.game_rule = game_rule)`
@@ -96,7 +98,9 @@ migrate(
       ' && (@request.body.game_rule:isset = false || @request.body.game_rule = game_rule)',
       '',
     )
-    rulesets.indexes = rulesets.indexes.filter((i) => !i.includes('idx_rulesets_game_rule_version'))
+    rulesets.indexes = rulesets.indexes.filter(
+      (i) => !i.includes('idx_rulesets_game_rule_version') && !i.includes('idx_rulesets_category`'),
+    )
     rulesets.fields.removeByName('game_rule')
     app.save(rulesets)
     const rounds = app.findCollectionByNameOrId('rounds')
