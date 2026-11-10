@@ -94,19 +94,29 @@ const unknownRounds = computed(() => {
   return [...config.rounds.keys()].filter((key) => !existing.has(key))
 })
 
-// Incremented whenever rounds and games are reloaded, so a slower earlier load (the initial one)
-// cannot overwrite newer data, e.g. a round added while the page was still loading.
-let resultsVersion = 0
+// Incremented whenever rounds or games are reloaded, so a slower earlier load (the initial one)
+// cannot overwrite newer data, e.g. a round added while the page was still loading. Rounds and
+// games are tracked separately: listing rounds can take seconds (its access rule), and a saved
+// result must not wait for it.
+let roundsVersion = 0
+let gamesVersion = 0
+
+async function loadRounds() {
+  const version = ++roundsVersion
+  const r = await listRounds(props.id)
+  if (version === roundsVersion) rounds.value = r
+}
+
+/** Results only: saving a game never changes the rounds. */
+async function loadGames() {
+  if (isTemplate.value) return
+  const version = ++gamesVersion
+  const g = await listGames(props.id)
+  if (version === gamesVersion) games.value = g
+}
 
 async function loadResults() {
-  const version = ++resultsVersion
-  const [r, g] = await Promise.all([
-    listRounds(props.id),
-    isTemplate.value ? [] : listGames(props.id),
-  ])
-  if (version !== resultsVersion) return
-  rounds.value = r
-  games.value = g
+  await Promise.all([loadRounds(), loadGames()])
 }
 
 async function loadDays(eventId: string) {
@@ -119,7 +129,8 @@ async function loadDays(eventId: string) {
 
 async function load() {
   loading.value = true
-  const version = ++resultsVersion
+  const rv = ++roundsVersion
+  const gv = ++gamesVersion
   try {
     category.value = await getCategory(props.id)
     text.value = savedText.value
@@ -134,10 +145,8 @@ async function load() {
       listRulesets(props.id),
       listGameRules(props.id),
     ])
-    if (version === resultsVersion) {
-      rounds.value = r
-      games.value = g
-    }
+    if (rv === roundsVersion) rounds.value = r
+    if (gv === gamesVersion) games.value = g
     teams.value = t
     snapshots.value = s
     rulesets.value = rs ?? []
@@ -393,7 +402,7 @@ onMounted(load)
       :round="dialogRound"
       :games="games"
       :ruleset="dialogRuleset"
-      @saved="loadResults"
+      @saved="loadGames"
     />
   </template>
 </template>

@@ -135,6 +135,18 @@ watch(selected, (version) => {
   values.value = {}
 })
 
+/**
+ * Applies a change from a save response to the list without reloading it: listing rulesets is
+ * slow (its access rule), so a reload after every action made the page sluggish. A load still
+ * in flight is invalidated so it cannot overwrite the newer state.
+ */
+function applyLocal(next: RulesetRecord[], select?: string) {
+  loadVersion++
+  loading.value = false
+  versions.value = next
+  if (select !== undefined) selectedId.value = select
+}
+
 const newDraft = useSubmit(async () => {
   const base = selected.value ?? active.value
   const draft = await createDraft(
@@ -143,7 +155,7 @@ const newDraft = useSubmit(async () => {
     base?.id ?? '',
     selectedRule.value?.id ?? '',
   )
-  await load(draft.id)
+  applyLocal([draft, ...versions.value], draft.id)
   tab.value = 'definition'
 })
 
@@ -151,7 +163,7 @@ const save = useSubmit(
   async () => {
     if (!selected.value || parsed.value.syntaxError) return
     const saved = await saveDraft(selected.value.id, { definition: parsed.value.definition })
-    versions.value = versions.value.map((v) => (v.id === saved.id ? saved : v))
+    applyLocal(versions.value.map((v) => (v.id === saved.id ? saved : v)))
   },
   { success: 'Draft saved.' },
 )
@@ -166,15 +178,17 @@ const publishSubmit = useSubmit(
     )
       return
     const published = await publish(selected.value.id, parsed.value.definition)
-    await load(published.id)
+    applyLocal(versions.value.map((v) => (v.id === published.id ? published : v)))
   },
   { success: 'Version published.' },
 )
 
 const remove = useSubmit(async () => {
   if (!selected.value || !confirm(`Delete draft version ${selected.value.version}?`)) return
-  await deleteDraft(selected.value.id)
-  await load()
+  const id = selected.value.id
+  await deleteDraft(id)
+  applyLocal(versions.value.filter((v) => v.id !== id))
+  selectedId.value = active.value?.id ?? shown.value[0]?.id ?? ''
 })
 
 function openRuleDialog(rule?: GameRuleRecord) {
