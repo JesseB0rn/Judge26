@@ -54,8 +54,6 @@ the integration test M5-T10 publishes a ranking snapshot after approval.
   worker yet, so a full browser reload while offline fails before the app starts.
 - Concurrent editing of one draft on two devices beyond "newest change wins".
 - Configurable approval per category (roadmap question 15.4).
-- Performance with realistic data volumes. The M1/M2 collection rules (events, categories, teams,
-  rulesets) join `role_assignments` under several `@collection` aliases, so list requests slow down
-  with the product of those tables: in the full E2E run a rulesets list with one row takes ~2.7 s.
-  The judging endpoints do not use these rules, but the staff pages do. Follow-up: rewrite those
-  rules (one alias per collection) with the M1 permission tests as the safety net.
+- Performance with realistic data volumes beyond the list requests. The slow collection rules
+  noted here earlier (unscoped `@collection.role_assignments` joins) were rewritten in migration
+  `1763700000_scoped_access_rules.js`, with `tests/access-rules.test.ts` as the permission matrix.

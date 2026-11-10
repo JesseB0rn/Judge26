@@ -50,6 +50,3 @@ committed change (E2E: a result recorded by staff appears on an open public page
 
 - Load with many simultaneous displays (each change reloads every display; the payloads are computed
   per request without caching).
-- The full E2E run shows the pre-existing slowness of the M1/M2 access rules (see the M5 test plan):
-  the ruleset list takes ~1.5 s by the end of a run, so the ruleset E2E test waits up to 15 s after a
-  save. Rewriting those rules remains a follow-up.
