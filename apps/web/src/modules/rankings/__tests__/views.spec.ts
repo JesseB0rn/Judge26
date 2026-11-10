@@ -256,6 +256,8 @@ describe('RankingView', () => {
       key: 'R4',
       name: 'Final',
       position: 4,
+      testing_minutes: 0,
+      scoring_minutes: 15,
     })
     await click(wrapper.get('button[aria-label="Delete Round 1"]').element as HTMLElement)
     expect(mocked.deleteRound).toHaveBeenCalledWith('round-R1')

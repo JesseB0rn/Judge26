@@ -1,16 +1,18 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// M4: tables, time slots and the schedule of an event (docs/specifications/M4-tables-and-scheduling.md).
-
+// M5: each table has one event judge; game order is stored per round and table.
 onRecordValidate((e) => {
-  const start = Date.parse(e.record.getString('starts_at').replace(' ', 'T'))
-  const end = Date.parse(e.record.getString('ends_at').replace(' ', 'T'))
-  if (!(end > start)) {
+  const judgeId = e.record.getString('judge')
+  if (judgeId) {
     const { fieldError } = require(`${__hooks}/lib/errors.js`)
-    fieldError('ends_at', 'invalid_period', 'The end must be after the start.')
+    const access = require(`${__hooks}/lib/access.js`)
+    const eventId = e.record.getString('event')
+    if (!access.hasEventRole(e.app, { id: judgeId }, eventId, ['judge', 'head_judge'])) {
+      fieldError('judge', 'invalid_judge', 'The assigned judge must be staff of this event.')
+    }
   }
   e.next()
-}, 'time_slots')
+}, 'tables')
 
 // A table that still hosts scheduled games cannot be deactivated or deleted (M4-11).
 onRecordUpdate((e) => {
@@ -31,7 +33,7 @@ onRecordDelete((e) => {
   e.next()
 }, 'tables')
 
-// POST /api/events/{id}/schedule/generate  { dry_run? } -> placements (200) or the infeasibility report (409)
+// POST /api/events/{id}/schedule/generate  { dry_run? } -> table sequences (200) or a report (409)
 routerAdd(
   'POST',
   '/api/events/{id}/schedule/generate',
@@ -40,7 +42,7 @@ routerAdd(
     const schedule = require(`${__hooks}/lib/schedule.js`)
     const eventId = e.request.pathValue('id')
     if (!access.isVerifiedUser(e.auth) || !access.canManageEvent(e.app, e.auth, eventId)) {
-      throw new ForbiddenError('Only event managers can generate schedules.')
+      throw new ForbiddenError('Only event managers and admins can generate schedules.')
     }
     const event = e.app.findRecordById('events', eventId)
     if (event.getString('status') === 'archived') {
@@ -110,6 +112,62 @@ routerAdd(
       judges.push({ id, name: e.app.findRecordById('users', id).getString('name') })
     }
     return e.json(200, judges)
+  },
+  $apis.requireAuth('users', '_superusers'),
+)
+
+// GET /api/users/{id}/schedule -> the authenticated user's scheduled games.
+routerAdd(
+  'GET',
+  '/api/users/{id}/schedule',
+  (e) => {
+    const access = require(`${__hooks}/lib/access.js`)
+    const userId = e.request.pathValue('id')
+    if (!access.isVerifiedUser(e.auth) || e.auth.id !== userId) {
+      throw new ForbiddenError('Users can only view their own schedule.')
+    }
+
+    const scheduledGames = []
+    const teams = e.app.findRecordsByFilter('teams', 'coach = {:coach}', 'created', 0, 0, {
+      coach: userId,
+    })
+    for (const team of teams) {
+      const games = e.app.findRecordsByFilter(
+        'games',
+        'team = {:team} && table != "" && sequence > 0',
+        'round,table,sequence',
+        0,
+        0,
+        { team: team.id },
+      )
+      for (const game of games) {
+        const round = e.app.findRecordById('rounds', game.getString('round'))
+        const table = e.app.findRecordById('tables', game.getString('table'))
+        scheduledGames.push({
+          id: game.id,
+          team: team.id,
+          round: round.id,
+          table: table.id,
+          sequence: game.getInt('sequence'),
+          expand: {
+            team: { id: team.id, name: team.getString('name') },
+            round: {
+              id: round.id,
+              name: round.getString('name'),
+              position: round.getInt('position'),
+            },
+            table: { id: table.id, name: table.getString('name') },
+          },
+        })
+      }
+    }
+    scheduledGames.sort(
+      (a, b) =>
+        a.expand.round.position - b.expand.round.position ||
+        a.expand.table.name.localeCompare(b.expand.table.name) ||
+        a.sequence - b.sequence,
+    )
+    return e.json(200, scheduledGames)
   },
   $apis.requireAuth('users', '_superusers'),
 )

@@ -1,24 +1,19 @@
 import { pb } from '@/shared/api/pocketbase'
-import type {
-  CategoryRecord,
-  GameRecord,
-  TableRecord,
-  TimeSlotKind,
-  TimeSlotRecord,
-} from '@/shared/types/records'
+import type { CategoryRecord, GameRecord, TableRecord } from '@/shared/types/records'
 
 const byEvent = (eventId: string) => pb.filter('event = {:event}', { event: eventId })
 
 export function listTables(eventId: string) {
   return pb
     .collection<TableRecord>('tables')
-    .getFullList({ filter: byEvent(eventId), sort: 'position,name' })
+    .getFullList({ filter: byEvent(eventId), sort: 'position,name', expand: 'judge' })
 }
 
 export interface TableInput {
   name: string
   active: boolean
   categories: string[]
+  judge: string
 }
 
 export function saveTable(eventId: string, id: string | undefined, data: TableInput) {
@@ -29,29 +24,6 @@ export function saveTable(eventId: string, id: string | undefined, data: TableIn
 
 export function deleteTable(id: string) {
   return pb.collection('tables').delete(id)
-}
-
-export function listTimeSlots(eventId: string) {
-  return pb
-    .collection<TimeSlotRecord>('time_slots')
-    .getFullList({ filter: byEvent(eventId), sort: 'starts_at' })
-}
-
-export interface TimeSlotInput {
-  kind: TimeSlotKind
-  label: string
-  starts_at: string
-  ends_at: string
-}
-
-export function saveTimeSlot(eventId: string, id: string | undefined, data: TimeSlotInput) {
-  return id
-    ? pb.collection<TimeSlotRecord>('time_slots').update(id, data)
-    : pb.collection<TimeSlotRecord>('time_slots').create({ ...data, event: eventId })
-}
-
-export function deleteTimeSlot(id: string) {
-  return pb.collection('time_slots').delete(id)
 }
 
 export function listEventCategories(eventId: string) {
@@ -68,22 +40,19 @@ export function listEventCategories(eventId: string) {
 export function listScheduleGames(eventId: string) {
   return pb.collection<GameRecord>('games').getFullList({
     filter: pb.filter('team.event = {:event}', { event: eventId }),
-    expand: 'round,team',
+    expand: 'round,team,table',
   })
 }
 
-export interface PlacementInput {
+export interface GameAssignmentInput {
   table: string
-  starts_at: string
-  judges: string[]
-  locked: boolean
+  sequence: number
 }
 
 /**
- * Stores a placement. `expected_updated` is the version the editor loaded; the server refuses
- * the change if the game was edited since (M4-T12).
+ * Stores a table and sequence assignment using optimistic concurrency.
  */
-export function savePlacement(game: GameRecord, data: PlacementInput) {
+export function saveGameAssignment(game: GameRecord, data: GameAssignmentInput) {
   return pb.collection<GameRecord>('games').update(game.id, {
     ...data,
     expected_updated: game.updated,
@@ -118,17 +87,24 @@ export function listScheduleIssues(eventId: string) {
 export interface GenerationPlacement {
   gameId: string
   table: string
-  start: number
+  sequence: number
+  label: string
 }
 
 export interface GenerationUnplaced {
   gameId: string
+  label?: string
   reasons: string[]
 }
 
-/** Outcome of a generation request. Non-complete results come back as HTTP 409 with a report. */
+/** Non-complete results come back as HTTP 409 with a report. */
 export type GenerationOutcome =
-  | { status: 'complete'; placements: GenerationPlacement[]; dry_run: boolean }
+  | {
+      status: 'complete'
+      placements: GenerationPlacement[]
+      dry_run: boolean
+      created_games?: number
+    }
   | {
       status: 'infeasible'
       message: string
@@ -136,7 +112,6 @@ export type GenerationOutcome =
       unplaced: GenerationUnplaced[]
     }
   | { status: 'invalid'; message: string; issues: ScheduleIssue[] }
-  | { status: 'limit_reached'; message: string; placedCount: number }
 
 /**
  * The report of a non-complete generation is the body of an HTTP 409. Returns it for such an

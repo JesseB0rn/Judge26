@@ -1,6 +1,7 @@
 # ADR 0005: Scheduling engine and placement model
 
-- **Status:** accepted
+- **Status:** superseded by the table-and-sequence model in
+  [M4 tables and scheduling](../../specifications/M4-tables-and-scheduling.md)
 - **Date:** 2026-11-09
 
 ## Context

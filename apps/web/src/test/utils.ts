@@ -117,7 +117,6 @@ export function makeEvent(overrides: Partial<EventRecord> = {}): EventRecord {
     status: 'published',
     registration_opens_at: '',
     registration_closes_at: '',
-    min_rest_minutes: 0,
     ...overrides,
   }
 }
@@ -199,7 +198,8 @@ export function makeRound(key: string, position = 1): RoundRecord {
     key,
     name: `Round ${key.slice(1)}`,
     position,
-    duration_minutes: 15,
+    testing_minutes: 0,
+    scoring_minutes: 15,
   }
 }
 
@@ -216,9 +216,7 @@ export function makeGame(overrides: Partial<GameRecord> = {}): GameRecord {
     values: null,
     notes: '',
     table: '',
-    starts_at: '',
-    locked: false,
-    judges: [],
+    sequence: 0,
     ...overrides,
   }
 }
@@ -231,6 +229,7 @@ export function makeTable(overrides: Partial<TableRecord> = {}): TableRecord {
     position: 0,
     active: true,
     categories: [],
+    judge: '',
     ...overrides,
   }
 }

@@ -18,9 +18,16 @@ export function listRounds(categoryId: string) {
 
 export function createRound(
   categoryId: string,
-  data: Pick<RoundRecord, 'key' | 'name' | 'position'>,
+  data: Pick<RoundRecord, 'key' | 'name' | 'position' | 'testing_minutes' | 'scoring_minutes'>,
 ) {
   return pb.collection<RoundRecord>('rounds').create({ ...data, category: categoryId })
+}
+
+export function updateRound(
+  id: string,
+  data: Pick<RoundRecord, 'key' | 'name' | 'position' | 'testing_minutes' | 'scoring_minutes'>,
+) {
+  return pb.collection<RoundRecord>('rounds').update(id, data)
 }
 
 export function deleteRound(id: string) {

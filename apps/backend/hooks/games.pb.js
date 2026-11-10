@@ -11,12 +11,13 @@ onRecordUpdate((e) => {
   e.next()
 }, 'games')
 
-// M4-T12: two administrators editing the same game. A schedule change over the API must state
+// M5: concurrent schedule edits must include the version they were based on.
+// A schedule change over the API must state
 // the `updated` value it was based on; if the game changed since, the request is refused.
 // Only direct API requests are checked, so the server-side generator is not affected.
 onRecordUpdateRequest((e) => {
   const body = e.requestInfo().body || {}
-  const scheduleKeys = ['table', 'starts_at', 'judges'].filter((key) => key in body)
+  const scheduleKeys = ['table', 'sequence'].filter((key) => key in body)
   if (scheduleKeys.length > 0) {
     const stored = e.app.findRecordById('games', e.record.id)
     if (body.expected_updated !== stored.getString('updated')) {

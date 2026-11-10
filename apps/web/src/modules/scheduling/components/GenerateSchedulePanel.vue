@@ -32,9 +32,13 @@ const summary = computed(() => {
   const o = outcome.value
   if (!o) return null
   if (o.status === 'complete') {
+    const created = o.created_games ?? 0
+    const createdSummary = created
+      ? ` ${created} missing game${created === 1 ? '' : 's'} ${o.dry_run ? 'would be created.' : 'created.'}`
+      : ''
     return o.dry_run
-      ? `Preview: all ${o.placements.length} games fit. Nothing was saved.`
-      : `Schedule saved: ${o.placements.length} games placed.`
+      ? `Preview: ${o.placements.length} game assignments are ready.${createdSummary} Nothing was saved.`
+      : `Schedule saved: ${o.placements.length} game assignments updated.${createdSummary}`
   }
   return o.message
 })
@@ -62,8 +66,9 @@ const summary = computed(() => {
 
       <section v-if="editable" class="flex flex-col gap-3">
         <p class="text-sm text-muted-foreground">
-          Generation places every scheduled game that is not locked. Nothing changes unless the
-          complete schedule fits.
+          Generation creates missing games for approved teams and assigns each game to a compatible
+          table with a judge. Team sequence is separate for each round and table. Nothing changes
+          unless all games can be assigned.
         </p>
         <div class="flex gap-2">
           <Button variant="outline" :disabled="run.pending.value" @click="run.run(true)">
@@ -77,14 +82,20 @@ const summary = computed(() => {
         <Alert v-if="summary" :variant="outcome?.status === 'complete' ? 'default' : 'destructive'">
           <AlertDescription data-testid="generation-summary">{{ summary }}</AlertDescription>
         </Alert>
+      </section>
 
+      <p v-else class="text-sm text-muted-foreground" data-testid="schedule-permission">
+        Only event managers and admins can create games or generate schedules.
+      </p>
+
+      <section v-if="editable">
         <ul
           v-if="outcome && outcome.status === 'infeasible'"
           class="list-disc pl-5 text-sm"
           data-testid="unplaced"
         >
           <li v-for="item in outcome.unplaced" :key="item.gameId">
-            {{ labels[item.gameId] ?? item.gameId }}:
+            {{ item.label ?? labels[item.gameId] ?? item.gameId }}:
             {{ item.reasons.map(reasonLabel).join(' ') }}
           </li>
         </ul>

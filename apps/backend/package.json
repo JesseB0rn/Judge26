@@ -11,11 +11,10 @@
     "type-check": "tsc --noEmit",
     "test": "pnpm engine && vitest run",
     "seed": "node scripts/seed-dev.mjs",
-    "engine": "pnpm --filter @judge26/scoring-engine build:hooks && pnpm --filter @judge26/ranking-engine build:hooks && pnpm --filter @judge26/scheduling-engine build:hooks"
+    "engine": "pnpm --filter @judge26/scoring-engine build:hooks && pnpm --filter @judge26/ranking-engine build:hooks"
   },
   "devDependencies": {
     "@judge26/ranking-engine": "workspace:^",
-    "@judge26/scheduling-engine": "workspace:^",
     "@judge26/scoring-engine": "workspace:^",
     "@tsconfig/node24": "^24.0.5",
     "@types/node": "^24",

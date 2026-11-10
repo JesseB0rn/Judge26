@@ -28,7 +28,7 @@ describe('reportFromError', () => {
       status: 'infeasible' as const,
       message: 'Only 2 of 3 games fit.',
       placedCount: 2,
-      unplaced: [{ gameId: 'g3', reasons: ['no_conflict_free_slot'] }],
+      unplaced: [{ gameId: 'g3', reasons: ['no_compatible_table'] }],
     }
     expect(reportFromError({ status: 409, response: report })).toEqual(report)
   })

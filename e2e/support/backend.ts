@@ -107,15 +107,21 @@ export async function createApprovedTeam(
   })
 }
 
-/** Creates a round with the given game length (M4 scheduling). */
-export async function createRound(categoryId: string, key: string, durationMinutes = 15) {
+/** Creates a round with the given testing and scoring durations. */
+export async function createRound(
+  categoryId: string,
+  key: string,
+  testingMinutes = 5,
+  scoringMinutes = 10,
+) {
   const pb = await superuser()
   return pb.collection('rounds').create({
     category: categoryId,
     key,
     name: `Round ${key.slice(1)}`,
     position: 1,
-    duration_minutes: durationMinutes,
+    testing_minutes: testingMinutes,
+    scoring_minutes: scoringMinutes,
   })
 }
 

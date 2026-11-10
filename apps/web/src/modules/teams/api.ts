@@ -1,5 +1,11 @@
 import { pb } from '@/shared/api/pocketbase'
-import type { GameRecord, TeamRecord, TeamStatus } from '@/shared/types/records'
+import type {
+  GameRecord,
+  RoundRecord,
+  TableRecord,
+  TeamRecord,
+  TeamStatus,
+} from '@/shared/types/records'
 import type { TeamImportData } from './import/csv'
 
 export type TeamInput = Pick<
@@ -25,13 +31,17 @@ export function listOwnTeams(userId: string) {
   })
 }
 
-/** Placed games of the coach's teams, in time order (M4: schedule visible to coaches). */
+/** Scheduled games of the coach's teams, in round and per-table sequence order. */
+export type OwnScheduledGame = Pick<GameRecord, 'id' | 'team' | 'round' | 'table' | 'sequence'> & {
+  expand?: {
+    team?: Pick<TeamRecord, 'id' | 'name'>
+    round?: Pick<RoundRecord, 'id' | 'name' | 'position'>
+    table?: Pick<TableRecord, 'id' | 'name'>
+  }
+}
+
 export function listOwnScheduledGames(userId: string) {
-  return pb.collection<GameRecord>('games').getFullList({
-    filter: pb.filter('team.coach = {:user} && starts_at != ""', { user: userId }),
-    sort: 'starts_at',
-    expand: 'team,round,table',
-  })
+  return pb.send<OwnScheduledGame[]>(`/api/users/${userId}/schedule`, { method: 'GET' })
 }
 
 export function getTeam(id: string) {

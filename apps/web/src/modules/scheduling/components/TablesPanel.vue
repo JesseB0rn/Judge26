@@ -4,28 +4,36 @@ import { PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
 import type { CategoryRecord, TableRecord } from '@/shared/types/records'
+import type { EventJudge } from '../api'
 import { deleteTable, saveTable } from '../api'
 
 const props = defineProps<{
   eventId: string
   tables: TableRecord[]
   categories: CategoryRecord[]
+  judges: EventJudge[]
   editable: boolean
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
 const editingId = ref<string>()
-const form = ref({ name: '', active: true, categories: [] as string[] })
+const form = ref({ name: '', active: true, categories: [] as string[], judge: '' })
 
 function startEdit(table?: TableRecord) {
   editingId.value = table?.id
   form.value = table
-    ? { name: table.name, active: table.active, categories: [...table.categories] }
-    : { name: '', active: true, categories: [] }
+    ? {
+        name: table.name,
+        active: table.active,
+        categories: [...table.categories],
+        judge: table.judge,
+      }
+    : { name: '', active: true, categories: [], judge: '' }
   save.reset()
 }
 
@@ -65,6 +73,9 @@ function categoryNames(table: TableRecord): string {
           <span>
             <span class="font-medium">{{ table.name }}</span>
             <span class="text-muted-foreground"> · {{ categoryNames(table) }}</span>
+            <span class="text-muted-foreground">
+              · {{ table.expand?.judge?.name ?? 'No judge' }}</span
+            >
             <span v-if="!table.active" class="ml-2 text-xs text-destructive">deactivated</span>
           </span>
           <span v-if="editable" class="flex gap-1">
@@ -104,6 +115,19 @@ function categoryNames(table: TableRecord): string {
             <input v-model="form.active" type="checkbox" /> Active
           </label>
         </div>
+        <FormField
+          v-slot="{ id }"
+          label="Assigned judge"
+          name="judge"
+          :errors="save.fieldErrors.value"
+        >
+          <NativeSelect :id="id" v-model="form.judge" class="w-full" required>
+            <NativeSelectOption value="">Select a judge</NativeSelectOption>
+            <NativeSelectOption v-for="judge in judges" :key="judge.id" :value="judge.id">
+              {{ judge.name }}
+            </NativeSelectOption>
+          </NativeSelect>
+        </FormField>
         <fieldset class="flex flex-col gap-1 text-sm">
           <legend class="text-muted-foreground">Categories (none selected = all categories)</legend>
           <label v-for="category in categories" :key="category.id" class="flex items-center gap-2">
