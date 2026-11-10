@@ -3,6 +3,7 @@ import { RouterLink } from 'vue-router'
 import {
   CalendarIcon,
   ClipboardCheckIcon,
+  ClipboardListIcon,
   LibraryIcon,
   UsersIcon,
   UsersRoundIcon,
@@ -10,9 +11,16 @@ import {
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
-import { ROLE_LABELS } from '@/shared/types/records'
+import { ROLE_LABELS, type RoleAssignmentRecord } from '@/shared/types/records'
 
 const session = useSessionStore()
+
+/** Each role chip opens the page where that role works, not just the event overview. */
+function roleLink(r: RoleAssignmentRecord) {
+  if (r.role === 'judge') return { name: 'judging' }
+  if (r.role === 'head_judge') return { name: 'review', query: { event: r.event } }
+  return { name: 'event', params: { id: r.event } }
+}
 </script>
 
 <template>
@@ -24,7 +32,7 @@ const session = useSessionStore()
       <li v-for="r in session.roles" :key="r.id">
         <RouterLink
           v-if="r.event"
-          :to="{ name: 'event', params: { id: r.event } }"
+          :to="roleLink(r)"
           class="rounded-md border px-3 py-1 text-sm hover:bg-muted"
         >
           {{ ROLE_LABELS[r.role] }} · {{ r.expand?.event?.name ?? r.event }}
@@ -36,7 +44,11 @@ const session = useSessionStore()
 
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <!-- Judges reach their next game in two taps after signing in (M5 usability). -->
-    <RouterLink v-if="session.isJudge" to="/judging" class="sm:col-span-2 lg:col-span-4">
+    <RouterLink
+      v-if="session.isJudge"
+      to="/judging"
+      :class="session.canReview ? 'lg:col-span-2' : 'sm:col-span-2 lg:col-span-4'"
+    >
       <Card
         class="h-full border-2 border-foreground/80 hover:bg-muted/50"
         data-testid="judging-card"
@@ -44,9 +56,23 @@ const session = useSessionStore()
         <CardHeader>
           <ClipboardCheckIcon class="mb-2 size-6" />
           <CardTitle class="text-xl">Judging</CardTitle>
-          <CardDescription
-            >Score the games on your table and review submitted scores.</CardDescription
-          >
+          <CardDescription>Score the games on your table.</CardDescription>
+        </CardHeader>
+      </Card>
+    </RouterLink>
+    <RouterLink
+      v-if="session.canReview"
+      to="/review"
+      :class="session.isJudge ? 'lg:col-span-2' : 'sm:col-span-2 lg:col-span-4'"
+    >
+      <Card
+        class="h-full border-2 border-foreground/80 hover:bg-muted/50"
+        data-testid="review-card"
+      >
+        <CardHeader>
+          <ClipboardListIcon class="mb-2 size-6" />
+          <CardTitle class="text-xl">Review</CardTitle>
+          <CardDescription>Approve or return the score sheets judges submitted.</CardDescription>
         </CardHeader>
       </Card>
     </RouterLink>

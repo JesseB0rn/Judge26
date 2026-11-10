@@ -158,13 +158,18 @@ test.describe('M5 judge interface and scoring workflow', () => {
 
     // M5-T10: the head judge approves.
     await login(page, headJudge.email, headJudge.password)
-    await page.getByTestId('judging-card').click()
-    await page.getByRole('tab', { name: 'Review' }).click()
+    await page.getByTestId('review-card').click()
     const queue = page.getByTestId('review-queue')
     await expect(queue).toContainText('Waiting for review (1)')
     await queue.getByRole('link', { name: `Score ${ctx.alpha}` }).click()
     await expect(total(page)).toHaveText('35')
     await page.getByRole('button', { name: 'Approve' }).click()
+
+    // The decision closes the sheet and returns to the queue, which is now empty.
+    await expect(queue).toContainText('Waiting for review (0)')
+    await expect(page.getByTestId('review-empty')).toBeVisible()
+    await queue.getByRole('radio', { name: /^Final/ }).click()
+    await queue.getByRole('link', { name: `Score ${ctx.alpha}` }).click()
     await expect(page.getByTestId('score-state')).toHaveText('Final')
 
     // M5-T12: an authorized correction with a reason.

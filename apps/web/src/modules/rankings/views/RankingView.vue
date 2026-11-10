@@ -21,6 +21,7 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
+import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
 import type {
   CategoryRecord,
@@ -61,7 +62,7 @@ const ruleset = ref<RulesetRecord>()
 const text = ref('')
 const loading = ref(true)
 const loadError = ref<AppError>()
-const tab = ref('ranking')
+const { tab } = useQueryRefs({ tab: 'ranking' })
 
 const event = computed(() => category.value?.expand?.event)
 const isTemplate = computed(() => !!category.value && !category.value.event)
@@ -204,7 +205,10 @@ onMounted(load)
     >
       <template #actions>
         <Button v-if="event" as-child variant="outline">
-          <RouterLink :to="{ name: 'event', params: { id: event.id } }">Back to event</RouterLink>
+          <RouterLink
+            :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
+            >Back to event</RouterLink
+          >
         </Button>
         <Button v-else as-child variant="outline">
           <RouterLink :to="{ name: 'category-library' }">Back to library</RouterLink>

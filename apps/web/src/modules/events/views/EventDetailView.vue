@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
+  ClipboardListIcon,
   PencilIcon,
   PlusIcon,
   RadioIcon,
@@ -18,12 +19,12 @@ import EventCategoriesTab from '@/modules/categories/components/EventCategoriesT
 import EventTeamsTab from '@/modules/teams/components/EventTeamsTab.vue'
 import EventScheduleTab from '@/modules/scheduling/components/EventScheduleTab.vue'
 import EventStaffTab from '@/modules/administration/components/EventStaffTab.vue'
-import ReviewQueue from '@/modules/judging/components/ReviewQueue.vue'
 import PublicationPanel from '@/modules/live/components/PublicationPanel.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
+import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
 import type { EventRecord, EventStatus } from '@/shared/types/records'
 import { getEvent, updateEvent } from '../api'
@@ -36,13 +37,26 @@ const props = defineProps<{ id: string }>()
 const session = useSessionStore()
 const { data: event, loading, error, load } = useLoader(() => getEvent(props.id))
 const editing = ref(false)
-const tab = ref('overview')
+// The open tab lives in the URL: a refresh or "back" returns to the same panel.
+const { tab } = useQueryRefs({ tab: 'overview' })
 
 const canManage = computed(() => session.canManageEvent(props.id))
 const isStaff = computed(() => session.isEventStaff(props.id))
 const canReview = computed(
   () => canManage.value || session.rolesFor(props.id).includes('head_judge'),
 )
+// A link to a tab this user cannot see (or an old one) opens the overview instead of nothing.
+const visibleTab = computed(() => {
+  const allowed: Record<string, boolean> = {
+    overview: true,
+    categories: true,
+    teams: true,
+    schedule: isStaff.value,
+    publication: canManage.value,
+    staff: session.isAdmin,
+  }
+  return allowed[tab.value] ? tab.value : 'overview'
+})
 const archived = computed(() => event.value?.status === 'archived')
 const registrationOpen = computed(() => !!event.value && isRegistrationOpen(event.value))
 
@@ -85,6 +99,11 @@ watch(() => props.id, load)
             <ArchiveRestoreIcon /> Restore
           </Button>
         </template>
+        <Button v-if="canReview && !archived" as-child variant="outline">
+          <RouterLink :to="{ name: 'review', query: { event: event.id } }">
+            <ClipboardListIcon /> Review scores
+          </RouterLink>
+        </Button>
         <Button v-if="event.status !== 'draft'" as-child variant="outline">
           <RouterLink :to="{ name: 'live-event', params: { id: event.id } }">
             <RadioIcon /> Live results
@@ -103,13 +122,12 @@ watch(() => props.id, load)
       <AlertDescription>This event is archived. Its records are read-only.</AlertDescription>
     </Alert>
 
-    <Tabs v-model="tab">
+    <Tabs :model-value="visibleTab" @update:model-value="tab = String($event)">
       <TabsList>
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="categories">Categories</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger v-if="canReview" value="scores">Scores</TabsTrigger>
         <TabsTrigger v-if="canManage" value="publication">Public results</TabsTrigger>
         <TabsTrigger v-if="session.isAdmin" value="staff">Staff</TabsTrigger>
       </TabsList>
@@ -144,10 +162,6 @@ watch(() => props.id, load)
 
       <TabsContent v-if="isStaff" value="schedule">
         <EventScheduleTab :event="event" :can-manage="canManage && !archived" />
-      </TabsContent>
-
-      <TabsContent v-if="canReview" value="scores">
-        <ReviewQueue :events="[{ id: event.id, name: event.name }]" />
       </TabsContent>
 
       <TabsContent v-if="canManage" value="publication">

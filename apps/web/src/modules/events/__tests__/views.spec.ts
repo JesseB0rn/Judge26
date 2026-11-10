@@ -74,6 +74,25 @@ describe('event views', () => {
     expect(wrapper.text()).not.toContain('Staff')
   })
 
+  it('opens the tab named in the URL and falls back to the overview for hidden ones', async () => {
+    const coach = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      path: '/?tab=staff',
+    })
+    expect(coach.wrapper.get('[role=tab][data-state=active]').text()).toBe('Overview')
+    coach.wrapper.unmount()
+
+    const { wrapper } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('head_judge', 'event1')] },
+      path: '/?tab=teams',
+    })
+    expect(wrapper.get('[role=tab][data-state=active]').text()).toBe('Teams')
+    // Reviewing has one home: the review page, linked from the event header.
+    expect(wrapper.text()).not.toContain('Scores')
+    expect(wrapper.get('a[href*="event=event1"]').text()).toContain('Review scores')
+  })
+
   it('hides registration when it is closed', async () => {
     mocked.getEvent.mockResolvedValue(
       makeEvent({ registration_closes_at: '2020-01-01 00:00:00.000Z' }),

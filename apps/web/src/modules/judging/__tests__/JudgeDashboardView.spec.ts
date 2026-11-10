@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises } from '@vue/test-utils'
 import { ClientResponseError } from 'pocketbase'
 import { buttonByText, click, makeRole, mountView } from '@/test/utils'
 import * as api from '../api'
@@ -124,26 +123,18 @@ describe('JudgeDashboardView', () => {
     expect(wrapper.find('[data-testid=pending-sync]').exists()).toBe(false)
   })
 
-  it('head judges review submitted sheets of their event', async () => {
-    mocked.listEventScores.mockResolvedValue([
-      makeAssignment({
-        id: 's1',
-        team: { id: 'd', name: 'Delta' },
-        sheet: { ...final, status: 'submitted' },
-      }),
-      makeAssignment({ id: 's2', team: { id: 'e', name: 'Echo' } }),
-    ])
+  it('a head judge without a table is pointed to the review queue', async () => {
+    mocked.listAssignments.mockResolvedValue([])
     const { wrapper } = await mountView(JudgeDashboardView, {
       session: { roles: [makeRole('head_judge', 'event1')] },
     })
-    const reviewTab = [...document.querySelectorAll('[role=tab]')].find((t) =>
-      t.textContent?.includes('Review'),
-    ) as HTMLElement
-    reviewTab.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
-    await flushPromises()
-    expect(mocked.listEventScores).toHaveBeenCalledWith('event1')
-    const queue = wrapper.get('[data-testid=review-queue]')
-    expect(queue.findAll('[data-game]').map((r) => r.attributes('data-game'))).toEqual(['s1'])
-    expect(queue.text()).toContain('Waiting for review (1)')
+    expect(wrapper.find('[role=tab]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid=no-assignments]').text()).toContain('review queue')
+  })
+
+  it('game links carry the filtered list as return path', async () => {
+    const { wrapper } = await mountView(JudgeDashboardView, { session: judge, path: '/?day=sat' })
+    const href = wrapper.get('[data-game=g2]').attributes('href')!
+    expect(decodeURIComponent(href)).toContain('from=/?day=sat')
   })
 })

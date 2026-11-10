@@ -31,6 +31,23 @@ export const useSessionStore = defineStore('session', () => {
     ),
   )
 
+  /** Head judges, event managers and admins review submitted score sheets (M5-11). */
+  const canReview = computed(
+    () =>
+      isAdmin.value ||
+      roles.value.some((r) => r.role === 'head_judge' || r.role === 'event_manager'),
+  )
+  /** Events whose score sheets this user reviews through an event role. */
+  const reviewEvents = computed(() => {
+    const seen = new Map<string, string>()
+    for (const r of roles.value) {
+      if (r.event && (r.role === 'head_judge' || r.role === 'event_manager')) {
+        seen.set(r.event, r.expand?.event?.name ?? 'Event')
+      }
+    }
+    return [...seen].map(([id, name]) => ({ id, name }))
+  })
+
   function rolesFor(eventId: string): Role[] {
     return roles.value.filter((r) => r.event === eventId).map((r) => r.role)
   }
@@ -113,6 +130,8 @@ export const useSessionStore = defineStore('session', () => {
     isAdmin,
     isStaff,
     isJudge,
+    canReview,
+    reviewEvents,
     rolesFor,
     canManageEvent,
     isEventStaff,

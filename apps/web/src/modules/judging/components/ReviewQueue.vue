@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { RefreshCwIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { useLoader } from '@/shared/composables/useSubmit'
+import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { listEventScores } from '../api'
 import { filterAssignments, scoreState, tableOptions, type ScoreState } from '../lib'
 import AssignmentList from './AssignmentList.vue'
@@ -16,9 +18,14 @@ import FilterChips from '@/shared/components/FilterChips.vue'
  */
 const props = defineProps<{ events: { id: string; name: string }[] }>()
 
-const eventId = ref(props.events[0]?.id ?? '')
-const state = ref<string>('submitted')
-const table = ref('')
+const route = useRoute()
+// Filters live in the URL, so returning from a score sheet shows the same queue.
+const {
+  event: eventId,
+  state,
+  table,
+} = useQueryRefs({ event: props.events[0]?.id ?? '', state: 'submitted', table: '' })
+if (!props.events.some((e) => e.id === eventId.value)) eventId.value = props.events[0]?.id ?? ''
 const { data, loading, error, load } = useLoader(() => listEventScores(eventId.value))
 
 const STATES: { value: ScoreState; label: string }[] = [
@@ -46,7 +53,10 @@ const filtered = computed(() =>
 )
 
 onMounted(load)
-watch(eventId, load)
+watch(eventId, () => {
+  table.value = ''
+  void load()
+})
 </script>
 
 <template>
@@ -68,7 +78,7 @@ watch(eventId, load)
     <FilterChips v-model="state" label="Status" :options="stateOptions" />
     <FilterChips v-if="tables.length > 1" v-model="table" label="Table" :options="tables" />
     <Skeleton v-if="loading && !data" class="h-24 w-full" />
-    <AssignmentList :rows="filtered" show-table />
+    <AssignmentList :rows="filtered" show-table :from="route.fullPath" />
     <p
       v-if="data && !filtered.length"
       class="rounded-xl border border-dashed p-6 text-center text-muted-foreground"

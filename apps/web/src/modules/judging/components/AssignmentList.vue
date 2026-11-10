@@ -7,7 +7,13 @@ import type { Assignment } from '../types'
 import ScoreStateBadge from './ScoreStateBadge.vue'
 
 /** Games in playing order, grouped by round; each row opens the score sheet. */
-const props = defineProps<{ rows: Assignment[]; showTable?: boolean; highlight?: string }>()
+const props = defineProps<{
+  rows: Assignment[]
+  showTable?: boolean
+  highlight?: string
+  /** Current page, so the score sheet can link straight back to it (filters included). */
+  from?: string
+}>()
 const groups = computed(() => groupByRound(props.rows))
 
 function result(row: Assignment) {
@@ -35,7 +41,7 @@ function time(row: Assignment) {
       <ul class="flex flex-col divide-y overflow-hidden rounded-xl border">
         <li v-for="row in group.rows" :key="row.id">
           <RouterLink
-            :to="{ name: 'judging-game', params: { id: row.id } }"
+            :to="{ name: 'judging-game', params: { id: row.id }, query: from ? { from } : {} }"
             class="flex min-h-16 items-center gap-3 px-3 py-2 hover:bg-muted/60 focus-visible:bg-muted focus-visible:outline-none"
             :class="{ 'bg-sky-50/70': row.id === highlight }"
             :data-game="row.id"
