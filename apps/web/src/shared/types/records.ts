@@ -103,8 +103,19 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 export type RulesetStatus = 'draft' | 'published'
 
+/** One game of a category with its own versioned ruleset; rounds choose one. */
+export interface GameRuleRecord extends BaseRecord {
+  category: string
+  key: string
+  name: string
+  description: string
+  position: number
+}
+
 export interface RulesetRecord extends BaseRecord {
   category: string
+  /** The game rule this version belongs to; versions are numbered per game rule. */
+  game_rule?: string
   version: number
   status: RulesetStatus
   /** Ruleset definition (see @judge26/scoring-engine). Drafts may be invalid. */
@@ -127,6 +138,8 @@ export interface RoundRecord extends BaseRecord {
   scoring_minutes: number
   /** Competition day on which the round is played, or "". */
   day?: string
+  /** Game rule the round is scored with, or "" (then the category's only game rule). */
+  game_rule?: string
 }
 
 export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'

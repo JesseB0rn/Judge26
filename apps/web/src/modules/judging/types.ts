@@ -101,7 +101,13 @@ export interface SheetPayload {
   event: { id: string; name: string; status: string }
   table: NamedRef | null
   day: DayRef | null
-  ruleset: { id: string; version: number; definition: RulesetDefinition } | null
+  ruleset: {
+    id: string
+    version: number
+    /** The game (of the round) this version belongs to; null if the category has one game. */
+    game_rule?: { id: string; key: string; name: string } | null
+    definition: RulesetDefinition
+  } | null
   sheet: ScoreSheet | null
   history: AuditEntry[]
   permissions: { canEdit: boolean; canReview: boolean; canCorrect: boolean }

@@ -168,11 +168,27 @@ function history(app, gameId) {
     }))
 }
 
-/** The ruleset a sheet is scored with: the pinned version, else the category's active one. */
+/**
+ * The ruleset a sheet is scored with: the pinned version, else the active version of the
+ * round's game rule.
+ */
 function rulesetFor(app, ctx, sheet) {
   const pinned = sheet && sheet.getString('ruleset')
   if (pinned) return app.findRecordById('rulesets', pinned)
-  return require(`${__hooks}/lib/rulesets.js`).activeRuleset(app, ctx.category.id)
+  return require(`${__hooks}/lib/rulesets.js`).activeRulesetForRound(app, ctx.round)
+}
+
+/** The game a version belongs to; null when its category plays only one game. */
+function gameRuleInfo(app, id) {
+  if (!id) return null
+  try {
+    const rule = app.findRecordById('game_rules', id)
+    const games = require(`${__hooks}/lib/rulesets.js`).gameRules(app, rule.getString('category'))
+    if (games.length < 2) return null
+    return { id: rule.id, key: rule.getString('key'), name: rule.getString('name') }
+  } catch (_) {
+    return null
+  }
 }
 
 function serializeContext(ctx) {
@@ -225,6 +241,7 @@ function sheetPayload(app, auth, gameId) {
       ? {
           id: ruleset.id,
           version: ruleset.getInt('version'),
+          game_rule: gameRuleInfo(app, ruleset.getString('game_rule')),
           definition: parseJson(ruleset.getString('definition'), null),
         }
       : null,

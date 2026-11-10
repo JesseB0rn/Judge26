@@ -27,17 +27,47 @@ function preparePublication(app, record) {
   if (record.getDateTime('published_at').isZero()) record.set('published_at', new DateTime())
 }
 
-/** Latest published version of a category, or null. */
-function activeRuleset(app, categoryId) {
+/** Latest published version of a game rule, or null. */
+function activeRuleset(app, gameRuleId) {
+  if (!gameRuleId) return null
   const found = app.findRecordsByFilter(
     'rulesets',
-    'category = {:category} && status = "published"',
+    'game_rule = {:rule} && status = "published"',
     '-version',
     1,
     0,
-    { category: categoryId },
+    { rule: gameRuleId },
   )
   return found.length ? found[0] : null
 }
 
-module.exports = { preparePublication, activeRuleset }
+/** Game rules of a category, in display order. */
+function gameRules(app, categoryId) {
+  return app.findRecordsByFilter('game_rules', 'category = {:c}', 'position,key', 0, 0, {
+    c: categoryId,
+  })
+}
+
+/**
+ * The game rule a round is scored with: the round's own, else the category's only game rule
+ * (so a category with a single game needs no per-round setup). Null when there is none.
+ */
+function gameRuleIdForRound(app, round) {
+  const own = round.getString('game_rule')
+  if (own) return own
+  const rules = gameRules(app, round.getString('category'))
+  return rules.length === 1 ? rules[0].id : ''
+}
+
+/** Active ruleset of the round's game rule, or null (points are then entered directly). */
+function activeRulesetForRound(app, round) {
+  return activeRuleset(app, gameRuleIdForRound(app, round))
+}
+
+module.exports = {
+  preparePublication,
+  activeRuleset,
+  gameRules,
+  gameRuleIdForRound,
+  activeRulesetForRound,
+}
