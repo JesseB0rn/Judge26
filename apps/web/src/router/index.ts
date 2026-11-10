@@ -5,6 +5,7 @@ import { categoryRoutes } from '@/modules/categories/routes'
 import { eventRoutes } from '@/modules/events/routes'
 import { scoringRoutes } from '@/modules/scoring/routes'
 import { rankingRoutes } from '@/modules/rankings/routes'
+import { judgingRoutes } from '@/modules/judging/routes'
 import { systemRoutes } from '@/modules/system/routes'
 import { teamRoutes } from '@/modules/teams/routes'
 import { useSessionStore } from '@/shared/auth/session'
@@ -16,6 +17,7 @@ export const routes = [
   ...categoryRoutes,
   ...scoringRoutes,
   ...rankingRoutes,
+  ...judgingRoutes,
   ...teamRoutes,
   ...administrationRoutes,
   // Contains the catch-all route and must stay last.

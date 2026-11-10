@@ -118,6 +118,8 @@ export interface RoundRecord extends BaseRecord {
   testing_minutes: number
   /** Shared scoring phase duration, in minutes. */
   scoring_minutes: number
+  /** Competition day on which the round is played, or "". */
+  day?: string
 }
 
 export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'

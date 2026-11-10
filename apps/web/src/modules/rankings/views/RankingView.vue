@@ -22,6 +22,7 @@ import { useSubmit } from '@/shared/composables/useSubmit'
 import { formatDateTime } from '@/shared/format'
 import type {
   CategoryRecord,
+  CompetitionDayRecord,
   GameRecord,
   RankingSnapshotRecord,
   RoundRecord,
@@ -31,6 +32,7 @@ import type {
 import {
   createSnapshot,
   listApprovedTeams,
+  listEventDays,
   listGames,
   listRounds,
   listSnapshots,
@@ -49,6 +51,7 @@ const session = useSessionStore()
 
 const category = ref<CategoryRecord>()
 const rounds = ref<RoundRecord[]>([])
+const days = ref<CompetitionDayRecord[]>([])
 const teams = ref<TeamRecord[]>([])
 const games = ref<GameRecord[]>([])
 const snapshots = ref<RankingSnapshotRecord[]>([])
@@ -82,19 +85,38 @@ const unknownRounds = computed(() => {
   return [...config.rounds.keys()].filter((key) => !existing.has(key))
 })
 
+// Incremented whenever rounds and games are reloaded, so a slower earlier load (the initial one)
+// cannot overwrite newer data, e.g. a round added while the page was still loading.
+let resultsVersion = 0
+
 async function loadResults() {
-  ;[rounds.value, games.value] = await Promise.all([
+  const version = ++resultsVersion
+  const [r, g] = await Promise.all([
     listRounds(props.id),
     isTemplate.value ? [] : listGames(props.id),
   ])
+  if (version !== resultsVersion) return
+  rounds.value = r
+  games.value = g
+}
+
+async function loadDays(eventId: string) {
+  try {
+    days.value = (await listEventDays(eventId)) ?? []
+  } catch {
+    days.value = []
+  }
 }
 
 async function load() {
   loading.value = true
+  const version = ++resultsVersion
   try {
     category.value = await getCategory(props.id)
     text.value = savedText.value
     const template = !category.value.event
+    // Days only add a field to the rounds form; they must not delay the rounds themselves.
+    if (!template) void loadDays(category.value.event)
     const [r, t, g, s, rs] = await Promise.all([
       listRounds(props.id),
       template ? [] : listApprovedTeams(props.id),
@@ -102,9 +124,11 @@ async function load() {
       template ? [] : listSnapshots(props.id),
       listRulesets(props.id),
     ])
-    rounds.value = r
+    if (version === resultsVersion) {
+      rounds.value = r
+      games.value = g
+    }
     teams.value = t
-    games.value = g
     snapshots.value = s
     ruleset.value = rs.find((v) => v.status === 'published')
     if (template) tab.value = 'rounds'
@@ -242,6 +266,7 @@ onMounted(load)
         <RoundsPanel
           :category-id="category.id"
           :rounds="rounds"
+          :days="days"
           :editable="canManage"
           @changed="loadResults"
         />

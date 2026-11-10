@@ -11,6 +11,7 @@ import EventCategoriesTab from '@/modules/categories/components/EventCategoriesT
 import EventTeamsTab from '@/modules/teams/components/EventTeamsTab.vue'
 import EventScheduleTab from '@/modules/scheduling/components/EventScheduleTab.vue'
 import EventStaffTab from '@/modules/administration/components/EventStaffTab.vue'
+import ReviewQueue from '@/modules/judging/components/ReviewQueue.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
@@ -31,6 +32,9 @@ const tab = ref('overview')
 
 const canManage = computed(() => session.canManageEvent(props.id))
 const isStaff = computed(() => session.isEventStaff(props.id))
+const canReview = computed(
+  () => canManage.value || session.rolesFor(props.id).includes('head_judge'),
+)
 const archived = computed(() => event.value?.status === 'archived')
 const registrationOpen = computed(() => !!event.value && isRegistrationOpen(event.value))
 
@@ -92,6 +96,7 @@ watch(() => props.id, load)
         <TabsTrigger value="categories">Categories</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="schedule">Schedule</TabsTrigger>
+        <TabsTrigger v-if="canReview" value="scores">Scores</TabsTrigger>
         <TabsTrigger v-if="session.isAdmin" value="staff">Staff</TabsTrigger>
       </TabsList>
 
@@ -125,6 +130,10 @@ watch(() => props.id, load)
 
       <TabsContent v-if="isStaff" value="schedule">
         <EventScheduleTab :event="event" :can-manage="canManage && !archived" />
+      </TabsContent>
+
+      <TabsContent v-if="canReview" value="scores">
+        <ReviewQueue :events="[{ id: event.id, name: event.name }]" />
       </TabsContent>
 
       <TabsContent v-if="session.isAdmin" value="staff">

@@ -12,6 +12,10 @@ const props = defineProps<{
   explanations: Map<string, Explanation>
   issues: Map<string, string[]>
   disabled?: boolean
+  /** Ids of criteria/groups still missing before submission (highlighted). */
+  missing?: string[]
+  /** Large touch targets (judge view). */
+  touch?: boolean
 }>()
 const emit = defineEmits<{ set: [id: string, value: ScoreValue | undefined] }>()
 
@@ -21,6 +25,9 @@ const locked = computed(() => props.disabled || inactive.value)
 const value = computed(() => props.values[props.node.id])
 const nodeIssues = computed(() => props.issues.get(props.node.id) ?? [])
 const fieldId = computed(() => `criterion-${props.node.id}`)
+const isMissing = computed(() => props.missing?.includes(props.node.id) ?? false)
+const choiceSize = computed(() => (props.touch ? 'touch' : 'lg'))
+const iconSize = computed(() => (props.touch ? 'icon-touch' : 'icon-lg'))
 
 const selectionHint = computed(() => {
   if (props.node.type !== 'group' || !props.node.selection) return ''
@@ -53,8 +60,9 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
   <fieldset
     v-if="node.type === 'group'"
     class="flex flex-col gap-3 rounded-lg border p-3"
-    :class="{ 'opacity-50': inactive }"
+    :class="{ 'opacity-50': inactive, 'border-amber-400 ring-2 ring-amber-200': isMissing }"
     :data-node="node.id"
+    :data-missing="isMissing || undefined"
   >
     <legend class="flex w-full items-center gap-2 px-1 text-sm font-semibold">
       {{ node.label }}
@@ -79,6 +87,8 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       :explanations="explanations"
       :issues="issues"
       :disabled="disabled"
+      :missing="missing"
+      :touch="touch"
       @set="(id, v) => emit('set', id, v)"
     />
   </fieldset>
@@ -86,15 +96,17 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
   <div
     v-else
     class="flex flex-col gap-2 rounded-md bg-muted/40 p-3"
-    :class="{ 'opacity-50': inactive }"
+    :class="{ 'opacity-50': inactive, 'bg-amber-50 ring-2 ring-amber-300': isMissing }"
     :data-node="node.id"
+    :data-missing="isMissing || undefined"
   >
     <div class="flex flex-wrap items-center gap-3">
       <component
         :is="node.type === 'number' ? 'label' : 'span'"
         :id="`${fieldId}-label`"
         :for="node.type === 'number' ? fieldId : undefined"
-        class="min-w-40 flex-1 text-sm font-medium"
+        class="min-w-40 flex-1 font-medium"
+        :class="touch ? 'text-base' : 'text-sm'"
       >
         {{ node.label }}
         <span
@@ -114,20 +126,22 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       >
         <Button
           type="button"
-          size="lg"
+          :size="choiceSize"
           :variant="value === true ? 'default' : 'outline'"
           :aria-pressed="value === true"
           :disabled="locked"
+          :class="{ 'min-w-28': touch }"
           @click="emit('set', node.id, value === true ? undefined : true)"
         >
           Yes ({{ node.deduction ? '−' : '+' }}{{ node.points }})
         </Button>
         <Button
           type="button"
-          size="lg"
+          :size="choiceSize"
           :variant="value === false ? 'secondary' : 'outline'"
           :aria-pressed="value === false"
           :disabled="locked"
+          :class="{ 'min-w-20 aria-pressed:ring-2 aria-pressed:ring-foreground/30': touch }"
           @click="emit('set', node.id, value === false ? undefined : false)"
         >
           No
@@ -137,7 +151,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       <div v-else-if="node.type === 'number'" class="flex items-center gap-1">
         <Button
           type="button"
-          size="icon-lg"
+          :size="iconSize"
           variant="outline"
           :disabled="locked"
           aria-label="Decrease"
@@ -148,6 +162,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
         <Input
           :id="fieldId"
           class="w-24 text-center tabular-nums"
+          :class="{ 'h-12 text-lg font-semibold': touch }"
           type="number"
           inputmode="decimal"
           :min="node.min"
@@ -159,7 +174,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
         />
         <Button
           type="button"
-          size="icon-lg"
+          :size="iconSize"
           variant="outline"
           :disabled="locked"
           aria-label="Increase"
@@ -182,7 +197,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
           v-for="option in node.options"
           :key="option.id"
           type="button"
-          size="lg"
+          :size="choiceSize"
           role="radio"
           :aria-checked="value === option.id"
           :variant="value === option.id ? 'default' : 'outline'"
@@ -193,9 +208,12 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
         </Button>
       </div>
 
-      <span class="w-12 text-right tabular-nums" data-testid="node-points">{{
-        explanation?.points ?? 0
-      }}</span>
+      <span
+        class="w-12 text-right tabular-nums"
+        :class="{ 'text-lg font-semibold': touch }"
+        data-testid="node-points"
+        >{{ explanation?.points ?? 0 }}</span
+      >
     </div>
     <p v-if="node.description" class="text-sm text-muted-foreground">{{ node.description }}</p>
     <p v-if="inactive" class="text-sm text-muted-foreground">Not available: condition not met.</p>

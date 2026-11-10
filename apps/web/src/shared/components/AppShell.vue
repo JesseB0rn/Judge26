@@ -31,6 +31,13 @@ const activeClass = '!text-foreground font-medium'
           <RouterLink to="/events" :class="linkClass" :active-class="activeClass"
             >Events</RouterLink
           >
+          <RouterLink
+            v-if="session.isJudge"
+            to="/judging"
+            :class="linkClass"
+            :active-class="activeClass"
+            >Judging</RouterLink
+          >
           <RouterLink to="/teams" :class="linkClass" :active-class="activeClass"
             >My teams</RouterLink
           >

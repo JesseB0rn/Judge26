@@ -19,13 +19,13 @@ mirrors them for usability.
 
 ## Roles
 
-| Role             | Scope  | Purpose                                                  |
-| ---------------- | ------ | -------------------------------------------------------- |
-| `admin`          | global | Manages everything, including users' roles and templates |
-| `event_manager`  | event  | Manages one event: details, days, categories, teams      |
-| `head_judge`     | event  | Reads event data (score approval follows in M5)          |
-| `judge`          | event  | Reads event data (score entry follows in M5)             |
-| coach (implicit) | teams  | Owner of team registrations                              |
+| Role             | Scope  | Purpose                                                      |
+| ---------------- | ------ | ------------------------------------------------------------ |
+| `admin`          | global | Manages everything, including users' roles and templates     |
+| `event_manager`  | event  | Manages one event: details, days, categories, teams          |
+| `head_judge`     | event  | Reads event data; approves, returns and corrects scores (M5) |
+| `judge`          | event  | Reads event data; scores the games on their table (M5)       |
+| coach (implicit) | teams  | Owner of team registrations                                  |
 
 ## Access matrix
 

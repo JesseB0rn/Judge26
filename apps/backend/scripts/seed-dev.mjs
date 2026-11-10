@@ -205,6 +205,41 @@ for (const [name, results] of [
   }
 }
 
+// Judging (M5): rounds on competition days, a table judged by Jo Judge and the remaining
+// round 3 games of the demo teams waiting to be scored there.
+const days = await pb
+  .collection('competition_days')
+  .getFullList({ filter: pb.filter('event = {:e}', { e: event.id }), sort: 'date' })
+for (const round of demoRounds) {
+  if (!round.day) {
+    await pb
+      .collection('rounds')
+      .update(round.id, { day: (round.key === 'R3' ? days[1] : days[0]).id })
+  }
+}
+const table = await upsert(
+  'tables',
+  pb.filter('event = {:e} && name = "Table 1"', { e: event.id }),
+  { event: event.id, name: 'Table 1', active: true, judge: judge.id },
+)
+for (const [i, name] of ['Bot Builders', 'Circuit Breakers', 'Gear Grinders'].entries()) {
+  const team = await pb.collection('teams').getFirstListItem(pb.filter('name = {:n}', { n: name }))
+  const filter = pb.filter('team = {:t} && round = {:r}', { t: team.id, r: roundId.R3 })
+  await pb
+    .collection('games')
+    .getFirstListItem(filter)
+    .catch(() =>
+      pb.collection('games').create({
+        round: roundId.R3,
+        team: team.id,
+        attempt: 1,
+        status: 'scheduled',
+        table: table.id,
+        sequence: i + 1,
+      }),
+    )
+}
+
 await upsert('teams', pb.filter('name = "Robo Rangers"'), {
   event: event.id,
   category: categories['RM-J'].id,
