@@ -19,6 +19,12 @@ const props = defineProps<{
   ruleset: CompiledRuleset
   result: EvaluationResult
   disabled?: boolean
+  /** The page shows the total itself (judge view). */
+  hideTotal?: boolean
+  /** Criteria to highlight as still missing (judge view, before submission). */
+  missing?: string[]
+  /** Large touch targets for judges at the table. */
+  touch?: boolean
 }>()
 const values = defineModel<ScoreValues>({ required: true })
 
@@ -49,6 +55,7 @@ function set(id: string, value: ScoreValue | undefined) {
 <template>
   <div class="flex flex-col gap-3" data-testid="score-sheet">
     <div
+      v-if="!hideTotal"
       class="sticky top-0 z-10 flex items-center justify-between rounded-lg border bg-background p-3 shadow-sm"
     >
       <span class="font-medium">{{ ruleset.definition.root.label }}</span>
@@ -64,6 +71,8 @@ function set(id: string, value: ScoreValue | undefined) {
       :explanations="explanations"
       :issues="issues"
       :disabled="disabled"
+      :missing="missing"
+      :touch="touch"
       @set="set"
     />
   </div>

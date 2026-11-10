@@ -130,3 +130,61 @@ export async function createScheduledGame(roundId: string, teamId: string) {
   const pb = await superuser()
   return pb.collection('games').create({ round: roundId, team: teamId, status: 'scheduled' })
 }
+
+/** Publishes a ruleset for the category and returns it (M2). */
+export async function publishRuleset(categoryId: string, definition: unknown) {
+  const pb = await superuser()
+  const draft = await pb
+    .collection('rulesets')
+    .create({ category: categoryId, definition, status: 'draft' })
+  return pb.collection('rulesets').update(draft.id, { status: 'published' })
+}
+
+/** Sets the category's ranking configuration (M3). */
+export async function setRanking(categoryId: string, ranking: unknown) {
+  const pb = await superuser()
+  return pb.collection('categories').update(categoryId, { ranking })
+}
+
+export async function createDay(eventId: string, date: string, label = '') {
+  const pb = await superuser()
+  return pb.collection('competition_days').create({ event: eventId, date, label })
+}
+
+/** Creates an active table with a fixed judge (M4). */
+export async function createTable(eventId: string, name: string, judgeId: string) {
+  const pb = await superuser()
+  return pb.collection('tables').create({ event: eventId, name, active: true, judge: judgeId })
+}
+
+/** Creates a game placed on a table at the given sequence (M4). */
+export async function createPlacedGame(
+  roundId: string,
+  teamId: string,
+  tableId: string,
+  sequence: number,
+) {
+  const pb = await superuser()
+  return pb.collection('games').create({
+    round: roundId,
+    team: teamId,
+    status: 'scheduled',
+    table: tableId,
+    sequence,
+  })
+}
+
+/** Updates a round (e.g. to assign its competition day). */
+export async function updateRound(roundId: string, data: Record<string, unknown>) {
+  const pb = await superuser()
+  return pb.collection('rounds').update(roundId, data)
+}
+
+/** The score sheet of a game, or null (M5). */
+export async function getScoreSheet(gameId: string) {
+  const pb = await superuser()
+  const sheets = await pb
+    .collection('score_sheets')
+    .getFullList({ filter: pb.filter('game = {:game}', { game: gameId }) })
+  return sheets[0] ?? null
+}

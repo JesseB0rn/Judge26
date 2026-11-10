@@ -87,7 +87,8 @@ and one team:
 | `coach@judge26.local`     | Coach of "Robo Rangers"         |
 
 The demo categories also get rounds R1–R3, an example ranking configuration and an example
-ruleset; three approved RM-J teams have results. The script is idempotent and also creates the superuser `superuser@judge26.local` /
+ruleset; three approved RM-J teams have results. Rounds are on the two competition days, and the
+round 3 games of those teams wait on "Table 1" for `judge@judge26.local` to score them (M5). The script is idempotent and also creates the superuser `superuser@judge26.local` /
 `superuser-password` for the dashboard at http://127.0.0.1:8090/_/.
 
 ## Frontend

@@ -31,6 +31,9 @@ export const buttonVariants = cva(
         'icon-sm':
           'size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg',
         'icon-lg': 'size-9',
+        // Touch targets for judges at the table (≥ 48 px).
+        touch: 'h-12 gap-2 px-4 text-base [&_svg:not([class*=size-])]:size-5',
+        'icon-touch': 'size-12 [&_svg:not([class*=size-])]:size-5',
       },
     },
     defaultVariants: {

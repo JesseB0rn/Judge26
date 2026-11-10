@@ -24,6 +24,12 @@ export const useSessionStore = defineStore('session', () => {
   const isVerified = computed(() => user.value?.verified === true)
   const isAdmin = computed(() => roles.value.some((r) => r.role === 'admin'))
   const isStaff = computed(() => roles.value.length > 0)
+  /** Judges, head judges and event managers use the judging pages (M5). */
+  const isJudge = computed(() =>
+    roles.value.some(
+      (r) => r.role === 'judge' || r.role === 'head_judge' || r.role === 'event_manager',
+    ),
+  )
 
   function rolesFor(eventId: string): Role[] {
     return roles.value.filter((r) => r.event === eventId).map((r) => r.role)
@@ -106,6 +112,7 @@ export const useSessionStore = defineStore('session', () => {
     isVerified,
     isAdmin,
     isStaff,
+    isJudge,
     rolesFor,
     canManageEvent,
     isEventStaff,

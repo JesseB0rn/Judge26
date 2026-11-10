@@ -44,7 +44,9 @@ and competition days), `categories` (event categories and the template library),
 (registration, review, CSV import), `administration` (users and event staff) and `system`
 (dashboard, status, error pages) and `scoring` (versioned rulesets, JSON editor, generated
 score sheet preview) and `rankings` (rounds, results, ranking configuration, live ranking,
-snapshots). Planned: `scheduling`, `judging`.
+snapshots), `scheduling` (tables and per-table game order) and `judging` (judge dashboard, score
+sheets with stopwatch and offline drafts, review and corrections; see
+[M5 judging](../specifications/M5-judging.md)).
 
 Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
 

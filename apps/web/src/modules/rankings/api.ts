@@ -1,6 +1,7 @@
 import { pb } from '@/shared/api/pocketbase'
 import type {
   CategoryRecord,
+  CompetitionDayRecord,
   GameRecord,
   GameStatus,
   RankingSnapshotRecord,
@@ -16,17 +17,24 @@ export function listRounds(categoryId: string) {
     .getFullList({ filter: byCategory(categoryId), sort: 'position,key' })
 }
 
-export function createRound(
-  categoryId: string,
-  data: Pick<RoundRecord, 'key' | 'name' | 'position' | 'testing_minutes' | 'scoring_minutes'>,
-) {
+type RoundInput = Pick<
+  RoundRecord,
+  'key' | 'name' | 'position' | 'testing_minutes' | 'scoring_minutes' | 'day'
+>
+
+/** Competition days of an event (a round can be assigned to one, M5-02). */
+export function listEventDays(eventId: string) {
+  return pb.collection<CompetitionDayRecord>('competition_days').getFullList({
+    filter: pb.filter('event = {:event}', { event: eventId }),
+    sort: 'date',
+  })
+}
+
+export function createRound(categoryId: string, data: RoundInput) {
   return pb.collection<RoundRecord>('rounds').create({ ...data, category: categoryId })
 }
 
-export function updateRound(
-  id: string,
-  data: Pick<RoundRecord, 'key' | 'name' | 'position' | 'testing_minutes' | 'scoring_minutes'>,
-) {
+export function updateRound(id: string, data: RoundInput) {
   return pb.collection<RoundRecord>('rounds').update(id, data)
 }
 

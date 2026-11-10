@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { CalendarIcon, LibraryIcon, UsersIcon, UsersRoundIcon } from '@lucide/vue'
+import {
+  CalendarIcon,
+  ClipboardCheckIcon,
+  LibraryIcon,
+  UsersIcon,
+  UsersRoundIcon,
+} from '@lucide/vue'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
@@ -29,6 +35,21 @@ const session = useSessionStore()
   </section>
 
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- Judges reach their next game in two taps after signing in (M5 usability). -->
+    <RouterLink v-if="session.isJudge" to="/judging" class="sm:col-span-2 lg:col-span-4">
+      <Card
+        class="h-full border-2 border-foreground/80 hover:bg-muted/50"
+        data-testid="judging-card"
+      >
+        <CardHeader>
+          <ClipboardCheckIcon class="mb-2 size-6" />
+          <CardTitle class="text-xl">Judging</CardTitle>
+          <CardDescription
+            >Score the games on your table and review submitted scores.</CardDescription
+          >
+        </CardHeader>
+      </Card>
+    </RouterLink>
     <RouterLink to="/events">
       <Card class="h-full hover:bg-muted/50">
         <CardHeader>
