@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   rank,
@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import LiveIndicator from '@/modules/live/components/LiveIndicator.vue'
+import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import { getCategory, listRulesets } from '@/modules/scoring/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
@@ -155,6 +157,15 @@ function useTemplate(config: RankingConfig) {
   tab.value = 'configuration'
 }
 
+// Live ranking (M6-01): reload results whenever the event's data changes, e.g. a head judge
+// approves or corrects a score on another device.
+const live = useLiveUpdates(() => category.value?.event || undefined, loadResults)
+const updatedAt = ref<Date>()
+watch(games, () => (updatedAt.value = new Date()))
+
+// Provisional results (M6-02): games without a final result yet.
+const openGames = computed(() => games.value.filter((g) => g.status === 'scheduled').length)
+
 // Results dialog
 const dialogOpen = ref(false)
 const dialogTeam = ref<TeamRecord>()
@@ -215,8 +226,25 @@ onMounted(load)
           <AlertDescription>Configure the ranking to see results.</AlertDescription>
         </Alert>
         <template v-else-if="ranking">
+          <div class="flex flex-wrap items-center gap-2">
+            <LiveIndicator :status="live.status.value" :updated-at="updatedAt" />
+            <span
+              v-if="category.published_snapshot"
+              class="text-sm text-muted-foreground"
+              data-testid="publication-state"
+              >Official ranking published</span
+            >
+            <span v-else-if="category.public_live" class="text-sm text-muted-foreground"
+              >Live ranking is public</span
+            >
+          </div>
           <Alert v-if="dirty">
             <AlertDescription>Preview with unsaved configuration changes.</AlertDescription>
+          </Alert>
+          <Alert v-if="openGames" data-testid="provisional">
+            <AlertDescription>
+              Provisional: {{ openGames }} of {{ games.length }} games have no final result yet.
+            </AlertDescription>
           </Alert>
           <RankingTable :ranking="ranking" :config="parsed.config.config" />
           <p
@@ -314,7 +342,8 @@ onMounted(load)
           <NativeSelect v-model="selectedSnapshot" aria-label="Snapshot" class="max-w-md">
             <NativeSelectOption value="">Select a snapshot</NativeSelectOption>
             <NativeSelectOption v-for="s in snapshots" :key="s.id" :value="s.id">
-              {{ s.title }} – {{ formatDateTime(s.created) }}
+              {{ s.title }} – {{ formatDateTime(s.created)
+              }}{{ s.id === category.published_snapshot ? ' · official (public)' : '' }}
             </NativeSelectOption>
           </NativeSelect>
           <template v-if="shownSnapshot">
