@@ -8,8 +8,16 @@ const afterSave = expect.configure({ timeout: 15_000 })
 const block = (page: Page, id: string) => page.locator(`[data-block="${id}"]`)
 const status = (page: Page) => page.getByTestId('builder-status')
 
-/** Drags a wire with the mouse from a block's output terminal to a terminal. */
+/**
+ * Drags a wire with the mouse from a block's output terminal to a terminal. The drop target is
+ * hit-tested with `elementFromPoint`, so both terminals must be on screen: editing inspector
+ * fields (below the diagram on tablets) or switching tabs scrolls the page, so the whole
+ * diagram (640 px, shorter than both viewports) is centered first.
+ */
 async function wire(page: Page, from: string, to: Locator) {
+  await page
+    .getByRole('application', { name: 'Block diagram' })
+    .evaluate((el) => el.scrollIntoView({ block: 'center' }))
   const start = await page.locator(`[data-output="${from}"]`).boundingBox()
   const end = await to.boundingBox()
   if (!start || !end) throw new Error('terminal not visible')

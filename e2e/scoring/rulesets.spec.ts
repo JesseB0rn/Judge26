@@ -78,6 +78,8 @@ test.describe('M2 scoring rulesets', () => {
     )
     await page.getByRole('button', { name: 'Save draft' }).click()
     await page.getByRole('button', { name: 'Publish' }).click()
+    // Version 1 is relabelled "published" only once the list has reloaded after publishing.
+    await afterSave(page.getByTestId('ruleset-status')).toHaveText('Published')
     await expect(page.getByRole('combobox', { name: 'Version' })).toHaveValue(/.+/)
 
     await page.getByRole('tab', { name: 'Preview' }).click()

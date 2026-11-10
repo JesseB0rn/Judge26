@@ -20,7 +20,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
-  workers: isCI ? 1 : undefined,
+  // All workers share one PocketBase (SQLite) whose list access rules are expensive; one worker
+  // per core overloads it and turns waits into timeouts. Locally, half the cores.
+  workers: isCI ? 1 : '50%',
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: WEB_URL,

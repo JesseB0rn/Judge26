@@ -80,8 +80,20 @@ async function load() {
       form.coach_name = session.user?.name ?? ''
       form.coach_email = session.user?.email ?? ''
     }
-    if (event.value) categories.value = await listEventCategories(event.value.id)
-    if (!form.category) form.category = categories.value[0]?.id ?? ''
+    if (event.value && team.value) {
+      // An existing team already has its category; the list (slow: its access rule) only feeds
+      // the category select, so the registration is shown without waiting for it (with the
+      // expanded own category meanwhile).
+      const own = team.value.expand?.category
+      if (own) categories.value = [own]
+      void listEventCategories(event.value.id).then(
+        (list) => (categories.value = list),
+        (e: unknown) => (loadError.value = toAppError(e)),
+      )
+    } else if (event.value) {
+      categories.value = await listEventCategories(event.value.id)
+      if (!form.category) form.category = categories.value[0]?.id ?? ''
+    }
   } catch (e) {
     loadError.value = toAppError(e)
   } finally {
