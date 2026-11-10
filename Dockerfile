@@ -10,7 +10,7 @@ COPY packages/ranking-engine/package.json packages/ranking-engine/
 RUN pnpm install --frozen-lockfile --filter @judge26/web --filter @judge26/scoring-engine --filter @judge26/ranking-engine
 COPY packages packages
 COPY apps/web apps/web
-# SPA build, and the engine bundles for PocketBase hooks (apps/backend/hooks/lib).
+# SPA build, and the scoring/ranking bundles for PocketBase hooks (apps/backend/hooks/lib).
 RUN pnpm --filter @judge26/web build-only \
  && pnpm --filter @judge26/scoring-engine build:hooks \
  && pnpm --filter @judge26/ranking-engine build:hooks

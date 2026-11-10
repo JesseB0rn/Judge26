@@ -114,6 +114,10 @@ export interface RoundRecord extends BaseRecord {
   key: string
   name: string
   position: number
+  /** Shared maintenance/testing phase duration, in minutes. */
+  testing_minutes: number
+  /** Shared scoring phase duration, in minutes. */
+  scoring_minutes: number
 }
 
 export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'
@@ -130,6 +134,23 @@ export interface GameRecord extends BaseRecord {
   ruleset: string
   values: Record<string, unknown> | null
   notes: string
+  /** Schedule: assigned table id or "". */
+  table: string
+  /** Position in the per-round sequence at the assigned table; 0 means unassigned. */
+  sequence: number
+  expand?: { round?: RoundRecord; team?: TeamRecord; table?: TableRecord }
+}
+
+export interface TableRecord extends BaseRecord {
+  event: string
+  name: string
+  position: number
+  active: boolean
+  /** Empty = accepts every category of the event. */
+  categories: string[]
+  /** Fixed judge assigned to this table. */
+  judge: string
+  expand?: { judge?: UserRecord }
 }
 
 export interface RankingSnapshotRecord extends BaseRecord {

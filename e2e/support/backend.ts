@@ -85,13 +85,19 @@ export async function linkFromMail(email: string, path: string): Promise<string>
   throw new Error(`No ${path} mail for ${email}`)
 }
 
-/** Creates an approved team (2 members, age 13) in the category. */
-export async function createApprovedTeam(eventId: string, categoryId: string, name: string) {
+/** Creates an approved team (2 members, age 13) in the category, optionally with a coach account. */
+export async function createApprovedTeam(
+  eventId: string,
+  categoryId: string,
+  name: string,
+  coachId = '',
+) {
   const pb = await superuser()
   return pb.collection('teams').create({
     event: eventId,
     category: categoryId,
     name,
+    coach: coachId,
     coach_email: 'coach@test.local',
     status: 'approved',
     members: [
@@ -99,4 +105,28 @@ export async function createApprovedTeam(eventId: string, categoryId: string, na
       { first_name: 'Alan', last_name: 'T', birth_year: 2013 },
     ],
   })
+}
+
+/** Creates a round with the given testing and scoring durations. */
+export async function createRound(
+  categoryId: string,
+  key: string,
+  testingMinutes = 5,
+  scoringMinutes = 10,
+) {
+  const pb = await superuser()
+  return pb.collection('rounds').create({
+    category: categoryId,
+    key,
+    name: `Round ${key.slice(1)}`,
+    position: 1,
+    testing_minutes: testingMinutes,
+    scoring_minutes: scoringMinutes,
+  })
+}
+
+/** Creates an unplaced game waiting to be scheduled. */
+export async function createScheduledGame(roundId: string, teamId: string) {
+  const pb = await superuser()
+  return pb.collection('games').create({ round: roundId, team: teamId, status: 'scheduled' })
 }

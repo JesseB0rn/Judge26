@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { TabsRootEmits, TabsRootProps } from 'reka-ui'
-import type { HTMLAttributes } from 'vue'
 import { reactiveOmit } from '@vueuse/core'
 import { cn } from 'cn'
+import type { TabsRootEmits, TabsRootProps } from 'reka-ui'
 import { TabsRoot, useForwardPropsEmits } from 'reka-ui'
+import type { HTMLAttributes } from 'vue'
 
 const props = defineProps<TabsRootProps & { class?: HTMLAttributes['class'] }>()
 const emits = defineEmits<TabsRootEmits>()
@@ -18,7 +18,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
     data-slot="tabs"
     :data-orientation="forwarded.orientation || 'horizontal'"
     v-bind="forwarded"
-    :class="cn('gap-2 group/tabs flex data-horizontal:flex-col', props.class)"
+    :class="cn('gap-2 group/tabs flex data-[orientation=horizontal]:flex-col', props.class)"
   >
     <slot v-bind="slotProps" />
   </TabsRoot>

@@ -135,7 +135,7 @@ migrate(
     // Games: event staff and the team's coach can read; managers record results.
     {
       const E = 'round.category.event'
-      games.listRule = `${AUTH} && (${IS_ADMIN} || ${anyRole(E)} || team.coach = @request.auth.id)`
+      games.listRule = `${AUTH} && (team.coach = @request.auth.id || ${IS_ADMIN} || ${anyRole(E)})`
       games.viewRule = games.listRule
       games.createRule = `${AUTH} && (${IS_ADMIN} || ${isManager(E)}) && ${E}.status != "archived"`
       games.updateRule = games.createRule

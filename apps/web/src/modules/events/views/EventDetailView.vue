@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import EventCategoriesTab from '@/modules/categories/components/EventCategoriesTab.vue'
 import EventTeamsTab from '@/modules/teams/components/EventTeamsTab.vue'
+import EventScheduleTab from '@/modules/scheduling/components/EventScheduleTab.vue'
 import EventStaffTab from '@/modules/administration/components/EventStaffTab.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
@@ -90,6 +91,7 @@ watch(() => props.id, load)
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="categories">Categories</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
+        <TabsTrigger v-if="isStaff" value="schedule">Schedule</TabsTrigger>
         <TabsTrigger v-if="session.isAdmin" value="staff">Staff</TabsTrigger>
       </TabsList>
 
@@ -119,6 +121,10 @@ watch(() => props.id, load)
 
       <TabsContent value="teams">
         <EventTeamsTab :event="event" :staff="isStaff" :can-manage="canManage && !archived" />
+      </TabsContent>
+
+      <TabsContent v-if="isStaff" value="schedule">
+        <EventScheduleTab :event="event" :can-manage="canManage && !archived" />
       </TabsContent>
 
       <TabsContent v-if="session.isAdmin" value="staff">

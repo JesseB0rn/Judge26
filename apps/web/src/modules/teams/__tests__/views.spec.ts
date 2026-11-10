@@ -7,7 +7,10 @@ import {
   fill,
   makeCategory,
   makeEvent,
+  makeGame,
   makeRole,
+  makeRound,
+  makeTable,
   makeTeam,
   makeUser,
   mountView,
@@ -261,5 +264,55 @@ describe('team views', () => {
     expect(mocked.listOwnTeams).toHaveBeenCalledWith('user1')
     expect(wrapper.get('[data-testid=my-teams]').text()).toContain('Robo Rangers')
     expect(wrapper.text()).toContain('WRO Final')
+    expect(wrapper.get('[data-testid=my-schedule]').text()).toContain('No games')
+  })
+
+  it('MyTeamsView lets coaches submit editable registrations', async () => {
+    mocked.listOwnTeams.mockResolvedValue([
+      makeTeam({ expand: { event: makeEvent(), category: makeCategory() } }),
+      makeTeam({
+        id: 'rejected',
+        name: 'Rejected Team',
+        status: 'rejected',
+        expand: { event: makeEvent(), category: makeCategory() },
+      }),
+      makeTeam({
+        id: 'archived',
+        name: 'Archived Event Team',
+        expand: { event: makeEvent({ status: 'archived' }), category: makeCategory() },
+      }),
+    ])
+    mocked.updateTeam.mockResolvedValue(makeTeam({ status: 'submitted' }))
+    const { wrapper } = await mountView(MyTeamsView, { session: { user: makeUser() } })
+
+    expect(buttonByText('Submit', wrapper.element)).toBeDefined()
+    expect(buttonByText('Resubmit', wrapper.element)).toBeDefined()
+    expect(wrapper.find('[data-team="Archived Event Team"]').find('button').exists()).toBe(false)
+
+    await click(buttonByText('Submit', wrapper.element))
+    await click(buttonByText('Resubmit', wrapper.element))
+    expect(mocked.updateTeam).toHaveBeenNthCalledWith(1, 'team1', { status: 'submitted' })
+    expect(mocked.updateTeam).toHaveBeenNthCalledWith(2, 'rejected', { status: 'submitted' })
+  })
+
+  it('MyTeamsView shows the scheduled games of the coach’s teams', async () => {
+    mocked.listOwnTeams.mockResolvedValue([])
+    mocked.listOwnScheduledGames.mockResolvedValue([
+      makeGame({
+        table: 'table1',
+        sequence: 1,
+        expand: {
+          team: makeTeam(),
+          round: makeRound('R1'),
+          table: makeTable({ name: 'Table 3' }),
+        },
+      }),
+    ])
+    const { wrapper } = await mountView(MyTeamsView, { session: { user: makeUser() } })
+    expect(mocked.listOwnScheduledGames).toHaveBeenCalledWith('user1')
+    const text = wrapper.get('[data-testid=my-schedule]').text()
+    expect(text).toContain('Robo Rangers')
+    expect(text).toContain('Round 1')
+    expect(text).toContain('Table 3')
   })
 })
