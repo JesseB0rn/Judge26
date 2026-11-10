@@ -6,6 +6,7 @@ import { buttonByText, click, makeCategory, makeEvent, makeRole, mountView } fro
 import type { RulesetRecord } from '@/shared/types/records'
 import * as api from '../api'
 import RulesetsView from '../views/RulesetsView.vue'
+import BlockDiagram from '@/shared/diagram/BlockDiagram.vue'
 
 vi.mock('../api')
 const mocked = vi.mocked(api)
@@ -42,6 +43,14 @@ const version = (overrides: Partial<RulesetRecord>): RulesetRecord => ({
 const manager = { roles: [makeRole('event_manager', 'event1')] }
 
 /** Reka tabs activate on mousedown. */
+/** The Definition tab in JSON mode (the visual builder is the default). */
+async function openJson(wrapper: Awaited<ReturnType<typeof mountView>>['wrapper']) {
+  await openTab(wrapper, 'Definition')
+  const json = wrapper.findAll('[role=radio]').find((r) => r.text() === 'JSON')
+  if (json && json.attributes('aria-checked') !== 'true') await json.trigger('click')
+  await flushPromises()
+}
+
 async function openTab(wrapper: Awaited<ReturnType<typeof mountView>>['wrapper'], name: string) {
   const tab = wrapper.findAll('[role=tab]').find((t) => t.text() === name)!
   await tab.trigger('mousedown', { button: 0 })
@@ -87,7 +96,7 @@ describe('RulesetsView', () => {
   it('M2-T10: published versions are read-only; a new draft starts from the selected version', async () => {
     mocked.createDraft.mockResolvedValue(version({ id: 'rs3', version: 3, status: 'draft' }))
     const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
-    await openTab(wrapper, 'Definition')
+    await openJson(wrapper)
     expect(wrapper.get('textarea').attributes('readonly')).toBeDefined()
     expect(wrapper.text()).not.toContain('Save draft')
 
@@ -103,7 +112,7 @@ describe('RulesetsView', () => {
     const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
     await wrapper.get('select[aria-label=Version]').setValue('rs2')
     await flushPromises()
-    await openTab(wrapper, 'Definition')
+    await openJson(wrapper)
 
     await wrapper.get('textarea').setValue(JSON.stringify(simple(30)))
     await click(buttonByText('Save draft'))
@@ -124,16 +133,67 @@ describe('RulesetsView', () => {
     const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
     await wrapper.get('select[aria-label=Version]').setValue('rs2')
     await flushPromises()
-    await openTab(wrapper, 'Definition')
+    await openJson(wrapper)
     await wrapper.get('textarea').setValue('{"schemaVersion": 1}')
     expect(buttonByText('Publish').disabled).toBe(true)
     await openTab(wrapper, 'Preview')
     expect(wrapper.text()).toContain('Fix the definition to preview')
-    await openTab(wrapper, 'Definition')
+    await openJson(wrapper)
 
     await wrapper.get('textarea').setValue(JSON.stringify(simple(5)))
     await click(buttonByText('Publish'))
     expect(wrapper.text()).toContain('cannot be published')
+  })
+
+  it('M2-15: the visual builder edits the draft without writing JSON', async () => {
+    mocked.saveDraft.mockImplementation(async (id, data) =>
+      version({ id, version: 2, status: 'draft', definition: data.definition }),
+    )
+    const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
+    await wrapper.get('select[aria-label=Version]').setValue('rs2')
+    await flushPromises()
+    await openTab(wrapper, 'Definition')
+    const builder = wrapper.get('[data-testid=ruleset-builder]')
+    expect(builder.findAll('[data-block]').map((b) => b.attributes('data-block'))).toEqual([
+      '',
+      '0',
+    ])
+
+    // Palette: a count block goes into the root group.
+    await click(buttonByText('Count', builder.element as HTMLElement))
+    expect(builder.findAll('[data-block]')).toHaveLength(3)
+    // Inspector: the new block is selected; give it 3 points per unit.
+    const inspector = wrapper.get('[data-testid=inspector]')
+    const field = inspector.findAll('label').find((l) => l.text() === 'Points per unit')!
+    const input = inspector.get(`#${field.attributes('for')}`)
+    await input.setValue('3')
+    await input.trigger('change')
+
+    await click(buttonByText('Save draft'))
+    const saved = mocked.saveDraft.mock.calls[0]![1].definition as typeof EXAMPLE_RULESET
+    expect(saved.root.children[1]).toMatchObject({ type: 'number', pointsPerUnit: 3 })
+  })
+
+  it('M2-T15: a circular condition drawn in the builder is shown and blocks publishing', async () => {
+    const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
+    await wrapper.get('select[aria-label=Version]').setValue('rs2')
+    await flushPromises()
+    await openJson(wrapper)
+    await wrapper.get('textarea').setValue(JSON.stringify(EXAMPLE_RULESET))
+    await openTab(wrapper, 'Definition')
+    await wrapper
+      .findAll('[role=radio]')
+      .find((r) => r.text() === 'Visual')!
+      .trigger('click')
+    await flushPromises()
+    expect(buttonByText('Publish').disabled).toBe(false)
+
+    // Wire bonus (0.4) into the enable terminal of tower (0.3): tower ↔ bonus.
+    wrapper.getComponent(BlockDiagram).vm.$emit('connect', '0.4', '0.3', 'enable')
+    await flushPromises()
+    expect(wrapper.get('[data-testid=builder-status]').text()).toContain('1 error')
+    expect(wrapper.get('[data-block="0.3"]').attributes('aria-label')).toContain('Circular')
+    expect(buttonByText('Publish').disabled).toBe(true)
   })
 
   it('deletes drafts', async () => {
@@ -152,6 +212,25 @@ describe('RulesetsView', () => {
     expect(wrapper.text()).toContain('No scoring ruleset yet')
     await click(buttonByText('Create first draft'))
     expect(mocked.createDraft).toHaveBeenCalledWith('cat1', EXAMPLE_RULESET, '')
+  })
+
+  it('a slow earlier list load does not hide a just-created draft', async () => {
+    let releaseFirst: (v: RulesetRecord[]) => void = () => {}
+    mocked.listRulesets
+      .mockResolvedValueOnce([])
+      .mockReturnValueOnce(new Promise((r) => (releaseFirst = r)))
+      .mockResolvedValueOnce([version({ status: 'draft' })])
+    mocked.createDraft.mockResolvedValue(version({ status: 'draft' }))
+    const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
+    // A second (slow) load starts, e.g. a reload, then the draft is created.
+    const vm = wrapper.vm as unknown as { $: { setupState: { load: () => Promise<void> } } }
+    const slow = vm.$.setupState.load()
+    await click(buttonByText('Create first draft'))
+    expect(wrapper.get('[data-testid=ruleset-status]').text()).toBe('Draft')
+    releaseFirst([])
+    await slow
+    await flushPromises()
+    expect(wrapper.get('[data-testid=ruleset-status]').text()).toBe('Draft')
   })
 
   it('archived events are read-only even for managers', async () => {

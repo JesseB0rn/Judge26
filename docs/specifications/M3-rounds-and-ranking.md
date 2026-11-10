@@ -3,7 +3,8 @@
 Refines roadmap milestone M3. The engine lives in `packages/ranking-engine` (independent of Vue
 and PocketBase; it reuses the fixed-point arithmetic and fingerprint of the scoring engine). It
 runs in the browser (live ranking preview) and in PocketBase hooks (configuration validation and
-snapshots). M3-18 (visual aggregation builder, P2) is not part of this release.
+snapshots). The configuration is edited in a visual builder (M3-18) or as JSON; see
+[Visual builders](M2-scoring-rulesets.md#visual-builders-m2-15-m3-18).
 
 ## Data model
 

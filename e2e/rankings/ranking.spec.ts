@@ -51,7 +51,7 @@ test.describe('M3 rounds and ranking', () => {
     // Configuration: total of all rounds, tie-break by total time.
     await page.getByRole('tab', { name: 'Configuration' }).click()
     await page.getByRole('button', { name: 'Generate from rounds' }).click()
-    await expect(page.getByTestId('config-valid')).toBeVisible()
+    await expect(page.getByTestId('builder-status')).toHaveText(/Valid/)
     await page.getByRole('button', { name: 'Save configuration' }).click()
     await expect(page.getByRole('button', { name: 'Save configuration' })).toBeDisabled()
 

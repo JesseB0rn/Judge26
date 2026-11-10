@@ -43,7 +43,9 @@ import {
 } from '../api'
 import { parseRankingConfig, toTeamInputs } from '../lib'
 import GameDialog from '../components/GameDialog.vue'
+import RankingBuilder from '../components/RankingBuilder.vue'
 import RankingConfigEditor from '../components/RankingConfigEditor.vue'
+import EditorModeToggle from '@/shared/diagram/EditorModeToggle.vue'
 import RankingTable from '../components/RankingTable.vue'
 import ResultsMatrix from '../components/ResultsMatrix.vue'
 import RoundsPanel from '../components/RoundsPanel.vue'
@@ -63,6 +65,7 @@ const text = ref('')
 const loading = ref(true)
 const loadError = ref<AppError>()
 const { tab } = useQueryRefs({ tab: 'ranking' })
+const editor = ref<'visual' | 'json'>('visual')
 
 const event = computed(() => category.value?.expand?.event)
 const isTemplate = computed(() => !!category.value && !category.value.event)
@@ -335,7 +338,14 @@ onMounted(load)
             {{ unknownRounds.join(', ') }}. Their results count as missing.
           </AlertDescription>
         </Alert>
-        <RankingConfigEditor v-model="text" :readonly="!canManage" />
+        <EditorModeToggle v-model="editor" />
+        <RankingBuilder
+          v-if="editor === 'visual'"
+          v-model="text"
+          :readonly="!canManage"
+          :ranking="ranking"
+        />
+        <RankingConfigEditor v-else v-model="text" :readonly="!canManage" />
       </TabsContent>
 
       <TabsContent v-if="!isTemplate" value="snapshots" class="flex flex-col gap-3">

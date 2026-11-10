@@ -25,7 +25,8 @@ test.describe('M2 scoring rulesets', () => {
     // First draft starts from the example ruleset.
     await page.getByRole('button', { name: 'Create first draft' }).click()
     await afterSave(page.getByTestId('ruleset-status')).toHaveText('Draft')
-    await expect(page.getByTestId('ruleset-valid')).toBeVisible()
+    // The visual builder opens first (M2-15).
+    await expect(page.getByTestId('builder-status')).toHaveText(/Valid/)
 
     // Live preview (M2-13, M5-04/06 groundwork).
     await page.getByRole('tab', { name: 'Preview' }).click()
@@ -53,6 +54,7 @@ test.describe('M2 scoring rulesets', () => {
 
     // Invalid definitions cannot be published (M2-12).
     await page.getByRole('tab', { name: 'Definition' }).click()
+    await page.getByRole('radio', { name: 'JSON' }).click()
     const editor = page.getByLabel('Ruleset definition (JSON)')
     const original = await editor.inputValue()
     await editor.fill(original.replace('"ref": "tower"', '"ref": "ghost"'))

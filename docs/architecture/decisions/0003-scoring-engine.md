@@ -27,8 +27,9 @@ results must stay tied to the ruleset that produced them.
    (applies to superusers too), plus a fingerprint of the canonical definition. Compiled
    rulesets are frozen deep copies, so the engine itself cannot be affected by later changes.
 5. **JSON editor with live validation and a generated score sheet preview** as the first
-   configuration UI. A visual rule builder on top of the same format is planned as roadmap
-   item M2-15 (P2), and a matching builder for round aggregation as M3-18 (P2).
+   configuration UI. The visual rule builder (M2-15) and the aggregation builder (M3-18) edit
+   the same format as a LabVIEW-style block diagram; they store nothing of their own (see
+   `docs/specifications/M2-scoring-rulesets.md`, Visual builders).
 
 ## Consequences
 

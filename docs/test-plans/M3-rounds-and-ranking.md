@@ -5,8 +5,7 @@
 - **Unit** = `apps/web/src/modules/rankings/__tests__/*`
 - **E2E** = `e2e/rankings/ranking.spec.ts`
 
-M3-18 (visual aggregation builder, P2) and M3-T15 to M3-T17 are deferred and do not block the M3
-exit criteria.
+- **Builder** = `apps/web/src/modules/rankings/__tests__/builder.spec.ts` and `e2e/scoring/builders.spec.ts` (M3-18)
 
 ## Mandatory fixtures
 
@@ -37,6 +36,9 @@ exit criteria.
 | M3-T12  | Round result changes               | Engine `ranking` › M3-T12; Integration › M3-T12/T13; E2E                           |
 | M3-T13  | Recalculate published ranking      | Integration › M3-T12/T13, immutability (incl. superuser); E2E (snapshot unchanged) |
 | M3-T14  | Identical results                  | Engine `ranking` › M3-T10/T14; property: shared ranks equal values                 |
+| M3-T15  | Fixtures M3-F01 – F06 in builder   | Builder › M3-T15 (canonical JSON equals the text-authored configurations)          |
+| M3-T16  | Open a configuration, save         | Builder › M3-T16 (byte-identical text, no-op edit)                                 |
+| M3-T17  | Circular reference in builder      | Builder › M3-T17; Unit `RankingView` › M3-T17 (Save disabled, undo); E2E builders  |
 
 ## Acceptance criteria
 
@@ -53,6 +55,7 @@ exit criteria.
 | M3-15    | Shared rankings                        | M3-T10/T14                                                              |
 | M3-16    | Calculation preview                    | Unit `RankingView` › preview, unsaved changes; E2E (explanation)        |
 | M3-17    | Ranking snapshots                      | Integration › snapshots; Unit › publish; E2E                            |
+| M3-18    | Visual aggregation builder             | M3-T15 – M3-T17; E2E builders (wiring, tie-breaker, save)               |
 
 Additional correctness requirements: units and types (points scaled, time in ms), time
 precision (`timeResolutionMs`, Engine › arithmetic), operand order (M3-T04), distinguishable

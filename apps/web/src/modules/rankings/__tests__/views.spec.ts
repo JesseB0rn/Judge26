@@ -19,6 +19,7 @@ import {
 import type { RankingSnapshotRecord, RulesetRecord } from '@/shared/types/records'
 import * as api from '../api'
 import * as scoringApi from '@/modules/scoring/api'
+import BlockDiagram from '@/shared/diagram/BlockDiagram.vue'
 import RankingView from '../views/RankingView.vue'
 
 vi.mock('@/modules/live/useLiveUpdates', () => ({
@@ -35,6 +36,14 @@ const alpha = makeTeam({ id: 'alpha', name: 'Alpha' })
 const bravo = makeTeam({ id: 'bravo', name: 'Bravo' })
 
 type Wrapper = Awaited<ReturnType<typeof mountView>>['wrapper']
+/** The Configuration tab in JSON mode (the visual builder is the default). */
+async function openJson(wrapper: Wrapper) {
+  await openTab(wrapper, 'Configuration')
+  const json = wrapper.findAll('[role=radio]').find((r) => r.text() === 'JSON')
+  if (json && json.attributes('aria-checked') !== 'true') await json.trigger('click')
+  await flushPromises()
+}
+
 async function openTab(wrapper: Wrapper, name: string) {
   await wrapper
     .findAll('[role=tab]')
@@ -121,14 +130,14 @@ describe('RankingView', () => {
     expect(wrapper.text()).not.toContain('Publish snapshot')
     await openTab(wrapper, 'Results')
     expect(wrapper.findAll('[data-testid=results-matrix] button')).toHaveLength(0)
-    await openTab(wrapper, 'Configuration')
+    await openJson(wrapper)
     expect(wrapper.get('textarea').attributes('readonly')).toBeDefined()
   })
 
   it('previews unsaved configuration changes and saves them', async () => {
     mocked.saveRankingConfig.mockImplementation(async (_id, ranking) => makeCategory({ ranking }))
     const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: manager })
-    await openTab(wrapper, 'Configuration')
+    await openJson(wrapper)
     await click(buttonByText('Generate from rounds'))
     expect(wrapper.find('[data-testid=config-valid]').exists()).toBe(true)
     await openTab(wrapper, 'Ranking')
@@ -150,7 +159,7 @@ describe('RankingView', () => {
 
   it('reports invalid configurations and unknown rounds', async () => {
     const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: manager })
-    await openTab(wrapper, 'Configuration')
+    await openJson(wrapper)
     await wrapper.get('textarea').setValue('{"schemaVersion": 1}')
     expect(wrapper.get('[data-testid=config-issues]').text()).toContain('$.rounds')
     expect(buttonByText('Save configuration').disabled).toBe(true)
@@ -159,6 +168,31 @@ describe('RankingView', () => {
     const other = await mountView(RankingView, { props: { id: 'cat1' }, session: manager })
     await openTab(other.wrapper, 'Configuration')
     expect(other.wrapper.text()).toContain('rounds that do not exist yet: R1, R2, R3')
+  })
+
+  it('M3-18 / M3-T17: the visual builder shows the configuration and blocks circular references', async () => {
+    const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: manager })
+    await openTab(wrapper, 'Configuration')
+    const builder = wrapper.get('[data-testid=ranking-builder]')
+    expect(builder.findAll('[data-block]').map((b) => b.attributes('data-block'))).toEqual([
+      'round:0',
+      'round:1',
+      'round:2',
+      'calc:0',
+      'calc:1',
+      'ranking',
+    ])
+    const diagram = wrapper.getComponent(BlockDiagram)
+    diagram.vm.$emit('connect', 'calc:0', 'calc:1', 'in3')
+    await flushPromises()
+    diagram.vm.$emit('connect', 'calc:1', 'calc:0', 'in3')
+    await flushPromises()
+    expect(wrapper.get('[data-testid=builder-status]').text()).toContain('error')
+    expect(buttonByText('Save configuration').disabled).toBe(true)
+
+    // Undo restores the valid configuration.
+    await click(buttonByText('Undo', builder.element as HTMLElement))
+    expect(wrapper.get('[data-testid=builder-status]').text()).toContain('Valid')
   })
 
   it('M3-17: publishes and shows snapshots', async () => {

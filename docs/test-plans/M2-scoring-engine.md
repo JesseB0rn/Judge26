@@ -32,6 +32,9 @@
 | M2-T10  | Modify active template                    | Integration › M2-T10 (incl. superuser); Engine › M2-14 isolation; Unit `RulesetsView` › M2-T10; E2E |
 | M2-T11  | Recalculate historical score              | Integration › M2-T11; E2E (version 1 still scores 10)                                               |
 | M2-T12  | Identical input twice                     | Engine `evaluate` › M2-T12; property: deterministic, key order                                      |
+| M2-T13  | Build the example ruleset in the builder  | Unit `builder` › M2-T13 (canonical JSON equals `EXAMPLE_RULESET`); E2E `builders` (palette, wiring) |
+| M2-T14  | Open a JSON ruleset in the builder, save  | Unit `builder` › M2-T14 (byte-identical text, no-op edit)                                           |
+| M2-T15  | Circular condition in the builder         | Unit `builder` › M2-T15; Unit `RulesetsView` › M2-T15 (Publish disabled); E2E `builders`            |
 
 ## Acceptance criteria
 
@@ -51,9 +54,10 @@
 | M2-12 | Invalid configurations rejected | Engine `validate` (all codes); Integration › publish validation          |
 | M2-13 | Score explanation               | Engine › example explanation, formulas; Unit `RulesetsView` preview; E2E |
 | M2-14 | Configuration versioning        | M2-T10, M2-T11; Integration › copy carries active version                |
+| M2-15 | Visual rule builder             | M2-T13 – M2-T15; Unit `RulesetsView` › M2-15 (palette + inspector)       |
 
-M2-15 (visual rule builder, P2) and its tests M2-T13 to M2-T15 are not yet implemented and
-do not block the M2 exit criteria.
+Builder unit tests: `apps/web/src/modules/scoring/__tests__/builder.spec.ts`; E2E:
+`e2e/scoring/builders.spec.ts` (drags real wires with the mouse).
 
 ## Exit criteria
 

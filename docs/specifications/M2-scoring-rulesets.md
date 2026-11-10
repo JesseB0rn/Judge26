@@ -164,3 +164,31 @@ archived events.
 `EXAMPLE_RULESET` in `packages/scoring-engine/src/example.ts` uses every feature and is the
 starting point for new rulesets in the editor. The roadmap fixtures M2-F01 to M2-F05 are encoded
 in `packages/scoring-engine/tests/fixtures.test.ts`.
+
+## Visual builders (M2-15, M3-18)
+
+Rulesets (Definition tab) and ranking configurations (Configuration tab) open in a visual,
+LabVIEW-style block diagram; a **Visual | JSON** switch shows the JSON editor of the same text.
+Both editors share one source of truth, so validation, preview and saving are identical, and
+nothing builder-specific (e.g. block positions) is stored: a definition opened and saved without
+edits is unchanged (M2-T14, M3-T16).
+
+- **Data flows left to right.** Criteria and rounds are controls on the left, groups and
+  calculations are pale-yellow function blocks, the total and the ranking are indicators on the
+  right. Wire colours follow LabVIEW data types: green yes/no, orange numbers, blue choices,
+  brown results (points with their time); thick wires carry aggregated values.
+- **Wiring** a block's ▶ output into a group's input terminal places it there (order = terminal
+  order); into a block's ▼ enable terminal adds a condition clause (dashed). For rankings, wires
+  into a calculation add or replace operands, wires into the ranking add or replace ranking keys
+  (terminal 1 ranks, the next ones break ties). A spare terminal always accepts a new wire.
+- **The inspector** edits the selected block and offers every wiring action as a form (parent
+  group and order, condition rules, operands, ranking keys), so the canvas is never required
+  (touch, keyboard, screen readers). Conditions nested deeper than one and/or level are edited
+  as JSON in the inspector.
+- **Validation** is the engine's: blocks with issues are outlined red; the toolbar shows the error
+  count instead of LabVIEW's broken run arrow. Circular conditions or calculations can be drawn,
+  are reported on the block and block publishing / saving (M2-T15, M3-T17).
+- **Probes** show live values on each output: the score sheet values entered on the Preview tab,
+  or one chosen team's ranking calculation (M3-16).
+- Undo (Ctrl/Cmd+Z), delete (Delete key on a selected block or wire), clean up (automatic
+  layout) and zoom/fit are available; dragged block positions last until the structure changes.
