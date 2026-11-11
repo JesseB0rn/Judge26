@@ -69,6 +69,8 @@ export interface GameInputData {
   time_ms?: number
   ruleset?: string
   values?: Record<string, unknown> | null
+  /** Version the edit was based on; an outdated one is refused (409). */
+  expected_updated?: string
 }
 
 export function saveGame(id: string | undefined, data: GameInputData) {

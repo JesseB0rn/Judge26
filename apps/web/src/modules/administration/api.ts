@@ -1,5 +1,5 @@
 import { pb } from '@/shared/api/pocketbase'
-import type { Role, RoleAssignmentRecord } from '@/shared/types/records'
+import type { AuditLogRecord, Role, RoleAssignmentRecord } from '@/shared/types/records'
 
 export interface AdminUser {
   id: string
@@ -39,4 +39,27 @@ export function assignRole(user: string, role: Role, event = '') {
 
 export function removeRole(id: string) {
   return assignments().delete(id)
+}
+
+export interface AuditQuery {
+  event?: string
+  collection?: string
+  search?: string
+  page?: number
+}
+
+/** Newest first (M7-08); admins see all entries, event managers those of their events. */
+export function listAuditLog(query: AuditQuery = {}) {
+  const filter = [
+    query.event ? pb.filter('event = {:e}', { e: query.event }) : '',
+    query.collection ? pb.filter('collection = {:c}', { c: query.collection }) : '',
+    query.search
+      ? pb.filter('(summary ~ {:q} || actor_label ~ {:q} || action ~ {:q})', { q: query.search })
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' && ')
+  return pb
+    .collection<AuditLogRecord>('audit_log')
+    .getList(query.page ?? 1, 50, { filter, sort: '-created,-id' })
 }

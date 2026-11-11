@@ -41,9 +41,15 @@ export function rejectSheet(gameId: string, reason: string) {
   })
 }
 
-export function correctSheet(gameId: string, input: SheetInput, reason: string) {
+/** `expectedCorrections`: the correction count the edit was based on (refused with 409 if outdated). */
+export function correctSheet(
+  gameId: string,
+  input: SheetInput,
+  reason: string,
+  expectedCorrections?: number,
+) {
   return pb.send<{ sheet: ScoreSheet }>(`/api/games/${gameId}/sheet/correct`, {
     method: 'POST',
-    body: { ...input, reason },
+    body: { ...input, reason, expected_corrections: expectedCorrections },
   })
 }

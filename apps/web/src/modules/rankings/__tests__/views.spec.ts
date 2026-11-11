@@ -299,7 +299,13 @@ describe('RankingView', () => {
     await click(buttonByText('Save result', dialog()))
     expect(mocked.saveGame).toHaveBeenCalledWith(
       expect.stringMatching(/^game-/),
-      expect.objectContaining({ points: 105, time_ms: 120_000, attempt: 1 }),
+      // M7-T10: edits state the version they are based on.
+      expect.objectContaining({
+        points: 105,
+        time_ms: 120_000,
+        attempt: 1,
+        expected_updated: '2026-01-01 00:00:00.000Z',
+      }),
     )
 
     await click(

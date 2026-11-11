@@ -1,0 +1,186 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { watchDebounced } from '@vueuse/core'
+import { ChevronDownIcon, ChevronRightIcon } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import { toAppError, type AppError } from '@/shared/api/errors'
+import { formatDateTime } from '@/shared/format'
+import type { AuditLogRecord } from '@/shared/types/records'
+import { listAuditLog } from '../api'
+
+/** Audit log (M7-08): who did what and when, newest first, with the changed fields. */
+const props = defineProps<{ eventId?: string }>()
+
+const AREAS: Record<string, string> = {
+  events: 'Events',
+  competition_days: 'Competition days',
+  categories: 'Categories',
+  teams: 'Teams',
+  team_documents: 'Team documents',
+  role_assignments: 'Roles',
+  game_rules: 'Games',
+  rulesets: 'Rulesets',
+  rounds: 'Rounds',
+  round_phases: 'Planner phases',
+  schedule_blocks: 'Planner blocks',
+  schedule_columns: 'Planner columns',
+  tables: 'Tables',
+  games: 'Game results',
+  ranking_snapshots: 'Ranking snapshots',
+  mail_templates: 'Email templates',
+  mail_outbox: 'Emails',
+}
+
+const entries = ref<AuditLogRecord[]>([])
+const total = ref(0)
+const page = ref(1)
+const loading = ref(false)
+const error = ref<AppError>()
+const area = ref('')
+const search = ref('')
+const open = ref(new Set<string>())
+
+async function load(more = false) {
+  loading.value = true
+  error.value = undefined
+  try {
+    const next = more ? page.value + 1 : 1
+    const result = await listAuditLog({
+      event: props.eventId,
+      collection: area.value,
+      search: search.value.trim(),
+      page: next,
+    })
+    entries.value = more ? [...entries.value, ...result.items] : result.items
+    total.value = result.totalItems
+    page.value = next
+  } catch (e) {
+    error.value = toAppError(e)
+  } finally {
+    loading.value = false
+  }
+}
+
+function toggle(id: string) {
+  const next = new Set(open.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  open.value = next
+}
+
+const show = (value: unknown) =>
+  value === null || value === undefined || value === '' ? '–' : String(value)
+
+/** Rows of the changes: [field, before, after] for updates, [field, value] otherwise. */
+function changeRows(entry: AuditLogRecord): string[][] {
+  return Object.entries(entry.changes ?? {}).map(([field, value]) =>
+    Array.isArray(value) && value.length === 2
+      ? [field, show(value[0]), show(value[1])]
+      : [field, show(value)],
+  )
+}
+const more = computed(() => entries.value.length < total.value)
+
+onMounted(() => load())
+watchDebounced([area, search], () => load(), { debounce: 300 })
+</script>
+
+<template>
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <NativeSelect v-model="area" aria-label="Filter by area" class="w-48">
+        <NativeSelectOption value="">All areas</NativeSelectOption>
+        <NativeSelectOption v-for="(label, key) in AREAS" :key="key" :value="key">{{
+          label
+        }}</NativeSelectOption>
+      </NativeSelect>
+      <Input
+        v-model="search"
+        type="search"
+        placeholder="Search actions, users, records"
+        aria-label="Search the audit log"
+        class="max-w-xs"
+      />
+      <span class="text-sm text-muted-foreground">{{ total }} entries</span>
+    </div>
+    <ErrorAlert :error="error" />
+    <Table data-testid="audit-log">
+      <TableHeader>
+        <TableRow>
+          <TableHead class="w-0"><span class="sr-only">Details</span></TableHead>
+          <TableHead>When</TableHead>
+          <TableHead>Who</TableHead>
+          <TableHead>What</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <template v-for="entry in entries" :key="entry.id">
+          <TableRow :data-action="entry.action">
+            <TableCell>
+              <Button
+                v-if="entry.changes && Object.keys(entry.changes).length"
+                variant="ghost"
+                size="icon-sm"
+                :aria-label="`Details of ${entry.summary}`"
+                :aria-expanded="open.has(entry.id)"
+                @click="toggle(entry.id)"
+              >
+                <ChevronDownIcon v-if="open.has(entry.id)" />
+                <ChevronRightIcon v-else />
+              </Button>
+            </TableCell>
+            <TableCell class="whitespace-nowrap">{{ formatDateTime(entry.created) }}</TableCell>
+            <TableCell>
+              {{ entry.actor_label }}
+              <span v-if="entry.ip" class="block text-xs text-muted-foreground">{{
+                entry.ip
+              }}</span>
+            </TableCell>
+            <TableCell class="whitespace-normal">
+              {{ entry.summary }}
+              <span class="block text-xs text-muted-foreground"
+                >{{ AREAS[entry.collection] ?? entry.collection }} · {{ entry.action }}</span
+              >
+            </TableCell>
+          </TableRow>
+          <TableRow v-if="open.has(entry.id)" :data-testid="`changes-${entry.id}`">
+            <TableCell />
+            <TableCell colspan="3" class="whitespace-normal">
+              <table class="text-xs">
+                <tbody>
+                  <tr v-for="row in changeRows(entry)" :key="row[0]">
+                    <th class="pr-3 text-left font-medium">{{ row[0] }}</th>
+                    <td class="pr-3 break-all">{{ row[1] }}</td>
+                    <td v-if="row.length === 3" class="break-all">→ {{ row[2] }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </TableCell>
+          </TableRow>
+        </template>
+        <TableEmpty v-if="!loading && !entries.length" :colspan="4">No entries.</TableEmpty>
+      </TableBody>
+    </Table>
+    <Button
+      v-if="more"
+      variant="outline"
+      class="self-start"
+      :disabled="loading"
+      @click="load(true)"
+    >
+      Load more
+    </Button>
+  </div>
+</template>

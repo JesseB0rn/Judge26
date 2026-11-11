@@ -17,12 +17,7 @@ onRecordValidate((e) => {
 }, 'round_phases')
 
 onRecordUpdateRequest((e) => {
-  require(`${__hooks}/lib/planner.js`).checkVersion(e, 'round_phases', [
-    'day',
-    'starts_at',
-    'duration_minutes',
-  ])
-  e.next()
+  require(`${__hooks}/lib/planner.js`).checkVersion(e, ['day', 'starts_at', 'duration_minutes'])
 }, 'round_phases')
 
 // Phases and rounds mirror each other (durations, scoring day). Both directions save only what
@@ -55,7 +50,7 @@ onRecordValidate((e) => {
 }, 'schedule_blocks')
 
 onRecordUpdateRequest((e) => {
-  require(`${__hooks}/lib/planner.js`).checkVersion(e, 'schedule_blocks', [
+  require(`${__hooks}/lib/planner.js`).checkVersion(e, [
     'day',
     'starts_at',
     'duration_minutes',
@@ -67,7 +62,6 @@ onRecordUpdateRequest((e) => {
     'columns',
     'public',
   ])
-  e.next()
 }, 'schedule_blocks')
 
 // --- Custom columns (M4-14-33) -------------------------------------------------

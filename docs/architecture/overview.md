@@ -99,7 +99,9 @@ The root `Dockerfile` builds a single image:
    origin. PocketBase's index fallback serves `index.html` for client-side routes.
 
 Data lives in `/pb/pb_data` (a volume in `docker-compose.yml`). Migrations are applied on start.
-Backups, monitoring and TLS termination are addressed in M7.
+Automatic daily backups run in production; see the
+[backup and restore runbook](../operations/backup-and-restore.md). Administrative changes are
+recorded in an audit log ([M7 spec](../specifications/M7-audit-backup-security.md)).
 
 ## Decisions
 

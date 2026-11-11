@@ -117,14 +117,14 @@ function checkColumnDelete(app, column) {
 /**
  * Planner edits must state the `updated` value they were based on (M4-14-19): a stale write is
  * refused with 409. Only direct API requests are checked; server-side syncing is not affected.
+ * Continues the request (calls `e.next()`).
  */
-function checkVersion(e, collection, fields) {
-  const body = e.requestInfo().body || {}
-  if (!fields.some((key) => key in body)) return
-  const stored = e.app.findRecordById(collection, e.record.id)
-  if (body.expected_updated !== stored.getString('updated')) {
-    throw new ApiError(409, 'This block was changed by someone else. Reload and try again.', {})
-  }
+function checkVersion(e, fields) {
+  require(`${__hooks}/lib/concurrency.js`).versionedUpdate(
+    e,
+    (body) => fields.some((key) => key in body),
+    'This block was changed by someone else. Reload and try again.',
+  )
 }
 
 // ---------------------------------------------------------------------------

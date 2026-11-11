@@ -225,3 +225,16 @@ export interface MailOutboxRecord extends BaseRecord {
   team: string
   expand?: { team?: TeamRecord }
 }
+
+/** An administrative action (M7-08). Written by the server only. */
+export interface AuditLogRecord extends BaseRecord {
+  actor: string
+  actor_label: string
+  action: string
+  collection: string
+  record: string
+  event: string
+  summary: string
+  changes: Record<string, unknown> | null
+  ip: string
+}

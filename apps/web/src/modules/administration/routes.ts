@@ -7,4 +7,10 @@ export const administrationRoutes: RouteRecordRaw[] = [
     component: () => import('./views/UsersView.vue'),
     meta: { requiresAdmin: true },
   },
+  {
+    path: '/admin/audit',
+    name: 'audit-log',
+    component: () => import('./views/AuditLogView.vue'),
+    meta: { requiresAdmin: true },
+  },
 ]

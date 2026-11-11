@@ -361,7 +361,12 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
   }
 
   const correct = (reason: string) =>
-    run(async () => (await api.correctSheet(gameId, input.value, reason), await load()))
+    run(
+      async () => (
+        await api.correctSheet(gameId, input.value, reason, payload.value?.sheet?.corrections),
+        await load()
+      ),
+    )
 
   // Keep the stopwatch display ticking.
   const tick = ref(now())

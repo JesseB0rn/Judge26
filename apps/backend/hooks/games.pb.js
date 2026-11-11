@@ -11,22 +11,15 @@ onRecordUpdate((e) => {
   e.next()
 }, 'games')
 
-// M5: concurrent schedule edits must include the version they were based on.
+// M5: concurrent schedule edits must include the version they were based on. M7-T10: any other
+// edit (e.g. a manually recorded result) that states its version is refused when outdated too.
 // A schedule change over the API must state
 // the `updated` value it was based on; if the game changed since, the request is refused.
 // Only direct API requests are checked, so the server-side generator is not affected.
 onRecordUpdateRequest((e) => {
-  const body = e.requestInfo().body || {}
-  const scheduleKeys = ['table', 'sequence'].filter((key) => key in body)
-  if (scheduleKeys.length > 0) {
-    const stored = e.app.findRecordById('games', e.record.id)
-    if (body.expected_updated !== stored.getString('updated')) {
-      throw new ApiError(
-        409,
-        'The game was changed by someone else. Reload the schedule and try again.',
-        {},
-      )
-    }
-  }
-  e.next()
+  require(`${__hooks}/lib/concurrency.js`).versionedUpdate(
+    e,
+    (body) => 'table' in body || 'sequence' in body || 'expected_updated' in body,
+    'The game was changed by someone else. Reload and try again.',
+  )
 }, 'games')

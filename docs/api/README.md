@@ -8,6 +8,12 @@ collection's API rules (defined in migrations).
 
 API responses must never be cached; see [M3 spec](../specifications/M3-rounds-and-ranking.md#caching).
 
+## Concurrent edits
+
+Updates that send `expected_updated` (the record's `updated` value they were based on) are refused
+with `409` if the record changed since; score corrections send `expected_corrections`. See
+[M7 security](../specifications/M7-audit-backup-security.md#concurrent-updates-m7-t10).
+
 ## Error format
 
 All errors use PocketBase's format:
@@ -60,3 +66,4 @@ All errors use PocketBase's format:
 | `mail_templates`   | Email templates (M7-02)           | admins (edit only) | `1764100000_m7_communication.js`                                       |
 | `mail_outbox`      | Queued and sent emails (M7-01)    | read-only via API  | `1764100000_m7_communication.js`                                       |
 | `schedule_notices` | Last notified schedule per team   | internal           | `1764100000_m7_communication.js`                                       |
+| `audit_log`        | Administrative actions (M7-08)    | read-only via API  | `1764200000_m7_audit_log.js`                                           |

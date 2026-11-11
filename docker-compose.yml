@@ -17,6 +17,9 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_TLS: ${SMTP_TLS:-false}
+      # Automatic backups (docs/operations/backup-and-restore.md); "off" disables them.
+      BACKUP_CRON: '${BACKUP_CRON:-30 3 * * *}'
+      BACKUP_MAX_KEEP: ${BACKUP_MAX_KEEP:-14}
     volumes:
       - pb_data:/pb/pb_data
     restart: unless-stopped

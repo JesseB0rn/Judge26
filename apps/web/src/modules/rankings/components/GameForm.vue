@@ -81,6 +81,8 @@ const save = useSubmit(async () => {
     time_ms: status.value === 'completed' ? secondsToMs(seconds.value) : 0,
     ruleset: sheet ? props.ruleset!.id : '',
     values: sheet ? values.value : null,
+    // Never silently overwrite a result someone else saved meanwhile (M7-T10).
+    ...(current.value ? { expected_updated: current.value.updated } : {}),
   })
   emit('saved')
   emit('close')

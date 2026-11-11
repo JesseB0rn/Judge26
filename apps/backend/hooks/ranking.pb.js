@@ -70,6 +70,16 @@ routerAdd(
     snapshot.set('fingerprint', engine.fingerprint({ config, inputs, result }))
     if (!e.auth.isSuperuser()) snapshot.set('created_by', e.auth.id)
     e.app.save(snapshot)
+    require(`${__hooks}/lib/audit.js`).log(e.app, {
+      auth: e.auth,
+      action: 'create',
+      collection: 'ranking_snapshots',
+      record: snapshot.id,
+      event: eventId,
+      summary: `Published ranking snapshot “${title}” of ${category.getString('name')}`,
+      changes: { title, fingerprint: snapshot.getString('fingerprint') },
+      ip: require(`${__hooks}/lib/audit.js`).requestIp(e),
+    })
     return e.json(201, snapshot)
   },
   $apis.requireAuth('users', '_superusers'),

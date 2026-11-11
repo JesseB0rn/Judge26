@@ -76,7 +76,8 @@ docs/         Architecture, API notes, specifications and test plans
   [M5 judging](docs/specifications/M5-judging.md),
   [M6 live competition](docs/specifications/M6-live.md),
   [M7 communication](docs/specifications/M7-communication.md),
-  [M7 exports](docs/specifications/M7-exports.md)
+  [M7 exports](docs/specifications/M7-exports.md),
+  [M7 audit, backups and security](docs/specifications/M7-audit-backup-security.md)
 - Test plans: [M0 foundation](docs/test-plans/M0-foundation.md),
   [M1 identity and events](docs/test-plans/M1-identity-events.md),
   [M2 scoring engine](docs/test-plans/M2-scoring-engine.md),
@@ -85,7 +86,9 @@ docs/         Architecture, API notes, specifications and test plans
   [M5 judging](docs/test-plans/M5-judging.md),
   [M6 live competition](docs/test-plans/M6-live.md),
   [M7 communication](docs/test-plans/M7-communication.md),
-  [M7 exports](docs/test-plans/M7-exports.md)
+  [M7 exports](docs/test-plans/M7-exports.md),
+  [M7 audit, backups and security](docs/test-plans/M7-audit-backup-security.md)
+- Operations: [backup and restore](docs/operations/backup-and-restore.md)
 - [Architecture decision records](docs/architecture/decisions/)
 
 ## Production

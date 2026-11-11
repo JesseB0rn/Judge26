@@ -145,6 +145,16 @@ routerAdd(
       (access.isAdmin(e.app, e.auth) || (eventId && access.canManageEvent(e.app, e.auth, eventId)))
     if (!allowed) throw new ForbiddenError('Only admins and event managers can retry messages.')
     mail.retry(e.app, record.id)
+    const audit = require(`${__hooks}/lib/audit.js`)
+    audit.log(e.app, {
+      auth: e.auth,
+      action: 'mail.retry',
+      collection: 'mail_outbox',
+      record: record.id,
+      event: eventId,
+      summary: `Retried email “${record.getString('subject')}” to ${record.getString('to')}`,
+      ip: audit.requestIp(e),
+    })
     mail.deliver(e.app, record.id)
     return e.json(200, e.app.findRecordById('mail_outbox', record.id).publicExport())
   },
@@ -246,6 +256,17 @@ routerAdd(
         .scheduleChanges(tx, event.id)
         .filter((c) => (scope === 'all' ? c.entry.items.length > 0 || c.notice : c.changed))
       queued = mail.notifySchedule(tx, event.id, changes, message)
+    })
+    const audit = require(`${__hooks}/lib/audit.js`)
+    audit.log(e.app, {
+      auth: e.auth,
+      action: 'notifications.schedule',
+      collection: 'events',
+      record: event.id,
+      event: event.id,
+      summary: `Sent schedule emails to ${queued} team${queued === 1 ? '' : 's'} (${scope})`,
+      changes: { scope, queued, message },
+      ip: audit.requestIp(e),
     })
     return e.json(200, { queued })
   },
