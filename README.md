@@ -101,6 +101,14 @@ docs/         Architecture, API notes, specifications and test plans
 
 ## Production
 
+On a fresh Linux host (installs Docker if needed; asks for the domain, or pass `DOMAIN=…`):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/JesseB0rn/Judge26/main/scripts/install.sh | sudo sh
+```
+
+From a checkout:
+
 ```sh
 cp .env.example .env    # configure
 docker compose up -d --build                                            # HTTP on :8090

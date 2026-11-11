@@ -11,19 +11,43 @@ SPA on port 8090; all data is in the `pb_data` volume. See
 - For HTTPS: a DNS name pointing at the host, ports 80 and 443 open.
 - An SMTP account for emails (optional; without it emails stay queued and fail after retries).
 
+## Installer
+
+On a fresh Linux host (Debian, Ubuntu, …) one command installs Docker if needed, downloads the
+compose files of the release, writes `.env` with generated secrets and starts the published image:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/JesseB0rn/Judge26/main/scripts/install.sh \
+  | sudo DOMAIN=judge.example.org ACME_EMAIL=ops@example.org sh
+```
+
+- Without `DOMAIN` the app is served over plain HTTP on `JUDGE26_PORT` (8090); in a terminal the
+  installer asks for the domain and the superuser email instead.
+- It installs into `/opt/judge26` (`JUDGE26_DIR`) and the latest release (`JUDGE26_VERSION=0.1.0`
+  to pin one). `COMPOSE_FILE` in its `.env` selects the compose files, so `docker compose …` in
+  that directory needs no `-f` options.
+- The superuser password is printed once and kept in `.env`, like `PB_ENCRYPTION_KEY`.
+- **Upgrade:** run the same command again (with `JUDGE26_VERSION` for a specific release). `.env`
+  and the data are kept; the installer first creates a backup `pre-upgrade-….zip` in the app's
+  backup list, then replaces the compose files and starts the new image.
+- Further options (`INSTALL_DOCKER=0`, `NONINTERACTIVE=1`) are described at the top of
+  `scripts/install.sh`.
+
+The manual way, from a checkout:
+
 ## First deployment
 
 ```sh
 git clone https://github.com/JesseB0rn/Judge26.git && cd Judge26
-git checkout v1.2.0                     # always deploy a tag
+git checkout v0.1.0                     # always deploy a tag
 cp .env.example .env                    # edit: APP_URL, superuser, PB_ENCRYPTION_KEY, SMTP, DOMAIN
-export APP_VERSION=1.2.0 GIT_COMMIT=$(git rev-parse HEAD)
+export APP_VERSION=0.1.0 GIT_COMMIT=$(git rev-parse HEAD)
 docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
 pnpm smoke https://judge.example.org    # or: node scripts/smoke-test.mjs <url>
 ```
 
 Instead of building, a released image can be used: set
-`JUDGE26_IMAGE=ghcr.io/jesseb0rn/judge26:1.2.0` in `.env` and run `docker compose pull` before
+`JUDGE26_IMAGE=ghcr.io/jesseb0rn/judge26:0.1.0` in `.env` and run `docker compose pull` before
 `up -d` (without `--build`).
 
 Without HTTPS (local network, behind an existing proxy): leave out `-f docker-compose.caddy.yml`;
