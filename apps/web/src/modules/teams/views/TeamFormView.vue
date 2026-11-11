@@ -27,6 +27,7 @@ import type {
 import { createTeam, deleteTeam, getTeam, updateTeam, type TeamInput } from '../api'
 import { canCoachEdit, validateMembers } from '../lib'
 import MembersEditor from '../components/MembersEditor.vue'
+import TeamDocuments from '../components/TeamDocuments.vue'
 import TeamStatusBadge from '../components/TeamStatusBadge.vue'
 
 /** Create (`eventId`) or view/edit (`id`) a team registration. */
@@ -291,5 +292,12 @@ onMounted(load)
         </form>
       </CardContent>
     </Card>
+
+    <TeamDocuments
+      v-if="team"
+      :team-id="team.id"
+      :editable="isManager && event.status !== 'archived'"
+      class="mt-6"
+    />
   </template>
 </template>

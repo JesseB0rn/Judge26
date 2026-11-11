@@ -12,6 +12,12 @@ export const judgingRoutes: RouteRecordRaw[] = [
     component: () => import('./views/ReviewView.vue'),
   },
   {
+    path: '/judging/rounds/:roundId/check',
+    name: 'judging-check',
+    component: () => import('./views/RobotCheckView.vue'),
+    props: true,
+  },
+  {
     path: '/judging/games/:id',
     name: 'judging-game',
     component: () => import('./views/ScoreGameView.vue'),

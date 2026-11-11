@@ -468,8 +468,32 @@ function scoringStart(app, roundId) {
   return phase && phase.getString('day') ? phase.getString('starts_at') : ''
 }
 
+/**
+ * A round's robot check for the judge schedule (M5-15): null if the round has none, otherwise
+ * its day (null while unplaced), start ("HH:MM" or "") and duration.
+ */
+function robotCheck(app, roundId) {
+  const phase = findPhase(app, roundId, 'check')
+  if (!phase) return null
+  let day = null
+  if (phase.getString('day')) {
+    try {
+      const d = app.findRecordById('competition_days', phase.getString('day'))
+      day = { id: d.id, date: d.getString('date'), label: d.getString('label') }
+    } catch (_) {
+      day = null
+    }
+  }
+  return {
+    day,
+    starts_at: day ? phase.getString('starts_at') : '',
+    duration_minutes: phase.getInt('duration_minutes'),
+  }
+}
+
 module.exports = {
   scoringStart,
+  robotCheck,
   DEFAULT_START,
   DEFAULT_END,
   toMinutes,

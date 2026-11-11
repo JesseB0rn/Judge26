@@ -73,3 +73,27 @@ At most 500 rows per file. An example file can be downloaded from the import dia
 3. All valid rows are sent in **one batch request**, which PocketBase executes in a single
    transaction. If the server rejects any row (e.g. a concurrent change), **nothing** is
    imported and the error is shown.
+
+## Team documents (M1-13)
+
+Files attached to a team, e.g. robot description, technical documentation or consent forms.
+
+- **Upload and delete:** admins and the event's managers, while the event is not archived
+  (team page, _Documents_ card). Each document has a title (required, ≤ 100 characters,
+  prefilled from the file name) and one file of at most 20 MB: PDF, PNG, JPEG, WebP, GIF, plain
+  text, ZIP or Office (Word, Excel, PowerPoint). The server sets `uploaded_by`; the team of a
+  document cannot change.
+- **Read:** the team's coach and all staff of the event (judges, head judges, managers), plus
+  admins. Other coaches and other events' staff see neither the records nor the files.
+- **Files are protected.** A download URL needs a short-lived file token
+  (`pb.files.getToken()`); PocketBase then checks the collection's view rule, so a file is
+  visible to exactly the users who can see its record. The web app refreshes the token while a
+  page with documents is open.
+- The event's Teams tab shows the number of documents per team. Deleting a team deletes its
+  documents.
+- Judges also see the documents during a guided robot check (M5-15, see
+  [M5-judging.md](M5-judging.md)).
+
+| Collection       | Fields                                                       | Migration                      |
+| ---------------- | ------------------------------------------------------------ | ------------------------------ |
+| `team_documents` | `team` (cascade), `title`, `file` (protected), `uploaded_by` | `1764000000_team_documents.js` |

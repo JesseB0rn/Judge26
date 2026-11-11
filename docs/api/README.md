@@ -50,6 +50,7 @@ All errors use PocketBase's format:
 | `round_phases`     | Placed phases of rounds (M4-14)   | event managers     | `1763800000_m4_planner.js`                                             |
 | `schedule_blocks`  | Custom planner blocks (M4-14)     | event managers     | `1763800000_m4_planner.js`, `1763900000_m4_planner_columns.js`         |
 | `schedule_columns` | Custom planner columns (M4-14-33) | event managers     | `1763900000_m4_planner_columns.js`                                     |
+| `team_documents`   | Files attached to teams (M1-13)   | event managers     | `1764000000_team_documents.js`                                         |
 | `score_sheets`     | Judge score sheets (M5)           | read-only via API  | `1763300000_m5_judging.js`                                             |
 | `score_audit`      | Append-only score audit (M5)      | read-only via API  | `1763300000_m5_judging.js`                                             |
 | `live_revisions`   | Change counter per event (M6)     | read-only via API  | `1763400000_m6_live.js`                                                |

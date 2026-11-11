@@ -26,6 +26,15 @@ export interface RoundRef {
   starts_at?: string
 }
 
+/** A round's robot check from the schedule planner (M5-15). */
+export interface RoundCheck {
+  /** Null while the check is not placed in the planner. */
+  day: DayRef | null
+  /** HH:MM, or "" while unplaced. */
+  starts_at: string
+  duration_minutes: number
+}
+
 /** One row of a judge's game list (GET /api/judging/assignments). */
 export interface Assignment {
   id: string
@@ -36,6 +45,8 @@ export interface Assignment {
   time_ms: number
   team: NamedRef
   round: RoundRef
+  /** The round's robot check, or null/absent if it has none (M5-15). */
+  check?: RoundCheck | null
   category: { id: string; name: string; code: string }
   event: { id: string; name: string; status: string }
   table: NamedRef | null

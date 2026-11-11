@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { ClipboardListIcon, CloudOffIcon, PlayIcon, RefreshCwIcon } from '@lucide/vue'
+import {
+  ClipboardListIcon,
+  CloudOffIcon,
+  PlayIcon,
+  RefreshCwIcon,
+  ScanSearchIcon,
+} from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,17 +20,35 @@ import { listAssignments } from '../api'
 import {
   cacheAssignments,
   cachedAssignments,
+  finishedChecks,
   installAutoSync,
   pendingDraftIds,
   syncPendingDrafts,
 } from '../drafts'
-import { dayOptions, filterAssignments, isToDo, scoreState, tableOptions } from '../lib'
+import {
+  buildTimeline,
+  checkRoute,
+  checkWhen,
+  dayOptions,
+  filterAssignments,
+  filterChecks,
+  isCheckDone,
+  isToDo,
+  nextUp,
+  robotChecks,
+  scoreState,
+  tableOptions,
+  type RobotCheckBlock,
+} from '../lib'
 import type { Assignment } from '../types'
 import AssignmentList from '../components/AssignmentList.vue'
 import FilterChips from '@/shared/components/FilterChips.vue'
 import ScoreStateBadge from '../components/ScoreStateBadge.vue'
 
-/** Judge dashboard (M5-01, M5-02): the games on my table, in playing order. */
+/**
+ * Judge dashboard (M5-01, M5-02): one timeline of the games on my table in playing order, with
+ * each round's robot check right before its games (M5-15). "Up next" is the first open item.
+ */
 const session = useSessionStore()
 const route = useRoute()
 
@@ -33,6 +57,7 @@ const loading = ref(true)
 const error = ref<AppError | null>(null)
 const offline = ref(false)
 const pending = ref(0)
+const finished = ref<string[]>([])
 
 // Filters live in the URL, so "back" from a game returns to the same view.
 const { day, table, show } = useQueryRefs({ day: '', table: '', show: '' })
@@ -45,12 +70,26 @@ const filtered = computed(() => {
 })
 const scoped = computed(() => filterAssignments(rows.value, { day: day.value, table: table.value }))
 const done = computed(() => scoped.value.filter((r) => !isToDo(r)).length)
-const next = computed(() => scoped.value.find(isToDo))
+// Robot checks of my rounds, on the check's own day (M5-15).
+const scopedChecks = computed(() =>
+  filterChecks(robotChecks(rows.value), { day: day.value, table: table.value }),
+)
+const checkDone = (block: RobotCheckBlock) => isCheckDone(block, rows.value, finished.value)
+const checks = computed(() =>
+  show.value === 'todo' ? scopedChecks.value.filter((b) => !checkDone(b)) : scopedChecks.value,
+)
+const next = computed(() => nextUp(buildTimeline(scoped.value, scopedChecks.value), checkDone))
+const nextGame = computed(() => (next.value?.kind === 'game' ? next.value.row : undefined))
+const nextCheck = computed(() => (next.value?.kind === 'check' ? next.value.block : undefined))
+const highlight = computed(() =>
+  nextCheck.value ? `check:${nextCheck.value.key}` : nextGame.value?.id,
+)
 
 async function load() {
   loading.value = true
   error.value = null
   const userId = session.user?.id ?? ''
+  finished.value = finishedChecks(userId)
   try {
     await syncPendingDrafts()
     rows.value = await listAssignments()
@@ -118,8 +157,8 @@ const context = (row: Assignment) =>
 
     <!-- The one thing a judge needs right now. -->
     <RouterLink
-      v-if="next"
-      :to="{ name: 'judging-game', params: { id: next.id }, query: { from: route.fullPath } }"
+      v-if="nextCheck"
+      :to="checkRoute(nextCheck, route.fullPath)"
       class="flex items-center gap-4 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
       data-testid="up-next"
     >
@@ -127,10 +166,34 @@ const context = (row: Assignment) =>
         <span class="block text-xs font-semibold tracking-wider text-muted-foreground uppercase"
           >Up next</span
         >
-        <span class="block truncate text-2xl font-bold">{{ next.team.name }}</span>
-        <span class="block truncate text-muted-foreground">{{ context(next) }}</span>
+        <span class="block truncate text-2xl font-bold"
+          >Robot check · {{ nextCheck.round.name }}</span
+        >
+        <span class="block truncate text-muted-foreground"
+          >{{ nextCheck.category.code }} · {{ checkWhen(nextCheck) }} ·
+          {{ nextCheck.teams.length }} team(s)</span
+        >
       </span>
-      <ScoreStateBadge :state="scoreState(next)" />
+      <span
+        class="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-4 font-medium text-primary-foreground"
+      >
+        <ScanSearchIcon class="size-5" /> Check
+      </span>
+    </RouterLink>
+    <RouterLink
+      v-else-if="nextGame"
+      :to="{ name: 'judging-game', params: { id: nextGame.id }, query: { from: route.fullPath } }"
+      class="flex items-center gap-4 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
+      data-testid="up-next"
+    >
+      <span class="min-w-0 flex-1">
+        <span class="block text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+          >Up next</span
+        >
+        <span class="block truncate text-2xl font-bold">{{ nextGame.team.name }}</span>
+        <span class="block truncate text-muted-foreground">{{ context(nextGame) }}</span>
+      </span>
+      <ScoreStateBadge :state="scoreState(nextGame)" />
       <span
         class="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-4 font-medium text-primary-foreground"
       >
@@ -158,8 +221,10 @@ const context = (row: Assignment) =>
 
     <AssignmentList
       :rows="filtered"
+      :checks="checks"
+      :check-done="checkDone"
       :show-table="tables.length > 1"
-      :highlight="next?.id"
+      :highlight="highlight"
       :from="route.fullPath"
     />
     <p

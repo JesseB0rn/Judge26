@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { CheckIcon, UploadIcon, XIcon } from '@lucide/vue'
+import { CheckIcon, PaperclipIcon, UploadIcon, XIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import {
@@ -19,6 +19,7 @@ import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
 import type { EventRecord, TeamRecord, TeamStatus } from '@/shared/types/records'
 import { listEventTeams, updateTeam } from '../api'
+import { listEventTeamDocuments } from '../documents'
 import { TEAM_STATUS_LABELS } from '../lib'
 import RejectDialog from './RejectDialog.vue'
 import TeamImportDialog from './TeamImportDialog.vue'
@@ -32,6 +33,14 @@ const props = defineProps<{ event: EventRecord; staff: boolean; canManage: boole
 
 const { data: teams, loading, error, load } = useLoader(() => listEventTeams(props.event.id))
 const categories = useLoader(() => listEventCategories(props.event.id))
+// Document count per team (M1-13); the API only returns documents the user may see.
+const documents = useLoader(() => listEventTeamDocuments(props.event.id))
+const documentCounts = computed(() => {
+  const counts = new Map<string, number>()
+  for (const doc of documents.data.value ?? [])
+    counts.set(doc.team, (counts.get(doc.team) ?? 0) + 1)
+  return counts
+})
 const statusFilter = ref<TeamStatus | ''>('')
 const categoryFilter = ref('')
 const rejecting = ref<TeamRecord>()
@@ -64,7 +73,7 @@ function onImported(count: number) {
   load()
 }
 
-onMounted(() => Promise.all([load(), categories.load()]))
+onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
 </script>
 
 <template>
@@ -102,6 +111,7 @@ onMounted(() => Promise.all([load(), categories.load()]))
           <TableHead class="hidden md:table-cell">Organization</TableHead>
           <TableHead class="hidden lg:table-cell">Coach</TableHead>
           <TableHead>Members</TableHead>
+          <TableHead class="hidden sm:table-cell">Documents</TableHead>
           <TableHead>Status</TableHead>
           <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
         </TableRow>
@@ -119,6 +129,21 @@ onMounted(() => Promise.all([load(), categories.load()]))
             team.coach_name || team.coach_email
           }}</TableCell>
           <TableCell>{{ team.members?.length ?? 0 }}</TableCell>
+          <TableCell
+            class="hidden sm:table-cell"
+            :data-documents="documentCounts.get(team.id) ?? 0"
+          >
+            <RouterLink
+              v-if="documentCounts.get(team.id)"
+              :to="{ name: 'team', params: { id: team.id }, hash: '#documents' }"
+              class="inline-flex items-center gap-1 hover:underline"
+              :aria-label="`${documentCounts.get(team.id)} document(s) of ${team.name}`"
+            >
+              <PaperclipIcon class="size-3.5" aria-hidden="true" />
+              {{ documentCounts.get(team.id) }}
+            </RouterLink>
+            <span v-else class="text-muted-foreground">–</span>
+          </TableCell>
           <TableCell><TeamStatusBadge :status="team.status" /></TableCell>
           <TableCell class="text-right whitespace-nowrap">
             <template
@@ -143,7 +168,7 @@ onMounted(() => Promise.all([load(), categories.load()]))
             </Button>
           </TableCell>
         </TableRow>
-        <TableEmpty v-if="!loading && !filtered.length" :colspan="7">No teams.</TableEmpty>
+        <TableEmpty v-if="!loading && !filtered.length" :colspan="8">No teams.</TableEmpty>
       </TableBody>
     </Table>
 

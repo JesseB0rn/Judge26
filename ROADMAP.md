@@ -203,6 +203,11 @@ platform.
 
   M1-12                   Team import             Teams can be imported
                                                   using CSV
+
+  M1-13                   Team documents          Event managers attach
+                                                  files to a team; the
+                                                  coach and event staff
+                                                  can open them
   -----------------------------------------------------------------------
 
 ### Tests
@@ -250,6 +255,11 @@ platform.
                                                   remain accessible to
                                                   authorized users
   -----------------------------------------------------------------------
+
+  M1-T13                  Manager uploads a team  Coach, judges and head
+                          document                judges can open it;
+                                                  other coaches and other
+                                                  events' staff cannot
 
 **Exit criteria:** Users with different roles can access only their
 authorized event resources. The complete registration-to-approval
@@ -1228,6 +1238,13 @@ score games.
 
   M5-14                   Offline support         Draft scores
                                                   synchronize when online
+
+  M5-15                   Guided robot check      Rounds with a robot
+                                                  check appear on the
+                                                  judge dashboard; the
+                                                  check steps through the
+                                                  table's teams with
+                                                  their documents
   -----------------------------------------------------------------------
 
 ### Mandatory workflow tests
@@ -1273,6 +1290,11 @@ score games.
                           scoring                 
 
   M5-T14                  Reconnect               Draft synchronizes
+
+  M5-T15                  Round has a robot check Check block on the
+                                                  dashboard; guided check
+                                                  shows each team's
+                                                  documents in order
 
   M5-T15                  Synchronize outdated    Finalized score is not
                           draft                   overwritten

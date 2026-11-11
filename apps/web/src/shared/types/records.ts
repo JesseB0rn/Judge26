@@ -97,6 +97,15 @@ export interface TeamRecord extends BaseRecord {
   expand?: { event?: EventRecord; category?: CategoryRecord }
 }
 
+/** A file attached to a team by an event manager (M1-13). The file is protected. */
+export interface TeamDocumentRecord extends BaseRecord {
+  team: string
+  title: string
+  /** Stored file name; download it with a file token (see teams/documents.ts). */
+  file: string
+  uploaded_by: string
+}
+
 export const ROLE_LABELS: Record<Role, string> = {
   admin: 'Administrator',
   event_manager: 'Event manager',
