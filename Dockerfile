@@ -10,7 +10,9 @@
 ARG NODE_IMAGE=node:24.22.2-alpine3.24@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8
 ARG ALPINE_IMAGE=alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
 
-FROM ${NODE_IMAGE} AS web
+# The SPA and the hook bundles are the same for every platform: build them natively on the build
+# machine ($BUILDPLATFORM). Under QEMU emulation (arm64 on an amd64 runner) the build crashes.
+FROM --platform=$BUILDPLATFORM ${NODE_IMAGE} AS web
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -27,7 +29,8 @@ RUN pnpm --filter @judge26/web build-only \
  && pnpm --filter @judge26/scoring-engine build:hooks \
  && pnpm --filter @judge26/ranking-engine build:hooks
 
-FROM ${ALPINE_IMAGE} AS pocketbase
+# Downloads the binary for the target platform (TARGETARCH), so it also runs natively.
+FROM --platform=$BUILDPLATFORM ${ALPINE_IMAGE} AS pocketbase
 ARG TARGETARCH
 COPY apps/backend/pocketbase.version /tmp/pocketbase.version
 RUN apk add --no-cache curl unzip \
