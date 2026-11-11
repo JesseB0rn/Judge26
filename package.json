@@ -21,7 +21,9 @@
     "test:coverage": "pnpm -r --filter \"!@judge26/backend\" --filter \"!@judge26/e2e\" test:coverage",
     "test:integration": "pnpm --filter @judge26/backend test",
     "test:e2e": "pnpm --filter @judge26/e2e test",
-    "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e"
+    "test:all": "pnpm test && pnpm test:integration && pnpm test:e2e",
+    "test:docker": "docker/smoke-test.sh",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "devDependencies": {
     "prettier": "3.9.6"

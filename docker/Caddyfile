@@ -1,0 +1,16 @@
+# Reverse proxy with automatic HTTPS (docker-compose.caddy.yml).
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+	# Realtime (server-sent events) must not be buffered.
+	reverse_proxy app:8090 {
+		flush_interval -1
+	}
+}

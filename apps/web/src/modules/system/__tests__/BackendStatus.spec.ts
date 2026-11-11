@@ -11,12 +11,18 @@ describe('BackendStatus', () => {
   beforeEach(() => fetchAppInfoMock.mockReset())
 
   it('shows online status and environment when the backend responds', async () => {
-    fetchAppInfoMock.mockResolvedValue({ name: 'judge26', environment: 'test' })
+    fetchAppInfoMock.mockResolvedValue({
+      name: 'judge26',
+      environment: 'test',
+      version: '1.2.0',
+      commit: '0123456789abcdef',
+    })
     const wrapper = mount(BackendStatus)
     await flushPromises()
 
     expect(wrapper.get('[data-testid="backend-status-badge"]').text()).toBe('online')
     expect(wrapper.text()).toContain('test')
+    expect(wrapper.get('[data-testid="backend-version"]').text()).toBe('1.2.0 (0123456)')
   })
 
   it('shows offline status and a normalized message when the backend is unreachable', async () => {

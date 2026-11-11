@@ -60,7 +60,7 @@ async function waitForHealthy(url: string, proc: ChildProcess, output: () => str
  * `dataDir` to restart against previously persisted data.
  */
 export async function startPocketBase(
-  options: { dataDir?: string; env?: Record<string, string> } = {},
+  options: { dataDir?: string; env?: Record<string, string>; publicDir?: string } = {},
 ): Promise<TestServer> {
   const dataDir = options.dataDir ?? mkdtempSync(join(tmpdir(), 'judge26-pb-'))
   const common = [`--dir=${dataDir}`, `--migrationsDir=${migrationsDir}`, `--hooksDir=${hooksDir}`]
@@ -80,7 +80,13 @@ export async function startPocketBase(
   // --hooksWatch=false: otherwise editing a hook restarts the server mid-test.
   const proc = spawn(
     binaryPath,
-    ['serve', `--http=127.0.0.1:${port}`, '--hooksWatch=false', ...common],
+    [
+      'serve',
+      `--http=127.0.0.1:${port}`,
+      '--hooksWatch=false',
+      ...(options.publicDir ? [`--publicDir=${options.publicDir}`] : []),
+      ...common,
+    ],
     { env },
   )
   let output = ''

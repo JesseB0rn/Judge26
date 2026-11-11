@@ -91,12 +91,17 @@ validation errors. The frontend normalizes every failure into an `AppError`
 
 ## Deployment
 
-The root `Dockerfile` builds a single image:
+The root `Dockerfile` builds a single image from pinned inputs (base image digests, lockfile,
+PocketBase version and checksum):
 
-1. builds the SPA with `.env.production` (`VITE_POCKETBASE_URL=/`),
+1. builds the SPA with `.env.production` (`VITE_POCKETBASE_URL=/`) and the engine bundles for hooks,
 2. downloads the pinned PocketBase release and verifies its checksum,
-3. runs PocketBase with `--publicDir` pointing at the built SPA, so API and frontend share one
-   origin. PocketBase's index fallback serves `index.html` for client-side routes.
+3. runs PocketBase as an unprivileged user with `--publicDir` pointing at the built SPA, so API and
+   frontend share one origin. PocketBase's index fallback serves `index.html` for client-side
+   routes; unknown `/api/` paths are 404.
+
+HTTPS is terminated by Caddy (`docker-compose.caddy.yml`). See the
+[deployment runbook](../operations/deployment.md) and [M7 deployment](../specifications/M7-deployment.md).
 
 Data lives in `/pb/pb_data` (a volume in `docker-compose.yml`). Migrations are applied on start.
 Automatic daily backups run in production; see the

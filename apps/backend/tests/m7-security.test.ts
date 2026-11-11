@@ -1,4 +1,5 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import PocketBase, { ClientResponseError, type CollectionModel, type RecordModel } from 'pocketbase'
@@ -50,6 +51,8 @@ function hasTopLevelOr(rule: string) {
 /** Custom routes and who may call them. Must list every routerAdd in hooks/ (checked below). */
 const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' }[] = [
   { method: 'GET', path: '/api/app/info', access: 'public' },
+  // Catch-all 404 for unknown API paths (M7-14).
+  { method: 'GET', path: '/api/{path...}', access: 'public' },
   { method: 'GET', path: '/api/public/events', access: 'public' },
   { method: 'GET', path: '/api/public/events/{id}', access: 'public' },
   { method: 'GET', path: '/api/public/categories/{id}/ranking', access: 'public' },
@@ -597,8 +600,14 @@ describe('M7 security', () => {
 
 describe('M7-11 production configuration', () => {
   let server: TestServer
+  // A stand-in SPA, so the production setup's index fallback is active.
+  const spaDir = mkdtempSync(join(tmpdir(), 'judge26-spa-'))
+  writeFileSync(join(spaDir, 'index.html'), '<!doctype html><div id="app"></div>')
   beforeAll(async () => {
-    server = await startPocketBase({ env: { PB_ENV: 'production', BACKUP_CRON: '' } })
+    server = await startPocketBase({
+      env: { PB_ENV: 'production', BACKUP_CRON: '' },
+      publicDir: spaDir,
+    })
   })
   afterAll(() => server?.dispose())
 
@@ -619,6 +628,19 @@ describe('M7-11 production configuration', () => {
     const su = await server.superuserClient()
     const settings = await su.settings.getAll()
     expect(settings.backups).toMatchObject({ cron: '30 3 * * *', cronMaxKeep: 14 })
+  })
+
+  it('unknown API paths are JSON 404 errors, also with the SPA served (M7-14)', async () => {
+    for (const path of ['/api/dev/mails', '/api/nope', '/api/collections/x/nope/deeper']) {
+      const res = await fetch(`${server.url}${path}`)
+      expect(res.status, path).toBe(404)
+      expect(res.headers.get('content-type'), path).toContain('application/json')
+    }
+    // Built-in and custom routes still work.
+    expect((await fetch(`${server.url}/api/health`)).status).toBe(200)
+    expect((await fetch(`${server.url}/api/public/events`)).status).toBe(200)
+    expect((await fetch(`${server.url}/`)).status).toBe(200)
+    expect(await (await fetch(`${server.url}/events/abc`)).text()).toContain('id="app"')
   })
 
   it('API responses are never cached', async () => {

@@ -44,6 +44,15 @@ onMounted(load)
     <CardContent class="flex items-center justify-between gap-4 text-sm">
       <p v-if="info" class="text-muted-foreground">
         Environment: <span class="font-medium text-foreground">{{ info.environment }}</span>
+        <template v-if="info.version">
+          · Version
+          <span class="font-medium text-foreground" data-testid="backend-version"
+            >{{ info.version
+            }}<template v-if="info.commit && info.commit !== 'unknown'">
+              ({{ info.commit.slice(0, 7) }})</template
+            ></span
+          >
+        </template>
       </p>
       <p v-else-if="error" class="text-destructive" role="alert">{{ error.message }}</p>
       <p v-else class="text-muted-foreground">Contacting server…</p>

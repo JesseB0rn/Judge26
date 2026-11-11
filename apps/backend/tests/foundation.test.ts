@@ -21,7 +21,12 @@ describe('M0 backend foundation', () => {
   it('loads JS hooks and runs in the test environment', async () => {
     const res = await fetch(`${server.url}/api/app/info`)
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ name: 'judge26', environment: 'test' })
+    expect(await res.json()).toEqual({
+      name: 'judge26',
+      environment: 'test',
+      version: 'dev',
+      commit: 'unknown',
+    })
   })
 
   it('API responses are never cached', async () => {

@@ -53,7 +53,7 @@ docker run --rm -v judge26_pb_data:/data -v "$PWD":/backup alpine \
 docker compose start app
 ```
 
-(The volume name is `<project>_pb_data`; see `docker volume ls`.)
+(The Compose project is named `judge26`, so the volume is `judge26_pb_data`; see `docker volume ls`.)
 
 ## Restart
 

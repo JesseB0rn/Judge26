@@ -8,3 +8,10 @@ routerUse((e) => {
   }
   return e.next()
 })
+
+// Unknown API paths are 404 errors. Without this, the SPA's index fallback (--publicDir in the
+// Docker image) answered every unknown GET /api/... with index.html and status 200.
+// Specific routes (built-in and custom) take precedence over this pattern.
+routerAdd('GET', '/api/{path...}', () => {
+  throw new NotFoundError("The requested resource wasn't found.")
+})

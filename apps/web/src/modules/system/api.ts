@@ -3,6 +3,9 @@ import { pb } from '@/shared/api/pocketbase'
 export interface AppInfo {
   name: string
   environment: string
+  /** Build of the running server (M7-14); "dev" / "unknown" outside the Docker image. */
+  version?: string
+  commit?: string
 }
 
 /** Fetches metadata from the custom `/api/app/info` hook. */
