@@ -14,9 +14,15 @@ questions (§15) affect the model.
    verification is enforced in API rules (`@request.auth.verified = true`) rather than by
    blocking sign-in, so unverified users can sign in and resend the verification email.
 2. **Scoped roles in a `role_assignments` collection** (`user`, `role`, `event`). `admin` is
-   global; `event_manager`, `head_judge` and `judge` are scoped to one event. API rules use
-   aliased `@collection.role_assignments:<alias>` joins; conditions on the same alias are
-   evaluated against the same row (verified by integration tests).
+   global; `event_manager`, `head_judge` and `judge` are scoped to one event. API rules read
+   the user's own assignments through the auth record's back-relation
+   (`@request.auth.role_assignments_via_user`), and team ownership through
+   `@request.auth.teams_via_coach`. Conditions on the same back-relation are evaluated against
+   the same row, and every check also compares `user`/`coach` with `@request.auth.id` so the
+   empty row of a user without roles matches nothing (verified by `tests/access-rules.test.ts`).
+   The first rules used unscoped `@collection.role_assignments:<alias>` joins, which multiplied
+   with the size of the table (lists took 10–30 s with ~50 assignments); they were replaced in
+   migration `1763700000_scoped_access_rules.js`.
 3. **Coach is implicit**: ownership of a team registration, not a role. Coaches may register
    multiple teams (§15.2).
 4. **Categories are copied per event** (`categories.event`; templates have no event). Copies

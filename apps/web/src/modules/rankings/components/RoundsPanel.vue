@@ -45,7 +45,8 @@ const rules = () => props.gameRules ?? []
 const gameLabel = (round: RoundRecord) =>
   rules().find((r) => r.id === gameRuleIdForRound(round, rules()))?.name ?? 'Not set'
 /** A new round plays the game of the previous round (or the only game). */
-const defaultGame = () => props.rounds.at(-1)?.game_rule || (rules().length ? rules()[0]!.id : '')
+const defaultGame = () =>
+  props.rounds[props.rounds.length - 1]?.game_rule || (rules().length ? rules()[0]!.id : '')
 const dayLabel = (id: string | undefined) => {
   const day = props.days?.find((d) => d.id === id)
   return day ? day.label || formatDay(day.date) : '–'
