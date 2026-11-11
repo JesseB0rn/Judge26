@@ -91,6 +91,23 @@ in milliseconds.
   with the first game still to score, then all assigned games in playing order (day, round,
   sequence) grouped by round, each with its status and result. Filters: day, table, _to do_ (kept in
   the URL). From sign-in to the score sheet is two taps.
+- **Robot checks** (M5-15): if a round on the judge's table has a robot check in the schedule
+  planner (M4-14-13), the dashboard shows a _Robot check_ block per round and table with its day,
+  time (or "not scheduled yet") and team count. The dashboard is **one timeline**: game groups in
+  playing order (day, round, table, sequence), each round's checks directly before that round's
+  games, even if the check is on an earlier day. The day filter uses the check's own day.
+  - **Up next** is the first open item of the timeline: an open robot check comes before the
+    first game of its round. A check is done once the judge finished it on this device
+    (_Finish robot check_ on the last team; can be reopened) or as soon as any game of that round
+    at that table is no longer _Not scored_. Done checks show a check mark and are hidden by the
+    _to do_ filter.
+  - The block opens the **guided check** (`/judging/rounds/{round}/check?table=…&team=…`): the
+    table's teams in playing order (each once), one at a time, with the team's documents (M1-13)
+    shown inline (images, PDFs) or as open/download links, _Previous_ / _Next team_ buttons (and
+    arrow keys), a jump list and a link to the team's score sheet. The current team is kept in
+    the URL. Offline, the teams come from the list saved on the device; documents need a
+    connection. Per-team check results are not recorded, and finishing a check is stored on the
+    device only.
 - **Score sheet** (`/judging/games/{id}`): a sticky header with team, category, round, table,
   sequence and day, the status, the save state and a large live **total**; result choice
   (Scored / Disqualified / Absent); stopwatch; the sheet generated from the ruleset with large touch
@@ -105,16 +122,20 @@ in milliseconds.
 
 ## API
 
-| Method | Path                            | Who                    | Body / result                                                        |
-| ------ | ------------------------------- | ---------------------- | -------------------------------------------------------------------- |
-| GET    | `/api/judging/assignments`      | any verified user      | Games on the user's tables (non-archived events)                     |
-| GET    | `/api/events/{id}/judging`      | reviewers              | All games of the event with their score status                       |
-| GET    | `/api/games/{id}/sheet`         | table judge, reviewers | Context, ruleset, sheet, history, permissions                        |
-| PUT    | `/api/games/{id}/sheet`         | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at }` → draft     |
-| POST   | `/api/games/{id}/sheet/submit`  | table judge, reviewers | Same body → `submitted`                                              |
-| POST   | `/api/games/{id}/sheet/approve` | reviewers              | → `finalized`, game updated                                          |
-| POST   | `/api/games/{id}/sheet/reject`  | reviewers              | `{ reason }` → `rejected`                                            |
-| POST   | `/api/games/{id}/sheet/correct` | reviewers              | `{ reason, outcome, values, time_ms, points? }` on a finalized score |
+| Method | Path                            | Who                    | Body / result                                                         |
+| ------ | ------------------------------- | ---------------------- | --------------------------------------------------------------------- |
+| GET    | `/api/judging/assignments`      | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹ |
+| GET    | `/api/events/{id}/judging`      | reviewers              | All games of the event with their score status                        |
+| GET    | `/api/games/{id}/sheet`         | table judge, reviewers | Context, ruleset, sheet, history, permissions                         |
+| PUT    | `/api/games/{id}/sheet`         | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at }` → draft      |
+| POST   | `/api/games/{id}/sheet/submit`  | table judge, reviewers | Same body → `submitted`                                               |
+| POST   | `/api/games/{id}/sheet/approve` | reviewers              | → `finalized`, game updated                                           |
+| POST   | `/api/games/{id}/sheet/reject`  | reviewers              | `{ reason }` → `rejected`                                             |
+| POST   | `/api/games/{id}/sheet/correct` | reviewers              | `{ reason, outcome, values, time_ms, points? }` on a finalized score  |
+
+¹ Each row has `check`: `null` if the round has no robot check, otherwise
+`{ day: { id, date, label } | null, starts_at, duration_minutes }` (`day` null and `starts_at`
+empty while unplaced).
 
 Errors: `403` not assigned / not a reviewer; `400` field errors (`values: invalid_score_sheet`,
 `reason: required`, `points: required`); `409` wrong status (`data.status.code`).

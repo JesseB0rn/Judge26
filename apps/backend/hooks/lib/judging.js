@@ -511,6 +511,12 @@ function correct(app, auth, gameId, body) {
   return { sheet: serializeSheet(app, result) }
 }
 
+function roundCheck(app, roundId, cache) {
+  const key = `check:${roundId}`
+  if (!(key in cache)) cache[key] = require(`${__hooks}/lib/planner.js`).robotCheck(app, roundId)
+  return cache[key]
+}
+
 /** Row of a judge's game list (M5-01, M5-03). */
 function summary(app, game, cache) {
   const get = (collection, id) => {
@@ -548,6 +554,8 @@ function summary(app, game, cache) {
       // Start of the scoring run from the schedule planner, or "" (M4-14-30).
       starts_at: require(`${__hooks}/lib/planner.js`).scoringStart(app, round.id),
     },
+    // The round's robot check from the schedule planner, or null (M5-15).
+    check: roundCheck(app, round.id, cache),
     category: {
       id: category.id,
       name: category.getString('name'),

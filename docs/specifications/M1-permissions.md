@@ -40,6 +40,7 @@ mirrors them for usability.
 | `categories` (event)    | same as event                                                                    | manager, event not archived                      | manager, event not archived                                       | manager, event not archived |
 | `categories` (template) | admins and users with any `event_manager` role                                   | admin                                            | admin                                                             | admin                       |
 | `teams`                 | coach (own), staff of the event, admin                                           | manager; coach for self while registration open¹ | manager; coach while registration open and status draft/rejected² | admin; coach for own drafts |
+| `team_documents`        | coach of the team, staff of the event, admin; files need a file token            | manager, event not archived                      | manager, event not archived; team and uploader fixed              | manager, event not archived |
 
 ¹ Coaches can only create teams with `coach` = themselves, status `draft` or `submitted`, and
 without review fields. Registration is open when the event is `published` and the current time

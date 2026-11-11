@@ -156,3 +156,14 @@ export function installAutoSync() {
   installed = true
   window.addEventListener('online', () => void syncPendingDrafts())
 }
+
+/** Robot checks (block keys) the judge finished on this device (M5-15). */
+export function finishedChecks(userId: string): string[] {
+  return read<string[]>(`${PREFIX}checks:${userId}`) ?? []
+}
+
+export function setCheckFinished(userId: string, key: string, finished: boolean) {
+  const keys = finishedChecks(userId).filter((k) => k !== key)
+  if (finished) keys.push(key)
+  write(`${PREFIX}checks:${userId}`, keys)
+}

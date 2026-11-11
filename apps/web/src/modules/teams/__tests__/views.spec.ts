@@ -25,6 +25,21 @@ import TeamFormView from '../views/TeamFormView.vue'
 vi.mock('../api')
 vi.mock('@/modules/events/api')
 vi.mock('@/modules/categories/api')
+// Team documents (M1-13) are covered in documents.spec.ts; keep them off the network here.
+vi.mock('../documents', async (original) => ({
+  ...(await original<typeof import('../documents')>()),
+  listTeamDocuments: vi.fn<(typeof import('@/modules/teams/documents'))['listTeamDocuments']>(
+    async () => [],
+  ),
+  listEventTeamDocuments: vi.fn<() => Promise<{ id: string; team: string }[]>>(async () => [
+    { id: 'd1', team: 't2' },
+    { id: 'd2', team: 't2' },
+  ]),
+}))
+vi.mock('@/shared/composables/useFileToken', async () => {
+  const { ref } = await import('vue')
+  return { useFileToken: () => ({ token: ref('tok'), refresh: async () => 'tok' }) }
+})
 const mocked = vi.mocked(api)
 
 const manager = { roles: [makeRole('event_manager', 'event1')] }
@@ -186,6 +201,17 @@ describe('team views', () => {
       expect(wrapper.findAll('[data-team]').map((r) => r.attributes('data-team'))).toEqual([
         'Bot Builders',
       ])
+    })
+
+    it('M1-13: shows how many documents each team has', async () => {
+      const { wrapper } = await mountView(EventTeamsTab, {
+        props: { event: makeEvent(), staff: true, canManage: true },
+        session: manager,
+      })
+      const count = (name: string) =>
+        wrapper.get(`[data-team="${name}"] [data-documents]`).attributes('data-documents')
+      expect(count('Bot Builders')).toBe('2')
+      expect(count('Robo Rangers')).toBe('0')
     })
 
     it('M1-11: approves submitted registrations', async () => {
