@@ -22,6 +22,8 @@ export interface RoundRef {
   key: string
   name: string
   position: number
+  /** Start of the scoring run (HH:MM) from the schedule planner, or "". */
+  starts_at?: string
 }
 
 /** One row of a judge's game list (GET /api/judging/assignments). */

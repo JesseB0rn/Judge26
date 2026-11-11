@@ -8,4 +8,11 @@ export const eventRoutes: RouteRecordRaw[] = [
     component: () => import('./views/EventDetailView.vue'),
     props: true,
   },
+  {
+    // Schedule planner (M4-14): editor for managers, read-only schedule for everyone else.
+    path: '/events/:id/planner',
+    name: 'event-planner',
+    component: () => import('@/modules/planner/views/PlannerView.vue'),
+    props: true,
+  },
 ]

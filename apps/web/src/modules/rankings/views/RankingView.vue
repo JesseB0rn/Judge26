@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import {
   rank,
   defaultRankingConfig,
@@ -22,7 +22,7 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
-import { useQueryRefs } from '@/shared/composables/useQueryRefs'
+import { backTarget, useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
 import type {
   CategoryRecord,
@@ -68,6 +68,15 @@ const text = ref('')
 const loading = ref(true)
 const loadError = ref<AppError>()
 const { tab } = useQueryRefs({ tab: 'ranking' })
+// Deep link from the schedule planner: open a round's settings and offer the way back (M4-14-16).
+const route = useRoute()
+const editRound = computed(() =>
+  typeof route.query.round === 'string' ? route.query.round : undefined,
+)
+const plannerBack = computed(() => {
+  const from = backTarget(route.query.from)
+  return from?.startsWith('/events/') ? from : undefined
+})
 const editor = ref<'visual' | 'json'>('visual')
 
 const event = computed(() => category.value?.expand?.event)
@@ -227,6 +236,9 @@ onMounted(load)
       :description="event ? `${category.code} · ${event.name}` : `${category.code} · template`"
     >
       <template #actions>
+        <Button v-if="plannerBack" as-child variant="outline">
+          <RouterLink :to="plannerBack">Back to planner</RouterLink>
+        </Button>
         <Button v-if="event" as-child variant="outline">
           <RouterLink
             :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
@@ -324,6 +336,7 @@ onMounted(load)
           :days="days"
           :game-rules="gameRules"
           :editable="canManage"
+          :edit-round="editRound"
           @changed="loadResults"
         />
       </TabsContent>

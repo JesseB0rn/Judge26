@@ -203,3 +203,44 @@ export async function setPublication(
   const pb = await superuser()
   return pb.collection('categories').update(categoryId, data)
 }
+
+/** Phases of a round by kind (M4-14: maintenance, check, scoring). */
+export async function getRoundPhases(roundId: string): Promise<Record<string, RecordModel>> {
+  const pb = await superuser()
+  const list = await pb
+    .collection('round_phases')
+    .getFullList({ filter: pb.filter('round = {:round}', { round: roundId }) })
+  return Object.fromEntries(list.map((p) => [p.phase as string, p]))
+}
+
+/** Places a round phase on a day at a time (M4-14). */
+export async function placePhase(phaseId: string, day: string, startsAt: string) {
+  const pb = await superuser()
+  const phase = await pb.collection('round_phases').getOne(phaseId)
+  return pb
+    .collection('round_phases')
+    .update(phaseId, { day, starts_at: startsAt, expected_updated: phase.updated })
+}
+
+/** Creates a custom schedule block (M4-14). */
+export async function createBlock(eventId: string, data: Record<string, unknown>) {
+  const pb = await superuser()
+  return pb.collection('schedule_blocks').create({
+    event: eventId,
+    duration_minutes: 60,
+    public: true,
+    ...data,
+  })
+}
+
+/** Creates a custom planner column (M4-14-33). */
+export async function createColumn(
+  eventId: string,
+  name: string,
+  data: Record<string, unknown> = {},
+) {
+  const pb = await superuser()
+  return pb
+    .collection('schedule_columns')
+    .create({ event: eventId, name, position: 0, public: true, ...data })
+}

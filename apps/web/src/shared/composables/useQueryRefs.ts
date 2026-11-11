@@ -32,7 +32,7 @@ export function useQueryRefs<T extends Record<string, string>>(defaults: T) {
 }
 
 /** Paths a score sheet may link back to (see `backTarget`). */
-const BACK_PREFIXES = ['/judging', '/review']
+const BACK_PREFIXES = ['/judging', '/review', '/events/']
 
 /** A safe in-app return path from a `from` query value, or undefined. */
 export function backTarget(from: unknown): string | undefined {

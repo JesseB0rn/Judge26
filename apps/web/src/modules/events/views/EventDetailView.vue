@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
+  CalendarRangeIcon,
   ClipboardListIcon,
   PencilIcon,
   PlusIcon,
@@ -102,6 +103,11 @@ watch(() => props.id, load)
         <Button v-if="canReview && !archived" as-child variant="outline">
           <RouterLink :to="{ name: 'review', query: { event: event.id } }">
             <ClipboardListIcon /> Review scores
+          </RouterLink>
+        </Button>
+        <Button v-if="isStaff || event.status !== 'draft'" as-child variant="outline">
+          <RouterLink :to="{ name: 'event-planner', params: { id: event.id } }">
+            <CalendarRangeIcon /> {{ canManage && !archived ? 'Planner' : 'Schedule' }}
           </RouterLink>
         </Button>
         <Button v-if="event.status !== 'draft'" as-child variant="outline">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { TvIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,11 @@ import LiveIndicator from '../components/LiveIndicator.vue'
 import ProgressBar from '../components/ProgressBar.vue'
 import PublicRanking from '../components/PublicRanking.vue'
 import ScheduleBoard from '../components/ScheduleBoard.vue'
+import PlannerBoard from '@/modules/planner/components/PlannerBoard.vue'
+import BlockDialog from '@/modules/planner/components/BlockDialog.vue'
+import PhaseDialog from '@/modules/planner/components/PhaseDialog.vue'
+import { gridColumns, sortedDays } from '@/modules/planner/lib'
+import type { ItemRef } from '@/modules/planner/types'
 
 /** Public page of an event: rankings, schedule and progress, updated live (M6-01 – M6-08). */
 const props = defineProps<{ id: string }>()
@@ -127,6 +132,44 @@ const overall = computed(() =>
 )
 const selectedDay = computed(() => event.data.value?.days.find((d) => d.id === day.value))
 const stale = computed(() => event.stale.value || ranking.stale.value)
+
+// Timetable (M4-14-26): all days next to one another, public blocks only.
+const planner = computed(() => event.data.value?.planner)
+const timetableDays = computed(() => sortedDays(planner.value?.days ?? []))
+// The category filter limits the categories; custom columns are always shown (M4-14-33).
+const timetableColumns = computed(() =>
+  planner.value
+    ? gridColumns(planner.value).filter(
+        (c) => c.custom || !category.value || c.id === category.value,
+      )
+    : [],
+)
+const timetable = ref<InstanceType<typeof PlannerBoard>>()
+watch([tab, () => !!planner.value], async ([t, ready]) => {
+  if (t !== 'timetable' || !ready) return
+  await nextTick()
+  if (day.value) timetable.value?.scrollToDay(day.value)
+})
+const shownItem = ref<ItemRef | null>(null)
+const itemOpen = computed({
+  get: () => !!shownItem.value,
+  set: (open: boolean) => {
+    if (!open) shownItem.value = null
+  },
+})
+const shownBlock = computed(() =>
+  shownItem.value?.kind === 'block'
+    ? (planner.value?.blocks.find((b) => b.id === shownItem.value!.id) ?? null)
+    : null,
+)
+const shownPhase = computed(() =>
+  shownItem.value?.kind === 'phase'
+    ? (planner.value?.phases.find((p) => p.id === shownItem.value!.id) ?? null)
+    : null,
+)
+const shownRound = computed(() =>
+  planner.value?.rounds.find((r) => r.id === shownPhase.value?.round),
+)
 </script>
 
 <template>
@@ -167,7 +210,7 @@ const stale = computed(() => event.stale.value || ranking.stale.value)
         :options="categoryOptions"
       />
       <FilterChips
-        v-if="tab !== 'rankings' && dayOptions.length > 1"
+        v-if="tab !== 'rankings' && tab !== 'timetable' && dayOptions.length > 1"
         v-model="dayModel"
         label="Day"
         :options="dayOptions"
@@ -178,6 +221,7 @@ const stale = computed(() => event.stale.value || ranking.stale.value)
       <TabsList>
         <TabsTrigger value="rankings">Rankings</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
+        <TabsTrigger v-if="planner" value="timetable">Timetable</TabsTrigger>
         <TabsTrigger value="progress">Progress</TabsTrigger>
       </TabsList>
 
@@ -193,6 +237,36 @@ const stale = computed(() => event.stale.value || ranking.stale.value)
 
       <TabsContent value="schedule" class="pt-2">
         <ScheduleBoard :event="event.data.value" :filters="filters" />
+      </TabsContent>
+
+      <TabsContent v-if="planner" value="timetable" class="pt-2">
+        <PlannerBoard
+          ref="timetable"
+          :data="planner"
+          :days="timetableDays"
+          :columns="timetableColumns"
+          @open="shownItem = $event"
+        />
+        <BlockDialog
+          v-model:open="itemOpen"
+          :event-id="props.id"
+          :block="shownBlock"
+          :days="timetableDays"
+          :categories="planner.categories"
+          :custom-columns="planner.columns ?? []"
+          :editable="false"
+          v-if="shownItem?.kind === 'block'"
+        />
+        <PhaseDialog
+          v-if="shownItem?.kind === 'phase'"
+          v-model:open="itemOpen"
+          :phase="shownPhase"
+          :round="shownRound"
+          :category="planner.categories.find((c) => c.id === shownRound?.category)"
+          :siblings="[]"
+          :days="timetableDays"
+          :editable="false"
+        />
       </TabsContent>
 
       <TabsContent value="progress" class="flex flex-col gap-4 pt-2">

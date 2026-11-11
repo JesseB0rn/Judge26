@@ -56,7 +56,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
 
 <template>
   <div class="flex min-h-svh flex-col">
-    <header class="border-b">
+    <header class="border-b print:hidden">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 px-4 sm:flex-nowrap">
         <RouterLink to="/" class="flex h-14 items-center font-semibold">{{
           config.appName

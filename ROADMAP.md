@@ -720,7 +720,11 @@ physical tables and time slots.
 
   M4-14                   Multi-day scheduling    Games can be
                                                   distributed across
-                                                  multiple days
+                                                  multiple days and are
+                                                  planned in the
+                                                  multi-day schedule
+                                                  planner (M4-14 detail
+                                                  below)
   -----------------------------------------------------------------------
 
 ### Mandatory scheduling tests
@@ -792,6 +796,383 @@ produce one specific team ordering.
 
 **Exit criteria:** All conflict tests pass and the scheduling engine
 generates a complete valid schedule for the test fixture.
+
+### M4-14 --- Multi-day schedule planner
+
+**Status:** Implemented (P0–P3; see `docs/specifications/M4-tables-and-scheduling.md`)\
+**Objective:** Give managers one overview of every competition day, in
+which they can plan and rearrange the competition and everything around
+it, and give staff, coaches and the public a read-only view of the same
+schedule.
+
+The planner shows **all competition days next to one another**. Each
+day is a group of columns, **one column per category**, followed by the
+event's **custom columns** (e.g. visitors, coaches); **rows are time of
+day** on an axis shared by all days. It holds two kinds of blocks:
+
+-   **Competition blocks** are the phases of a round:
+    maintenance/practice, an optional robot check, and the scoring run.
+    Each phase is its own block in the round's category column with its
+    own day, start time and duration, so other blocks (e.g. lunch) can
+    sit between them and they can be on different days. Only their order
+    is checked. Rounds are never created or deleted in the planner.
+-   **Custom blocks** are anything else (registration, opening ceremony,
+    lunch, judges' briefing, award ceremony). They have a custom title,
+    place, color and responsibility (free text), can cover one, several
+    or all columns (categories and custom columns), and can be moved,
+    resized and inserted freely.
+
+Times are local times of day on a competition day, like
+`competition_days.date`: no time zone conversion. Game order within a
+scoring phase stays table + sequence (M4); the planner does not assign
+times to individual games.
+
+#### Data model (proposed)
+
+  ------------------------------------------------------------------------------
+  Collection / field              Purpose
+  ------------------------------  ----------------------------------------------
+  competition_days.starts_at,     Local time of day (HH:MM) bounding the
+  competition_days.ends_at        planner's time axis for that day. Defaults
+                                  08:00 and 18:00; ends_at is after starts_at.
+
+  round_phases                    One phase of a round: round, phase
+                                  (maintenance, check, scoring), day, starts_at
+                                  (HH:MM), duration_minutes. A scoring record
+                                  exists for every round, a maintenance record
+                                  while testing_minutes > 0, a check record only
+                                  if the round has a robot check. Empty day or
+                                  starts_at means the phase is unplaced. At most
+                                  one record per round and phase.
+
+  rounds.testing_minutes,         Kept (M4) as the default durations of new
+  rounds.scoring_minutes          phase records and mirrored from the placed
+                                  phases, so existing consumers keep working.
+
+  rounds.day                      Follows the day of the round's scoring phase,
+                                  so judging (M5) and the public day logic (M6)
+                                  keep working.
+
+  schedule_blocks                 Custom blocks: event, day, starts_at,
+                                  duration_minutes, title (required), place,
+                                  color, responsibility (free text), categories
+                                  and custom columns covered (both empty = all
+                                  columns), public (bool).
+
+  schedule_columns                Custom columns of an event next to the
+                                  categories (e.g. visitors, coaches): name
+                                  (unique per event), position, public (bool).
+  ------------------------------------------------------------------------------
+
+#### Requirements
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M4-14-01   Day time window       P0    Each competition day has a start and
+                                         end time; the planner's time axis
+                                         covers exactly that window.
+
+  M4-14-02   Independent phases    P0    Maintenance/practice, robot check and
+                                         scoring of a round are separate blocks,
+                                         each with its own day, start time and
+                                         duration. Other blocks (e.g. lunch) can
+                                         sit between them, and they can be on
+                                         different days.
+
+  M4-14-03   Custom blocks         P0    Managers can create blocks with title,
+                                         day, start, duration, place, color,
+                                         responsibility and the category columns
+                                         it covers.
+
+  M4-14-04   Block visibility      P1    Each custom block is internal (staff
+                                         only) or public; competition blocks
+                                         follow the event's publication state.
+
+  M4-14-05   Planner grid          P0    All competition days are shown next to
+                                         one another in date order. Each day is
+                                         a group of columns, one per event
+                                         category in category order; rows are
+                                         time of day at 15-minute gridlines,
+                                         covering the earliest start to the
+                                         latest end of all day windows. Times
+                                         outside a day's own window are shaded.
+
+  M4-14-06   Competition blocks    P0    Every placed phase appears in its
+                                         round's category column on its day,
+                                         labelled with round name, phase and
+                                         times. Phases of one round share a
+                                         visual marker, and hovering or
+                                         selecting one highlights its siblings.
+
+  M4-14-07   Multi-column blocks   P0    A custom block covering all or several
+                                         adjacent categories spans those
+                                         columns; non-adjacent selections render
+                                         one segment per column.
+
+  M4-14-08   Overlap layout        P1    Overlapping blocks in one column are
+                                         shown side by side; no block is hidden
+                                         behind another.
+
+  M4-14-09   Unplanned tray        P0    Rounds with unplaced phases are listed
+                                         beside the grid, grouped by category,
+                                         showing each unplaced phase; each can
+                                         be dragged into its column.
+
+  M4-14-10   Now indicator         P2    On the current day a line marks the
+                                         current local time.
+
+  M4-14-11   Move by drag          P0    Dragging a block changes its start
+                                         time, snapping to 5 minutes, and moves
+                                         only that block. Holding a modifier (or
+                                         choosing 'move with later phases') also
+                                         moves the round's later phases, keeping
+                                         their gaps. Phases stay in their
+                                         category column; custom blocks can
+                                         change columns.
+
+  M4-14-12   Resize by drag        P0    Dragging a block's lower edge changes
+                                         only that block's duration; no other
+                                         block moves. Minimums are enforced.
+
+  M4-14-13   Robot check           P0    A robot check can be added to a round
+                                         (default 10 minutes; it appears in the
+                                         unplanned tray to be placed) or
+                                         removed; removing it leaves the other
+                                         phases where they are.
+
+  M4-14-14   Move across days      P0    Any block can be dragged into the
+                                         matching column of another day (or
+                                         moved via the form); a round's phases
+                                         may end up on different days. A round's
+                                         games keep their tables and sequences.
+
+  M4-14-15   Create in place       P0    Clicking or dragging over empty grid
+                                         space opens a new custom block
+                                         prefilled with that column, start and
+                                         duration.
+
+  M4-14-16   Deep links            P0    Every block has a stable URL that opens
+                                         the planner scrolled to the block with
+                                         its edit form; it survives reload and
+                                         can be shared. Round links reach the
+                                         round settings and back.
+
+  M4-14-17   Accessible editing    P1    Every drag operation is also possible
+                                         through form fields and the keyboard;
+                                         dragging works with touch on tablets.
+
+  M4-14-18   Delete, duplicate,    P1    Custom blocks can be deleted (with
+             unplan                      confirmation) and duplicated to the
+                                         same or another day. Rounds are never
+                                         deleted from the planner; they can be
+                                         unplanned.
+
+  M4-14-19   Concurrent edits      P0    Every write carries the loaded version;
+                                         a stale write returns 409, the planner
+                                         reloads and says why. Other open
+                                         planners update through the live
+                                         revision.
+
+  M4-14-20   Phase order           P0    A round whose phases are not in the
+                                         order maintenance/practice, robot
+                                         check, scoring, or that overlap one
+                                         another, produces a phase_order issue.
+                                         Gaps between phases are always allowed.
+
+  M4-14-21   Category overlap      P0    Overlapping phases of different rounds
+                                         of the same category produce a
+                                         round_overlap issue on both blocks and
+                                         in schedule validation.
+
+  M4-14-22   Table overlap         P0    Overlapping scoring phases or robot
+                                         checks of rounds whose games use the
+                                         same table produce a table_overlap
+                                         issue.
+
+  M4-14-23   Judge overlap         P1    Overlapping scoring phases on different
+                                         tables with the same fixed judge
+                                         produce a judge_overlap issue.
+
+  M4-14-24   Outside day window    P1    A block that extends beyond its day's
+                                         window produces an outside_day issue;
+                                         no block crosses midnight.
+
+  M4-14-25   Free custom blocks    P0    Custom blocks never cause conflicts and
+                                         may overlap anything.
+
+  M4-14-26   Read-only schedule    P0    Event staff and coaches of published
+                                         events see the same grid without
+                                         editing controls; deep links open a
+                                         read-only detail panel.
+
+  M4-14-27   Public schedule       P1    Public pages show the same all-days
+                                         grid with public blocks only, scrolled
+                                         to the current day (M6-09 rule); TV
+                                         mode shows the current day only.
+                                         Extends M6-04 and M6-07.
+
+  M4-14-28   Column filter         P1    Viewers can hide category columns and
+                                         days; coaches start with their own
+                                         teams' categories.
+
+  M4-14-29   Live updates          P0    Planner changes increase the event's
+                                         live revision; every open view reloads
+                                         as in M6.
+
+  M4-14-30   Times elsewhere       P1    The judge dashboard and coaches' My
+                                         teams show round start times where set.
+
+  M4-14-31   Print                 P2    A day prints legibly on one A4
+                                         landscape page per day.
+
+  M4-14-32   Undo                  P3    The last planner change can be undone.
+
+  M4-14-33   Custom columns        P0    Managers can add, rename, reorder and
+                                         delete custom columns (e.g. visitors,
+                                         coaches) shown after the categories on
+                                         every day; custom blocks can be placed
+                                         in and dragged into them. Internal
+                                         columns are staff only; a column with
+                                         blocks cannot be deleted.
+  ------------------------------------------------------------------------------
+
+Minimum durations: 1 minute for every phase (a round without
+maintenance has no maintenance block), custom blocks 5 minutes. Issues from
+M4-14-20 to M4-14-24 are warnings shown on the blocks and returned by
+schedule validation; they do not block saving, so managers can rearrange
+through intermediate states.
+
+#### Access
+
+  Role                                    Planner
+  --------------------------------------- ------------------------------
+  Admin, event manager                    Edit
+  Event staff (judges, head judges)       Read, internal blocks included
+  Coach (published event)                 Read, public blocks only
+  Public (published event)                Read, public blocks only
+
+#### Tests
+
+  ------------------------------------------------------------------------------
+  Test ID      Scenario                        Expected result
+  -----------  ------------------------------  ---------------------------------
+  M4-14-T01    Place maintenance at 09:00 (30  Maintenance 09:00-09:30, scoring
+               min) and scoring at 09:30 (60   09:30-10:30; no issue
+               min)
+
+  M4-14-T02    Drag that scoring block to      Scoring 10:00-11:00; maintenance
+               10:00                           unchanged
+
+  M4-14-T03    Extend the scoring block by 15  Scoring duration 75; nothing else
+               min                             moves
+
+  M4-14-T04    Extend the T01 maintenance      Maintenance 09:00-09:45; scoring
+               block by 15 min                 unchanged; phase_order issue
+
+  M4-14-T05    Resize scoring below 1 min or   Rejected; block keeps its
+               a custom block below 5 min      previous size
+
+  M4-14-T06    Create Lunch block covering     Spans all columns; title, place,
+               all categories                  color and responsibility stored
+
+  M4-14-T07    Move custom block to another    Categories, day and time stored
+               column and day                  as dropped
+
+  M4-14-T08    Move a round's scoring block    Scoring on day 2, maintenance on
+               to the next day                 day 1, rounds.day is day 2, games
+                                               unchanged
+
+  M4-14-T09    Open a block deep link in a     Planner opens on that day with
+               fresh session                   the block's form
+
+  M4-14-T10    Open a deep link to a deleted   Not-found notice; planner still
+               block                           opens
+
+  M4-14-T11    Overlap two rounds of one       round_overlap issue on both
+               category
+
+  M4-14-T12    Overlap scoring phases sharing  table_overlap issue
+               a table
+
+  M4-14-T13    Extend a block past the day's   outside_day issue
+               end
+
+  M4-14-T14    Shrink a day window below       Blocks kept and flagged
+               existing blocks                 outside_day
+
+  M4-14-T15    Two managers move the same      Second write gets 409; planner
+               block                           reloads
+
+  M4-14-T16    Overlap two custom blocks       Both visible side by side; no
+                                               issue
+
+  M4-14-T17    Unplan a round's scoring block  Scoring in the tray; other phases
+                                               and games unchanged
+
+  M4-14-T18    Coach or judge opens planner    No editing controls; direct API
+                                               writes rejected
+
+  M4-14-T19    Public schedule with an         Internal block absent from the
+               internal block                  public payload
+
+  M4-14-T20    Edit a block while a TV         Display shows the change after
+               display is open                 the live revision
+
+  M4-14-T21    Add a robot check to the T01    10 min check in the tray; other
+               round                           phases unchanged
+
+  M4-14-T22    Place the check at 12:30 after  All stored as placed; no issue
+               a 11:30-12:30 lunch block and
+               scoring at 12:45
+
+  M4-14-T23    Remove the robot check          Check record gone; maintenance
+                                               and scoring unchanged
+
+  M4-14-T24    Open the planner for a three-   All three days shown side by side
+               day event                       in date order
+
+  M4-14-T25    Days with different windows     Shared axis 08:00-18:00; second
+               (08:00-18:00, 09:00-15:00)      day shaded outside its window
+
+  M4-14-T26    Place scoring before            phase_order issue on the round
+               maintenance
+
+  M4-14-T27    Drag maintenance 30 min later   All phases move 30 min; gaps
+               with 'move with later phases'   unchanged
+
+  M4-14-T28    Add a Visitors column and       Column after the categories;
+               create a block in it            block stored with that column
+
+  M4-14-T29    Delete a column that still has  Refused until the block is moved
+               a block                         or deleted
+
+  M4-14-T30    Coach opens a planner with an   Judges column and its blocks not
+               internal Judges column          shown
+  ------------------------------------------------------------------------------
+
+#### Out of scope
+
+-   Clock times for individual games inside a scoring phase.
+-   Automatic placement of rounds in time by the schedule generator.
+-   Calendar (iCal) export.
+
+#### Decisions
+
+The proposed answers to the review questions were adopted:
+
+1.  **Category overlap** is a warning, not a rejection.
+2.  **Event-wide blocks** (no category selected) span all columns.
+3.  **Colors** come from a fixed palette that works in light and dark
+    mode.
+4.  **Devices:** editing on tablets and desktops; phones are read-only
+    and the days scroll horizontally.
+5.  **Split phases:** one block per phase; a split phase is a possible
+    later extension.
+
+**Exit criteria:** All P0 requirements and M4-14 tests pass; a manager
+can plan a two-day event with three categories entirely in the planner,
+and coaches and TV mode show the result.
 
 ------------------------------------------------------------------------
 

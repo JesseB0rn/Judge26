@@ -30,6 +30,8 @@ const props = defineProps<{
   /** Games of the category; each round is scored with the ruleset of one game. */
   gameRules?: GameRuleRecord[]
   editable: boolean
+  /** Round to open for editing once known (deep link from the planner). */
+  editRound?: string
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
@@ -103,6 +105,20 @@ function edit(round: RoundRecord) {
   form.game_rule = gameRuleIdForRound(round, rules())
   add.reset()
 }
+
+// Open the linked round once, as soon as it is loaded.
+let openedLink = ''
+watch(
+  () => [props.editRound, props.rounds] as const,
+  ([id, rounds]) => {
+    if (!id || openedLink === id || !props.editable) return
+    const round = rounds.find((r) => r.id === id)
+    if (!round) return
+    openedLink = id
+    edit(round)
+  },
+  { immediate: true },
+)
 
 const remove = useSubmit(async (round: RoundRecord) => {
   if (!confirm(`Delete ${round.name}? All results recorded in this round are deleted too.`)) return

@@ -43,6 +43,9 @@ export interface CompetitionDayRecord extends BaseRecord {
   /** YYYY-MM-DD */
   date: string
   label: string
+  /** Planner hours (HH:MM); empty = 08:00 / 18:00 (M4-14-01). */
+  starts_at?: string
+  ends_at?: string
 }
 
 export interface CategoryRecord extends BaseRecord {

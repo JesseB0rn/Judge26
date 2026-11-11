@@ -15,6 +15,7 @@ import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
+import { formatDay } from '@/shared/format'
 import type { TeamRecord } from '@/shared/types/records'
 import { listOwnScheduledGames, listOwnTeams, updateTeam } from '../api'
 import { canCoachEdit } from '../lib'
@@ -88,6 +89,7 @@ onMounted(() => Promise.all([load(), schedule.load()]))
     <TableHeader>
       <TableRow>
         <TableHead>Round</TableHead>
+        <TableHead>When</TableHead>
         <TableHead>Table</TableHead>
         <TableHead>Sequence</TableHead>
         <TableHead>Team</TableHead>
@@ -96,11 +98,20 @@ onMounted(() => Promise.all([load(), schedule.load()]))
     <TableBody>
       <TableRow v-for="game in schedule.data.value" :key="game.id">
         <TableCell>{{ game.expand?.round?.name }}</TableCell>
+        <TableCell class="text-sm" data-testid="my-schedule-when">
+          <template v-if="game.expand?.round?.day">{{
+            game.expand.round.day.label || formatDay(game.expand.round.day.date)
+          }}</template>
+          <template v-if="game.expand?.round?.starts_at">
+            · from {{ game.expand.round.starts_at }}</template
+          >
+          <template v-if="!game.expand?.round?.day && !game.expand?.round?.starts_at">–</template>
+        </TableCell>
         <TableCell>{{ game.expand?.table?.name ?? '–' }}</TableCell>
         <TableCell>{{ game.sequence }}</TableCell>
         <TableCell class="font-medium">{{ game.expand?.team?.name }}</TableCell>
       </TableRow>
-      <TableEmpty v-if="!schedule.loading.value && !schedule.data.value?.length" :colspan="4">
+      <TableEmpty v-if="!schedule.loading.value && !schedule.data.value?.length" :colspan="5">
         No games of your teams are scheduled yet.
       </TableEmpty>
     </TableBody>

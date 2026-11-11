@@ -38,8 +38,18 @@ export function listDays(eventId: string) {
   })
 }
 
-export function createDay(eventId: string, date: string, label: string) {
-  return days().create({ event: eventId, date, label })
+/** Hours of a competition day (local HH:MM); empty means 08:00–18:00 (M4-14-01). */
+export interface DayWindow {
+  starts_at: string
+  ends_at: string
+}
+
+export function createDay(eventId: string, date: string, label: string, window?: DayWindow) {
+  return days().create({ event: eventId, date, label, ...window })
+}
+
+export function updateDayWindow(id: string, window: DayWindow) {
+  return days().update(id, window)
 }
 
 export function deleteDay(id: string) {
