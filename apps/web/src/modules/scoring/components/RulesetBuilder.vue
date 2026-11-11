@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import type { Explanation } from '@judge26/scoring-engine'
@@ -81,9 +82,7 @@ function onDelete(id: string) {
     const [, , target, ref] = id.split(':')
     state.apply(disconnectCondition(def.value, target!, ref!), { select: null })
   } else if (id.startsWith('wire:data:')) {
-    toast.info(
-      'Every block must be wired into a group. Wire it into another group, or delete the block.',
-    )
+    toast.info(t('scoring.builder.mustBeWired'))
   } else if (id !== '') {
     state.apply(removeNode(def.value, id), { select: null })
   }
@@ -102,10 +101,10 @@ const tone = (type: string) =>
 <template>
   <div data-testid="ruleset-builder" @keydown="state.onKeydown($event, readonly)">
     <p v-if="parsed.syntaxError" class="text-sm text-destructive" role="alert">
-      The JSON has a syntax error ({{ parsed.syntaxError }}). Fix it in the JSON editor first.
+      {{ t('rankings.builder.syntaxError', { error: parsed.syntaxError }) }}
     </p>
     <p v-else-if="!def" class="text-sm text-destructive" role="alert">
-      The definition has no root group the builder can show. Fix it in the JSON editor first.
+      {{ t('scoring.builder.noRoot') }}
     </p>
 
     <BuilderFrame
@@ -122,7 +121,7 @@ const tone = (type: string) =>
           :key="item.label"
           variant="outline"
           size="sm"
-          :aria-label="`Add ${item.label}`"
+          :aria-label="t('rankings.builder.add', { block: item.label })"
           @click="add(item)"
         >
           <span
@@ -146,9 +145,7 @@ const tone = (type: string) =>
         @delete="onDelete"
       />
       <p class="text-xs text-muted-foreground">
-        Drag from a block's ▶ output to a group's input terminal to place it there, or to a block's
-        ▼ terminal to make that block conditional. Select a wire or block and press Delete to remove
-        it. New blocks go into the selected group. Probe values (yellow) come from the Preview tab.
+        {{ t('scoring.builder.help') }}
       </p>
       <ul
         v-if="issueInfo.general.length"
@@ -173,7 +170,7 @@ const tone = (type: string) =>
           @apply="onApply"
         />
         <div v-else class="flex flex-col gap-2 text-sm text-muted-foreground">
-          <p>Select a block to edit it.</p>
+          <p>{{ t('scoring.builder.selectHint') }}</p>
           <ul v-if="issueInfo.map.size" class="flex flex-col gap-1">
             <li v-for="[key, messages] in issueInfo.map" :key="key">
               <button
@@ -181,7 +178,7 @@ const tone = (type: string) =>
                 class="text-left text-destructive underline"
                 @click="selected = key"
               >
-                {{ nodeAt(def, key)?.label || key || 'Total' }}: {{ messages[0] }}
+                {{ nodeAt(def, key)?.label || key || t('judging.sheet.total') }}: {{ messages[0] }}
               </button>
             </li>
           </ul>

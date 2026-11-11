@@ -1,3 +1,4 @@
+import { t, te } from '@/i18n'
 import type { Ranking, RankingConfig, TeamInput } from '@judge26/ranking-engine'
 import type { ExportColumn, ExportTable } from '@/shared/export/table'
 import type { RoundRecord, TeamRecord } from '@/shared/types/records'
@@ -15,15 +16,20 @@ export interface RankingExport {
   rounds: RoundRecord[]
 }
 
-const GAME_STATUS: Record<string, string> = {
-  completed: 'Completed',
-  disqualified: 'Disqualified',
-  absent: 'Absent',
+const gameStatus = (status: string) => {
+  const key = `scheduling.gameStatus.${status}`
+  return te(key) ? t(key) : status
+}
+
+/** Engine status of a round result (missing, absent, disqualified), as in the ranking table. */
+const resultStatus = (status: string) => {
+  const key = `rankings.resultStatus.${status}`
+  return te(key) ? t(key) : status
 }
 
 function decidedBy(ranking: Ranking, d: number | 'name' | null) {
   if (d === null) return ''
-  return d === 'name' ? 'Name' : (ranking.keys[d]?.label ?? '')
+  return d === 'name' ? t('common.name') : (ranking.keys[d]?.label ?? '')
 }
 
 function roundLabel(data: RankingExport, key: string) {
@@ -42,11 +48,11 @@ export function rankingTable(data: RankingExport): ExportTable {
   const rounds = config.rounds.map((r) => r.key)
 
   const columns: ExportColumn[] = [
-    { header: 'Rank', type: 'number', decimals: 0, width: 6 },
-    { header: 'Shared', width: 7 },
-    { header: 'Team' },
-    { header: 'Organization' },
-    { header: 'Country' },
+    { header: t('live.tv.rank'), type: 'number', decimals: 0, width: 6 },
+    { header: t('rankings.export.shared'), width: 7 },
+    { header: t('teams.team') },
+    { header: t('teams.organization') },
+    { header: t('teams.country') },
     ...ranking.keys.map((k): ExportColumn =>
       k.field === 'time'
         ? { header: `${k.label} (s)`, type: 'duration' }
@@ -55,20 +61,20 @@ export function rankingTable(data: RankingExport): ExportTable {
     ...rounds.flatMap((key): ExportColumn[] => {
       const label = roundLabel(data, key)
       return [
-        { header: `${label} points`, type: 'number', decimals },
-        { header: `${label} time (s)`, type: 'duration' },
-        { header: `${label} status` },
+        { header: t('rankings.export.roundPoints', { round: label }), type: 'number', decimals },
+        { header: t('rankings.export.roundTime', { round: label }), type: 'duration' },
+        { header: t('rankings.export.roundStatus', { round: label }) },
       ]
     }),
-    { header: 'Provisional', width: 11 },
-    { header: 'Decided by' },
+    { header: t('rankings.export.provisional'), width: 11 },
+    { header: t('rankings.export.decidedBy') },
   ]
 
   const rows = ranking.entries.map((entry) => {
     const team = teams.get(entry.team)
     return [
       entry.rank,
-      entry.shared ? 'yes' : '',
+      entry.shared ? t('common.yes') : '',
       entry.name,
       team?.organization ?? '',
       team?.country ?? '',
@@ -76,13 +82,17 @@ export function rankingTable(data: RankingExport): ExportTable {
       ...rounds.flatMap((key) => {
         const result = entry.results[key]
         if (!result) return [null, null, '']
-        return [result.points, result.timeMs, result.status === 'ok' ? '' : result.status]
+        return [
+          result.points,
+          result.timeMs,
+          result.status === 'ok' ? '' : resultStatus(result.status),
+        ]
       }),
-      entry.provisional ? 'yes' : '',
+      entry.provisional ? t('common.yes') : '',
       decidedBy(ranking, entry.decidedBy),
     ]
   })
-  return { name: 'Ranking', columns, rows }
+  return { name: t('categories.ranking'), columns, rows }
 }
 
 /** One row per recorded game (attempt) that entered the ranking. */
@@ -110,19 +120,19 @@ export function resultsTable(data: RankingExport): ExportTable {
       g.team,
       roundLabel(data, g.round),
       g.attempt,
-      GAME_STATUS[g.status] ?? g.status,
+      gameStatus(g.status),
       g.points,
       g.time,
     ])
   return {
-    name: 'Results',
+    name: t('rankings.view.results'),
     columns: [
-      { header: 'Team' },
-      { header: 'Round' },
-      { header: 'Attempt', type: 'number', decimals: 0 },
-      { header: 'Status' },
-      { header: 'Points', type: 'number', decimals },
-      { header: 'Time (s)', type: 'duration' },
+      { header: t('teams.team') },
+      { header: t('teams.mine.round') },
+      { header: t('scheduling.export.attempt'), type: 'number', decimals: 0 },
+      { header: t('common.status') },
+      { header: t('scheduling.export.points'), type: 'number', decimals },
+      { header: t('scheduling.export.time'), type: 'duration' },
     ],
     rows,
   }

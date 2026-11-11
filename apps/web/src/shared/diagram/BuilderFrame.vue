@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { CircleAlertIcon, CircleCheckIcon, LayoutGridIcon, Undo2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 
@@ -17,9 +18,9 @@ const emit = defineEmits<{ undo: []; tidy: [] }>()
         v-if="!readonly"
         class="flex flex-wrap items-center gap-1"
         role="toolbar"
-        aria-label="Add block"
+        :aria-label="t('diagram.addBlock')"
       >
-        <span class="mr-1 text-xs font-medium text-muted-foreground">Add</span>
+        <span class="mr-1 text-xs font-medium text-muted-foreground">{{ t('diagram.add') }}</span>
         <slot name="palette" />
       </div>
       <div class="ml-auto flex items-center gap-1">
@@ -27,24 +28,26 @@ const emit = defineEmits<{ undo: []; tidy: [] }>()
           v-if="issueCount"
           class="flex items-center gap-1 text-sm font-medium text-destructive"
           data-testid="builder-status"
-          ><CircleAlertIcon class="size-4" /> {{ issueCount }} error(s)</span
+          ><CircleAlertIcon class="size-4" /> {{ t('diagram.errors', issueCount) }}</span
         >
         <span
           v-else
           class="flex items-center gap-1 text-sm text-emerald-700 dark:text-emerald-400"
           data-testid="builder-status"
-          ><CircleCheckIcon class="size-4" /> Valid</span
+          ><CircleCheckIcon class="size-4" /> {{ t('diagram.valid') }}</span
         >
         <Button
           v-if="!readonly"
           variant="ghost"
           size="sm"
           :disabled="!canUndo"
-          aria-label="Undo"
+          :aria-label="t('diagram.undo')"
           @click="emit('undo')"
-          ><Undo2Icon /> Undo</Button
+          ><Undo2Icon /> {{ t('diagram.undo') }}</Button
         >
-        <Button variant="ghost" size="sm" @click="emit('tidy')"><LayoutGridIcon /> Clean up</Button>
+        <Button variant="ghost" size="sm" @click="emit('tidy')"
+          ><LayoutGridIcon /> {{ t('diagram.tidy') }}</Button
+        >
       </div>
     </div>
 

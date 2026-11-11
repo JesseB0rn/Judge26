@@ -1,0 +1,78 @@
+{
+  "tvMode": "TV-Modus",
+  "provisional": "provisorisch",
+  "allDays": "Alle Tage",
+  "state": {
+    "upcoming": "Ausstehend",
+    "scoring": "Läuft",
+    "in_review": "In Prüfung",
+    "done": "Fertig"
+  },
+  "indicator": {
+    "offline": "Offline",
+    "offlineAt": "Offline · Daten von {time}",
+    "connecting": "Verbinde …",
+    "live": "Live",
+    "liveAt": "Live · aktualisiert {time}"
+  },
+  "progress": {
+    "title": "Fortschritt",
+    "labelOf": "Fortschritt {label}",
+    "done": "{done} von {total} Läufen fertig",
+    "inReview": "{count} in Prüfung",
+    "remaining": "{count} ausstehend"
+  },
+  "publication": {
+    "updated": "Veröffentlichung aktualisiert.",
+    "officialTitle": "Offizielle Rangliste",
+    "published": "Offizielle Rangliste veröffentlicht.",
+    "description": "Wählen Sie, was das Publikum auf den Live-Seiten und TV-Anzeigen sieht. Die offizielle Rangliste ist ein fester Stand und ändert sich bei späteren Korrekturen nicht; die Live-Rangliste folgt jeder definitiven Bewertung und ist als provisorisch markiert.",
+    "publicPage": "Öffentliche Seite",
+    "draft": "Dieser Anlass ist ein Entwurf: Seine öffentlichen Seiten sind erst nach der Veröffentlichung sichtbar.",
+    "livePublic": "Live-Rangliste öffentlich",
+    "official": "Offizielle Rangliste",
+    "showLive": "Live-Rangliste von {category} öffentlich zeigen",
+    "public": "Öffentlich",
+    "hidden": "Verborgen",
+    "configureFirst": "Richten Sie zuerst die Rangliste ein.",
+    "officialOf": "Offizielle Rangliste von {category}",
+    "notPublished": "Nicht veröffentlicht",
+    "publishedAt": "Veröffentlicht am {date}",
+    "publishNow": "Aktuelle Rangliste veröffentlichen"
+  },
+  "ranking": {
+    "notPublished": "Die Resultate dieser Kategorie wurden noch nicht veröffentlicht.",
+    "official": "Offiziell",
+    "live": "Live",
+    "officialPublished": "offiziell, veröffentlicht am {date}",
+    "liveTitle": "Live-Rangliste",
+    "liveHint": "aus definitiven Bewertungen, nicht offiziell",
+    "provisional": "Provisorisch: {open} von {total} Läufen sind noch nicht definitiv. Bei Teams mit «provisorisch» fehlen Rundenresultate."
+  },
+  "schedule": {
+    "atTables": "An den Tischen",
+    "toPlay": "noch {count}",
+    "now": "Jetzt",
+    "next": "Danach",
+    "empty": "Für diese Auswahl sind keine Läufe geplant.",
+    "notPlaced": "Nicht zugeteilt"
+  },
+  "tv": {
+    "rank": "Rang",
+    "noTeams": "Keine Teams in der Rangliste.",
+    "nothingPublished": "Es wurden noch keine Resultate veröffentlicht.",
+    "doneForToday": "Für heute fertig",
+    "games": "{done} / {total} Läufe",
+    "noGames": "Keine Läufe an diesem Tag.",
+    "fullscreen": "Vollbild"
+  },
+  "tabs": {
+    "rankings": "Ranglisten",
+    "timetable": "Tagesprogramm"
+  },
+  "events": {
+    "description": "Ranglisten, Zeitpläne und Fortschritt der Wettbewerbe.",
+    "empty": "Noch keine Wettbewerbe öffentlich.",
+    "finished": "beendet"
+  }
+}

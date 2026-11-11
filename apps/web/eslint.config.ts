@@ -4,6 +4,7 @@ import pluginVue from 'eslint-plugin-vue'
 import pluginVitest from '@vitest/eslint-plugin'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import skipFormatting from 'eslint-config-prettier/flat'
+import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -31,6 +32,26 @@ export default defineConfigWithVueTs(
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
+  },
+
+  {
+    // User-visible text goes through the message files (docs/specifications/i18n.md).
+    name: 'app/i18n',
+    files: ['src/**/*.vue'],
+    ignores: ['src/components/ui/**', 'src/**/__tests__/**'],
+    plugins: { '@intlify/vue-i18n': pluginVueI18n },
+    rules: {
+      '@intlify/vue-i18n/no-raw-text': [
+        'error',
+        {
+          attributes: {
+            '/.+/': ['title', 'aria-label', 'placeholder', 'label', 'description', 'hint', 'empty'],
+          },
+          ignorePattern: '^[-–—−#:()\\[\\]·•/×=+*?!.,;…↑↓→▶▼Σ0-9%′“”\\s]*$',
+          ignoreText: ['CSV', 'PDF', 'JSON', 'Judge26', 'R', 'x', 'ms', '(MAX)', '(MIN)'],
+        },
+      ],
+    },
   },
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),

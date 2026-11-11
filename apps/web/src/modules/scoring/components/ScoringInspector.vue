@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon, XIcon } from '@lucide/vue'
 import type { Condition, ScoringNode, SelectOption } from '@judge26/scoring-engine'
@@ -73,7 +74,12 @@ function addOption() {
   const ids = new Set(node.value.options.map((o) => o.id))
   let n = node.value.options.length + 1
   while (ids.has(`option${n}`)) n++
-  set({ options: [...node.value.options, { id: `option${n}`, label: `Option ${n}`, points: 0 }] })
+  set({
+    options: [
+      ...node.value.options,
+      { id: `option${n}`, label: t('scoring.inspector.optionN', { n }), points: 0 },
+    ],
+  })
 }
 function removeOption(i: number) {
   if (node.value?.type !== 'select') return
@@ -143,18 +149,22 @@ function applyRaw() {
 
 function opsFor(target: ScoringNode | undefined) {
   const presence = [
-    { value: 'set', label: 'is answered' },
-    { value: 'unset', label: 'is not answered' },
+    { value: 'set', label: t('scoring.inspector.ops.set') },
+    { value: 'unset', label: t('scoring.inspector.ops.unset') },
   ]
   if (!target) return presence
   if (target.type === 'boolean') {
-    return [{ value: 'eq', label: 'is' }, { value: 'neq', label: 'is not' }, ...presence]
+    return [
+      { value: 'eq', label: t('scoring.inspector.ops.eq') },
+      { value: 'neq', label: t('scoring.inspector.ops.neq') },
+      ...presence,
+    ]
   }
   if (target.type === 'select') {
     return [
-      { value: 'eq', label: 'is' },
-      { value: 'neq', label: 'is not' },
-      { value: 'in', label: 'is one of' },
+      { value: 'eq', label: t('scoring.inspector.ops.eq') },
+      { value: 'neq', label: t('scoring.inspector.ops.neq') },
+      { value: 'in', label: t('scoring.inspector.ops.in') },
       ...presence,
     ]
   }
@@ -181,7 +191,13 @@ const precision = computed(() => props.def.precision as number | undefined)
     <div class="flex items-start justify-between gap-2">
       <div>
         <p class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          {{ isRoot ? 'Total (root group)' : node.type === 'group' ? 'Group' : 'Criterion' }}
+          {{
+            isRoot
+              ? t('scoring.inspector.root')
+              : node.type === 'group'
+                ? t('scoring.inspector.group')
+                : t('scoring.inspector.criterion')
+          }}
         </p>
         <p class="font-semibold">{{ node.label || node.id }}</p>
       </div>
@@ -189,7 +205,7 @@ const precision = computed(() => props.def.precision as number | undefined)
         v-if="!isRoot && !readonly"
         variant="ghost"
         size="icon-sm"
-        aria-label="Delete block"
+        :aria-label="t('rankings.inspector.deleteBlock')"
         @click="remove"
         ><Trash2Icon
       /></Button>
@@ -200,40 +216,44 @@ const precision = computed(() => props.def.precision as number | undefined)
     </ul>
 
     <fieldset :disabled="readonly" class="flex flex-col gap-3">
-      <InspectorField label="Label" :model-value="node.label" @commit="set({ label: $event })" />
       <InspectorField
-        label="Id"
+        :label="t('common.label')"
+        :model-value="node.label"
+        @commit="set({ label: $event })"
+      />
+      <InspectorField
+        :label="t('rankings.inspector.id')"
         :model-value="node.id"
-        hint="Letters, digits, _ and -. Conditions refer to it."
+        :hint="t('scoring.inspector.idHint')"
         @commit="set({ id: $event })"
       />
       <InspectorField
-        label="Instructions for judges"
+        :label="t('scoring.inspector.instructions')"
         :model-value="node.description"
         @commit="set({ description: $event || undefined })"
       />
 
       <!-- Placement: the inspector equivalent of rewiring the output -->
       <div v-if="!isRoot" class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-muted-foreground" :for="`parent-${nodeKey}`"
-          >Wired into group</label
-        >
+        <label class="text-xs font-medium text-muted-foreground" :for="`parent-${nodeKey}`">{{
+          t('scoring.inspector.parent')
+        }}</label>
         <div class="flex gap-1">
           <NativeSelect
             :id="`parent-${nodeKey}`"
             class="min-w-0 flex-1"
             :model-value="parent ?? ''"
-            aria-label="Wired into group"
+            :aria-label="t('scoring.inspector.parent')"
             @update:model-value="move(String($event), Number.MAX_SAFE_INTEGER)"
           >
             <NativeSelectOption v-for="g in groups" :key="g.key" :value="g.key">
-              {{ g.key === '' ? 'Total' : g.node.label || g.node.id }}
+              {{ g.key === '' ? t('judging.sheet.total') : g.node.label || g.node.id }}
             </NativeSelectOption>
           </NativeSelect>
           <Button
             variant="outline"
             size="icon-sm"
-            aria-label="Move up"
+            :aria-label="t('scoring.inspector.moveUp')"
             :disabled="index === 0"
             @click="move(parent!, index - 1)"
             ><ArrowUpIcon
@@ -241,7 +261,7 @@ const precision = computed(() => props.def.precision as number | undefined)
           <Button
             variant="outline"
             size="icon-sm"
-            aria-label="Move down"
+            :aria-label="t('scoring.inspector.moveDown')"
             :disabled="index >= siblings - 1"
             @click="move(parent!, index + 2)"
             ><ArrowDownIcon
@@ -256,13 +276,13 @@ const precision = computed(() => props.def.precision as number | undefined)
           :checked="node.deduction === true"
           @change="set({ deduction: ($event.target as HTMLInputElement).checked || undefined })"
         />
-        Deduction (points are subtracted)
+        {{ t('scoring.inspector.deduction') }}
       </label>
 
       <!-- Type-specific -->
       <template v-if="node.type === 'boolean'">
         <InspectorField
-          label="Points if yes"
+          :label="t('scoring.inspector.pointsIfYes')"
           type="number"
           :model-value="node.points"
           @commit="set({ points: $event })"
@@ -272,25 +292,25 @@ const precision = computed(() => props.def.precision as number | undefined)
       <template v-else-if="node.type === 'number'">
         <div class="grid grid-cols-2 gap-2">
           <InspectorField
-            label="Points per unit"
+            :label="t('scoring.inspector.pointsPerUnit')"
             type="number"
             :model-value="node.pointsPerUnit"
             @commit="set({ pointsPerUnit: $event })"
           />
           <InspectorField
-            label="Unit"
+            :label="t('scoring.inspector.unit')"
             :model-value="node.unit"
-            placeholder="e.g. blocks"
+            :placeholder="t('scoring.inspector.unitPlaceholder')"
             @commit="set({ unit: $event || undefined })"
           />
           <InspectorField
-            label="Min"
+            :label="t('scoring.inspector.min')"
             type="number"
             :model-value="node.min"
             @commit="set({ min: $event })"
           />
           <InspectorField
-            label="Max"
+            :label="t('scoring.inspector.max')"
             type="number"
             :model-value="node.max"
             @commit="set({ max: $event })"
@@ -303,30 +323,32 @@ const precision = computed(() => props.def.precision as number | undefined)
             :checked="node.integer === true"
             @change="set({ integer: ($event.target as HTMLInputElement).checked || undefined })"
           />
-          Whole numbers only
+          {{ t('scoring.inspector.integer') }}
         </label>
       </template>
 
       <template v-else-if="node.type === 'select'">
         <div class="flex flex-col gap-2" data-testid="options">
-          <p class="text-xs font-medium text-muted-foreground">Options</p>
+          <p class="text-xs font-medium text-muted-foreground">
+            {{ t('scoring.inspector.options') }}
+          </p>
           <div
             v-for="(o, i) in node.options"
             :key="i"
             class="grid grid-cols-[1fr_1fr_4.5rem_auto] items-end gap-1"
           >
             <InspectorField
-              label="Id"
+              :label="t('rankings.inspector.id')"
               :model-value="o.id"
               @commit="setOption(i, { id: String($event) })"
             />
             <InspectorField
-              label="Label"
+              :label="t('common.label')"
               :model-value="o.label"
               @commit="setOption(i, { label: String($event) })"
             />
             <InspectorField
-              label="Points"
+              :label="t('scheduling.export.points')"
               type="number"
               :model-value="o.points"
               @commit="setOption(i, { points: $event as number })"
@@ -334,62 +356,68 @@ const precision = computed(() => props.def.precision as number | undefined)
             <Button
               variant="ghost"
               size="icon-sm"
-              :aria-label="`Remove option ${o.label}`"
+              :aria-label="t('scoring.inspector.removeOption', { option: o.label })"
               @click="removeOption(i)"
               ><XIcon
             /></Button>
           </div>
           <Button variant="outline" size="sm" class="self-start" @click="addOption"
-            ><PlusIcon /> Option</Button
+            ><PlusIcon /> {{ t('scoring.inspector.option') }}</Button
           >
         </div>
       </template>
 
       <template v-else-if="node.type === 'group'">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-muted-foreground" :for="`agg-${nodeKey}`"
-            >Combine children by</label
-          >
+          <label class="text-xs font-medium text-muted-foreground" :for="`agg-${nodeKey}`">{{
+            t('scoring.inspector.aggregate')
+          }}</label>
           <NativeSelect
             :id="`agg-${nodeKey}`"
             :model-value="node.aggregate"
-            aria-label="Combine children by"
+            :aria-label="t('scoring.inspector.aggregate')"
             @update:model-value="set({ aggregate: $event })"
           >
-            <NativeSelectOption value="sum">Sum (Σ)</NativeSelectOption>
-            <NativeSelectOption value="max">Highest (MAX)</NativeSelectOption>
-            <NativeSelectOption value="min">Lowest (MIN)</NativeSelectOption>
+            <NativeSelectOption value="sum"
+              >{{ t('scoring.inspector.sum') }} (Σ)</NativeSelectOption
+            >
+            <NativeSelectOption value="max"
+              >{{ t('scoring.inspector.highest') }} (MAX)</NativeSelectOption
+            >
+            <NativeSelectOption value="min"
+              >{{ t('scoring.inspector.lowest') }} (MIN)</NativeSelectOption
+            >
           </NativeSelect>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <InspectorField
-            label="Answered children, min"
+            :label="t('scoring.inspector.selectionMin')"
             type="number"
             :model-value="node.selection?.min"
             @commit="setNested('selection', 'min', $event)"
           />
           <InspectorField
-            label="Answered children, max"
+            :label="t('scoring.inspector.selectionMax')"
             type="number"
             :model-value="node.selection?.max"
-            hint="1 = mutually exclusive"
+            :hint="t('scoring.inspector.exclusive')"
             @commit="setNested('selection', 'max', $event)"
           />
           <InspectorField
-            label="Score at least"
+            :label="t('scoring.inspector.clampMin')"
             type="number"
             :model-value="node.clamp?.min"
             @commit="setNested('clamp', 'min', $event)"
           />
           <InspectorField
-            label="Score at most"
+            :label="t('scoring.inspector.clampMax')"
             type="number"
             :model-value="node.clamp?.max"
             @commit="setNested('clamp', 'max', $event)"
           />
         </div>
         <InspectorField
-          label="Score when nothing is answered"
+          :label="t('scoring.inspector.empty')"
           type="number"
           :model-value="node.empty"
           placeholder="0"
@@ -399,7 +427,7 @@ const precision = computed(() => props.def.precision as number | undefined)
 
       <template v-if="isRoot">
         <InspectorField
-          label="Decimal places of all scores (0–4)"
+          :label="t('scoring.inspector.precision')"
           type="number"
           :model-value="precision"
           placeholder="2"
@@ -409,19 +437,21 @@ const precision = computed(() => props.def.precision as number | undefined)
 
       <!-- Condition: the inspector equivalent of the enable terminal -->
       <div v-if="!isRoot" class="flex flex-col gap-2 rounded-md border p-2" data-testid="condition">
-        <p class="text-xs font-medium text-muted-foreground">Only counts when</p>
+        <p class="text-xs font-medium text-muted-foreground">
+          {{ t('scoring.inspector.onlyWhen') }}
+        </p>
         <template v-if="flat">
           <p v-if="!flat.clauses.length" class="text-sm text-muted-foreground">
-            Always. Wire a criterion into the ▼ terminal on top, or add a rule.
+            {{ t('scoring.inspector.always') }}
           </p>
           <NativeSelect
             v-if="flat.clauses.length > 1"
             :model-value="flat.join"
-            aria-label="Combine rules"
+            :aria-label="t('scoring.inspector.combineRules')"
             @update:model-value="setClauses(flat.clauses, $event === 'any' ? 'any' : 'all')"
           >
-            <NativeSelectOption value="all">all of these hold</NativeSelectOption>
-            <NativeSelectOption value="any">any of these holds</NativeSelectOption>
+            <NativeSelectOption value="all">{{ t('scoring.inspector.all') }}</NativeSelectOption>
+            <NativeSelectOption value="any">{{ t('scoring.inspector.any') }}</NativeSelectOption>
           </NativeSelect>
           <div
             v-for="(c, i) in flat.clauses"
@@ -435,11 +465,11 @@ const precision = computed(() => props.def.precision as number | undefined)
                 :checked="c.negated"
                 @change="setClause(i, { negated: ($event.target as HTMLInputElement).checked })"
               />
-              not
+              {{ t('scoring.inspector.not') }}
             </label>
             <NativeSelect
               :model-value="c.ref"
-              aria-label="Criterion"
+              :aria-label="t('scoring.inspector.criterion')"
               size="sm"
               @update:model-value="changeRef(i, String($event))"
             >
@@ -449,7 +479,7 @@ const precision = computed(() => props.def.precision as number | undefined)
             </NativeSelect>
             <NativeSelect
               :model-value="c.op"
-              aria-label="Comparison"
+              :aria-label="t('scoring.inspector.comparison')"
               size="sm"
               @update:model-value="changeOp(i, String($event))"
             >
@@ -464,12 +494,12 @@ const precision = computed(() => props.def.precision as number | undefined)
               <NativeSelect
                 v-if="refNode(c.ref)?.type === 'boolean'"
                 :model-value="String(c.value)"
-                aria-label="Value"
+                :aria-label="t('scoring.inspector.value')"
                 size="sm"
                 @update:model-value="setClause(i, { value: $event === 'true' })"
               >
-                <NativeSelectOption value="true">yes</NativeSelectOption>
-                <NativeSelectOption value="false">no</NativeSelectOption>
+                <NativeSelectOption value="true">{{ t('common.yes') }}</NativeSelectOption>
+                <NativeSelectOption value="false">{{ t('common.no') }}</NativeSelectOption>
               </NativeSelect>
               <template v-else-if="refNode(c.ref)?.type === 'select'">
                 <span v-if="c.op === 'in'" class="flex flex-wrap gap-2">
@@ -489,7 +519,7 @@ const precision = computed(() => props.def.precision as number | undefined)
                 <NativeSelect
                   v-else
                   :model-value="String(c.value)"
-                  aria-label="Value"
+                  :aria-label="t('scoring.inspector.value')"
                   size="sm"
                   @update:model-value="setClause(i, { value: String($event) })"
                 >
@@ -504,7 +534,7 @@ const precision = computed(() => props.def.precision as number | undefined)
               <InspectorField
                 v-else
                 class="w-20"
-                label="Value"
+                :label="t('scoring.inspector.value')"
                 type="number"
                 :model-value="c.value"
                 @commit="setClause(i, { value: $event ?? 0 })"
@@ -513,7 +543,7 @@ const precision = computed(() => props.def.precision as number | undefined)
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Remove rule"
+              :aria-label="t('scoring.inspector.removeRule')"
               @click="setClauses(flat.clauses.filter((_, j) => j !== i))"
               ><XIcon
             /></Button>
@@ -524,17 +554,17 @@ const precision = computed(() => props.def.precision as number | undefined)
             size="sm"
             class="self-start"
             @click="addClause"
-            ><PlusIcon /> Rule</Button
+            ><PlusIcon /> {{ t('scoring.inspector.rule') }}</Button
           >
         </template>
         <template v-else>
           <p class="text-xs text-muted-foreground">
-            This condition nests and/or deeper than the form shows. Edit it here as JSON.
+            {{ t('scoring.inspector.rawHint') }}
           </p>
           <Textarea
             v-model="rawCondition"
             class="min-h-28 font-mono text-xs"
-            aria-label="Condition (JSON)"
+            :aria-label="t('scoring.inspector.rawCondition')"
             spellcheck="false"
             @blur="applyRaw"
           />

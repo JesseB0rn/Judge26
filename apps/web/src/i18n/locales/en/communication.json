@@ -1,0 +1,76 @@
+{
+  "subject": "Subject",
+  "status": {
+    "pending": "Queued",
+    "sent": "Sent",
+    "failed": "Failed"
+  },
+  "templates": {
+    "registration_submitted": "Registration received",
+    "registration_approved": "Registration approved",
+    "registration_rejected": "Registration rejected",
+    "schedule_changed": "Schedule update",
+    "auth_verification": "Confirm email address",
+    "auth_password_reset": "Reset password"
+  },
+  "schedule": {
+    "attempt": "{round} (attempt {attempt})",
+    "from": "from {time}",
+    "table": "table {table}, position {position}",
+    "noTable": "table not assigned yet",
+    "check": "robot check {day}"
+  },
+  "sample": {
+    "round1": "Round 1",
+    "round2": "Round 2",
+    "day": "Saturday",
+    "reviewNote": "Please add the birth year of every member.",
+    "message": "Doors open at 8:00."
+  },
+  "outbox": {
+    "title": "Delivery log",
+    "eventDescription": "Emails of this event. Registration emails are sent right away, schedule emails within a minute; failed deliveries are retried automatically up to five times.",
+    "requeued": "Message queued again.",
+    "all": "All messages",
+    "count": "no messages | one message | {count} messages",
+    "created": "Created",
+    "recipient": "Recipient",
+    "attempts": "no attempts | one attempt | {count} attempts",
+    "next": "next {date}",
+    "empty": "No messages."
+  },
+  "editor": {
+    "saved": "Template saved.",
+    "enabled": "Send this email",
+    "alwaysSent": "Account emails are always sent.",
+    "body": "Body (HTML)",
+    "bodyHint": "Values are inserted where a variable is written as {example}.",
+    "variables": "Variables",
+    "unknown": "Unknown variables: {variables} | Unknown variable: {variables} | Unknown variables: {variables}",
+    "discard": "Discard",
+    "preview": "Preview with example values",
+    "previewTitle": "Email preview"
+  },
+  "notify": {
+    "queued": "Nobody to notify. | One email queued. | {count} emails queued.",
+    "title": "Schedule notifications",
+    "description": "Coaches of approved teams receive their team's games (round, time, table and position). A team is affected when its schedule changed since the last email.",
+    "affected": "{count} affected",
+    "ofApproved": "of {count} approved teams",
+    "message": "Message (optional)",
+    "messageHint": "Added to every email, e.g. the reason for the change.",
+    "sendChanged": "Notify affected teams",
+    "sendAll": "Send to all teams",
+    "current": "Current schedule",
+    "lastNotified": "Last notified",
+    "noGames": "No games",
+    "changed": "Changed",
+    "never": "Never",
+    "empty": "No approved teams yet."
+  },
+  "emails": {
+    "description": "Emails sent to coaches and users, in each recipient's language, and the delivery log.",
+    "templates": "Templates",
+    "off": "off"
+  }
+}

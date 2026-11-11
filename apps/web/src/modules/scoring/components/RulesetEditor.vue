@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import { parseRuleset } from '../lib'
@@ -12,7 +13,7 @@ const parsed = computed(() => parseRuleset(text.value))
   <div class="flex flex-col gap-2">
     <Textarea
       v-model="text"
-      aria-label="Ruleset definition (JSON)"
+      :aria-label="t('scoring.editor.json')"
       class="min-h-96 font-mono text-xs"
       spellcheck="false"
       :readonly="readonly"
@@ -23,7 +24,7 @@ const parsed = computed(() => parseRuleset(text.value))
       role="alert"
       data-testid="ruleset-issues"
     >
-      Invalid JSON: {{ parsed.syntaxError }}
+      {{ t('rankings.config.invalidJson', { error: parsed.syntaxError }) }}
     </p>
     <ul
       v-else-if="parsed.issues.length"
@@ -37,7 +38,7 @@ const parsed = computed(() => parseRuleset(text.value))
       </li>
     </ul>
     <p v-else class="text-sm text-muted-foreground" data-testid="ruleset-valid">
-      The ruleset is valid.
+      {{ t('scoring.editor.valid') }}
     </p>
   </div>
 </template>

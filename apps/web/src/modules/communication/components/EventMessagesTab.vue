@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref } from 'vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { EventRecord } from '@/shared/types/records'
@@ -16,11 +17,8 @@ const logKey = ref(0)
     <ScheduleNotifyCard :event-id="event.id" :editable="editable" @sent="logKey++" />
     <Card>
       <CardHeader>
-        <CardTitle>Delivery log</CardTitle>
-        <CardDescription>
-          Emails of this event. Registration emails are sent right away, schedule emails within a
-          minute; failed deliveries are retried automatically up to five times.
-        </CardDescription>
+        <CardTitle>{{ t('communication.outbox.title') }}</CardTitle>
+        <CardDescription>{{ t('communication.outbox.eventDescription') }}</CardDescription>
       </CardHeader>
       <CardContent>
         <OutboxTable :key="logKey" :event-id="event.id" :can-retry="editable" />

@@ -1,0 +1,17 @@
+{
+  "label": "Diagramma a blocchi",
+  "enable": "Attivazione: colleghi qui un criterio per rendere questo blocco condizionale",
+  "output": "Uscita: trascini verso un connettore per collegare",
+  "zoomIn": "Ingrandisci",
+  "zoomOut": "Riduci",
+  "fit": "Adatta il diagramma",
+  "addBlock": "Aggiungi blocco",
+  "add": "Aggiungi",
+  "errors": "nessun errore | 1 errore | {count} errori",
+  "valid": "Valido",
+  "undo": "Annulla",
+  "tidy": "Riordina",
+  "editor": "Editor",
+  "visual": "Visivo",
+  "same": "Entrambi modificano la stessa definizione."
+}

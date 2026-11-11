@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { reactive, ref, watch } from 'vue'
 import { PencilIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -45,7 +46,8 @@ const form = reactive({
 })
 const rules = () => props.gameRules ?? []
 const gameLabel = (round: RoundRecord) =>
-  rules().find((r) => r.id === gameRuleIdForRound(round, rules()))?.name ?? 'Not set'
+  rules().find((r) => r.id === gameRuleIdForRound(round, rules()))?.name ??
+  t('rankings.rounds.notSet')
 /** A new round plays the game of the previous round (or the only game). */
 const defaultGame = () =>
   props.rounds[props.rounds.length - 1]?.game_rule || (rules().length ? rules()[0]!.id : '')
@@ -76,7 +78,7 @@ const add = useSubmit(async () => {
   }
   if (editingId.value) {
     const round = props.rounds.find((item) => item.id === editingId.value)
-    if (!round) throw new Error('The round being edited no longer exists.')
+    if (!round) throw new Error(t('rankings.rounds.gone'))
     await updateRound(round.id, { ...data, position: round.position })
   } else {
     await createRound(props.categoryId, data)
@@ -121,7 +123,7 @@ watch(
 )
 
 const remove = useSubmit(async (round: RoundRecord) => {
-  if (!confirm(`Delete ${round.name}? All results recorded in this round are deleted too.`)) return
+  if (!confirm(t('rankings.rounds.confirmDelete', { round: round.name }))) return
   await deleteRound(round.id)
   emit('changed')
 })
@@ -135,12 +137,14 @@ const remove = useSubmit(async (round: RoundRecord) => {
         <TableHeader>
           <TableRow>
             <TableHead class="w-16">#</TableHead>
-            <TableHead>Key</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead v-if="gameRules?.length">Game</TableHead>
-            <TableHead v-if="days?.length">Day</TableHead>
-            <TableHead>Phases</TableHead>
-            <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+            <TableHead>{{ t('rankings.rounds.key') }}</TableHead>
+            <TableHead>{{ t('common.name') }}</TableHead>
+            <TableHead v-if="gameRules?.length">{{ t('rankings.rounds.game') }}</TableHead>
+            <TableHead v-if="days?.length">{{ t('scheduling.export.day') }}</TableHead>
+            <TableHead>{{ t('rankings.rounds.phases') }}</TableHead>
+            <TableHead class="w-0"
+              ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+            >
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -153,15 +157,20 @@ const remove = useSubmit(async (round: RoundRecord) => {
             }}</TableCell>
             <TableCell v-if="days?.length" class="text-sm">{{ dayLabel(round.day) }}</TableCell>
             <TableCell class="text-sm">
-              Testing {{ round.testing_minutes }}m · Scoring {{ round.scoring_minutes }}m · Total
-              {{ round.testing_minutes + round.scoring_minutes }}m
+              {{
+                t('rankings.rounds.phaseSummary', {
+                  testing: round.testing_minutes,
+                  scoring: round.scoring_minutes,
+                  total: round.testing_minutes + round.scoring_minutes,
+                })
+              }}
             </TableCell>
             <TableCell>
               <Button
                 v-if="editable"
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Edit ${round.name}`"
+                :aria-label="t('common.editItem', { item: round.name })"
                 @click="edit(round)"
               >
                 <PencilIcon />
@@ -170,7 +179,7 @@ const remove = useSubmit(async (round: RoundRecord) => {
                 v-if="editable"
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Delete ${round.name}`"
+                :aria-label="t('common.deleteItem', { item: round.name })"
                 @click="remove.run(round)"
               >
                 <Trash2Icon />
@@ -180,7 +189,7 @@ const remove = useSubmit(async (round: RoundRecord) => {
           <TableEmpty
             v-if="!rounds.length"
             :colspan="5 + (days?.length ? 1 : 0) + (gameRules?.length ? 1 : 0)"
-            >No rounds yet.</TableEmpty
+            >{{ t('rankings.rounds.empty') }}</TableEmpty
           >
         </TableBody>
       </Table>
@@ -189,23 +198,28 @@ const remove = useSubmit(async (round: RoundRecord) => {
       <ErrorAlert :error="add.error.value" />
       <FormField
         v-slot="{ id }"
-        label="Key"
+        :label="t('rankings.rounds.key')"
         name="key"
         :errors="add.fieldErrors.value"
-        description="Used in the ranking configuration, e.g. R1."
+        :description="t('rankings.rounds.keyHint')"
       >
         <Input :id="id" v-model="form.key" required pattern="[A-Za-z][A-Za-z0-9_\-]*" />
       </FormField>
-      <FormField v-slot="{ id }" label="Round name" name="name" :errors="add.fieldErrors.value">
+      <FormField
+        v-slot="{ id }"
+        :label="t('rankings.rounds.name')"
+        name="name"
+        :errors="add.fieldErrors.value"
+      >
         <Input :id="id" v-model="form.name" required />
       </FormField>
       <FormField
         v-if="gameRules?.length"
         v-slot="{ id }"
-        label="Game"
+        :label="t('rankings.rounds.game')"
         name="game_rule"
         :errors="add.fieldErrors.value"
-        description="The score sheet judges use in this round."
+        :description="t('rankings.rounds.gameHint')"
       >
         <NativeSelect :id="id" v-model="form.game_rule" class="w-full" required>
           <NativeSelectOption v-for="r in gameRules" :key="r.id" :value="r.id">{{
@@ -216,13 +230,13 @@ const remove = useSubmit(async (round: RoundRecord) => {
       <FormField
         v-if="days?.length"
         v-slot="{ id }"
-        label="Competition day"
+        :label="t('rankings.rounds.day')"
         name="day"
         :errors="add.fieldErrors.value"
-        description="Judges filter their games by day."
+        :description="t('rankings.rounds.dayHint')"
       >
         <NativeSelect :id="id" v-model="form.day" class="w-full">
-          <NativeSelectOption value="">No day</NativeSelectOption>
+          <NativeSelectOption value="">{{ t('judging.noDay') }}</NativeSelectOption>
           <NativeSelectOption v-for="d in days" :key="d.id" :value="d.id">{{
             d.label ? `${d.label} (${formatDay(d.date)})` : formatDay(d.date)
           }}</NativeSelectOption>
@@ -230,7 +244,7 @@ const remove = useSubmit(async (round: RoundRecord) => {
       </FormField>
       <FormField
         v-slot="{ id }"
-        label="Maintenance / testing (minutes)"
+        :label="t('rankings.rounds.testing')"
         name="testing_minutes"
         :errors="add.fieldErrors.value"
       >
@@ -245,7 +259,7 @@ const remove = useSubmit(async (round: RoundRecord) => {
       </FormField>
       <FormField
         v-slot="{ id }"
-        label="Scoring phase (minutes)"
+        :label="t('rankings.rounds.scoring')"
         name="scoring_minutes"
         :errors="add.fieldErrors.value"
       >
@@ -259,13 +273,15 @@ const remove = useSubmit(async (round: RoundRecord) => {
         />
       </FormField>
       <p class="text-sm text-muted-foreground">
-        Total round duration: {{ form.testing_minutes + form.scoring_minutes }} minutes.
+        {{ t('rankings.rounds.total', { minutes: form.testing_minutes + form.scoring_minutes }) }}
       </p>
       <div class="flex gap-2">
         <Button type="submit" :disabled="add.pending.value">
-          {{ editingId ? 'Save round' : 'Add round' }}
+          {{ editingId ? t('rankings.rounds.save') : t('rankings.rounds.add') }}
         </Button>
-        <Button v-if="editingId" type="button" variant="outline" @click="resetForm">Cancel</Button>
+        <Button v-if="editingId" type="button" variant="outline" @click="resetForm">{{
+          t('common.cancel')
+        }}</Button>
       </div>
     </form>
   </div>

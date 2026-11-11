@@ -1,0 +1,134 @@
+{
+  "core": {
+    "failed_to_authenticate": "The email address or password is incorrect.",
+    "invalid_data": "Some values are invalid. Check the highlighted fields.",
+    "invalid_verification_token": "The verification link is invalid or has expired.",
+    "invalid_reset_token": "The password reset link is invalid or has expired."
+  },
+  "validation_required": "Cannot be blank.",
+  "validation_invalid_email": "Must be a valid email address.",
+  "validation_is_email": "Must be a valid email address.",
+  "validation_invalid_url": "Must be a valid URL.",
+  "validation_is_url": "Must be a valid URL.",
+  "validation_invalid_value": "Invalid value.",
+  "validation_in_invalid": "Must be a valid value.",
+  "validation_invalid_format": "Must be in a valid format.",
+  "validation_match_invalid": "Must be in a valid format.",
+  "validation_invalid_date": "Must be a valid date.",
+  "validation_invalid_number": "Must be a valid number.",
+  "validation_not_unique": "This value is already in use.",
+  "validation_values_mismatch": "The values do not match.",
+  "validation_length_out_of_range": "Must be between {min} and {max} characters long.",
+  "validation_length_too_long": "Must be at most {max} characters long.",
+  "validation_length_too_short": "Must be at least {min} characters long.",
+  "validation_min_text_constraint": "Must be at least {min} characters long.",
+  "validation_max_text_constraint": "Must be at most {max} characters long.",
+  "validation_min_number_constraint": "Must be at least {min}.",
+  "validation_max_number_constraint": "Must be at most {max}.",
+  "validation_min_greater_equal_than_required": "Must be at least {threshold}.",
+  "validation_max_less_equal_than_required": "Must be at most {threshold}.",
+  "validation_file_size_limit": "The file is too large.",
+  "validation_invalid_mime_type": "This file type is not allowed.",
+  "validation_missing_rel_records": "The selected entry does not exist.",
+  "event_not_found": "The event was not found.",
+  "event_archived": "Archived events are read-only.",
+  "review_not_allowed": "Only head judges and event managers can review scores.",
+  "too_many_reports": "Too many error reports, try again later.",
+  "unknown_action": "Unknown action.",
+  "game_not_found": "The game was not found.",
+  "category_not_found": "The category was not found.",
+  "ruleset_not_found": "The ruleset was not found.",
+  "message_not_found": "The message was not found.",
+  "categories_not_allowed": "You cannot create categories here.",
+  "not_verified": "Please verify your email address first.",
+  "own_schedule_only": "You can only view your own schedule.",
+  "game_not_assigned": "This game is not assigned to you.",
+  "sign_in_required": "Sign in to view the schedule.",
+  "correction_not_allowed": "Only head judges and event managers can correct finalized scores.",
+  "staff_only": "Only event staff can do this.",
+  "managers_only": "Only event managers and admins can do this.",
+  "admins_only": "Only administrators can do this.",
+  "ranking_not_configured": "This category has no ranking configuration.",
+  "audit_immutable": "Score audit entries cannot be changed.",
+  "snapshot_immutable": "Ranking snapshots cannot be changed.",
+  "ruleset_published": "Published rulesets cannot be changed. Create a new version instead.",
+  "retry_failed_only": "Only failed messages can be retried.",
+  "game_has_score": "Games with a submitted or finalized score cannot be deleted.",
+  "table_in_use": "Games are still scheduled on this table. Move them first.",
+  "column_in_use": "Blocks are still placed in this column. Move or delete them first.",
+  "game_rule_category": "A game cannot be moved to another category.",
+  "game_rule_used": "This game has been used to score results and cannot be deleted.",
+  "sheet_submitted": "This score sheet was already submitted and is waiting for review.",
+  "sheet_finalized": "This score is finalized. Only a head judge can correct it.",
+  "approve_submitted_only": "Only submitted score sheets can be approved.",
+  "reject_submitted_only": "Only submitted score sheets can be returned.",
+  "correct_finalized_only": "Only finalized scores can be corrected.",
+  "corrected_meanwhile": "The score was corrected by someone else in the meantime. Reload it and check again.",
+  "result_finalized": "This result is finalized. Use a score correction with a reason to change it.",
+  "result_in_review": "This result is waiting for review in the judging workflow.",
+  "changed_meanwhile": "This was changed by someone else in the meantime. Reload and try again.",
+  "table_required": "Assign a table before setting the team sequence.",
+  "invalid_table": "The table belongs to a different event.",
+  "table_inactive": "The table is deactivated.",
+  "incompatible_category": "The table is not available for this category.",
+  "missing_table_judge": "Assign a judge to the table before scheduling games there.",
+  "sequence_in_use": "That sequence number is already used on this table in this round.",
+  "invalid_category": "Choose a category of this event.",
+  "invalid_column": "Choose columns of this event.",
+  "invalid_date": "Must be a valid calendar date (YYYY-MM-DD).",
+  "invalid_day": "Choose a competition day of this event.",
+  "crosses_midnight": "A block must end by midnight.",
+  "invalid_judge": "The assigned judge must be staff of this event.",
+  "unknown_template": "Unknown template.",
+  "invalid_ruleset": "Use a published ruleset of this category.",
+  "invalid_scope": "Choose whom to notify.",
+  "category_full": "The category is full.",
+  "invalid_status": "This status is not possible for a new registration.",
+  "invalid_transition": "The registration cannot change to this status.",
+  "invalid_team": "The team is not registered in this round’s category.",
+  "team_not_approved": "Only approved teams can play games.",
+  "invalid_game_rule": "Choose a game of this category.",
+  "invalid_snapshot": "Choose a ranking snapshot of this category.",
+  "fields": {
+    "registration_closes_at": {
+      "invalid_range": "Registration must close after it opens."
+    },
+    "ends_at": {
+      "invalid_range": "The day must end after it starts."
+    },
+    "max_age": {
+      "invalid_range": "The maximum age must not be below the minimum age."
+    },
+    "max_team_size": {
+      "invalid_range": "The maximum team size must not be below the minimum."
+    },
+    "email": {
+      "not_found": "No user with this email address exists."
+    },
+    "event": {
+      "not_allowed": "The admin role is global and cannot be scoped to an event.",
+      "required": "This role must be scoped to an event."
+    },
+    "day": {
+      "required": "Choose the day of this phase."
+    },
+    "game_rule": {
+      "required": "Choose the game."
+    },
+    "message": {
+      "required": "A message is required."
+    },
+    "review_note": {
+      "required": "A reason is required when rejecting a registration."
+    },
+    "title": {
+      "required": "A title is required."
+    },
+    "sequence": {
+      "required": "The team sequence must be a positive number."
+    },
+    "active": {
+      "table_in_use": "Games are still scheduled on this table."
+    }
+  }
+}

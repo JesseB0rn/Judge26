@@ -8,7 +8,10 @@ routerAdd(
   '/api/judging/assignments',
   (e) => {
     const access = require(`${__hooks}/lib/access.js`)
-    if (!access.isVerifiedUser(e.auth)) throw new ForbiddenError('Verify your account first.')
+    if (!access.isVerifiedUser(e.auth))
+      throw new ForbiddenError('Verify your account first.', {
+        _error: new ValidationError('not_verified', 'Verify your account first.'),
+      })
     return e.json(200, require(`${__hooks}/lib/judging.js`).assignments(e.app, e.auth))
   },
   $apis.requireAuth('users', '_superusers'),
@@ -80,7 +83,9 @@ routerAdd(
         return e.json(200, result)
       }
       default:
-        throw new NotFoundError('Unknown action.')
+        throw new NotFoundError('Unknown action.', {
+          _error: new ValidationError('unknown_action', 'Unknown action.'),
+        })
     }
   },
   $apis.requireAuth('users', '_superusers'),
@@ -114,14 +119,21 @@ onRecordCreateRequest((e) => {
 onRecordDeleteRequest((e) => {
   const sheet = require(`${__hooks}/lib/judging.js`).sheetFor(e.app, e.record.id)
   if (sheet && ['submitted', 'finalized'].includes(sheet.getString('status'))) {
-    throw new BadRequestError('Games with a submitted or finalized score cannot be deleted.')
+    throw new BadRequestError('Games with a submitted or finalized score cannot be deleted.', {
+      _error: new ValidationError(
+        'game_has_score',
+        'Games with a submitted or finalized score cannot be deleted.',
+      ),
+    })
   }
   e.next()
 }, 'games')
 
 // The audit trail is append-only, even for superusers.
 onRecordUpdate((e) => {
-  throw new BadRequestError('Score audit entries cannot be changed.')
+  throw new BadRequestError('Score audit entries cannot be changed.', {
+    _error: new ValidationError('audit_immutable', 'Score audit entries cannot be changed.'),
+  })
 }, 'score_audit')
 
 // A round's day must be a competition day of the round's event (M5-02).

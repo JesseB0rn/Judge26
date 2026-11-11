@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import {
   compileRuleset,
@@ -95,7 +96,7 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     if (input.value.outcome !== 'completed') return []
     if (!ruleset.value) {
       return input.value.points === null
-        ? [{ nodeId: 'points', message: 'Enter the points.', code: 'required' }]
+        ? [{ nodeId: 'points', message: t('judging.sheet.enterPoints'), code: 'required' }]
         : []
     }
     const order = [...ruleset.value.nodes.keys()]
@@ -144,8 +145,8 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     if (local && !p.permissions.canEdit && !local.synced) {
       notice.value =
         p.sheet?.status === 'finalized'
-          ? 'This score was finalized meanwhile. The changes stored on this device were not applied.'
-          : 'This score was submitted meanwhile. The changes stored on this device were not applied.'
+          ? t('judging.sheet.finalizedMeanwhile')
+          : t('judging.sheet.submittedMeanwhile')
     }
     removeDraft(gameId)
     input.value = fromServer(p)
@@ -227,7 +228,7 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
         startRetry()
         break
       case 'conflict':
-        notice.value = `${outcome.message} The changes stored on this device were not applied.`
+        notice.value = `${outcome.message} ${t('judging.sheet.notApplied')}`
         await load()
         break
       case 'error':

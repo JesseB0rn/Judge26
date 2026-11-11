@@ -84,12 +84,17 @@ routerAdd(
     const access = require(`${__hooks}/lib/access.js`)
     const planner = require(`${__hooks}/lib/planner.js`)
     const eventId = e.request.pathValue('id')
-    if (!access.isVerifiedUser(e.auth)) throw new ForbiddenError('Sign in to view the schedule.')
+    if (!access.isVerifiedUser(e.auth))
+      throw new ForbiddenError('Sign in to view the schedule.', {
+        _error: new ValidationError('sign_in_required', 'Sign in to view the schedule.'),
+      })
     let event = null
     try {
       event = e.app.findRecordById('events', eventId)
     } catch (_) {
-      throw new NotFoundError('The event was not found.')
+      throw new NotFoundError('The event was not found.', {
+        _error: new ValidationError('event_not_found', 'The event was not found.'),
+      })
     }
     const staff =
       access.isAdmin(e.app, e.auth) ||
@@ -102,7 +107,9 @@ routerAdd(
         })
     const status = event.getString('status')
     if (!staff && !(status === 'published' || (status === 'archived' && ownTeams.length))) {
-      throw new NotFoundError('The event was not found.')
+      throw new NotFoundError('The event was not found.', {
+        _error: new ValidationError('event_not_found', 'The event was not found.'),
+      })
     }
     const myCategories = []
     for (const team of ownTeams) {

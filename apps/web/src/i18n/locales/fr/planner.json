@@ -1,0 +1,92 @@
+{
+  "phase": {
+    "maintenance": "Maintenance / entraînement",
+    "check": "Contrôle du robot",
+    "scoring": "Manche d’évaluation"
+  },
+  "phaseShort": {
+    "maintenance": "Maintenance",
+    "check": "Contrôle du robot",
+    "scoring": "Évaluation"
+  },
+  "issues": {
+    "outside_day": "En dehors des horaires de ce jour.",
+    "phase_order": "Les phases doivent se dérouler dans l’ordre maintenance, contrôle du robot, évaluation.",
+    "round_overlap": "Chevauche un autre tour de la même catégorie.",
+    "table_overlap": "Un autre tour utilise la même table à ce moment.",
+    "judge_overlap": "Le même juge est nécessaire à deux tables au même moment."
+  },
+  "internal": "Interne (organisation uniquement)",
+  "done": "Terminé",
+  "close": "Fermer",
+  "duration": "Durée",
+  "minutes": "{count} minutes",
+  "minutesShort": "{count} min",
+  "start": "Début",
+  "startHint": "Vide : non placé",
+  "durationMin": "Durée (min)",
+  "unplace": "Retirer",
+  "columns": {
+    "confirmDelete": "Supprimer la colonne « {column} » ?",
+    "title": "Colonnes personnalisées",
+    "description": "Des colonnes à côté des catégories, p. ex. visiteurs ou coachs. Les blocs personnalisés peuvent y être placés chaque jour.",
+    "nameOf": "Nom de {column}",
+    "left": "Déplacer {column} à gauche",
+    "right": "Déplacer {column} à droite",
+    "empty": "Aucune colonne personnalisée pour l’instant.",
+    "placeholder": "p. ex. Visiteurs",
+    "newName": "Nom de la nouvelle colonne",
+    "add": "Ajouter une colonne",
+    "hint": "Les colonnes internes ne sont visibles que par l’organisation. Une colonne contenant des blocs ne peut pas être supprimée."
+  },
+  "phaseDialog": {
+    "confirmRemoveCheck": "Retirer le contrôle du robot de ce tour ?",
+    "hint": "Les durées de maintenance et d’évaluation sont aussi celles des phases du tour. Le jour d’évaluation est celui du tour.",
+    "settings": "Paramètres du tour",
+    "removeCheck": "Retirer le contrôle du robot",
+    "addCheck": "Ajouter un contrôle du robot"
+  },
+  "block": {
+    "allColumns": "Toutes les colonnes",
+    "new": "Nouveau bloc",
+    "edit": "Modifier le bloc",
+    "block": "Bloc",
+    "description": "Les blocs personnalisés peuvent être placés n’importe où et ne causent jamais de conflits.",
+    "place": "Lieu",
+    "responsible": "Responsable",
+    "columns": "Colonnes",
+    "visibility": "Visibilité",
+    "titlePlaceholder": "p. ex. Repas de midi",
+    "placePlaceholder": "p. ex. Salle B",
+    "responsibility": "Responsabilité",
+    "responsibilityPlaceholder": "p. ex. Juge principal·e",
+    "columnsHint": "Aucune choisie : le bloc couvre toutes les colonnes.",
+    "color": "Couleur",
+    "publicHint": "Public — visible par les coachs et sur les pages publiques",
+    "delete": "Supprimer",
+    "duplicateHint": "Crée une copie avec les valeurs ci-dessus, p. ex. un autre jour",
+    "duplicate": "Dupliquer"
+  },
+  "board": {
+    "unplaced": "Pas encore placés",
+    "trayHint": "Faites glisser dans la colonne du tour, ou ouvrez pour placer.",
+    "noDays": "Aucun jour de compétition pour l’instant. Ajoutez des jours dans l’aperçu de l’événement.",
+    "customColumn": "colonne personnalisée"
+  },
+  "view": {
+    "linkGone": "Le bloc lié n’existe plus.",
+    "conflict": "Quelqu’un d’autre a modifié ce bloc entre-temps. Le planificateur a été rechargé.",
+    "title": "Planificateur d’horaire",
+    "print": "Imprimer",
+    "shownColumns": "Colonnes affichées",
+    "showAll": "Tout afficher",
+    "days": "Jours",
+    "shownDays": "Jours affichés",
+    "moveLater": "Déplacer aussi les phases suivantes",
+    "moveLaterHint": "(ou maintenir Maj en déposant)",
+    "undoTitle": "Annuler (Ctrl+Z)",
+    "warnings": "aucun avertissement | un avertissement | {count} avertissements",
+    "narrow": "La modification est possible sur tablette et sur les écrans plus grands.",
+    "help": "Faites glisser les blocs pour les déplacer, leur bord inférieur pour les redimensionner, et un espace vide pour créer un bloc. Au clavier : les flèches déplacent (Maj : 15 min, gauche/droite : jour), Alt+flèches redimensionnent, Entrée ouvre."
+  }
+}

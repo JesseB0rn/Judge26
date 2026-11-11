@@ -71,7 +71,9 @@ export interface HealthCheck {
   id: 'database' | 'errors' | 'mail' | 'backups'
   label: string
   status: CheckStatus
+  /** English; `messages` has the same as codes, translated by the page. */
   detail: string
+  messages?: { code: string; params: Record<string, unknown> }[]
 }
 
 export interface RecentError {

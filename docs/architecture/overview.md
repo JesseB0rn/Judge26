@@ -36,6 +36,7 @@ apps/web/src/
   lib/utils.ts        cn() helper used by shadcn-vue
   modules/<feature>/  feature modules: views/, components/, api.ts, routes.ts, __tests__/
   shared/             cross-cutting code: api/, config/, components/, errorHandling.ts
+  i18n/               languages (de, fr, it, en): t(), locale choice, message files per module
   router/             assembles module routes
 ```
 
@@ -51,7 +52,9 @@ mode; result publication; see [M6 live competition](../specifications/M6-live.md
 `communication` (email templates, delivery log, schedule notifications; see
 [M7 communication](../specifications/M7-communication.md)).
 
-Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
+Permissions are specified in [M1 permissions](../specifications/M1-permissions.md). Every build
+contains German, French, Italian and English; each user picks their language
+([languages](../specifications/i18n.md)).
 
 ## Backend structure
 

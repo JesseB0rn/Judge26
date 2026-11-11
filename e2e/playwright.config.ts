@@ -27,6 +27,8 @@ export default defineConfig({
   use: {
     baseURL: WEB_URL,
     trace: 'on-first-retry',
+    // The UI follows the browser language (docs/specifications/i18n.md); tests read English text.
+    locale: 'en-US',
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

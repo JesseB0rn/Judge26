@@ -232,7 +232,7 @@ describe('JudgeDashboardView robot checks', () => {
     const check = wrapper.get('[data-check="r2:tA"]')
     expect(check.text()).toContain('Robot check · Round 2 · RM-J')
     expect(check.text()).toContain('Saturday · 17:00–17:20')
-    expect(check.text()).toContain('2 team(s)')
+    expect(check.text()).toContain('2 teams')
     expect(check.attributes('href')).toContain('table=tA')
   })
 

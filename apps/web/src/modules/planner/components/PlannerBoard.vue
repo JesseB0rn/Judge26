@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { AlertTriangleIcon, EyeOffIcon, GripVerticalIcon } from '@lucide/vue'
 import { formatDay } from '@/shared/format'
@@ -26,6 +27,7 @@ import {
   toMinutes,
   unplacedPhases,
   type LayoutItem,
+  issueText,
 } from '../lib'
 import type {
   CreateRequest,
@@ -154,8 +156,8 @@ function describe(ref: ItemRef): string {
     const phase = phases.value.get(ref.id)
     if (phase) lines[0] = `${v.title} (${PHASE_LABELS[phase.phase]})`
   }
-  if (v.internal && props.data.internal) lines.push('Internal (staff only)')
-  for (const issue of issues.value[refKey(ref)] ?? []) lines.push(`⚠ ${issue.message}`)
+  if (v.internal && props.data.internal) lines.push(t('planner.internal'))
+  for (const issue of issues.value[refKey(ref)] ?? []) lines.push(`⚠ ${issueText(issue)}`)
   return lines.filter(Boolean).join('\n')
 }
 
@@ -580,12 +582,12 @@ function dayShade(day: PlannerDay) {
     <aside
       v-if="editable && tray.length"
       class="flex shrink-0 flex-col gap-2 rounded-md border p-2 lg:w-56 print:hidden"
-      aria-label="Not yet placed"
+      :aria-label="t('planner.board.unplaced')"
       data-testid="planner-tray"
     >
-      <p class="px-1 text-sm font-medium">Not yet placed</p>
+      <p class="px-1 text-sm font-medium">{{ t('planner.board.unplaced') }}</p>
       <p class="px-1 text-xs text-muted-foreground">
-        Drag into the round's column, or open to place.
+        {{ t('planner.board.trayHint') }}
       </p>
       <ul class="flex max-h-48 flex-col gap-1 overflow-auto lg:max-h-[60vh]">
         <li v-for="phase in tray" :key="phase.id">
@@ -595,7 +597,7 @@ function dayShade(day: PlannerDay) {
             class="flex touch-none cursor-grab items-center gap-1 rounded border px-2 py-1 text-xs"
             :class="PHASE_CLASSES[phase.phase]"
             :data-tray="phase.id"
-            :title="`${rounds.get(phase.round)?.name} · ${PHASE_LABELS[phase.phase]} · ${phase.duration_minutes} min`"
+            :title="`${rounds.get(phase.round)?.name} · ${PHASE_LABELS[phase.phase]} · ${t('planner.minutesShort', { count: phase.duration_minutes })}`"
             @pointerdown="onTrayDown($event, phase)"
             @keydown.enter.prevent="emit('open', { kind: 'phase', id: phase.id })"
           >
@@ -616,7 +618,7 @@ function dayShade(day: PlannerDay) {
       data-testid="planner-grid"
     >
       <p v-if="!days.length" class="p-6 text-sm text-muted-foreground">
-        No competition days yet. Add days on the event's overview.
+        {{ t('planner.board.noDays') }}
       </p>
       <div v-else class="flex w-max print:block">
         <!-- Time axis -->
@@ -683,7 +685,11 @@ function dayShade(day: PlannerDay) {
                   class="truncate border-t border-l px-2 py-1 text-xs font-medium first:border-l-0"
                   :class="{ 'bg-muted/60 text-muted-foreground italic': column.custom }"
                   :style="{ width: 'var(--col)' }"
-                  :title="column.custom ? `${column.name} (custom column)` : column.name"
+                  :title="
+                    column.custom
+                      ? `${column.name} (${t('planner.board.customColumn')})`
+                      : column.name
+                  "
                   :data-column="column.id"
                 >
                   {{ column.name }}

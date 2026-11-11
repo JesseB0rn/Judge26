@@ -1,0 +1,17 @@
+{
+  "label": "Block diagram",
+  "enable": "Enable: wire a criterion here to make this block conditional",
+  "output": "Output: drag to a terminal to wire",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "fit": "Fit diagram",
+  "addBlock": "Add block",
+  "add": "Add",
+  "errors": "no errors | 1 error | {count} errors",
+  "valid": "Valid",
+  "undo": "Undo",
+  "tidy": "Clean up",
+  "editor": "Editor",
+  "visual": "Visual",
+  "same": "Both edit the same definition."
+}

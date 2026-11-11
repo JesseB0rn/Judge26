@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
@@ -69,7 +70,7 @@ const setStatus = useSubmit(
   async (status: EventStatus) => {
     event.value = await updateEvent(props.id, { status })
   },
-  { success: 'Event updated.' },
+  { success: () => t('events.detail.updated') },
 )
 
 function onSaved(saved: EventRecord) {
@@ -86,42 +87,46 @@ watch(() => props.id, load)
   <template v-if="event">
     <PageHeader
       :title="event.name"
-      :description="`Season ${event.season}${event.venue ? ' · ' + event.venue : ''}`"
+      :description="
+        t('events.detail.seasonLine', { season: event.season }) +
+        (event.venue ? ' · ' + event.venue : '')
+      "
     >
       <template #actions>
         <EventStatusBadge :status="event.status" class="self-center" />
         <template v-if="canManage">
           <Button v-if="!archived" variant="outline" @click="editing = true"
-            ><PencilIcon /> Edit</Button
+            ><PencilIcon /> {{ t('common.edit') }}</Button
           >
           <Button v-if="event.status === 'draft'" @click="setStatus.run('published')">
-            <SendIcon /> Publish
+            <SendIcon /> {{ t('events.detail.publish') }}
           </Button>
           <Button v-if="!archived" variant="outline" @click="setStatus.run('archived')">
-            <ArchiveIcon /> Archive
+            <ArchiveIcon /> {{ t('events.detail.archive') }}
           </Button>
           <Button v-else variant="outline" @click="setStatus.run('published')">
-            <ArchiveRestoreIcon /> Restore
+            <ArchiveRestoreIcon /> {{ t('events.detail.restore') }}
           </Button>
         </template>
         <Button v-if="canReview && !archived" as-child variant="outline">
           <RouterLink :to="{ name: 'review', query: { event: event.id } }">
-            <ClipboardListIcon /> Review scores
+            <ClipboardListIcon /> {{ t('events.detail.reviewScores') }}
           </RouterLink>
         </Button>
         <Button v-if="isStaff || event.status !== 'draft'" as-child variant="outline">
           <RouterLink :to="{ name: 'event-planner', params: { id: event.id } }">
-            <CalendarRangeIcon /> {{ canManage && !archived ? 'Planner' : 'Schedule' }}
+            <CalendarRangeIcon />
+            {{ canManage && !archived ? t('events.detail.planner') : t('events.tabs.schedule') }}
           </RouterLink>
         </Button>
         <Button v-if="event.status !== 'draft'" as-child variant="outline">
           <RouterLink :to="{ name: 'live-event', params: { id: event.id } }">
-            <RadioIcon /> Live results
+            <RadioIcon /> {{ t('shell.nav.live') }}
           </RouterLink>
         </Button>
         <Button v-if="registrationOpen" as-child>
           <RouterLink :to="{ name: 'team-new', params: { eventId: event.id } }">
-            <PlusIcon /> Register a team
+            <PlusIcon /> {{ t('events.detail.registerTeam') }}
           </RouterLink>
         </Button>
       </template>
@@ -129,34 +134,38 @@ watch(() => props.id, load)
 
     <ErrorAlert :error="setStatus.error.value" />
     <Alert v-if="archived" class="mb-4">
-      <AlertDescription>This event is archived. Its records are read-only.</AlertDescription>
+      <AlertDescription>{{ t('events.detail.archivedNotice') }}</AlertDescription>
     </Alert>
 
     <Tabs :model-value="visibleTab" @update:model-value="tab = String($event)">
       <TabsList>
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="categories">Categories</TabsTrigger>
-        <TabsTrigger value="teams">Teams</TabsTrigger>
-        <TabsTrigger v-if="isStaff" value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="publication">Public results</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="messages">Messages</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="activity">Activity</TabsTrigger>
-        <TabsTrigger v-if="session.isAdmin" value="staff">Staff</TabsTrigger>
+        <TabsTrigger value="overview">{{ t('events.tabs.overview') }}</TabsTrigger>
+        <TabsTrigger value="categories">{{ t('events.tabs.categories') }}</TabsTrigger>
+        <TabsTrigger value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
+        <TabsTrigger v-if="isStaff" value="schedule">{{ t('events.tabs.schedule') }}</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="publication">{{
+          t('events.tabs.publication')
+        }}</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="messages">{{ t('events.tabs.messages') }}</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="activity">{{ t('events.tabs.activity') }}</TabsTrigger>
+        <TabsTrigger v-if="session.isAdmin" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Details</CardTitle></CardHeader>
+          <CardHeader
+            ><CardTitle>{{ t('events.detail.details') }}</CardTitle></CardHeader
+          >
           <CardContent class="flex flex-col gap-2 text-sm">
             <p v-if="event.description" class="whitespace-pre-line">{{ event.description }}</p>
             <p>
-              <span class="text-muted-foreground">Registration:</span>
+              <span class="text-muted-foreground">{{ t('events.detail.registration') }}</span>
               {{ registrationSummary(event) }}
             </p>
             <p>
-              <span class="text-muted-foreground">Opens:</span>
+              <span class="text-muted-foreground">{{ t('events.detail.opens') }}</span>
               {{ formatDateTime(event.registration_opens_at) }} ·
-              <span class="text-muted-foreground">Closes:</span>
+              <span class="text-muted-foreground">{{ t('events.detail.closes') }}</span>
               {{ formatDateTime(event.registration_closes_at) }}
             </p>
           </CardContent>

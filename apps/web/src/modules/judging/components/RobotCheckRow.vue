@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { RouterLink } from 'vue-router'
 import { CheckIcon, ChevronRightIcon, ScanSearchIcon } from '@lucide/vue'
 import { checkRoute, checkWhen, type RobotCheckBlock } from '../lib'
@@ -20,7 +21,7 @@ defineProps<{
     :class="{ 'bg-sky-50/70': highlight }"
     :data-check="block.key"
     :data-done="done"
-    :aria-label="`Robot check ${block.round.name} ${block.category.code}`"
+    :aria-label="`${t('judging.check.title')} ${block.round.name} ${block.category.code}`"
   >
     <span
       class="flex size-11 shrink-0 items-center justify-center rounded-lg"
@@ -31,12 +32,13 @@ defineProps<{
     </span>
     <span class="min-w-0 flex-1">
       <span class="block truncate text-base font-semibold"
-        >Robot check · {{ block.round.name }} · {{ block.category.code }}</span
+        >{{ t('judging.check.title') }} · {{ block.round.name }} · {{ block.category.code }}</span
       >
       <span class="block truncate text-sm text-muted-foreground">
         {{ checkWhen(block)
         }}<template v-if="showTable && block.table"> · {{ block.table.name }}</template> ·
-        {{ block.teams.length }} team(s)<template v-if="done"> · Done</template>
+        {{ t('judging.check.teams', block.teams.length)
+        }}<template v-if="done"> · {{ t('judging.check.done') }}</template>
       </span>
     </span>
     <ChevronRightIcon class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />

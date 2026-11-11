@@ -35,9 +35,15 @@ function badRequest(field, code, message) {
   require(`${__hooks}/lib/errors.js`).fieldError(field, code, message)
 }
 
-/** 409 with the sheet's current status as `data.status.code`, so clients can tell why. */
-function conflict(message, status) {
-  throw new ApiError(409, message, { status: new ValidationError(status || 'none', message) })
+/**
+ * 409 with the sheet's current status as `data.status.code`, so clients can tell why, and the
+ * reason as `data._error` (a message code the web app translates).
+ */
+function conflict(message, status, code) {
+  throw new ApiError(409, message, {
+    status: new ValidationError(status || 'none', message),
+    _error: new ValidationError(code || `sheet_${status || 'none'}`, message),
+  })
 }
 
 /** The game with everything needed to identify it at the table (M5-03). */
@@ -46,7 +52,9 @@ function loadContext(app, gameId) {
   try {
     game = app.findRecordById('games', gameId)
   } catch (_) {
-    throw new NotFoundError('The game was not found.')
+    throw new NotFoundError('The game was not found.', {
+      _error: new ValidationError('game_not_found', 'The game was not found.'),
+    })
   }
   const round = app.findRecordById('rounds', game.getString('round'))
   const category = app.findRecordById('categories', round.getString('category'))
@@ -89,7 +97,10 @@ function permissions(app, auth, ctx) {
 
 function requireView(app, auth, ctx) {
   const p = permissions(app, auth, ctx)
-  if (!p.canView) throw new ForbiddenError('This game is not assigned to you.')
+  if (!p.canView)
+    throw new ForbiddenError('This game is not assigned to you.', {
+      _error: new ValidationError('game_not_assigned', 'This game is not assigned to you.'),
+    })
   return p
 }
 
@@ -352,7 +363,10 @@ const STATUS_MESSAGES = {
 function saveDraft(app, auth, gameId, body) {
   const ctx = loadContext(app, gameId)
   const p = requireView(app, auth, ctx)
-  if (!p.canScore) throw new BadRequestError('Archived events are read-only.')
+  if (!p.canScore)
+    throw new BadRequestError('Archived events are read-only.', {
+      _error: new ValidationError('event_archived', 'Archived events are read-only.'),
+    })
   const input = readInput(body)
   let sheet = sheetFor(app, gameId)
   if (sheet && !EDITABLE.includes(sheet.getString('status'))) {
@@ -375,7 +389,10 @@ function saveDraft(app, auth, gameId, body) {
 function submit(app, auth, gameId, body) {
   const ctx = loadContext(app, gameId)
   const p = requireView(app, auth, ctx)
-  if (!p.canScore) throw new BadRequestError('Archived events are read-only.')
+  if (!p.canScore)
+    throw new BadRequestError('Archived events are read-only.', {
+      _error: new ValidationError('event_archived', 'Archived events are read-only.'),
+    })
   const input = readInput(body)
   let result = null
   app.runInTransaction((tx) => {
@@ -417,7 +434,12 @@ function applyToGame(app, game, sheet) {
 function requireReviewer(app, auth, ctx) {
   const p = requireView(app, auth, ctx)
   if (!p.canReview) {
-    throw new ForbiddenError('Only head judges and event managers can review scores.')
+    throw new ForbiddenError('Only head judges and event managers can review scores.', {
+      _error: new ValidationError(
+        'review_not_allowed',
+        'Only head judges and event managers can review scores.',
+      ),
+    })
   }
 }
 
@@ -432,6 +454,7 @@ function approve(app, auth, gameId) {
       conflict(
         'Only submitted score sheets can be approved.',
         sheet ? sheet.getString('status') : '',
+        'approve_submitted_only',
       )
     }
     const game = tx.findRecordById('games', gameId)
@@ -467,6 +490,7 @@ function reject(app, auth, gameId, body) {
       conflict(
         'Only submitted score sheets can be rejected.',
         sheet ? sheet.getString('status') : '',
+        'reject_submitted_only',
       )
     }
     sheet.set('status', 'rejected')
@@ -486,7 +510,12 @@ function correct(app, auth, gameId, body) {
   const p = requireView(app, auth, ctx)
   if (!p.canReview) {
     // M5-T11: judges cannot change finalized scores.
-    throw new ForbiddenError('Only head judges and event managers can correct finalized scores.')
+    throw new ForbiddenError('Only head judges and event managers can correct finalized scores.', {
+      _error: new ValidationError(
+        'correction_not_allowed',
+        'Only head judges and event managers can correct finalized scores.',
+      ),
+    })
   }
   const reason = requireReason(body)
   const input = readInput(body)
@@ -494,7 +523,11 @@ function correct(app, auth, gameId, body) {
   app.runInTransaction((tx) => {
     const sheet = sheetFor(tx, gameId)
     if (!sheet || sheet.getString('status') !== 'finalized') {
-      conflict('Only finalized scores can be corrected.', sheet ? sheet.getString('status') : '')
+      conflict(
+        'Only finalized scores can be corrected.',
+        sheet ? sheet.getString('status') : '',
+        'correct_finalized_only',
+      )
     }
     // M7-T10: a correction based on an outdated score never overwrites a newer correction.
     const expected = body && body.expected_corrections
@@ -506,6 +539,7 @@ function correct(app, auth, gameId, body) {
       conflict(
         'The score was corrected by someone else in the meantime. Reload it and check again.',
         'finalized',
+        'corrected_meanwhile',
       )
     }
     const ruleset = rulesetFor(tx, ctx, sheet)
@@ -623,7 +657,12 @@ function eventGames(app, auth, eventId) {
     !a.isVerifiedUser(auth) ||
     !(a.isAdmin(app, auth) || a.hasEventRole(app, auth, eventId, ['head_judge', 'event_manager']))
   ) {
-    throw new ForbiddenError('Only head judges and event managers can review scores.')
+    throw new ForbiddenError('Only head judges and event managers can review scores.', {
+      _error: new ValidationError(
+        'review_not_allowed',
+        'Only head judges and event managers can review scores.',
+      ),
+    })
   }
   const cache = {}
   return app
@@ -648,6 +687,7 @@ function guardDirectEdit(app, gameId, body) {
         ? 'This result is finalized. Use a score correction with a reason to change it.'
         : 'This result is waiting for review in the judging workflow.',
       status,
+      status === 'finalized' ? 'result_finalized' : 'result_in_review',
     )
   }
   return true

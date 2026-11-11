@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 /**
  * Visual rule builder model (M2-15): maps a ruleset definition onto a block diagram and
  * applies edits to the definition. Every edit is a pure function returning a new definition
@@ -105,23 +106,31 @@ export const PALETTE: {
   aggregate?: Group['aggregate']
   label: string
   glyph: string
-}[] = [
-  { type: 'boolean', label: 'Yes / no', glyph: 'TF' },
-  { type: 'number', label: 'Count', glyph: '123' },
-  { type: 'select', label: 'Choice', glyph: '▾' },
-  { type: 'group', aggregate: 'sum', label: 'Sum', glyph: 'Σ' },
-  { type: 'group', aggregate: 'max', label: 'Maximum', glyph: 'MAX' },
-  { type: 'group', aggregate: 'min', label: 'Minimum', glyph: 'MIN' },
-]
+}[] = (
+  [
+    { type: 'boolean', glyph: 'TF', key: 'boolean' },
+    { type: 'number', glyph: '123', key: 'number' },
+    { type: 'select', glyph: '▾', key: 'select' },
+    { type: 'group', aggregate: 'sum', glyph: 'Σ', key: 'sum' },
+    { type: 'group', aggregate: 'max', glyph: 'MAX', key: 'max' },
+    { type: 'group', aggregate: 'min', glyph: 'MIN', key: 'min' },
+  ] as const
+).map(({ key, ...block }) => ({
+  ...block,
+  // Read in the current language.
+  get label() {
+    return t(`scoring.palette.${key}`)
+  },
+}))
 
 function newNode(def: Draft, type: NodeType, aggregate: Group['aggregate'] = 'sum'): ScoringNode {
   switch (type) {
     case 'boolean':
-      return { id: uniqueId(def, 'task'), label: 'New task', type, points: 10 }
+      return { id: uniqueId(def, 'task'), label: t('scoring.new.task'), type, points: 10 }
     case 'number':
       return {
         id: uniqueId(def, 'count'),
-        label: 'New count',
+        label: t('scoring.new.count'),
         type,
         integer: true,
         min: 0,
@@ -130,11 +139,11 @@ function newNode(def: Draft, type: NodeType, aggregate: Group['aggregate'] = 'su
     case 'select': {
       return {
         id: uniqueId(def, 'choice'),
-        label: 'New choice',
+        label: t('scoring.new.choice'),
         type,
         options: [
-          { id: 'none', label: 'None', points: 0 },
-          { id: 'full', label: 'Full', points: 10 },
+          { id: 'none', label: t('scoring.new.none'), points: 0 },
+          { id: 'full', label: t('scoring.new.full'), points: 10 },
         ],
       }
     }
@@ -143,11 +152,11 @@ function newNode(def: Draft, type: NodeType, aggregate: Group['aggregate'] = 'su
       // A group needs a child to be valid; start with a placeholder task.
       const child = {
         id: uniqueId(def, 'task'),
-        label: 'New task',
+        label: t('scoring.new.task'),
         type: 'boolean' as const,
         points: 10,
       }
-      return { id, label: 'New group', type, aggregate, children: [child] }
+      return { id, label: t('scoring.new.group'), type, aggregate, children: [child] }
     }
   }
 }
@@ -377,24 +386,26 @@ const fmt = (n: unknown) => (typeof n === 'number' ? String(n) : '?')
 function summary(node: ScoringNode): string {
   switch (node.type) {
     case 'boolean':
-      return `${fmt(node.points)} pts if yes`
+      return t('scoring.summary.boolean', { points: fmt(node.points) })
     case 'number': {
       const range =
         node.min !== undefined || node.max !== undefined
           ? ` · ${node.min ?? '−∞'}…${node.max ?? '∞'}`
           : ''
-      return `× ${fmt(node.pointsPerUnit)} pts${node.unit ? `/${node.unit}` : ''}${range}`
+      return `× ${t('scoring.summary.points', { points: fmt(node.pointsPerUnit) })}${node.unit ? `/${node.unit}` : ''}${range}`
     }
     case 'select':
-      return `${Array.isArray(node.options) ? node.options.length : 0} options`
+      return t('scoring.summary.options', Array.isArray(node.options) ? node.options.length : 0)
     case 'group':
-      return node.aggregate === 'sum' ? 'Sum' : node.aggregate === 'max' ? 'Highest' : 'Lowest'
+      return t(
+        `scoring.summary.${node.aggregate === 'max' ? 'max' : node.aggregate === 'min' ? 'min' : 'sum'}`,
+      )
   }
 }
 
 function badges(node: ScoringNode): string[] {
   const list: string[] = []
-  if ('required' in node && node.required) list.push('REQ')
+  if ('required' in node && node.required) list.push(t('scoring.badge.required'))
   if (node.type === 'group') {
     const s = node.selection
     if (s && (s.min !== undefined || s.max !== undefined)) {
@@ -468,12 +479,12 @@ export function toDiagram(
       shape: e.key === '' ? 'indicator' : isGroup ? 'function' : 'control',
       tone: TONE[n.type] ?? 'number',
       glyph: isGroup ? (GLYPH[n.aggregate] ?? '?') : (GLYPH[n.type] ?? '?'),
-      title: e.key === '' ? `Total · ${n.label ?? ''}` : (n.label ?? n.id),
+      title: e.key === '' ? `${t('judging.sheet.total')} · ${n.label ?? ''}` : (n.label ?? n.id),
       subtitle: `${n.id ?? '?'} · ${summary(n)}`,
       inputs: isGroup
         ? [
             ...n.children.map((c, i) => ({ id: `in${i}`, label: c.label ?? c.id })),
-            { id: `in${n.children.length}`, label: '+ wire to add', spare: true },
+            { id: `in${n.children.length}`, label: t('rankings.builder.wireToAdd'), spare: true },
           ]
         : [],
       output: e.key !== '',
@@ -570,11 +581,10 @@ export function toDiagram(
 export function connect(def: Draft, from: string, to: string, port: string): Draft | string {
   if (port === 'enable') {
     const result = connectCondition(def, to, from)
-    return result ?? 'This block cannot be made conditional.'
+    return result ?? t('scoring.wire.notConditional')
   }
   const index = Number(port.replace('in', ''))
-  if (from === '') return 'The total cannot be wired into another block.'
-  if (isWithin(to, from))
-    return 'A group cannot be wired into itself or into one of its own blocks.'
-  return moveNode(def, from, to, index)?.def ?? 'This wire is not possible.'
+  if (from === '') return t('scoring.wire.total')
+  if (isWithin(to, from)) return t('scoring.wire.itself')
+  return moveNode(def, from, to, index)?.def ?? t('scoring.wire.impossible')
 }

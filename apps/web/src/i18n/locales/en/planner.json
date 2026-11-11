@@ -1,0 +1,92 @@
+{
+  "phase": {
+    "maintenance": "Maintenance / practice",
+    "check": "Robot check",
+    "scoring": "Scoring run"
+  },
+  "phaseShort": {
+    "maintenance": "Maintenance",
+    "check": "Robot check",
+    "scoring": "Scoring"
+  },
+  "issues": {
+    "outside_day": "Outside the hours of this day.",
+    "phase_order": "Phases must run in the order maintenance, robot check, scoring.",
+    "round_overlap": "Overlaps another round of the same category.",
+    "table_overlap": "Another round uses the same table at this time.",
+    "judge_overlap": "The same judge is needed on two tables at this time."
+  },
+  "internal": "Internal (staff only)",
+  "done": "Done",
+  "close": "Close",
+  "duration": "Duration",
+  "minutes": "{count} minutes",
+  "minutesShort": "{count} min",
+  "start": "Start",
+  "startHint": "Empty: not placed",
+  "durationMin": "Duration (min)",
+  "unplace": "Unplace",
+  "columns": {
+    "confirmDelete": "Delete the column “{column}”?",
+    "title": "Custom columns",
+    "description": "Columns next to the categories, e.g. visitors or coaches. Custom blocks can be placed in them on every day.",
+    "nameOf": "Name of {column}",
+    "left": "Move {column} left",
+    "right": "Move {column} right",
+    "empty": "No custom columns yet.",
+    "placeholder": "e.g. Visitors",
+    "newName": "New column name",
+    "add": "Add column",
+    "hint": "Internal columns are only shown to event staff. A column with blocks cannot be deleted."
+  },
+  "phaseDialog": {
+    "confirmRemoveCheck": "Remove the robot check of this round?",
+    "hint": "Maintenance and scoring durations are also the round's phase durations. The scoring day is the round's day.",
+    "settings": "Round settings",
+    "removeCheck": "Remove robot check",
+    "addCheck": "Add robot check"
+  },
+  "block": {
+    "allColumns": "All columns",
+    "new": "New block",
+    "edit": "Edit block",
+    "block": "Block",
+    "description": "Custom blocks can sit anywhere and never cause conflicts.",
+    "place": "Place",
+    "responsible": "Responsible",
+    "columns": "Columns",
+    "visibility": "Visibility",
+    "titlePlaceholder": "e.g. Lunch",
+    "placePlaceholder": "e.g. Hall B",
+    "responsibility": "Responsibility",
+    "responsibilityPlaceholder": "e.g. Head judge",
+    "columnsHint": "None selected: the block covers all columns.",
+    "color": "Color",
+    "publicHint": "Public — shown to coaches and on the public pages",
+    "delete": "Delete",
+    "duplicateHint": "Creates a copy with the values above, e.g. on another day",
+    "duplicate": "Duplicate"
+  },
+  "board": {
+    "unplaced": "Not yet placed",
+    "trayHint": "Drag into the round's column, or open to place.",
+    "noDays": "No competition days yet. Add days on the event's overview.",
+    "customColumn": "custom column"
+  },
+  "view": {
+    "linkGone": "The linked block no longer exists.",
+    "conflict": "Someone else changed this block in the meantime. The planner was reloaded.",
+    "title": "Schedule planner",
+    "print": "Print",
+    "shownColumns": "Shown columns",
+    "showAll": "Show all",
+    "days": "Days",
+    "shownDays": "Shown days",
+    "moveLater": "Move later phases too",
+    "moveLaterHint": "(or hold Shift while dropping)",
+    "undoTitle": "Undo (Ctrl+Z)",
+    "warnings": "no warnings | one warning | {count} warnings",
+    "narrow": "Editing is available on tablets and larger screens.",
+    "help": "Drag blocks to move them, drag their lower edge to resize, and drag on empty space to create a block. With the keyboard: arrow keys move (Shift: 15 min, left/right: day), Alt+arrows resize, Enter opens."
+  }
+}

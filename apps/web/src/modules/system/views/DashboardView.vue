@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { RouterLink } from 'vue-router'
 import {
   CalendarIcon,
@@ -24,10 +25,18 @@ function roleLink(r: RoleAssignmentRecord) {
 </script>
 
 <template>
-  <PageHeader :title="`Welcome${session.user?.name ? ', ' + session.user.name : ''}`" />
+  <PageHeader
+    :title="
+      session.user?.name
+        ? t('system.dashboard.welcomeName', { name: session.user.name })
+        : t('system.dashboard.welcome')
+    "
+  />
 
   <section v-if="session.roles.length" class="mb-6">
-    <h2 class="mb-2 text-sm font-medium text-muted-foreground">Your roles</h2>
+    <h2 class="mb-2 text-sm font-medium text-muted-foreground">
+      {{ t('system.dashboard.roles') }}
+    </h2>
     <ul class="flex flex-wrap gap-2" data-testid="my-roles">
       <li v-for="r in session.roles" :key="r.id">
         <RouterLink
@@ -55,8 +64,8 @@ function roleLink(r: RoleAssignmentRecord) {
       >
         <CardHeader>
           <ClipboardCheckIcon class="mb-2 size-6" />
-          <CardTitle class="text-xl">Judging</CardTitle>
-          <CardDescription>Score the games on your table.</CardDescription>
+          <CardTitle class="text-xl">{{ t('shell.nav.judging') }}</CardTitle>
+          <CardDescription>{{ t('system.dashboard.judging') }}</CardDescription>
         </CardHeader>
       </Card>
     </RouterLink>
@@ -71,8 +80,8 @@ function roleLink(r: RoleAssignmentRecord) {
       >
         <CardHeader>
           <ClipboardListIcon class="mb-2 size-6" />
-          <CardTitle class="text-xl">Review</CardTitle>
-          <CardDescription>Approve or return the score sheets judges submitted.</CardDescription>
+          <CardTitle class="text-xl">{{ t('shell.nav.review') }}</CardTitle>
+          <CardDescription>{{ t('system.dashboard.review') }}</CardDescription>
         </CardHeader>
       </Card>
     </RouterLink>
@@ -80,8 +89,8 @@ function roleLink(r: RoleAssignmentRecord) {
       <Card class="h-full hover:bg-muted/50">
         <CardHeader>
           <CalendarIcon class="mb-2 size-5" />
-          <CardTitle>Events</CardTitle>
-          <CardDescription>Browse competitions and register teams.</CardDescription>
+          <CardTitle>{{ t('shell.nav.events') }}</CardTitle>
+          <CardDescription>{{ t('system.dashboard.events') }}</CardDescription>
         </CardHeader>
       </Card>
     </RouterLink>
@@ -89,8 +98,8 @@ function roleLink(r: RoleAssignmentRecord) {
       <Card class="h-full hover:bg-muted/50">
         <CardHeader>
           <UsersRoundIcon class="mb-2 size-5" />
-          <CardTitle>My teams</CardTitle>
-          <CardDescription>Your team registrations and their status.</CardDescription>
+          <CardTitle>{{ t('shell.nav.myTeams') }}</CardTitle>
+          <CardDescription>{{ t('system.dashboard.teams') }}</CardDescription>
         </CardHeader>
       </Card>
     </RouterLink>
@@ -99,8 +108,8 @@ function roleLink(r: RoleAssignmentRecord) {
         <Card class="h-full hover:bg-muted/50">
           <CardHeader>
             <LibraryIcon class="mb-2 size-5" />
-            <CardTitle>Category library</CardTitle>
-            <CardDescription>Reusable category templates.</CardDescription>
+            <CardTitle>{{ t('system.dashboard.library') }}</CardTitle>
+            <CardDescription>{{ t('system.dashboard.libraryDescription') }}</CardDescription>
           </CardHeader>
         </Card>
       </RouterLink>
@@ -108,8 +117,8 @@ function roleLink(r: RoleAssignmentRecord) {
         <Card class="h-full hover:bg-muted/50">
           <CardHeader>
             <UsersIcon class="mb-2 size-5" />
-            <CardTitle>Users</CardTitle>
-            <CardDescription>Accounts and administrator roles.</CardDescription>
+            <CardTitle>{{ t('shell.nav.users') }}</CardTitle>
+            <CardDescription>{{ t('system.dashboard.users') }}</CardDescription>
           </CardHeader>
         </Card>
       </RouterLink>

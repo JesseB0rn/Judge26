@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,7 +31,7 @@ const { run, pending, error, fieldErrors, reset } = useSubmit(
     )
     open.value = false
   },
-  { success: 'Registration rejected.' },
+  { success: () => t('teams.review.rejected') },
 )
 
 watch(open, (isOpen) => {
@@ -44,22 +45,25 @@ watch(open, (isOpen) => {
   <Dialog v-model:open="open">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Reject {{ team?.name }}</DialogTitle>
-        <DialogDescription
-          >The coach sees the reason and can correct and resubmit.</DialogDescription
-        >
+        <DialogTitle>{{ t('teams.review.rejectTitle', { team: team?.name ?? '' }) }}</DialogTitle>
+        <DialogDescription>{{ t('teams.review.rejectDescription') }}</DialogDescription>
       </DialogHeader>
       <form id="reject-form" class="flex flex-col gap-4" @submit.prevent="run()">
         <ErrorAlert :error="error" />
-        <FormField v-slot="{ id }" label="Reason" name="review_note" :errors="fieldErrors">
+        <FormField
+          v-slot="{ id }"
+          :label="t('teams.review.reason')"
+          name="review_note"
+          :errors="fieldErrors"
+        >
           <Textarea :id="id" v-model="note" rows="3" required />
         </FormField>
       </form>
       <DialogFooter>
-        <Button variant="outline" @click="open = false">Cancel</Button>
-        <Button type="submit" form="reject-form" variant="destructive" :disabled="pending"
-          >Reject</Button
-        >
+        <Button variant="outline" @click="open = false">{{ t('common.cancel') }}</Button>
+        <Button type="submit" form="reject-form" variant="destructive" :disabled="pending">{{
+          t('teams.review.reject')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

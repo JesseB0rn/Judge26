@@ -1,3 +1,4 @@
+import { t, te } from '@/i18n'
 import { validateRuleset, type CompiledRuleset, type Issue } from '@judge26/scoring-engine'
 
 export interface ParsedRuleset {
@@ -55,4 +56,23 @@ export function activeVersionForRound<T extends HasGameRule & { status: string; 
   const ruleId = gameRuleIdForRound(round, rules)
   if (!ruleId && rules.length) return undefined
   return activeVersion(versions, ruleId)
+}
+
+/**
+ * A score sheet problem (scoring engine issue) in the current language. The engine's messages
+ * are English; the criterion's label and limits come from the ruleset. Unknown codes keep the
+ * engine's message.
+ */
+export function issueMessage(issue: Issue, ruleset?: CompiledRuleset | null): string {
+  const node = issue.nodeId ? ruleset?.nodes.get(issue.nodeId) : undefined
+  if (!node) return issue.message
+  const params: Record<string, unknown> = { label: node.label }
+  let code = issue.code
+  if (node.type === 'number') Object.assign(params, { min: node.min ?? '', max: node.max ?? '' })
+  if (node.type === 'group') {
+    Object.assign(params, { min: node.selection?.min ?? '', max: node.selection?.max ?? '' })
+  }
+  if (code === 'invalid_type') code = node.type === 'boolean' ? 'not_boolean' : 'not_number'
+  const key = `scoring.issues.${code}`
+  return te(key) ? t(key, params) : issue.message
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,11 +45,13 @@ watch(open, (isOpen) => {
         @submit.prevent="reason.trim() && emit('confirm', reason.trim())"
       >
         <ErrorAlert :error="error" />
-        <label for="reason" class="text-sm font-medium">Reason</label>
+        <label for="reason" class="text-sm font-medium">{{ t('teams.review.reason') }}</label>
         <Textarea id="reason" v-model="reason" rows="3" required class="text-base" />
       </form>
       <DialogFooter class="gap-2">
-        <Button variant="outline" size="touch" @click="open = false">Cancel</Button>
+        <Button variant="outline" size="touch" @click="open = false">{{
+          t('common.cancel')
+        }}</Button>
         <Button
           type="submit"
           form="reason-form"

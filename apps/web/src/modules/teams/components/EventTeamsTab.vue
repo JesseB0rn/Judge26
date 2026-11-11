@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -68,7 +69,7 @@ const approve = useSubmit(
     await updateTeam(team.id, { status: 'approved' })
     await load()
   },
-  { success: 'Registration approved.' },
+  { success: () => t('teams.review.approved') },
 )
 
 function reject(team: TeamRecord) {
@@ -77,7 +78,7 @@ function reject(team: TeamRecord) {
 }
 
 function onImported(count: number) {
-  toast.success(`${count} team(s) imported.`)
+  toast.success(t('teams.import.imported', count))
   load()
 }
 
@@ -87,8 +88,8 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-end gap-2">
-      <NativeSelect v-model="statusFilter" aria-label="Filter by status">
-        <NativeSelectOption value="">All statuses</NativeSelectOption>
+      <NativeSelect v-model="statusFilter" :aria-label="t('teams.filter.status')">
+        <NativeSelectOption value="">{{ t('teams.filter.allStatuses') }}</NativeSelectOption>
         <NativeSelectOption
           v-for="(label, value) in TEAM_STATUS_LABELS"
           :key="value"
@@ -97,8 +98,8 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
           {{ label }}
         </NativeSelectOption>
       </NativeSelect>
-      <NativeSelect v-model="categoryFilter" aria-label="Filter by category">
-        <NativeSelectOption value="">All categories</NativeSelectOption>
+      <NativeSelect v-model="categoryFilter" :aria-label="t('teams.filter.category')">
+        <NativeSelectOption value="">{{ t('teams.filter.allCategories') }}</NativeSelectOption>
         <NativeSelectOption v-for="c in categories.data.value" :key="c.id" :value="c.id">
           {{ c.code }}
         </NativeSelectOption>
@@ -106,29 +107,31 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
       <ExportButtons
         v-if="staff"
         class="ml-auto"
-        :title="`teams ${event.name}`"
+        :title="t('teams.export.title', { event: event.name })"
         :tables="exportTables"
         :disabled="!filtered.length"
       />
       <Button v-if="canManage" variant="outline" @click="importOpen = true">
-        <UploadIcon /> Import CSV
+        <UploadIcon /> {{ t('teams.import.button') }}
       </Button>
     </div>
 
     <ErrorAlert :error="error ?? approve.error.value" />
-    <p v-if="!staff" class="text-sm text-muted-foreground">You see the teams you registered.</p>
+    <p v-if="!staff" class="text-sm text-muted-foreground">{{ t('teams.ownOnly') }}</p>
 
     <Table data-testid="event-teams">
       <TableHeader>
         <TableRow>
-          <TableHead>Team</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead class="hidden md:table-cell">Organization</TableHead>
-          <TableHead class="hidden lg:table-cell">Coach</TableHead>
-          <TableHead>Members</TableHead>
-          <TableHead class="hidden sm:table-cell">Documents</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+          <TableHead>{{ t('teams.team') }}</TableHead>
+          <TableHead>{{ t('teams.category') }}</TableHead>
+          <TableHead class="hidden md:table-cell">{{ t('teams.organization') }}</TableHead>
+          <TableHead class="hidden lg:table-cell">{{ t('teams.coach') }}</TableHead>
+          <TableHead>{{ t('teams.members') }}</TableHead>
+          <TableHead class="hidden sm:table-cell">{{ t('teams.documents.title') }}</TableHead>
+          <TableHead>{{ t('common.status') }}</TableHead>
+          <TableHead class="w-0"
+            ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+          >
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -152,7 +155,9 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
               v-if="documentCounts.get(team.id)"
               :to="{ name: 'team', params: { id: team.id }, hash: '#documents' }"
               class="inline-flex items-center gap-1 hover:underline"
-              :aria-label="`${documentCounts.get(team.id)} document(s) of ${team.name}`"
+              :aria-label="
+                t('teams.documents.countOf', documentCounts.get(team.id) ?? 0, { team: team.name })
+              "
             >
               <PaperclipIcon class="size-3.5" aria-hidden="true" />
               {{ documentCounts.get(team.id) }}
@@ -170,7 +175,7 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
                 :disabled="approve.pending.value"
                 @click="approve.run(team)"
               >
-                <CheckIcon /> Approve
+                <CheckIcon /> {{ t('teams.review.approve') }}
               </Button>
             </template>
             <Button
@@ -179,11 +184,13 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
               variant="ghost"
               @click="reject(team)"
             >
-              <XIcon /> Reject
+              <XIcon /> {{ t('teams.review.reject') }}
             </Button>
           </TableCell>
         </TableRow>
-        <TableEmpty v-if="!loading && !filtered.length" :colspan="8">No teams.</TableEmpty>
+        <TableEmpty v-if="!loading && !filtered.length" :colspan="8">{{
+          t('teams.empty')
+        }}</TableEmpty>
       </TableBody>
     </Table>
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, translatedLabels } from '@/i18n'
 import { CircleCheckBigIcon, CircleDashedIcon, ClockIcon, PlayIcon } from '@lucide/vue'
 import { cn } from '@/lib/utils'
 import type { GameState } from '../types'
@@ -6,12 +7,9 @@ import type { GameState } from '../types'
 /** Public game state with colour, icon and text. */
 defineProps<{ state: GameState }>()
 
-const LABELS: Record<GameState, string> = {
-  upcoming: 'Upcoming',
-  scoring: 'Playing',
-  in_review: 'In review',
-  done: 'Done',
-}
+const LABELS = translatedLabels<GameState>(['upcoming', 'scoring', 'in_review', 'done'], (s) =>
+  t(`live.state.${s}`),
+)
 const STYLES: Record<GameState, string> = {
   upcoming: 'border-border bg-background text-muted-foreground',
   scoring: 'border-amber-300 bg-amber-50 text-amber-900',

@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import { isLocale, locale, setLocale, type Locale } from '@/i18n'
 import { pb } from '@/shared/api/pocketbase'
 import type { Role, RoleAssignmentRecord, UserRecord } from '@/shared/types/records'
 
@@ -42,7 +43,7 @@ export const useSessionStore = defineStore('session', () => {
     const seen = new Map<string, string>()
     for (const r of roles.value) {
       if (r.event && (r.role === 'head_judge' || r.role === 'event_manager')) {
-        seen.set(r.event, r.expand?.event?.name ?? 'Event')
+        seen.set(r.event, r.expand?.event?.name ?? '')
       }
     }
     return [...seen].map(([id, name]) => ({ id, name }))
@@ -58,6 +59,32 @@ export const useSessionStore = defineStore('session', () => {
 
   function isEventStaff(eventId: string) {
     return isAdmin.value || rolesFor(eventId).length > 0
+  }
+
+  /**
+   * The language follows the user: their saved choice applies when they sign in, and a user
+   * without one gets the language they are using now. Emails are sent in it (backend).
+   */
+  async function syncLanguage() {
+    if (!user.value) return
+    const saved = user.value.language
+    if (isLocale(saved)) setLocale(saved)
+    else await saveLanguage(locale.value)
+  }
+
+  async function saveLanguage(language: Locale) {
+    if (!user.value || user.value.language === language) return
+    try {
+      await pb.collection('users').update(user.value.id, { language })
+    } catch {
+      // Not critical: the language still applies on this device.
+    }
+  }
+
+  /** Switches the UI language and, when signed in, saves it on the account. */
+  async function setLanguage(language: Locale) {
+    setLocale(language)
+    await saveLanguage(language)
   }
 
   async function loadRoles() {
@@ -78,6 +105,7 @@ export const useSessionStore = defineStore('session', () => {
       try {
         await pb.collection('users').authRefresh()
         await loadRoles()
+        await syncLanguage()
       } catch {
         pb.authStore.clear()
       }
@@ -93,6 +121,7 @@ export const useSessionStore = defineStore('session', () => {
   async function login(email: string, password: string) {
     await pb.collection('users').authWithPassword(email, password)
     await loadRoles()
+    await syncLanguage()
   }
 
   function logout() {
@@ -100,7 +129,10 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   async function register(data: { name: string; email: string; password: string }) {
-    await pb.collection('users').create({ ...data, passwordConfirm: data.password })
+    // The verification email is sent in the language the user registered in.
+    await pb
+      .collection('users')
+      .create({ ...data, passwordConfirm: data.password, language: locale.value })
     await pb.collection('users').authWithPassword(data.email, data.password)
     await pb.collection('users').requestVerification(data.email)
   }
@@ -141,6 +173,7 @@ export const useSessionStore = defineStore('session', () => {
     login,
     logout,
     register,
+    setLanguage,
     requestVerification,
     confirmVerification,
     requestPasswordReset,

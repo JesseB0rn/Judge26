@@ -27,6 +27,7 @@ function template(overrides: Partial<MailTemplateRecord> = {}): MailTemplateReco
     ...base,
     id: 't1',
     key: 'registration_submitted',
+    language: 'en',
     name: 'Registration received',
     enabled: true,
     subject: 'Received: {{team_name}}',
@@ -163,6 +164,27 @@ describe('communication views', () => {
       'Schedule {{team_name}}',
     )
     expect(buttonByText('{{schedule}}')).toBeTruthy()
+  })
+
+  it('edits each language of a notification separately', async () => {
+    mocked.listTemplates.mockResolvedValue([
+      template(),
+      template({ id: 't2', language: 'de', subject: 'Erhalten: {{team_name}}' }),
+    ])
+    mocked.templateVariables.mockResolvedValue({ registration_submitted: VARIABLES })
+    const { wrapper } = await mountView(EmailsView, {
+      session: { roles: [makeRole('admin')] },
+    })
+    // One entry per notification, not per language.
+    expect(wrapper.findAll('nav button')).toHaveLength(1)
+    expect((wrapper.get('input[name=subject]').element as HTMLInputElement).value).toBe(
+      'Received: {{team_name}}',
+    )
+    await click(buttonByText('Deutsch'))
+    expect((wrapper.get('input[name=subject]').element as HTMLInputElement).value).toBe(
+      'Erhalten: {{team_name}}',
+    )
+    expect(wrapper.get('[data-testid=preview-subject]').text()).toBe('Erhalten: Byte Busters')
   })
 
   describe('delivery log (M7-01, M7-T12)', () => {

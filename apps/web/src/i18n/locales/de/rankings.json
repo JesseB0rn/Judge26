@@ -1,0 +1,216 @@
+{
+  "fields": {
+    "points": "Punkte",
+    "time": "Zeit"
+  },
+  "ops": {
+    "ADD": {
+      "label": "Summe",
+      "hint": "Addiert Punkte und Zeiten"
+    },
+    "MAX": {
+      "label": "Maximum",
+      "hint": "Höchste Punktzahl (ohne Zeit)"
+    },
+    "MIN": {
+      "label": "Minimum",
+      "hint": "Tiefste Punktzahl (ohne Zeit)"
+    },
+    "DIFFERENCE": {
+      "label": "Differenz",
+      "hint": "Erstes minus zweites"
+    },
+    "BEST_BY": {
+      "label": "Bestes",
+      "hint": "Bestes Gesamtresultat, behält seine Zeit"
+    },
+    "WORST_BY": {
+      "label": "Schlechtestes",
+      "hint": "Schlechtestes Gesamtresultat"
+    },
+    "SUM_BEST_N": {
+      "label": "Summe der besten N",
+      "hint": "Addiert die N besten Resultate"
+    }
+  },
+  "builder": {
+    "roundLabel": "Runde {n}",
+    "noOutput": "Die Rangliste hat keinen Ausgang zum Verbinden.",
+    "noInputs": "Runden haben keine Eingänge: Verbinden Sie mit einer Berechnung oder der Rangliste.",
+    "bestAttempt": "bester Versuch",
+    "bestNBy": "beste {n} nach {sort}",
+    "opBy": "{op} nach {sort}",
+    "wireHere": "hier verbinden",
+    "wireToAdd": "+ zum Hinzufügen verbinden",
+    "tiesName": "Gleichstand: nach Teamname",
+    "tiesShared": "Gleichstand: geteilter Rang",
+    "addTieBreaker": "+ Stichkriterium",
+    "addKey": "+ Ranglistenkriterium",
+    "empty": "Noch keine Ranglistenkonfiguration. Beginnen Sie mit «{generate}» oder «{example}».",
+    "syntaxError": "Das JSON hat einen Syntaxfehler ({error}). Beheben Sie ihn zuerst im JSON-Editor.",
+    "incomplete": "Die Konfiguration braucht eine Rundenliste und Ranglistenkriterien, bevor der Editor sie anzeigen kann. Beheben Sie das zuerst im JSON-Editor.",
+    "add": "{block} hinzufügen",
+    "probe": "Testteam",
+    "none": "Keines",
+    "help": "Ziehen Sie vom ▶-Ausgang eines Blocks zu einem Eingang einer Berechnung oder zur Rangliste, um ein Ranglistenkriterium hinzuzufügen (das erste Kriterium entscheidet, die weiteren lösen Gleichstände). Wählen Sie eine Verbindung oder einen Block und drücken Sie Entf, um ihn zu entfernen. Wählen Sie ein Testteam, um seine Resultate an jeder Verbindung zu sehen.",
+    "selectHint": "Wählen Sie einen Block, um ihn zu bearbeiten. Der Ranglisten-Block enthält Stichkriterien und Regeln.",
+    "rules": "Ranglistenregeln"
+  },
+  "inspector": {
+    "roundSuffix": "Runde",
+    "calculation": "Berechnung",
+    "deleteBlock": "Block löschen",
+    "keyHint": "Läufe verweisen über dieses Kürzel auf die Runde.",
+    "attempts": "Mehrere Versuche zählen als",
+    "bestDefault": "Bester Versuch (Standard)",
+    "nAttempts": "N (Versuche)",
+    "id": "ID",
+    "idHint": "Andere Berechnungen und die Rangliste verweisen darauf.",
+    "operation": "Operation",
+    "nResults": "N (Resultate)",
+    "operands": "Operanden (a − b)",
+    "inputs": "Eingänge, in Reihenfolge",
+    "input": "Eingang {n}",
+    "moveInputUp": "Eingang nach oben",
+    "removeInput": "Eingang entfernen",
+    "addInput": "Eingang hinzufügen",
+    "addInputOption": "+ Eingang hinzufügen …",
+    "bestMeans": "«Bestes» bedeutet, in Reihenfolge",
+    "field": "Feld",
+    "order": "Reihenfolge",
+    "desc": "hohe zuerst",
+    "asc": "tiefe zuerst",
+    "removeSortKey": "Sortierkriterium entfernen",
+    "sortKey": "Sortierkriterium",
+    "rankBy": "Rangieren nach (erstes Kriterium entscheidet, die weiteren lösen Gleichstände)",
+    "keySource": "Quelle von Kriterium {n}",
+    "moveKeyUp": "Kriterium nach oben",
+    "moveKeyDown": "Kriterium nach unten",
+    "removeKey": "Kriterium entfernen",
+    "columnLabel": "Spaltenbezeichnung",
+    "addTieBreakerOption": "+ Stichkriterium hinzufügen …",
+    "addKeyOption": "+ Ranglistenkriterium hinzufügen …",
+    "ties": "Wenn alle Kriterien gleich sind",
+    "tiesShared": "geteilter Rang",
+    "tiesName": "nach Teamname ordnen",
+    "resultsThatAre": "Resultate, die …",
+    "policyName": {
+      "missing": "fehlen",
+      "disqualified": "disqualifiziert sind",
+      "absent": "nicht angetreten sind"
+    },
+    "policy": {
+      "zero": "zählen als 0",
+      "exclude": "Runde ignorieren",
+      "unranked": "Team nicht rangieren"
+    },
+    "precision": "Dezimalstellen (0–4)",
+    "timeResolution": "Zeitauflösung (ms)"
+  },
+  "game": {
+    "description": "Erfassen Sie das Resultat. Mehrere Versuche pro Runde sind möglich.",
+    "confirmDelete": "Versuch {attempt} löschen?",
+    "newAttempt": "Neuer Versuch ({attempt})",
+    "notPlayed": "Geplant (nicht gespielt)",
+    "seconds": "Zeit (Sekunden)",
+    "secondsHint": "Leer lassen, wenn keine Zeit gemessen wird.",
+    "secondsPlaceholder": "z. B. {example}",
+    "useSheet": "Mit Regelwerk Version {version} bewerten",
+    "deleteAttempt": "Versuch löschen",
+    "save": "Resultat speichern"
+  },
+  "config": {
+    "json": "Ranglistenkonfiguration (JSON)",
+    "empty": "Noch keine Ranglistenkonfiguration.",
+    "invalidJson": "Ungültiges JSON: {error}",
+    "valid": "Die Konfiguration ist gültig."
+  },
+  "table": {
+    "byName": "nach Name",
+    "by": "nach {key}",
+    "decided": "Entschieden",
+    "shared": "Geteilter Rang",
+    "missingResults": "Einige Rundenresultate fehlen",
+    "explain": "{team} erklären"
+  },
+  "matrix": {
+    "resultsOf": "Resultate von {team} in {round}",
+    "enter": "Erfassen",
+    "empty": "Keine genehmigten Teams."
+  },
+  "rounds": {
+    "notSet": "Nicht festgelegt",
+    "gone": "Die bearbeitete Runde existiert nicht mehr.",
+    "confirmDelete": "{round} löschen? Alle in dieser Runde erfassten Resultate werden ebenfalls gelöscht.",
+    "key": "Kürzel",
+    "game": "Spiel",
+    "phases": "Phasen",
+    "phaseSummary": "Test {testing} Min. · Bewertung {scoring} Min. · Total {total} Min.",
+    "empty": "Noch keine Runden.",
+    "keyHint": "Wird in der Ranglistenkonfiguration verwendet, z. B. R1.",
+    "name": "Name der Runde",
+    "gameHint": "Der Bewertungsbogen, den die Schiedsrichter in dieser Runde verwenden.",
+    "day": "Wettkampftag",
+    "dayHint": "Schiedsrichter filtern ihre Läufe nach Tag.",
+    "testing": "Unterhalt / Test (Minuten)",
+    "scoring": "Bewertungsphase (Minuten)",
+    "total": "Gesamtdauer der Runde: {minutes} Minuten.",
+    "save": "Runde speichern",
+    "add": "Runde hinzufügen"
+  },
+  "export": {
+    "title": "rangliste {category}",
+    "shared": "Geteilt",
+    "roundPoints": "{round} Punkte",
+    "roundTime": "{round} Zeit (s)",
+    "roundStatus": "{round} Status",
+    "provisional": "Provisorisch",
+    "decidedBy": "Entschieden durch"
+  },
+  "report": {
+    "noSnapshot": "Dieser Stand existiert nicht oder gehört zu einer anderen Kategorie.",
+    "notConfigured": "Die Rangliste dieser Kategorie ist nicht eingerichtet.",
+    "back": "Zurück",
+    "print": "Drucken / als PDF speichern",
+    "printHint": "Wählen Sie «Als PDF speichern» als Drucker, um eine Datei zu erhalten.",
+    "provisional": "Provisorisch: keine Läufe offen. | Provisorisch: Ein Lauf hat noch kein definitives Resultat. | Provisorisch: {count} Läufe haben noch kein definitives Resultat.",
+    "missingNote": "Einige Rundenresultate dieses Teams fehlen.",
+    "snapshotOf": "Stand vom {date} · Fingerabdruck",
+    "generated": "Erstellt am {date} von Judge26."
+  },
+  "view": {
+    "configSaved": "Ranglistenkonfiguration gespeichert.",
+    "snapshotPublished": "Ranglisten-Stand veröffentlicht.",
+    "title": "Runden & Rangliste: {category}",
+    "backToPlanner": "Zurück zum Planer",
+    "backToEvent": "Zurück zum Anlass",
+    "backToLibrary": "Zurück zur Bibliothek",
+    "results": "Resultate",
+    "configuration": "Konfiguration",
+    "snapshots": "Stände",
+    "configureFirst": "Richten Sie die Rangliste ein, um Resultate zu sehen.",
+    "livePublic": "Live-Rangliste ist öffentlich",
+    "unsavedPreview": "Vorschau mit nicht gespeicherten Konfigurationsänderungen.",
+    "provisional": "Provisorisch: {open} von {total} Läufen haben noch kein definitives Resultat.",
+    "ignored": "Keine Resultate ignoriert: | Ein Resultat ignoriert: | {count} Resultate ignoriert:",
+    "snapshotPlaceholder": "z. B. Offizielle Rangliste Tag 1",
+    "snapshotTitle": "Titel des Stands",
+    "publishSnapshot": "Stand veröffentlichen",
+    "saveFirst": "Speichern Sie zuerst die Konfiguration.",
+    "addRoundsFirst": "Fügen Sie zuerst Runden hinzu.",
+    "generate": "Aus Runden erstellen",
+    "example": "Beispiel laden",
+    "saveConfig": "Konfiguration speichern",
+    "unknownRounds": "Die Konfiguration verweist auf Runden, die noch nicht existieren: {rounds}. Ihre Resultate gelten als fehlend.",
+    "noSnapshots": "Noch keine Stände veröffentlicht.",
+    "snapshot": "Stand",
+    "selectSnapshot": "Stand wählen",
+    "officialPublic": "offiziell (öffentlich)",
+    "fingerprints": "Fingerabdruck {result} · Konfiguration {config}"
+  },
+  "resultStatus": {
+    "missing": "fehlt",
+    "absent": "nicht angetreten",
+    "disqualified": "disqualifiziert"
+  }
+}

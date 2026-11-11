@@ -1,0 +1,112 @@
+{
+  "audit": {
+    "areas": {
+      "events": "Événements",
+      "competition_days": "Jours de compétition",
+      "categories": "Catégories",
+      "teams": "Équipes",
+      "team_documents": "Documents d’équipe",
+      "role_assignments": "Rôles",
+      "game_rules": "Jeux",
+      "rulesets": "Règlements",
+      "rounds": "Tours",
+      "round_phases": "Phases du planificateur",
+      "schedule_blocks": "Blocs du planificateur",
+      "schedule_columns": "Colonnes du planificateur",
+      "tables": "Tables",
+      "games": "Résultats des manches",
+      "ranking_snapshots": "Classements figés",
+      "mail_templates": "Modèles d’e-mail",
+      "mail_outbox": "E-mails"
+    },
+    "filterArea": "Filtrer par domaine",
+    "allAreas": "Tous les domaines",
+    "searchPlaceholder": "Rechercher des actions, utilisateurs, éléments",
+    "search": "Rechercher dans le journal",
+    "entries": "aucune entrée | une entrée | {count} entrées",
+    "who": "Qui",
+    "what": "Quoi",
+    "detailsOf": "Détails de {entry}",
+    "empty": "Aucune entrée.",
+    "description": "Actions administratives de tous les événements : qui a modifié quoi, quand et d’où. L’historique des feuilles de score est conservé avec chaque manche."
+  },
+  "staff": {
+    "assigned": "Rôle attribué.",
+    "role": "Rôle",
+    "removeRole": "Retirer le rôle",
+    "empty": "Aucun membre de l’organisation attribué.",
+    "assign": "Attribuer un rôle",
+    "userEmail": "E-mail de l’utilisateur",
+    "userEmailHint": "La personne doit déjà avoir un compte.",
+    "submit": "Attribuer"
+  },
+  "users": {
+    "description": "Les comptes et leurs rôles. Les rôles d’événement s’attribuent dans l’onglet « Équipe d’organisation » de chaque événement.",
+    "searchPlaceholder": "Rechercher par nom ou e-mail",
+    "search": "Rechercher des utilisateurs",
+    "roles": "Rôles",
+    "unverified": "non confirmé",
+    "removeAdmin": "Retirer l’admin",
+    "makeAdmin": "Nommer admin",
+    "empty": "Aucun utilisateur trouvé.",
+    "truncated": "{shown} utilisateurs sur {total} affichés. Affinez la recherche pour trouver les autres."
+  },
+  "monitoring": {
+    "description": "Si le serveur, l’envoi d’e-mails et les sauvegardes fonctionnent, et les dernières erreurs. Actualisé toutes les 30 secondes.",
+    "overall": {
+      "ok": "Tous les systèmes fonctionnent",
+      "degraded": "À surveiller",
+      "down": "Hors service"
+    },
+    "checkStatus": {
+      "ok": "OK",
+      "warn": "Avertissement",
+      "down": "Hors service"
+    },
+    "checks": {
+      "database": "Base de données",
+      "errors": "Erreurs",
+      "mail": "Envoi d’e-mails",
+      "backups": "Sauvegardes"
+    },
+    "uptime": {
+      "minutes": "{minutes} min",
+      "hours": "{hours} h {minutes} min",
+      "days": "0 jour | 1 jour | {count} jours"
+    },
+    "upChecked": "en service depuis {uptime} · contrôlé le {checked}",
+    "alertsOff": "Les alertes par e-mail sont désactivées (MONITORING_ALERT_EMAIL)",
+    "recentErrors": "Erreurs récentes",
+    "allLogs": "Tous les journaux (tableau de bord, superutilisateurs)",
+    "time": "Heure",
+    "source": "Source",
+    "error": "Erreur",
+    "sources": {
+      "server": "serveur",
+      "browser": "navigateur"
+    },
+    "httpStatus": "statut {status}",
+    "noErrors": "Aucune erreur au cours des dernières 24 heures.",
+    "detail": {
+      "database_ok": "Accessible",
+      "database_down": "Inaccessible : {error}",
+      "logs_disabled": "Les journaux sont désactivés (Settings → Logs), les erreurs ne sont pas conservées.",
+      "errors_none": "Aucune au cours des {minutes} dernières minutes",
+      "errors_some": "{server} erreur(s) serveur et {browser} erreur(s) navigateur au cours des {minutes} dernières minutes",
+      "smtp_missing": "SMTP n’est pas configuré, les e-mails ne peuvent pas être envoyés",
+      "mail_failed": "aucun e-mail en échec au cours des dernières 24 heures | un e-mail en échec au cours des dernières 24 heures | {count} e-mails en échec au cours des dernières 24 heures",
+      "mail_stuck": "aucun e-mail en retard | un e-mail en retard, la tâche d’envoi ne tourne peut-être pas | {count} e-mails en retard, la tâche d’envoi ne tourne peut-être pas",
+      "mail_captured": "Interceptés (pas de SMTP)",
+      "mail_delivering": "Envoi en cours",
+      "mail_queued": "aucun e-mail en attente | un e-mail en attente | {count} e-mails en attente",
+      "backups_off": "Les sauvegardes automatiques sont désactivées (BACKUP_CRON)",
+      "backups_off_dev": "Les sauvegardes automatiques sont désactivées (hors production)",
+      "backups_unlisted": "Impossible de lister les sauvegardes : {error}",
+      "backups_missing": "Aucune sauvegarde n’existe (planification « {cron} »)",
+      "backups_none_yet": "Pas encore de sauvegarde (planification « {cron} »)",
+      "backups_stale": "La dernière sauvegarde est trop ancienne : il y a {hours} heures",
+      "backups_latest": "Dernière sauvegarde il y a {hours} heures (planification « {cron} »)",
+      "check_failed": "Le contrôle a échoué : {error}"
+    }
+  }
+}

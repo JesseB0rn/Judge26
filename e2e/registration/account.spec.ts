@@ -50,7 +50,7 @@ test.describe('M1 account lifecycle', () => {
     await page.getByLabel('Email').fill('nobody@test.local')
     await page.getByLabel('Password').fill('wrong-password')
     await page.getByRole('button', { name: 'Sign in' }).click()
-    await expect(page.getByRole('alert')).toContainText('Failed to authenticate')
+    await expect(page.getByRole('alert')).toContainText('email address or password is incorrect')
     await expect(page).toHaveURL(/\/login/)
   })
 

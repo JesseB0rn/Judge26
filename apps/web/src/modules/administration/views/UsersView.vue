@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { Badge } from '@/components/ui/badge'
@@ -49,25 +50,24 @@ onMounted(load)
 </script>
 
 <template>
-  <PageHeader
-    title="Users"
-    description="Accounts and their roles. Event roles are assigned on each event's Staff tab."
-  />
+  <PageHeader :title="t('shell.nav.users')" :description="t('administration.users.description')" />
   <Input
     v-model="search"
     type="search"
-    placeholder="Search by name or email"
+    :placeholder="t('administration.users.searchPlaceholder')"
     class="mb-4 max-w-sm"
-    aria-label="Search users"
+    :aria-label="t('administration.users.search')"
   />
   <ErrorAlert :error="error ?? toggleAdmin.error.value" />
   <Table data-testid="users">
     <TableHeader>
       <TableRow>
-        <TableHead>Name</TableHead>
-        <TableHead>Email</TableHead>
-        <TableHead>Roles</TableHead>
-        <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+        <TableHead>{{ t('common.name') }}</TableHead>
+        <TableHead>{{ t('auth.email') }}</TableHead>
+        <TableHead>{{ t('administration.users.roles') }}</TableHead>
+        <TableHead class="w-0"
+          ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+        >
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -75,7 +75,9 @@ onMounted(load)
         <TableCell>{{ user.name || '–' }}</TableCell>
         <TableCell>
           {{ user.email }}
-          <Badge v-if="!user.verified" variant="outline">unverified</Badge>
+          <Badge v-if="!user.verified" variant="outline">{{
+            t('administration.users.unverified')
+          }}</Badge>
         </TableCell>
         <TableCell class="flex flex-wrap gap-1">
           <Badge v-for="r in rolesByUser.get(user.id)" :key="r.id" variant="secondary">
@@ -90,14 +92,20 @@ onMounted(load)
             :disabled="toggleAdmin.pending.value"
             @click="toggleAdmin.run(user)"
           >
-            {{ adminAssignment(user) ? 'Remove admin' : 'Make admin' }}
+            {{
+              adminAssignment(user)
+                ? t('administration.users.removeAdmin')
+                : t('administration.users.makeAdmin')
+            }}
           </Button>
         </TableCell>
       </TableRow>
-      <TableEmpty v-if="!loading && !data?.users.length" :colspan="4">No users found.</TableEmpty>
+      <TableEmpty v-if="!loading && !data?.users.length" :colspan="4">{{
+        t('administration.users.empty')
+      }}</TableEmpty>
     </TableBody>
   </Table>
   <p v-if="data && data.total > data.users.length" class="mt-2 text-sm text-muted-foreground">
-    Showing {{ data.users.length }} of {{ data.total }} users. Refine the search to find others.
+    {{ t('administration.users.truncated', { shown: data.users.length, total: data.total }) }}
   </p>
 </template>

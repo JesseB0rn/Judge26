@@ -1,0 +1,76 @@
+{
+  "subject": "Betreff",
+  "status": {
+    "pending": "In Warteschlange",
+    "sent": "Gesendet",
+    "failed": "Fehlgeschlagen"
+  },
+  "templates": {
+    "registration_submitted": "Anmeldung erhalten",
+    "registration_approved": "Anmeldung genehmigt",
+    "registration_rejected": "Anmeldung abgelehnt",
+    "schedule_changed": "Zeitplan-Update",
+    "auth_verification": "E-Mail-Adresse bestätigen",
+    "auth_password_reset": "Passwort zurücksetzen"
+  },
+  "schedule": {
+    "attempt": "{round} (Versuch {attempt})",
+    "from": "ab {time}",
+    "table": "Tisch {table}, Position {position}",
+    "noTable": "Tisch noch nicht zugeteilt",
+    "check": "Roboterkontrolle {day}"
+  },
+  "sample": {
+    "round1": "Runde 1",
+    "round2": "Runde 2",
+    "day": "Samstag",
+    "reviewNote": "Bitte ergänzen Sie den Jahrgang aller Mitglieder.",
+    "message": "Türöffnung um 8:00 Uhr."
+  },
+  "outbox": {
+    "title": "Versandprotokoll",
+    "eventDescription": "E-Mails dieses Anlasses. Anmelde-E-Mails werden sofort versendet, Zeitplan-E-Mails innerhalb einer Minute; fehlgeschlagene Zustellungen werden automatisch bis zu fünfmal wiederholt.",
+    "requeued": "Nachricht erneut eingereiht.",
+    "all": "Alle Nachrichten",
+    "count": "keine Nachrichten | eine Nachricht | {count} Nachrichten",
+    "created": "Erstellt",
+    "recipient": "Empfänger/in",
+    "attempts": "keine Versuche | ein Versuch | {count} Versuche",
+    "next": "nächster {date}",
+    "empty": "Keine Nachrichten."
+  },
+  "editor": {
+    "saved": "Vorlage gespeichert.",
+    "enabled": "Diese E-Mail senden",
+    "alwaysSent": "Konto-E-Mails werden immer gesendet.",
+    "body": "Inhalt (HTML)",
+    "bodyHint": "Werte werden dort eingesetzt, wo eine Variable als {example} geschrieben ist.",
+    "variables": "Variablen",
+    "unknown": "Unbekannte Variablen: {variables} | Unbekannte Variable: {variables} | Unbekannte Variablen: {variables}",
+    "discard": "Verwerfen",
+    "preview": "Vorschau mit Beispielwerten",
+    "previewTitle": "E-Mail-Vorschau"
+  },
+  "notify": {
+    "queued": "Niemand zu benachrichtigen. | Eine E-Mail eingereiht. | {count} E-Mails eingereiht.",
+    "title": "Zeitplan-Benachrichtigungen",
+    "description": "Coaches genehmigter Teams erhalten die Läufe ihres Teams (Runde, Zeit, Tisch und Position). Ein Team ist betroffen, wenn sich sein Zeitplan seit der letzten E-Mail geändert hat.",
+    "affected": "{count} betroffen",
+    "ofApproved": "von {count} genehmigten Teams",
+    "message": "Nachricht (optional)",
+    "messageHint": "Wird jeder E-Mail angefügt, z. B. der Grund für die Änderung.",
+    "sendChanged": "Betroffene Teams benachrichtigen",
+    "sendAll": "An alle Teams senden",
+    "current": "Aktueller Zeitplan",
+    "lastNotified": "Zuletzt benachrichtigt",
+    "noGames": "Keine Läufe",
+    "changed": "Geändert",
+    "never": "Nie",
+    "empty": "Noch keine genehmigten Teams."
+  },
+  "emails": {
+    "description": "E-Mails an Coaches und Benutzer, jeweils in der Sprache der Empfänger, und das Versandprotokoll.",
+    "templates": "Vorlagen",
+    "off": "aus"
+  }
+}

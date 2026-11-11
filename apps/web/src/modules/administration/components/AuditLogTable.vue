@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, translatedLabels } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import { ChevronDownIcon, ChevronRightIcon } from '@lucide/vue'
@@ -23,25 +24,28 @@ import { listAuditLog } from '../api'
 /** Audit log (M7-08): who did what and when, newest first, with the changed fields. */
 const props = defineProps<{ eventId?: string }>()
 
-const AREAS: Record<string, string> = {
-  events: 'Events',
-  competition_days: 'Competition days',
-  categories: 'Categories',
-  teams: 'Teams',
-  team_documents: 'Team documents',
-  role_assignments: 'Roles',
-  game_rules: 'Games',
-  rulesets: 'Rulesets',
-  rounds: 'Rounds',
-  round_phases: 'Planner phases',
-  schedule_blocks: 'Planner blocks',
-  schedule_columns: 'Planner columns',
-  tables: 'Tables',
-  games: 'Game results',
-  ranking_snapshots: 'Ranking snapshots',
-  mail_templates: 'Email templates',
-  mail_outbox: 'Emails',
-}
+const AREA_KEYS = [
+  'events',
+  'competition_days',
+  'categories',
+  'teams',
+  'team_documents',
+  'role_assignments',
+  'game_rules',
+  'rulesets',
+  'rounds',
+  'round_phases',
+  'schedule_blocks',
+  'schedule_columns',
+  'tables',
+  'games',
+  'ranking_snapshots',
+  'mail_templates',
+  'mail_outbox',
+] as const
+const AREAS: Readonly<Record<string, string>> = translatedLabels(AREA_KEYS, (area) =>
+  t(`administration.audit.areas.${area}`),
+)
 
 const entries = ref<AuditLogRecord[]>([])
 const total = ref(0)
@@ -100,8 +104,8 @@ watchDebounced([area, search], () => load(), { debounce: 300 })
 <template>
   <div class="flex flex-col gap-3">
     <div class="flex flex-wrap items-center gap-2">
-      <NativeSelect v-model="area" aria-label="Filter by area" class="w-48">
-        <NativeSelectOption value="">All areas</NativeSelectOption>
+      <NativeSelect v-model="area" :aria-label="t('administration.audit.filterArea')" class="w-48">
+        <NativeSelectOption value="">{{ t('administration.audit.allAreas') }}</NativeSelectOption>
         <NativeSelectOption v-for="(label, key) in AREAS" :key="key" :value="key">{{
           label
         }}</NativeSelectOption>
@@ -109,20 +113,24 @@ watchDebounced([area, search], () => load(), { debounce: 300 })
       <Input
         v-model="search"
         type="search"
-        placeholder="Search actions, users, records"
-        aria-label="Search the audit log"
+        :placeholder="t('administration.audit.searchPlaceholder')"
+        :aria-label="t('administration.audit.search')"
         class="max-w-xs"
       />
-      <span class="text-sm text-muted-foreground">{{ total }} entries</span>
+      <span class="text-sm text-muted-foreground">{{
+        t('administration.audit.entries', total)
+      }}</span>
     </div>
     <ErrorAlert :error="error" />
     <Table data-testid="audit-log">
       <TableHeader>
         <TableRow>
-          <TableHead class="w-0"><span class="sr-only">Details</span></TableHead>
-          <TableHead>When</TableHead>
-          <TableHead>Who</TableHead>
-          <TableHead>What</TableHead>
+          <TableHead class="w-0"
+            ><span class="sr-only">{{ t('events.detail.details') }}</span></TableHead
+          >
+          <TableHead>{{ t('teams.mine.when') }}</TableHead>
+          <TableHead>{{ t('administration.audit.who') }}</TableHead>
+          <TableHead>{{ t('administration.audit.what') }}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -133,7 +141,7 @@ watchDebounced([area, search], () => load(), { debounce: 300 })
                 v-if="entry.changes && Object.keys(entry.changes).length"
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Details of ${entry.summary}`"
+                :aria-label="t('administration.audit.detailsOf', { entry: entry.summary })"
                 :aria-expanded="open.has(entry.id)"
                 @click="toggle(entry.id)"
               >
@@ -170,7 +178,9 @@ watchDebounced([area, search], () => load(), { debounce: 300 })
             </TableCell>
           </TableRow>
         </template>
-        <TableEmpty v-if="!loading && !entries.length" :colspan="4">No entries.</TableEmpty>
+        <TableEmpty v-if="!loading && !entries.length" :colspan="4">{{
+          t('administration.audit.empty')
+        }}</TableEmpty>
       </TableBody>
     </Table>
     <Button
@@ -180,7 +190,7 @@ watchDebounced([area, search], () => load(), { debounce: 300 })
       :disabled="loading"
       @click="load(true)"
     >
-      Load more
+      {{ t('common.loadMore') }}
     </Button>
   </div>
 </template>

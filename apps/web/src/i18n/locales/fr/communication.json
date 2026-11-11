@@ -1,0 +1,76 @@
+{
+  "subject": "Objet",
+  "status": {
+    "pending": "En attente",
+    "sent": "Envoyé",
+    "failed": "Échec"
+  },
+  "templates": {
+    "registration_submitted": "Inscription reçue",
+    "registration_approved": "Inscription acceptée",
+    "registration_rejected": "Inscription refusée",
+    "schedule_changed": "Mise à jour de l’horaire",
+    "auth_verification": "Confirmer l’adresse e-mail",
+    "auth_password_reset": "Réinitialiser le mot de passe"
+  },
+  "schedule": {
+    "attempt": "{round} (essai {attempt})",
+    "from": "dès {time}",
+    "table": "table {table}, position {position}",
+    "noTable": "table pas encore attribuée",
+    "check": "contrôle du robot {day}"
+  },
+  "sample": {
+    "round1": "Tour 1",
+    "round2": "Tour 2",
+    "day": "Samedi",
+    "reviewNote": "Veuillez ajouter l’année de naissance de chaque membre.",
+    "message": "Ouverture des portes à 8 h 00."
+  },
+  "outbox": {
+    "title": "Journal d’envoi",
+    "eventDescription": "E-mails de cet événement. Les e-mails d’inscription partent immédiatement, ceux d’horaire dans la minute ; les envois en échec sont relancés automatiquement jusqu’à cinq fois.",
+    "requeued": "Message remis en file d’attente.",
+    "all": "Tous les messages",
+    "count": "aucun message | un message | {count} messages",
+    "created": "Créé",
+    "recipient": "Destinataire",
+    "attempts": "aucune tentative | une tentative | {count} tentatives",
+    "next": "prochaine le {date}",
+    "empty": "Aucun message."
+  },
+  "editor": {
+    "saved": "Modèle enregistré.",
+    "enabled": "Envoyer cet e-mail",
+    "alwaysSent": "Les e-mails de compte sont toujours envoyés.",
+    "body": "Contenu (HTML)",
+    "bodyHint": "Les valeurs sont insérées là où une variable est écrite sous la forme {example}.",
+    "variables": "Variables",
+    "unknown": "Variables inconnues : {variables} | Variable inconnue : {variables} | Variables inconnues : {variables}",
+    "discard": "Annuler les modifications",
+    "preview": "Aperçu avec des valeurs d’exemple",
+    "previewTitle": "Aperçu de l’e-mail"
+  },
+  "notify": {
+    "queued": "Personne à notifier. | Un e-mail mis en file d’attente. | {count} e-mails mis en file d’attente.",
+    "title": "Notifications d’horaire",
+    "description": "Les coachs des équipes acceptées reçoivent les manches de leur équipe (tour, heure, table et position). Une équipe est concernée lorsque son horaire a changé depuis le dernier e-mail.",
+    "affected": "{count} concernée(s)",
+    "ofApproved": "sur {count} équipes acceptées",
+    "message": "Message (facultatif)",
+    "messageHint": "Ajouté à chaque e-mail, p. ex. la raison du changement.",
+    "sendChanged": "Notifier les équipes concernées",
+    "sendAll": "Envoyer à toutes les équipes",
+    "current": "Horaire actuel",
+    "lastNotified": "Dernière notification",
+    "noGames": "Aucune manche",
+    "changed": "Modifié",
+    "never": "Jamais",
+    "empty": "Aucune équipe acceptée pour l’instant."
+  },
+  "emails": {
+    "description": "Les e-mails envoyés aux coachs et aux utilisateurs, dans la langue de chaque destinataire, et le journal d’envoi.",
+    "templates": "Modèles",
+    "off": "désactivé"
+  }
+}

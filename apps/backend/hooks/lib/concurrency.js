@@ -16,7 +16,9 @@ function versionedUpdate(e, applies, message) {
   e.app.runInTransaction((tx) => {
     const stored = tx.findRecordById(collection, e.record.id)
     if (body.expected_updated !== stored.getString('updated')) {
-      throw new ApiError(409, message, {})
+      throw new ApiError(409, message, {
+        _error: new ValidationError('changed_meanwhile', message),
+      })
     }
     e.app = tx
     e.next()

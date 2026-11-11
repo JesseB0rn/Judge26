@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDay } from '@/shared/format'
@@ -20,7 +21,7 @@ const tableName = computed(() => new Map(props.event.tables.map((t) => [t.id, t.
 <template>
   <div class="flex flex-col gap-6">
     <section v-if="queues.length" aria-labelledby="tables-now">
-      <h2 id="tables-now" class="mb-3 text-lg font-semibold">At the tables</h2>
+      <h2 id="tables-now" class="mb-3 text-lg font-semibold">{{ t('live.schedule.atTables') }}</h2>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Card
           v-for="q in queues"
@@ -32,15 +33,15 @@ const tableName = computed(() => new Map(props.event.tables.map((t) => [t.id, t.
           <CardHeader class="px-4">
             <CardTitle class="flex items-center justify-between text-base">
               {{ q.table.name }}
-              <span class="text-xs font-normal text-muted-foreground"
-                >{{ q.remaining }} to play</span
-              >
+              <span class="text-xs font-normal text-muted-foreground">{{
+                t('live.schedule.toPlay', { count: q.remaining })
+              }}</span>
             </CardTitle>
           </CardHeader>
           <CardContent class="flex flex-col gap-1.5 px-4 text-sm">
             <p v-if="q.current" class="flex items-center justify-between gap-2">
               <span>
-                <span class="text-muted-foreground">Now</span>
+                <span class="text-muted-foreground">{{ t('live.schedule.now') }}</span>
                 <span class="ml-2 font-semibold" data-testid="table-now">{{
                   q.current.team.name
                 }}</span>
@@ -48,7 +49,8 @@ const tableName = computed(() => new Map(props.event.tables.map((t) => [t.id, t.
               <GameStateBadge :state="q.current.state" />
             </p>
             <p v-for="g in q.next" :key="g.id" class="text-muted-foreground">
-              Next <span class="ml-2 text-foreground">{{ g.team.name }}</span>
+              {{ t('live.schedule.next') }}
+              <span class="ml-2 text-foreground">{{ g.team.name }}</span>
             </p>
           </CardContent>
         </Card>
@@ -56,7 +58,7 @@ const tableName = computed(() => new Map(props.event.tables.map((t) => [t.id, t.
     </section>
 
     <p v-if="!groups.length" class="text-sm text-muted-foreground" data-testid="schedule-empty">
-      No games scheduled for this selection.
+      {{ t('live.schedule.empty') }}
     </p>
 
     <section
@@ -87,13 +89,13 @@ const tableName = computed(() => new Map(props.event.tables.map((t) => [t.id, t.
           :data-game="game.id"
         >
           <span class="w-28 shrink-0 text-muted-foreground tabular-nums">
-            {{ tableName.get(game.table) ?? 'Not placed' }}
+            {{ tableName.get(game.table) ?? t('live.schedule.notPlaced') }}
             <template v-if="game.sequence"> · #{{ game.sequence }}</template>
           </span>
           <span class="min-w-0 flex-1">
             <span class="font-medium">{{ game.team.name }}</span>
             <span v-if="game.attempt > 1" class="text-muted-foreground">
-              (attempt {{ game.attempt }})</span
+              ({{ t('judging.attempt', { attempt: game.attempt }) }})</span
             >
             <span
               v-if="game.team.organization || game.team.country"

@@ -33,7 +33,9 @@ describe('auth views', () => {
     )
     await wrapper.find('form').trigger('submit')
     await vi.waitFor(() =>
-      expect(wrapper.find('[role=alert]').text()).toContain('Failed to authenticate.'),
+      expect(wrapper.find('[role=alert]').text()).toContain(
+        'The email address or password is incorrect.',
+      ),
     )
   })
 
@@ -42,11 +44,13 @@ describe('auth views', () => {
     vi.spyOn(session, 'register').mockRejectedValue(
       apiError(400, {
         message: 'Failed to create record.',
-        data: { email: { code: 'validation_not_unique', message: 'Value must be unique.' } },
+        data: {
+          email: { code: 'validation_not_unique', message: 'This value is already in use.' },
+        },
       }),
     )
     await wrapper.find('form').trigger('submit')
-    await vi.waitFor(() => expect(wrapper.text()).toContain('Value must be unique.'))
+    await vi.waitFor(() => expect(wrapper.text()).toContain('This value is already in use.'))
   })
 
   it('RegisterView registers and goes to the verification page', async () => {
@@ -84,7 +88,7 @@ describe('auth views', () => {
           .spyOn(s, 'confirmVerification')
           .mockRejectedValue(apiError(400, { message: 'Invalid or expired verification token.' })),
     })
-    expect(wrapper.find('[role=alert]').text()).toContain('Invalid or expired')
+    expect(wrapper.find('[role=alert]').text()).toContain('invalid or has expired')
   })
 
   it('VerifyEmailView lets unverified users resend the email', async () => {

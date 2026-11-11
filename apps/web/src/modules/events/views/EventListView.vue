@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { PlusIcon } from '@lucide/vue'
@@ -35,20 +36,22 @@ onMounted(load)
 </script>
 
 <template>
-  <PageHeader title="Events" description="Competitions you can access.">
+  <PageHeader :title="t('shell.nav.events')" :description="t('events.list.description')">
     <template #actions>
-      <Button v-if="session.isAdmin" @click="creating = true"><PlusIcon /> New event</Button>
+      <Button v-if="session.isAdmin" @click="creating = true"
+        ><PlusIcon /> {{ t('events.form.newTitle') }}</Button
+      >
     </template>
   </PageHeader>
   <ErrorAlert :error="error" />
   <Table data-testid="event-list">
     <TableHeader>
       <TableRow>
-        <TableHead>Event</TableHead>
-        <TableHead>Season</TableHead>
-        <TableHead class="hidden sm:table-cell">Venue</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead class="hidden md:table-cell">Registration</TableHead>
+        <TableHead>{{ t('events.event') }}</TableHead>
+        <TableHead>{{ t('events.season') }}</TableHead>
+        <TableHead class="hidden sm:table-cell">{{ t('events.venue') }}</TableHead>
+        <TableHead>{{ t('common.status') }}</TableHead>
+        <TableHead class="hidden md:table-cell">{{ t('events.list.registration') }}</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -65,7 +68,9 @@ onMounted(load)
           {{ registrationSummary(event) }}
         </TableCell>
       </TableRow>
-      <TableEmpty v-if="!loading && !events?.length" :colspan="5">No events available.</TableEmpty>
+      <TableEmpty v-if="!loading && !events?.length" :colspan="5">{{
+        t('events.list.empty')
+      }}</TableEmpty>
     </TableBody>
   </Table>
   <EventFormDialog v-model:open="creating" @saved="onCreated" />

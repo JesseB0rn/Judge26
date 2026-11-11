@@ -1,0 +1,92 @@
+{
+  "phase": {
+    "maintenance": "Manutenzione / allenamento",
+    "check": "Controllo del robot",
+    "scoring": "Manche di valutazione"
+  },
+  "phaseShort": {
+    "maintenance": "Manutenzione",
+    "check": "Controllo del robot",
+    "scoring": "Valutazione"
+  },
+  "issues": {
+    "outside_day": "Fuori dagli orari di questo giorno.",
+    "phase_order": "Le fasi devono svolgersi nell’ordine manutenzione, controllo del robot, valutazione.",
+    "round_overlap": "Si sovrappone a un altro turno della stessa categoria.",
+    "table_overlap": "Un altro turno usa lo stesso tavolo in questo momento.",
+    "judge_overlap": "Lo stesso giudice è necessario su due tavoli in questo momento."
+  },
+  "internal": "Interno (solo staff)",
+  "done": "Fatto",
+  "close": "Chiudi",
+  "duration": "Durata",
+  "minutes": "{count} minuti",
+  "minutesShort": "{count} min",
+  "start": "Inizio",
+  "startHint": "Vuoto: non posizionato",
+  "durationMin": "Durata (min)",
+  "unplace": "Rimuovi",
+  "columns": {
+    "confirmDelete": "Eliminare la colonna «{column}»?",
+    "title": "Colonne personalizzate",
+    "description": "Colonne accanto alle categorie, p. es. visitatori o coach. I blocchi personalizzati possono esservi inseriti ogni giorno.",
+    "nameOf": "Nome di {column}",
+    "left": "Sposta {column} a sinistra",
+    "right": "Sposta {column} a destra",
+    "empty": "Ancora nessuna colonna personalizzata.",
+    "placeholder": "p. es. Visitatori",
+    "newName": "Nome della nuova colonna",
+    "add": "Aggiungi colonna",
+    "hint": "Le colonne interne sono visibili solo allo staff dell’evento. Una colonna con blocchi non può essere eliminata."
+  },
+  "phaseDialog": {
+    "confirmRemoveCheck": "Rimuovere il controllo del robot di questo turno?",
+    "hint": "Le durate di manutenzione e valutazione sono anche le durate delle fasi del turno. Il giorno di valutazione è quello del turno.",
+    "settings": "Impostazioni del turno",
+    "removeCheck": "Rimuovi il controllo del robot",
+    "addCheck": "Aggiungi il controllo del robot"
+  },
+  "block": {
+    "allColumns": "Tutte le colonne",
+    "new": "Nuovo blocco",
+    "edit": "Modifica il blocco",
+    "block": "Blocco",
+    "description": "I blocchi personalizzati possono stare ovunque e non causano mai conflitti.",
+    "place": "Luogo",
+    "responsible": "Responsabile",
+    "columns": "Colonne",
+    "visibility": "Visibilità",
+    "titlePlaceholder": "p. es. Pranzo",
+    "placePlaceholder": "p. es. Sala B",
+    "responsibility": "Responsabilità",
+    "responsibilityPlaceholder": "p. es. Giudice capo",
+    "columnsHint": "Nessuna scelta: il blocco copre tutte le colonne.",
+    "color": "Colore",
+    "publicHint": "Pubblico — visibile ai coach e nelle pagine pubbliche",
+    "delete": "Elimina",
+    "duplicateHint": "Crea una copia con i valori sopra, p. es. in un altro giorno",
+    "duplicate": "Duplica"
+  },
+  "board": {
+    "unplaced": "Non ancora posizionati",
+    "trayHint": "Trascini nella colonna del turno, o apra per posizionare.",
+    "noDays": "Ancora nessun giorno di gara. Aggiunga i giorni nella panoramica dell’evento.",
+    "customColumn": "colonna personalizzata"
+  },
+  "view": {
+    "linkGone": "Il blocco collegato non esiste più.",
+    "conflict": "Qualcun altro ha modificato questo blocco nel frattempo. Il pianificatore è stato ricaricato.",
+    "title": "Pianificatore del programma",
+    "print": "Stampa",
+    "shownColumns": "Colonne mostrate",
+    "showAll": "Mostra tutto",
+    "days": "Giorni",
+    "shownDays": "Giorni mostrati",
+    "moveLater": "Sposta anche le fasi successive",
+    "moveLaterHint": "(o tenga premuto Maiusc mentre rilascia)",
+    "undoTitle": "Annulla (Ctrl+Z)",
+    "warnings": "nessun avviso | un avviso | {count} avvisi",
+    "narrow": "La modifica è disponibile su tablet e schermi più grandi.",
+    "help": "Trascini i blocchi per spostarli, il bordo inferiore per ridimensionarli e uno spazio vuoto per creare un blocco. Con la tastiera: le frecce spostano (Maiusc: 15 min, sinistra/destra: giorno), Alt+frecce ridimensionano, Invio apre."
+  }
+}

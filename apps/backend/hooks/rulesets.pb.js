@@ -54,7 +54,15 @@ onRecordValidate((e) => {
 // Published versions are immutable for everyone, including superusers (M2-14).
 onRecordUpdate((e) => {
   if (e.record.original().getString('status') === 'published') {
-    throw new BadRequestError('Published rulesets cannot be changed. Create a new version instead.')
+    throw new BadRequestError(
+      'Published rulesets cannot be changed. Create a new version instead.',
+      {
+        _error: new ValidationError(
+          'ruleset_published',
+          'Published rulesets cannot be changed. Create a new version instead.',
+        ),
+      },
+    )
   }
   require(`${__hooks}/lib/rulesets.js`).preparePublication(e.app, e.record)
   e.next()
@@ -79,7 +87,9 @@ routerAdd(
       !e.auth.isSuperuser() &&
       !e.app.canAccessRecord(ruleset, e.requestInfo(), ruleset.collection().viewRule)
     ) {
-      throw new NotFoundError('Ruleset not found.')
+      throw new NotFoundError('Ruleset not found.', {
+        _error: new ValidationError('ruleset_not_found', 'Ruleset not found.'),
+      })
     }
     const engine = require(`${__hooks}/lib/scoring-engine.js`)
     const body = e.requestInfo().body
@@ -158,7 +168,12 @@ onRecordValidate((e) => {
 // A game rule stays in its category.
 onRecordUpdate((e) => {
   if (e.record.getString('category') !== e.record.original().getString('category')) {
-    throw new BadRequestError('A game rule cannot be moved to another category.')
+    throw new BadRequestError('A game rule cannot be moved to another category.', {
+      _error: new ValidationError(
+        'game_rule_category',
+        'A game rule cannot be moved to another category.',
+      ),
+    })
   }
   e.next()
 }, 'game_rules')

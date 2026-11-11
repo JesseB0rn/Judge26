@@ -1,0 +1,76 @@
+{
+  "subject": "Oggetto",
+  "status": {
+    "pending": "In coda",
+    "sent": "Inviata",
+    "failed": "Non riuscita"
+  },
+  "templates": {
+    "registration_submitted": "Iscrizione ricevuta",
+    "registration_approved": "Iscrizione approvata",
+    "registration_rejected": "Iscrizione respinta",
+    "schedule_changed": "Aggiornamento del programma",
+    "auth_verification": "Conferma dell’indirizzo e-mail",
+    "auth_password_reset": "Reimpostare la password"
+  },
+  "schedule": {
+    "attempt": "{round} (tentativo {attempt})",
+    "from": "dalle {time}",
+    "table": "tavolo {table}, posizione {position}",
+    "noTable": "tavolo non ancora assegnato",
+    "check": "controllo del robot {day}"
+  },
+  "sample": {
+    "round1": "Turno 1",
+    "round2": "Turno 2",
+    "day": "Sabato",
+    "reviewNote": "Aggiunga l’anno di nascita di ogni membro.",
+    "message": "Apertura delle porte alle 8:00."
+  },
+  "outbox": {
+    "title": "Registro di invio",
+    "eventDescription": "E-mail di questo evento. Le e-mail di iscrizione vengono inviate subito, quelle del programma entro un minuto; gli invii non riusciti vengono ripetuti automaticamente fino a cinque volte.",
+    "requeued": "Messaggio rimesso in coda.",
+    "all": "Tutti i messaggi",
+    "count": "nessun messaggio | un messaggio | {count} messaggi",
+    "created": "Creato",
+    "recipient": "Destinatario",
+    "attempts": "nessun tentativo | un tentativo | {count} tentativi",
+    "next": "prossimo il {date}",
+    "empty": "Nessun messaggio."
+  },
+  "editor": {
+    "saved": "Modello salvato.",
+    "enabled": "Invia questa e-mail",
+    "alwaysSent": "Le e-mail dell’account vengono sempre inviate.",
+    "body": "Contenuto (HTML)",
+    "bodyHint": "I valori vengono inseriti dove una variabile è scritta come {example}.",
+    "variables": "Variabili",
+    "unknown": "Variabili sconosciute: {variables} | Variabile sconosciuta: {variables} | Variabili sconosciute: {variables}",
+    "discard": "Annulla modifiche",
+    "preview": "Anteprima con valori di esempio",
+    "previewTitle": "Anteprima dell’e-mail"
+  },
+  "notify": {
+    "queued": "Nessuno da avvisare. | Un’e-mail messa in coda. | {count} e-mail messe in coda.",
+    "title": "Notifiche del programma",
+    "description": "I coach delle squadre approvate ricevono le manche della propria squadra (turno, ora, tavolo e posizione). Una squadra è interessata quando il suo programma è cambiato dall’ultima e-mail.",
+    "affected": "{count} interessata/e",
+    "ofApproved": "su {count} squadre approvate",
+    "message": "Messaggio (facoltativo)",
+    "messageHint": "Aggiunto a ogni e-mail, p. es. il motivo della modifica.",
+    "sendChanged": "Avvisa le squadre interessate",
+    "sendAll": "Invia a tutte le squadre",
+    "current": "Programma attuale",
+    "lastNotified": "Ultimo avviso",
+    "noGames": "Nessuna manche",
+    "changed": "Modificato",
+    "never": "Mai",
+    "empty": "Ancora nessuna squadra approvata."
+  },
+  "emails": {
+    "description": "Le e-mail inviate a coach e utenti, nella lingua di ciascun destinatario, e il registro di invio.",
+    "templates": "Modelli",
+    "off": "disattivato"
+  }
+}

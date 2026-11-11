@@ -1,0 +1,40 @@
+{
+  "backToStart": "Torna alla pagina iniziale",
+  "forbidden": {
+    "title": "Accesso negato",
+    "text": "Non ha l’autorizzazione per visualizzare questa pagina."
+  },
+  "notFound": {
+    "title": "Pagina non trovata",
+    "text": "La pagina che cerca non esiste."
+  },
+  "status": {
+    "title": "Stato di {app}",
+    "tagline": "Gestione delle competizioni della World Robot Olympiad.",
+    "online": "online",
+    "offline": "offline",
+    "checking": "verifica…",
+    "environment": "Ambiente:",
+    "version": "Versione",
+    "healthLabel": "Stato",
+    "health": {
+      "ok": "tutti i controlli OK",
+      "degraded": "richiede attenzione",
+      "down": "non disponibile"
+    },
+    "contacting": "Connessione al server…",
+    "backend": "Server"
+  },
+  "dashboard": {
+    "welcome": "Benvenuto/a",
+    "welcomeName": "Benvenuto/a, {name}",
+    "roles": "I suoi ruoli",
+    "judging": "Valuti le manche al suo tavolo.",
+    "review": "Approvi o rimandi i fogli di punteggio inviati dai giudici.",
+    "events": "Consulti le competizioni e iscriva le squadre.",
+    "teams": "Le iscrizioni delle sue squadre e il loro stato.",
+    "library": "Biblioteca delle categorie",
+    "libraryDescription": "Modelli di categoria riutilizzabili.",
+    "users": "Account e ruoli di amministrazione."
+  }
+}

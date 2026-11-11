@@ -10,7 +10,9 @@ routerAdd(
     const access = require(`${__hooks}/lib/access.js`)
     const { fieldError } = require(`${__hooks}/lib/errors.js`)
     if (!access.isVerifiedUser(e.auth) || !access.isAdmin(e.app, e.auth)) {
-      throw new ForbiddenError('Only administrators can assign roles.')
+      throw new ForbiddenError('Only administrators can assign roles.', {
+        _error: new ValidationError('admins_only', 'Only administrators can assign roles.'),
+      })
     }
 
     const body = e.requestInfo().body
@@ -52,7 +54,9 @@ routerAdd(
   (e) => {
     const access = require(`${__hooks}/lib/access.js`)
     if (!access.isVerifiedUser(e.auth) || !access.isAdmin(e.app, e.auth)) {
-      throw new ForbiddenError('Only administrators can list users.')
+      throw new ForbiddenError('Only administrators can list users.', {
+        _error: new ValidationError('admins_only', 'Only administrators can list users.'),
+      })
     }
     const query = e.request.url.query()
     const q = (query.get('q') || '').trim()

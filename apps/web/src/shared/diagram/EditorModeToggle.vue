@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { BracesIcon, WorkflowIcon } from '@lucide/vue'
 import FilterChips from '@/shared/components/FilterChips.vue'
 
@@ -10,10 +11,10 @@ const mode = defineModel<'visual' | 'json'>({ required: true })
   <div class="flex flex-wrap items-center gap-2">
     <FilterChips
       :model-value="mode"
-      label="Editor"
+      :label="t('diagram.editor')"
       required
       :options="[
-        { value: 'visual', label: 'Visual' },
+        { value: 'visual', label: t('diagram.visual') },
         { value: 'json', label: 'JSON' },
       ]"
       @update:model-value="mode = $event as 'visual' | 'json'"
@@ -21,7 +22,7 @@ const mode = defineModel<'visual' | 'json'>({ required: true })
     <span class="flex items-center gap-1 text-xs text-muted-foreground">
       <WorkflowIcon v-if="mode === 'visual'" class="size-3.5" />
       <BracesIcon v-else class="size-3.5" />
-      Both edit the same definition.
+      {{ t('diagram.same') }}
     </span>
   </div>
 </template>

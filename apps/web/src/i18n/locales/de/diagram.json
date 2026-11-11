@@ -1,0 +1,17 @@
+{
+  "label": "Blockdiagramm",
+  "enable": "Aktivierung: Verbinden Sie hier ein Kriterium, um diesen Block bedingt zu machen",
+  "output": "Ausgang: zu einem Anschluss ziehen, um zu verbinden",
+  "zoomIn": "Vergrössern",
+  "zoomOut": "Verkleinern",
+  "fit": "Diagramm einpassen",
+  "addBlock": "Block hinzufügen",
+  "add": "Hinzufügen",
+  "errors": "keine Fehler | 1 Fehler | {count} Fehler",
+  "valid": "Gültig",
+  "undo": "Rückgängig",
+  "tidy": "Aufräumen",
+  "editor": "Editor",
+  "visual": "Visuell",
+  "same": "Beide bearbeiten dieselbe Definition."
+}

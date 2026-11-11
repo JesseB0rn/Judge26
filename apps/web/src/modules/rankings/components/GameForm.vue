@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { compileRuleset, evaluate, type ScoreValues } from '@judge26/scoring-engine'
 import { Button } from '@/components/ui/button'
@@ -89,7 +90,12 @@ const save = useSubmit(async () => {
 })
 
 const remove = useSubmit(async () => {
-  if (!current.value || !confirm(`Delete attempt ${current.value.attempt}?`)) return
+  if (
+    !current.value ||
+    !confirm(t('rankings.game.confirmDelete', { attempt: current.value.attempt }))
+  ) {
+    return
+  }
   await deleteGame(current.value.id)
   emit('saved')
   emit('close')
@@ -105,38 +111,58 @@ const sheetInvalid = computed(
     <form id="game-form" class="flex flex-col gap-4" @submit.prevent="save.run()">
       <ErrorAlert :error="save.error.value ?? remove.error.value" />
       <div class="grid gap-4 sm:grid-cols-3">
-        <FormField v-slot="{ id }" label="Attempt" name="attempt">
+        <FormField v-slot="{ id }" :label="t('scheduling.export.attempt')" name="attempt">
           <NativeSelect :id="id" v-model="selected" class="w-full">
-            <NativeSelectOption v-for="g in attempts" :key="g.id" :value="g.id"
-              >Attempt {{ g.attempt }}</NativeSelectOption
-            >
-            <NativeSelectOption value="new">New attempt ({{ nextAttempt }})</NativeSelectOption>
+            <NativeSelectOption v-for="g in attempts" :key="g.id" :value="g.id">{{
+              t('judging.attempt', { attempt: g.attempt })
+            }}</NativeSelectOption>
+            <NativeSelectOption value="new">{{
+              t('rankings.game.newAttempt', { attempt: nextAttempt })
+            }}</NativeSelectOption>
           </NativeSelect>
         </FormField>
-        <FormField v-slot="{ id }" label="Result" name="status" :errors="save.fieldErrors.value">
+        <FormField
+          v-slot="{ id }"
+          :label="t('judging.outcome.label')"
+          name="status"
+          :errors="save.fieldErrors.value"
+        >
           <NativeSelect :id="id" v-model="status" class="w-full">
-            <NativeSelectOption value="completed">Completed</NativeSelectOption>
-            <NativeSelectOption value="disqualified">Disqualified</NativeSelectOption>
-            <NativeSelectOption value="absent">Absent (did not start)</NativeSelectOption>
-            <NativeSelectOption value="scheduled">Scheduled (not played)</NativeSelectOption>
+            <NativeSelectOption value="completed">{{
+              t('scheduling.gameStatus.completed')
+            }}</NativeSelectOption>
+            <NativeSelectOption value="disqualified">{{
+              t('scheduling.gameStatus.disqualified')
+            }}</NativeSelectOption>
+            <NativeSelectOption value="absent">{{
+              t('judging.submit.outcome.absent')
+            }}</NativeSelectOption>
+            <NativeSelectOption value="scheduled">{{
+              t('rankings.game.notPlayed')
+            }}</NativeSelectOption>
           </NativeSelect>
         </FormField>
         <FormField
           v-if="status === 'completed'"
           v-slot="{ id }"
-          label="Time (seconds)"
+          :label="t('rankings.game.seconds')"
           name="time_ms"
           :errors="save.fieldErrors.value"
-          description="Leave empty if not timed."
+          :description="t('rankings.game.secondsHint')"
         >
-          <Input :id="id" v-model="seconds" inputmode="decimal" placeholder="e.g. 95.37" />
+          <Input
+            :id="id"
+            v-model="seconds"
+            inputmode="decimal"
+            :placeholder="t('rankings.game.secondsPlaceholder', { example: '95.37' })"
+          />
         </FormField>
       </div>
 
       <template v-if="status === 'completed'">
         <label v-if="compiled" class="flex items-center gap-2 text-sm">
           <input v-model="useSheet" type="checkbox" class="size-4" />
-          Score with ruleset version {{ ruleset?.version }}
+          {{ t('rankings.game.useSheet', { version: ruleset?.version ?? '' }) }}
         </label>
         <ScoreSheet
           v-if="useSheet && compiled && sheetResult"
@@ -147,7 +173,7 @@ const sheetInvalid = computed(
         <FormField
           v-else
           v-slot="{ id }"
-          label="Points"
+          :label="t('scheduling.export.points')"
           name="points"
           :errors="save.fieldErrors.value"
         >
@@ -159,13 +185,13 @@ const sheetInvalid = computed(
       </template>
     </form>
     <DialogFooter>
-      <Button v-if="current" variant="ghost" class="mr-auto" @click="remove.run()"
-        >Delete attempt</Button
-      >
-      <Button variant="outline" @click="emit('close')">Cancel</Button>
-      <Button type="submit" form="game-form" :disabled="save.pending.value || sheetInvalid"
-        >Save result</Button
-      >
+      <Button v-if="current" variant="ghost" class="mr-auto" @click="remove.run()">{{
+        t('rankings.game.deleteAttempt')
+      }}</Button>
+      <Button variant="outline" @click="emit('close')">{{ t('common.cancel') }}</Button>
+      <Button type="submit" form="game-form" :disabled="save.pending.value || sheetInvalid">{{
+        t('rankings.game.save')
+      }}</Button>
     </DialogFooter>
   </div>
 </template>

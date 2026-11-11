@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import {
@@ -56,7 +57,7 @@ const move = useSubmit(async (index: number, offset: number) => {
 })
 
 const remove = useSubmit(async (column: PlannerColumn) => {
-  if (!confirm(`Delete the column “${column.name}”?`)) return
+  if (!confirm(t('planner.columns.confirmDelete', { column: column.name }))) return
   await deleteColumn(column.id)
   emit('changed')
 })
@@ -70,11 +71,8 @@ const error = computed(
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-lg">
       <DialogHeader>
-        <DialogTitle>Custom columns</DialogTitle>
-        <DialogDescription>
-          Columns next to the categories, e.g. visitors or coaches. Custom blocks can be placed in
-          them on every day.
-        </DialogDescription>
+        <DialogTitle>{{ t('planner.columns.title') }}</DialogTitle>
+        <DialogDescription>{{ t('planner.columns.description') }}</DialogDescription>
       </DialogHeader>
       <ErrorAlert :error="error" />
       <ul v-if="ordered.length" class="flex flex-col gap-2" data-testid="custom-columns">
@@ -83,7 +81,7 @@ const error = computed(
             class="h-8 flex-1"
             :model-value="column.name"
             maxlength="60"
-            :aria-label="`Name of ${column.name}`"
+            :aria-label="t('planner.columns.nameOf', { column: column.name })"
             @change="change.run(column, { name: ($event.target as HTMLInputElement).value })"
           />
           <label class="flex items-center gap-1 text-xs">
@@ -93,13 +91,13 @@ const error = computed(
               :checked="column.public"
               @change="change.run(column, { public: ($event.target as HTMLInputElement).checked })"
             />
-            Public
+            {{ t('live.publication.public') }}
           </label>
           <Button
             variant="ghost"
             size="icon-sm"
             :disabled="i === 0"
-            :aria-label="`Move ${column.name} left`"
+            :aria-label="t('planner.columns.left', { column: column.name })"
             @click="move.run(i, -1)"
             ><ArrowLeftIcon
           /></Button>
@@ -107,42 +105,42 @@ const error = computed(
             variant="ghost"
             size="icon-sm"
             :disabled="i === ordered.length - 1"
-            :aria-label="`Move ${column.name} right`"
+            :aria-label="t('planner.columns.right', { column: column.name })"
             @click="move.run(i, 1)"
             ><ArrowRightIcon
           /></Button>
           <Button
             variant="ghost"
             size="icon-sm"
-            :aria-label="`Delete ${column.name}`"
+            :aria-label="t('common.deleteItem', { item: column.name })"
             @click="remove.run(column)"
             ><Trash2Icon
           /></Button>
         </li>
       </ul>
-      <p v-else class="text-sm text-muted-foreground">No custom columns yet.</p>
+      <p v-else class="text-sm text-muted-foreground">{{ t('planner.columns.empty') }}</p>
       <form class="flex flex-wrap items-center gap-2" @submit.prevent="add.run()">
         <Input
           v-model="name"
           class="h-8 min-w-40 flex-1"
           maxlength="60"
           required
-          placeholder="e.g. Visitors"
-          aria-label="New column name"
+          :placeholder="t('planner.columns.placeholder')"
+          :aria-label="t('planner.columns.newName')"
         />
         <label class="flex items-center gap-1 text-xs">
           <input v-model="isPublic" type="checkbox" class="size-4 accent-primary" />
-          Public
+          {{ t('live.publication.public') }}
         </label>
         <Button type="submit" size="sm" :disabled="add.pending.value || !name.trim()"
-          ><PlusIcon /> Add column</Button
+          ><PlusIcon /> {{ t('planner.columns.add') }}</Button
         >
       </form>
-      <p class="text-xs text-muted-foreground">
-        Internal columns are only shown to event staff. A column with blocks cannot be deleted.
-      </p>
+      <p class="text-xs text-muted-foreground">{{ t('planner.columns.hint') }}</p>
       <DialogFooter>
-        <Button type="button" variant="outline" @click="open = false">Done</Button>
+        <Button type="button" variant="outline" @click="open = false">{{
+          t('planner.done')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

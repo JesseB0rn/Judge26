@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -124,7 +125,9 @@ const save = useSubmit(async (status?: TeamStatus) => {
 })
 
 const remove = useSubmit(async () => {
-  if (!team.value || !confirm(`Delete draft ${team.value.name}?`)) return
+  if (!team.value || !confirm(t('teams.form.confirmDeleteDraft', { team: team.value.name }))) {
+    return
+  }
   await deleteTeam(team.value.id)
   await router.replace({ name: 'my-teams' })
 })
@@ -136,7 +139,7 @@ onMounted(load)
   <ErrorAlert :error="loadError" />
   <Skeleton v-if="loading" class="h-10 w-1/2" />
   <template v-else-if="event">
-    <PageHeader :title="team ? team.name : 'Register a team'">
+    <PageHeader :title="team ? team.name : t('events.detail.registerTeam')">
       <template #actions>
         <TeamStatusBadge v-if="team" :status="team.status" class="self-center" />
         <Button as-child variant="outline">
@@ -153,20 +156,20 @@ onMounted(load)
       class="mb-4"
       data-testid="review-note"
     >
-      <AlertTitle>Registration rejected</AlertTitle>
-      <AlertDescription
-        >{{ team.review_note }} — correct the registration and submit it again.</AlertDescription
-      >
+      <AlertTitle>{{ t('teams.form.rejectedTitle') }}</AlertTitle>
+      <AlertDescription>{{
+        t('teams.form.rejectedText', { note: team.review_note })
+      }}</AlertDescription>
     </Alert>
     <Alert v-else-if="team && !editable" class="mb-4">
       <AlertDescription>
-        <template v-if="team.status === 'submitted'"
-          >Submitted {{ formatDateTime(team.submitted_at) }}; awaiting review.</template
-        >
-        <template v-else-if="team.status === 'approved'"
-          >Approved {{ formatDateTime(team.reviewed_at) }}.</template
-        >
-        <template v-else>This registration can no longer be changed.</template>
+        <template v-if="team.status === 'submitted'">{{
+          t('teams.form.awaitingReview', { date: formatDateTime(team.submitted_at) })
+        }}</template>
+        <template v-else-if="team.status === 'approved'">{{
+          t('teams.form.approvedAt', { date: formatDateTime(team.reviewed_at) })
+        }}</template>
+        <template v-else>{{ t('teams.form.locked') }}</template>
       </AlertDescription>
     </Alert>
 
@@ -189,7 +192,7 @@ onMounted(load)
               <div class="grid gap-4 sm:grid-cols-2">
                 <FormField
                   v-slot="{ id }"
-                  label="Team name"
+                  :label="t('teams.form.name')"
                   name="name"
                   :errors="save.fieldErrors.value"
                 >
@@ -197,7 +200,7 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  label="Category"
+                  :label="t('teams.category')"
                   name="category"
                   :errors="save.fieldErrors.value"
                 >
@@ -209,7 +212,7 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  label="School / organization"
+                  :label="t('teams.form.organization')"
                   name="organization"
                   :errors="save.fieldErrors.value"
                 >
@@ -217,7 +220,7 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  label="Country"
+                  :label="t('teams.country')"
                   name="country"
                   :errors="save.fieldErrors.value"
                 >
@@ -225,7 +228,7 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  label="Coach name"
+                  :label="t('teams.form.coachName')"
                   name="coach_name"
                   :errors="save.fieldErrors.value"
                 >
@@ -233,7 +236,7 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  label="Coach email"
+                  :label="t('teams.coachEmail')"
                   name="coach_email"
                   :errors="save.fieldErrors.value"
                 >
@@ -241,13 +244,22 @@ onMounted(load)
                 </FormField>
               </div>
               <p v-if="category" class="text-sm text-muted-foreground">
-                {{ category.name }}: {{ category.min_team_size }}–{{
-                  category.max_team_size
+                {{
+                  category.min_age || category.max_age
+                    ? t('teams.form.categoryLimitsAge', {
+                        category: category.name,
+                        min: category.min_team_size,
+                        max: category.max_team_size,
+                        minAge: category.min_age || '?',
+                        maxAge: category.max_age || '?',
+                        season: event.season,
+                      })
+                    : t('teams.form.categoryLimits', {
+                        category: category.name,
+                        min: category.min_team_size,
+                        max: category.max_team_size,
+                      })
                 }}
-                members<template v-if="category.min_age || category.max_age"
-                  >, age {{ category.min_age || '?' }}–{{ category.max_age || '?' }} in
-                  {{ event.season }}</template
-                >.
               </p>
               <MembersEditor
                 v-model="form.members"
@@ -266,7 +278,7 @@ onMounted(load)
 
           <div v-if="editable" class="flex flex-wrap gap-2">
             <template v-if="isManager">
-              <Button type="submit" :disabled="save.pending.value">Save</Button>
+              <Button type="submit" :disabled="save.pending.value">{{ t('common.save') }}</Button>
             </template>
             <template v-else>
               <Button
@@ -275,9 +287,11 @@ onMounted(load)
                 :disabled="save.pending.value"
                 @click="save.run('draft')"
               >
-                Save draft
+                {{ t('teams.form.saveDraft') }}
               </Button>
-              <Button type="submit" :disabled="save.pending.value">Submit registration</Button>
+              <Button type="submit" :disabled="save.pending.value">{{
+                t('teams.form.submit')
+              }}</Button>
               <Button
                 v-if="team?.status === 'draft'"
                 type="button"
@@ -285,7 +299,7 @@ onMounted(load)
                 class="ml-auto"
                 @click="remove.run()"
               >
-                Delete draft
+                {{ t('teams.form.deleteDraft') }}
               </Button>
             </template>
           </div>

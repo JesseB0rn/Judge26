@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -47,6 +48,7 @@ import {
   sortedDays,
   todayId,
   toMinutes,
+  issueText,
 } from '../lib'
 import type {
   CreateRequest,
@@ -195,7 +197,7 @@ watch(
       return
     }
     if (!findItem(d, ref)) {
-      toast.error('The linked block no longer exists.')
+      toast.error(t('planner.view.linkGone'))
       closeItem()
       return
     }
@@ -293,7 +295,7 @@ async function apply(changes: Change[], options: { undoable?: boolean } = {}) {
     }
   } catch (error) {
     if (isConflict(error)) {
-      toast.error('Someone else changed this block in the meantime. The planner was reloaded.')
+      toast.error(t('planner.view.conflict'))
     } else {
       toast.error(toAppError(error).message)
     }
@@ -361,7 +363,7 @@ onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 function onConflict() {
-  toast.error('Someone else changed this block in the meantime. The planner was reloaded.')
+  toast.error(t('planner.view.conflict'))
   void load()
 }
 
@@ -421,7 +423,7 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
     </div>
     <PageHeader
       class="print:hidden"
-      :title="data.can_edit ? 'Schedule planner' : 'Schedule'"
+      :title="data.can_edit ? t('planner.view.title') : t('events.tabs.schedule')"
       :description="`${event.name}${event.venue ? ' · ' + event.venue : ''}`"
     >
       <template #actions>
@@ -431,13 +433,13 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
           :stale="false"
         />
         <Button as-child variant="outline" class="print:hidden">
-          <RouterLink :to="backLink"><ArrowLeftIcon /> Event</RouterLink>
+          <RouterLink :to="backLink"><ArrowLeftIcon /> {{ t('events.event') }}</RouterLink>
         </Button>
         <Button variant="outline" class="print:hidden" @click="print">
-          <PrinterIcon /> Print
+          <PrinterIcon /> {{ t('planner.view.print') }}
         </Button>
         <Button v-if="editable" class="print:hidden" :disabled="!days.length" @click="newBlock()">
-          <PlusIcon /> New block
+          <PlusIcon /> {{ t('planner.block.new') }}
         </Button>
       </template>
     </PageHeader>
@@ -448,12 +450,12 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" size="sm">
-            <ColumnsIcon /> Columns
+            <ColumnsIcon /> {{ t('planner.block.columns') }}
             <Badge variant="secondary">{{ shownColumns.length }}/{{ allColumns.length }}</Badge>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuLabel>Shown columns</DropdownMenuLabel>
+          <DropdownMenuLabel>{{ t('planner.view.shownColumns') }}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <template v-for="(c, i) in allColumns" :key="c.id">
             <DropdownMenuSeparator v-if="c.custom && !allColumns[i - 1]?.custom" />
@@ -473,7 +475,7 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
                   query: { ...route.query, cols: allColumns.map((c) => c.id).join(',') },
                 })
               "
-              >Show all</DropdownMenuItem
+              >{{ t('planner.view.showAll') }}</DropdownMenuItem
             >
           </template>
         </DropdownMenuContent>
@@ -481,12 +483,12 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
       <DropdownMenu v-if="days.length > 1">
         <DropdownMenuTrigger as-child>
           <Button variant="outline" size="sm">
-            <CalendarDaysIcon /> Days
+            <CalendarDaysIcon /> {{ t('planner.view.days') }}
             <Badge variant="secondary">{{ shownDays.length }}/{{ days.length }}</Badge>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuLabel>Shown days</DropdownMenuLabel>
+          <DropdownMenuLabel>{{ t('planner.view.shownDays') }}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem
             v-for="d in days"
@@ -501,23 +503,23 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
         </DropdownMenuContent>
       </DropdownMenu>
       <Button v-if="editable" variant="outline" size="sm" @click="columnsOpen = true">
-        <SettingsIcon /> Custom columns
+        <SettingsIcon /> {{ t('planner.columns.title') }}
       </Button>
       <template v-if="editable">
         <label class="ml-1 flex items-center gap-2 text-sm">
           <input v-model="moveLater" type="checkbox" class="size-4 accent-primary" />
-          Move later phases too
-          <span class="text-xs text-muted-foreground">(or hold Shift while dropping)</span>
+          {{ t('planner.view.moveLater') }}
+          <span class="text-xs text-muted-foreground">{{ t('planner.view.moveLaterHint') }}</span>
         </label>
         <Button
           variant="ghost"
           size="sm"
           class="ml-auto"
           :disabled="!undoStack.length || saving"
-          title="Undo (Ctrl+Z)"
+          :title="t('planner.view.undoTitle')"
           @click="undo"
         >
-          <Undo2Icon /> Undo
+          <Undo2Icon /> {{ t('diagram.undo') }}
         </Button>
       </template>
     </div>
@@ -529,7 +531,7 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
     >
       <summary class="flex cursor-pointer items-center gap-2 font-medium">
         <AlertTriangleIcon class="size-4 text-destructive" />
-        {{ issueList.length }} {{ issueList.length === 1 ? 'warning' : 'warnings' }}
+        {{ t('planner.view.warnings', issueList.length) }}
       </summary>
       <ul class="mt-2 flex flex-col gap-1">
         <li v-for="entry in issueList" :key="entry.key" class="flex flex-wrap items-center gap-2">
@@ -540,7 +542,7 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
           >
             {{ entry.names.join(' / ') }}
           </button>
-          <span class="text-muted-foreground">{{ entry.issue.message }}</span>
+          <span class="text-muted-foreground">{{ issueText(entry.issue) }}</span>
         </li>
       </ul>
     </details>
@@ -550,12 +552,10 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
       class="mb-2 text-xs text-muted-foreground print:hidden"
       data-testid="planner-narrow"
     >
-      Editing is available on tablets and larger screens.
+      {{ t('planner.view.narrow') }}
     </p>
     <p v-if="editable" class="mb-2 text-xs text-muted-foreground print:hidden">
-      Drag blocks to move them, drag their lower edge to resize, and drag on empty space to create a
-      block. With the keyboard: arrow keys move (Shift: 15 min, left/right: day), Alt+arrows resize,
-      Enter opens.
+      {{ t('planner.view.help') }}
     </p>
 
     <PlannerBoard

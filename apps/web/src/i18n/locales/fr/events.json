@@ -1,0 +1,63 @@
+{
+  "event": "Événement",
+  "season": "Saison",
+  "venue": "Lieu",
+  "status": {
+    "draft": "Brouillon",
+    "published": "Publié",
+    "archived": "Archivé"
+  },
+  "registration": {
+    "archived": "Événement archivé",
+    "unpublished": "Pas encore publié",
+    "notYetOpen": "Inscriptions pas encore ouvertes",
+    "open": "Inscriptions ouvertes",
+    "closed": "Inscriptions closes"
+  },
+  "days": {
+    "title": "Jours de compétition",
+    "hoursSaved": "Horaires enregistrés.",
+    "startOf": "Début le {day}",
+    "endOf": "Fin le {day}",
+    "empty": "Aucun jour de compétition pour l’instant.",
+    "labelPlaceholder": "p. ex. Jour 1",
+    "add": "Ajouter un jour"
+  },
+  "form": {
+    "editTitle": "Modifier l’événement",
+    "newTitle": "Nouvel événement",
+    "description": "Les jours de compétition et les catégories se gèrent sur la page de l’événement.",
+    "opens": "Ouverture des inscriptions",
+    "closes": "Clôture des inscriptions"
+  },
+  "detail": {
+    "updated": "Événement mis à jour.",
+    "seasonLine": "Saison {season}",
+    "publish": "Publier",
+    "archive": "Archiver",
+    "restore": "Restaurer",
+    "reviewScores": "Contrôler les scores",
+    "planner": "Planificateur",
+    "registerTeam": "Inscrire une équipe",
+    "archivedNotice": "Cet événement est archivé. Ses données sont en lecture seule.",
+    "details": "Détails",
+    "registration": "Inscriptions :",
+    "opens": "Ouverture :",
+    "closes": "Clôture :"
+  },
+  "tabs": {
+    "overview": "Aperçu",
+    "categories": "Catégories",
+    "teams": "Équipes",
+    "schedule": "Horaire",
+    "publication": "Résultats publics",
+    "messages": "Messages",
+    "activity": "Activité",
+    "staff": "Équipe d’organisation"
+  },
+  "list": {
+    "description": "Les compétitions auxquelles vous avez accès.",
+    "registration": "Inscriptions",
+    "empty": "Aucun événement disponible."
+  }
+}

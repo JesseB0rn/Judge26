@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatTime } from '@/shared/format'
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 import type { LiveStatus } from '../useLiveUpdates'
@@ -6,18 +8,16 @@ import type { LiveStatus } from '../useLiveUpdates'
 /** Tells viewers whether what they see is current (M6-01, M6-T09). */
 const props = defineProps<{ status: LiveStatus; stale?: boolean; updatedAt?: Date }>()
 
-const time = computed(() =>
-  props.updatedAt?.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }),
-)
+const time = computed(() => (props.updatedAt ? formatTime(props.updatedAt, true) : undefined))
 const offline = computed(() => props.stale || props.status === 'offline')
 const label = computed(() => {
-  if (offline.value) return time.value ? `Offline · data from ${time.value}` : 'Offline'
-  if (props.status === 'connecting') return 'Connecting…'
-  return time.value ? `Live · updated ${time.value}` : 'Live'
+  if (offline.value) {
+    return time.value
+      ? t('live.indicator.offlineAt', { time: time.value })
+      : t('live.indicator.offline')
+  }
+  if (props.status === 'connecting') return t('live.indicator.connecting')
+  return time.value ? t('live.indicator.liveAt', { time: time.value }) : t('live.indicator.live')
 })
 </script>
 

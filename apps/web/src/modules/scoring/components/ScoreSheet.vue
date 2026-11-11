@@ -9,6 +9,7 @@ import {
   type ScoreValues,
 } from '@judge26/scoring-engine'
 import ScoreNodeField from './ScoreNodeField.vue'
+import { issueMessage } from '../lib'
 
 /**
  * Score sheet generated from a ruleset (M5-04 groundwork). The parent evaluates
@@ -42,7 +43,7 @@ const issues = computed(() => {
   const map = new Map<string, string[]>()
   for (const issue of props.result.issues) {
     if (!issue.nodeId) continue
-    map.set(issue.nodeId, [...(map.get(issue.nodeId) ?? []), issue.message])
+    map.set(issue.nodeId, [...(map.get(issue.nodeId) ?? []), issueMessage(issue, props.ruleset)])
   }
   return map
 })

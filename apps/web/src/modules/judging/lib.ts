@@ -1,3 +1,4 @@
+import { t, translatedLabels } from '@/i18n'
 import type { Assignment, NamedRef, RoundCheck, RoundRef, SheetStatus } from './types'
 
 // ---------------------------------------------------------------------------
@@ -84,14 +85,10 @@ export function scoreState(game: Pick<Assignment, 'status' | 'sheet'>): ScoreSta
   return game.status === 'scheduled' ? 'open' : 'recorded'
 }
 
-export const SCORE_STATE_LABELS: Record<ScoreState, string> = {
-  open: 'Not scored',
-  draft: 'Draft',
-  returned: 'Returned',
-  submitted: 'Submitted',
-  final: 'Final',
-  recorded: 'Recorded',
-}
+export const SCORE_STATE_LABELS = translatedLabels<ScoreState>(
+  ['open', 'draft', 'returned', 'submitted', 'final', 'recorded'],
+  (state) => t(`judging.state.${state}`),
+)
 
 /** Games the judge still has to score. */
 export const isToDo = (game: Pick<Assignment, 'status' | 'sheet'>) =>
@@ -130,7 +127,7 @@ export function dayOptions(rows: Assignment[]): FilterOption[] {
     if (!map.has(value)) {
       map.set(value, {
         value,
-        label: day ? day.label || day.date : 'No day',
+        label: day ? day.label || day.date : t('judging.noDay'),
         sort: day?.date ?? '9999',
       })
     }
@@ -252,7 +249,7 @@ export function robotChecks(rows: Assignment[]): RobotCheckBlock[] {
 export function checkWhen(block: RobotCheckBlock) {
   const day = block.check.day ? block.check.day.label || block.check.day.date : ''
   const time = timeRange(block.check.starts_at, block.check.duration_minutes)
-  return [day, time || `${block.check.duration_minutes} min, not scheduled yet`]
+  return [day, time || t('judging.check.unscheduled', { minutes: block.check.duration_minutes })]
     .filter(Boolean)
     .join(' · ')
 }

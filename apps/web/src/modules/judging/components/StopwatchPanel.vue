@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, ref } from 'vue'
 import { PauseIcon, PencilIcon, PlayIcon, RotateCcwIcon, SquareIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -31,9 +32,9 @@ const inputEl = ref<InstanceType<typeof Input>>()
 
 const display = computed(() => (props.phase === 'idle' ? props.timeMs : props.elapsedMs))
 const label = computed(() => {
-  if (props.phase === 'running') return 'Running'
-  if (props.phase === 'paused') return 'Paused'
-  return props.timeMs > 0 ? 'Recorded time' : 'Time'
+  if (props.phase === 'running') return t('judging.stopwatch.running')
+  if (props.phase === 'paused') return t('judging.stopwatch.paused')
+  return props.timeMs > 0 ? t('judging.stopwatch.recordedTime') : t('judging.time')
 })
 
 async function edit() {
@@ -47,7 +48,7 @@ async function edit() {
 function save() {
   const ms = parseTime(text.value)
   if (ms === null) {
-    error.value = 'Use minutes:seconds (1:35.37) or seconds (95.37).'
+    error.value = t('judging.stopwatch.format', { example: '1:35.37', seconds: '95.37' })
     return
   }
   emit('setTime', ms)
@@ -59,7 +60,7 @@ function save() {
   <section
     class="flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center"
     :class="phase === 'running' ? 'border-sky-400 bg-sky-50/60' : 'bg-card'"
-    aria-label="Stopwatch"
+    :aria-label="t('judging.stopwatch.title')"
     data-testid="stopwatch"
   >
     <div class="min-w-44">
@@ -79,13 +80,13 @@ function save() {
         class="text-xs text-muted-foreground"
         data-testid="recorded-time"
       >
-        Recorded: {{ formatTime(timeMs) }}
+        {{ t('judging.stopwatch.recorded', { time: formatTime(timeMs) }) }}
       </div>
     </div>
 
     <form v-if="editing" class="flex flex-1 flex-wrap items-start gap-2" @submit.prevent="save">
       <div class="flex flex-col gap-1">
-        <label for="manual-time" class="sr-only">Game time</label>
+        <label for="manual-time" class="sr-only">{{ t('judging.stopwatch.gameTime') }}</label>
         <Input
           id="manual-time"
           ref="inputEl"
@@ -98,8 +99,10 @@ function save() {
         />
         <p v-if="error" class="text-sm text-destructive" role="alert">{{ error }}</p>
       </div>
-      <Button type="submit" size="touch">Set time</Button>
-      <Button type="button" size="touch" variant="ghost" @click="editing = false">Cancel</Button>
+      <Button type="submit" size="touch">{{ t('judging.stopwatch.setTime') }}</Button>
+      <Button type="button" size="touch" variant="ghost" @click="editing = false">{{
+        t('common.cancel')
+      }}</Button>
     </form>
 
     <div v-else-if="!disabled" class="flex flex-1 flex-wrap items-center gap-2 sm:justify-end">
@@ -110,7 +113,8 @@ function save() {
         class="min-w-32"
         @click="emit('start')"
       >
-        <PlayIcon /> {{ phase === 'paused' ? 'Resume' : 'Start' }}
+        <PlayIcon />
+        {{ phase === 'paused' ? t('judging.stopwatch.resume') : t('judging.stopwatch.start') }}
       </Button>
       <Button
         v-else
@@ -120,7 +124,7 @@ function save() {
         class="min-w-32"
         @click="emit('pause')"
       >
-        <PauseIcon /> Pause
+        <PauseIcon /> {{ t('judging.stopwatch.pause') }}
       </Button>
       <Button
         v-if="phase !== 'idle'"
@@ -129,14 +133,14 @@ function save() {
         :disabled="disabled"
         @click="emit('stop')"
       >
-        <SquareIcon /> Stop
+        <SquareIcon /> {{ t('judging.stopwatch.stop') }}
       </Button>
       <Button
         v-if="phase === 'paused'"
         size="icon-touch"
         variant="ghost"
         :disabled="disabled"
-        aria-label="Reset stopwatch"
+        :aria-label="t('judging.stopwatch.reset')"
         @click="emit('reset')"
       >
         <RotateCcwIcon />
@@ -148,7 +152,7 @@ function save() {
         :disabled="disabled"
         @click="edit"
       >
-        <PencilIcon /> Edit time
+        <PencilIcon /> {{ t('judging.stopwatch.edit') }}
       </Button>
     </div>
   </section>

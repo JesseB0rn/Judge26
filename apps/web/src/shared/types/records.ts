@@ -1,3 +1,4 @@
+import { t, translatedLabels } from '@/i18n'
 // Record shapes of the PocketBase collections (see apps/backend/migrations).
 
 export interface BaseRecord {
@@ -17,6 +18,8 @@ export interface UserRecord extends BaseRecord {
   name: string
   verified: boolean
   avatar: string
+  /** UI and email language (en, de, fr, it); empty until the user has used the app. */
+  language?: string
 }
 
 export interface EventRecord extends BaseRecord {
@@ -106,12 +109,10 @@ export interface TeamDocumentRecord extends BaseRecord {
   uploaded_by: string
 }
 
-export const ROLE_LABELS: Record<Role, string> = {
-  admin: 'Administrator',
-  event_manager: 'Event manager',
-  head_judge: 'Head judge',
-  judge: 'Judge',
-}
+export const ROLE_LABELS = translatedLabels<Role>(
+  ['admin', 'event_manager', 'head_judge', 'judge'],
+  (role) => t(`common.roles.${role}`),
+)
 
 export type RulesetStatus = 'draft' | 'published'
 
@@ -199,8 +200,11 @@ export interface RankingSnapshotRecord extends BaseRecord {
 }
 
 /** Configurable email of a notification (M7-02). Keys are fixed by the server. */
+/** One notification in one language (M7-02); each key exists once per language. */
 export interface MailTemplateRecord extends BaseRecord {
   key: string
+  /** en, de, fr or it: the recipient's language picks the template. */
+  language: string
   name: string
   enabled: boolean
   subject: string

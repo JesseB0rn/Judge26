@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { reactive } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -21,22 +22,27 @@ const { run, pending, error, fieldErrors } = useSubmit(async () => {
 </script>
 
 <template>
-  <AuthCard title="Create an account" description="Coaches register teams with their account.">
+  <AuthCard :title="t('auth.register.title')" :description="t('auth.register.description')">
     <form class="flex flex-col gap-4" @submit.prevent="run()">
       <ErrorAlert :error="error" />
       <FieldGroup>
-        <FormField v-slot="{ id }" label="Full name" name="name" :errors="fieldErrors">
+        <FormField
+          v-slot="{ id }"
+          :label="t('auth.register.name')"
+          name="name"
+          :errors="fieldErrors"
+        >
           <Input :id="id" v-model="form.name" autocomplete="name" required />
         </FormField>
-        <FormField v-slot="{ id }" label="Email" name="email" :errors="fieldErrors">
+        <FormField v-slot="{ id }" :label="t('auth.email')" name="email" :errors="fieldErrors">
           <Input :id="id" v-model="form.email" type="email" autocomplete="email" required />
         </FormField>
         <FormField
           v-slot="{ id }"
-          label="Password"
+          :label="t('auth.password')"
           name="password"
           :errors="fieldErrors"
-          description="At least 8 characters."
+          :description="t('auth.passwordHint')"
         >
           <Input
             :id="id"
@@ -48,10 +54,11 @@ const { run, pending, error, fieldErrors } = useSubmit(async () => {
           />
         </FormField>
       </FieldGroup>
-      <Button type="submit" :disabled="pending">Create account</Button>
+      <Button type="submit" :disabled="pending">{{ t('auth.register.submit') }}</Button>
     </form>
     <template #footer>
-      Already registered? <RouterLink to="/login" class="underline">Sign in</RouterLink>
+      {{ t('auth.register.haveAccount') }}
+      <RouterLink to="/login" class="underline">{{ t('auth.login.submit') }}</RouterLink>
     </template>
   </AuthCard>
 </template>

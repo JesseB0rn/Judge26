@@ -38,6 +38,25 @@ onBootstrap((e) => {
   if (changed) e.app.save(settings)
 })
 
+// Account emails in the user's language (docs/specifications/i18n.md).
+onMailerRecordVerificationSend((e) => {
+  require(`${__hooks}/lib/mail.js`).localizeAccountEmail(
+    e,
+    'auth_verification',
+    '/auth/verify-email',
+  )
+  e.next()
+}, 'users')
+
+onMailerRecordPasswordResetSend((e) => {
+  require(`${__hooks}/lib/mail.js`).localizeAccountEmail(
+    e,
+    'auth_password_reset',
+    '/auth/reset-password',
+  )
+  e.next()
+}, 'users')
+
 onMailerSend((e) => {
   const env = $os.getenv('PB_ENV')
   const capture = (env === 'development' || env === 'test') && !e.app.settings().smtp.enabled
@@ -137,13 +156,21 @@ routerAdd(
     try {
       record = e.app.findRecordById('mail_outbox', e.request.pathValue('id'))
     } catch (_) {
-      throw new NotFoundError('Message not found.')
+      throw new NotFoundError('Message not found.', {
+        _error: new ValidationError('message_not_found', 'Message not found.'),
+      })
     }
     const eventId = record.getString('event')
     const allowed =
       access.isVerifiedUser(e.auth) &&
       (access.isAdmin(e.app, e.auth) || (eventId && access.canManageEvent(e.app, e.auth, eventId)))
-    if (!allowed) throw new ForbiddenError('Only admins and event managers can retry messages.')
+    if (!allowed)
+      throw new ForbiddenError('Only admins and event managers can retry messages.', {
+        _error: new ValidationError(
+          'managers_only',
+          'Only admins and event managers can retry messages.',
+        ),
+      })
     mail.retry(e.app, record.id)
     const audit = require(`${__hooks}/lib/audit.js`)
     audit.log(e.app, {
@@ -172,7 +199,9 @@ routerAdd(
   (e) => {
     const access = require(`${__hooks}/lib/access.js`)
     if (!access.isVerifiedUser(e.auth) || !access.isAdmin(e.app, e.auth)) {
-      throw new ForbiddenError('Only admins can edit email templates.')
+      throw new ForbiddenError('Only admins can edit email templates.', {
+        _error: new ValidationError('admins_only', 'Only admins can edit email templates.'),
+      })
     }
     return e.json(200, require(`${__hooks}/lib/mail.js`).TEMPLATE_VARIABLES)
   },
@@ -241,7 +270,9 @@ routerAdd(
     const mail = require(`${__hooks}/lib/mail.js`)
     const event = mail.requireScheduleNotifier(e)
     if (event.getString('status') === 'archived') {
-      throw new BadRequestError('Archived events are read-only.')
+      throw new BadRequestError('Archived events are read-only.', {
+        _error: new ValidationError('event_archived', 'Archived events are read-only.'),
+      })
     }
     const body = e.requestInfo().body
     const scope = body.scope || 'changed'

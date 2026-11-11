@@ -1,0 +1,17 @@
+{
+  "label": "Schéma de blocs",
+  "enable": "Activation : reliez ici un critère pour rendre ce bloc conditionnel",
+  "output": "Sortie : faire glisser vers un connecteur pour relier",
+  "zoomIn": "Zoom avant",
+  "zoomOut": "Zoom arrière",
+  "fit": "Ajuster le schéma",
+  "addBlock": "Ajouter un bloc",
+  "add": "Ajouter",
+  "errors": "aucune erreur | 1 erreur | {count} erreurs",
+  "valid": "Valable",
+  "undo": "Annuler",
+  "tidy": "Réorganiser",
+  "editor": "Éditeur",
+  "visual": "Visuel",
+  "same": "Les deux modifient la même définition."
+}

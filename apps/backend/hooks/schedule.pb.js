@@ -28,7 +28,12 @@ onRecordUpdate((e) => {
 onRecordDelete((e) => {
   const { hasScheduledGames } = require(`${__hooks}/lib/schedule.js`)
   if (hasScheduledGames(e.app, e.record.id)) {
-    throw new BadRequestError('Games are still scheduled on this table. Move them first.')
+    throw new BadRequestError('Games are still scheduled on this table. Move them first.', {
+      _error: new ValidationError(
+        'table_in_use',
+        'Games are still scheduled on this table. Move them first.',
+      ),
+    })
   }
   e.next()
 }, 'tables')
@@ -42,11 +47,18 @@ routerAdd(
     const schedule = require(`${__hooks}/lib/schedule.js`)
     const eventId = e.request.pathValue('id')
     if (!access.isVerifiedUser(e.auth) || !access.canManageEvent(e.app, e.auth, eventId)) {
-      throw new ForbiddenError('Only event managers and admins can generate schedules.')
+      throw new ForbiddenError('Only event managers and admins can generate schedules.', {
+        _error: new ValidationError(
+          'managers_only',
+          'Only event managers and admins can generate schedules.',
+        ),
+      })
     }
     const event = e.app.findRecordById('events', eventId)
     if (event.getString('status') === 'archived') {
-      throw new BadRequestError('Archived events cannot be scheduled.')
+      throw new BadRequestError('Archived events cannot be scheduled.', {
+        _error: new ValidationError('event_archived', 'Archived events cannot be scheduled.'),
+      })
     }
     const dryRun = !!e.requestInfo().body.dry_run
     const result = schedule.generate(e.app, eventId, dryRun)
@@ -83,7 +95,9 @@ routerAdd(
         access.hasEventRole(e.app, e.auth, eventId, ['event_manager', 'head_judge', 'judge'])
       )
     ) {
-      throw new ForbiddenError('Only event staff can view schedule validation.')
+      throw new ForbiddenError('Only event staff can view schedule validation.', {
+        _error: new ValidationError('staff_only', 'Only event staff can view schedule validation.'),
+      })
     }
     const planner = require(`${__hooks}/lib/planner.js`)
     return e.json(200, {
@@ -110,7 +124,9 @@ routerAdd(
         access.hasEventRole(e.app, e.auth, eventId, ['event_manager', 'head_judge', 'judge'])
       )
     ) {
-      throw new ForbiddenError('Only event staff can list judges.')
+      throw new ForbiddenError('Only event staff can list judges.', {
+        _error: new ValidationError('staff_only', 'Only event staff can list judges.'),
+      })
     }
     const assignments = e.app.findRecordsByFilter(
       'role_assignments',
@@ -141,7 +157,9 @@ routerAdd(
     const access = require(`${__hooks}/lib/access.js`)
     const userId = e.request.pathValue('id')
     if (!access.isVerifiedUser(e.auth) || e.auth.id !== userId) {
-      throw new ForbiddenError('Users can only view their own schedule.')
+      throw new ForbiddenError('Users can only view their own schedule.', {
+        _error: new ValidationError('own_schedule_only', 'Users can only view their own schedule.'),
+      })
     }
 
     const planner = require(`${__hooks}/lib/planner.js`)

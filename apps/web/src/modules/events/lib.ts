@@ -1,10 +1,10 @@
+import { t, translatedLabels } from '@/i18n'
 import type { EventRecord, EventStatus } from '@/shared/types/records'
 
-export const EVENT_STATUS_LABELS: Record<EventStatus, string> = {
-  draft: 'Draft',
-  published: 'Published',
-  archived: 'Archived',
-}
+export const EVENT_STATUS_LABELS = translatedLabels<EventStatus>(
+  ['draft', 'published', 'archived'],
+  (status) => t(`events.status.${status}`),
+)
 
 function parse(value: string): Date | null {
   if (!value) return null
@@ -29,9 +29,11 @@ export function registrationSummary(
   event: Pick<EventRecord, 'status' | 'registration_opens_at' | 'registration_closes_at'>,
   now: Date = new Date(),
 ): string {
-  if (event.status === 'archived') return 'Event archived'
-  if (event.status === 'draft') return 'Not yet published'
+  if (event.status === 'archived') return t('events.registration.archived')
+  if (event.status === 'draft') return t('events.registration.unpublished')
   const opens = parse(event.registration_opens_at)
-  if (opens && opens > now) return 'Registration not yet open'
-  return isRegistrationOpen(event, now) ? 'Registration open' : 'Registration closed'
+  if (opens && opens > now) return t('events.registration.notYetOpen')
+  return isRegistrationOpen(event, now)
+    ? t('events.registration.open')
+    : t('events.registration.closed')
 }

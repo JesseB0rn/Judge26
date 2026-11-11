@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import {
   Table,
   TableBody,
@@ -22,19 +23,21 @@ defineProps<{
 }>()
 
 const range = (min: number, max: number) =>
-  min && max ? `${min}–${max}` : min ? `≥ ${min}` : max ? `≤ ${max}` : 'any'
+  min && max ? `${min}–${max}` : min ? `≥ ${min}` : max ? `≤ ${max}` : t('categories.any')
 </script>
 
 <template>
   <Table>
     <TableHeader>
       <TableRow>
-        <TableHead>Code</TableHead>
-        <TableHead>Name</TableHead>
-        <TableHead>Team size</TableHead>
-        <TableHead>Age</TableHead>
-        <TableHead class="hidden md:table-cell">Max. teams</TableHead>
-        <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+        <TableHead>{{ t('categories.code') }}</TableHead>
+        <TableHead>{{ t('common.name') }}</TableHead>
+        <TableHead>{{ t('categories.teamSize') }}</TableHead>
+        <TableHead>{{ t('categories.age') }}</TableHead>
+        <TableHead class="hidden md:table-cell">{{ t('categories.maxTeams') }}</TableHead>
+        <TableHead class="w-0"
+          ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+        >
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -49,17 +52,17 @@ const range = (min: number, max: number) =>
           <Button v-if="showRanking" as-child variant="outline" size="sm">
             <RouterLink
               :to="{ name: 'category-ranking', params: { id: c.id } }"
-              :aria-label="`Rounds and ranking for ${c.code}`"
+              :aria-label="t('categories.rankingFor', { code: c.code })"
             >
-              <TrophyIcon /> Ranking
+              <TrophyIcon /> {{ t('categories.ranking') }}
             </RouterLink>
           </Button>
           <Button as-child variant="ghost" size="sm">
             <RouterLink
               :to="{ name: 'category-scoring', params: { id: c.id } }"
-              :aria-label="`Scoring rules for ${c.code}`"
+              :aria-label="t('categories.rulesFor', { code: c.code })"
             >
-              <CalculatorIcon /> Rules
+              <CalculatorIcon /> {{ t('categories.rules') }}
             </RouterLink>
           </Button>
           <slot name="actions" :category="c" />

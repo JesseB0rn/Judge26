@@ -1,0 +1,13 @@
+{
+  "kind": {
+    "network": "Le serveur est injoignable. Vérifiez votre connexion et réessayez.",
+    "validation": "Certaines valeurs ne sont pas valables.",
+    "unauthorized": "Veuillez vous connecter pour continuer.",
+    "forbidden": "Vous n’avez pas l’autorisation d’effectuer cette action.",
+    "not_found": "L’élément demandé est introuvable.",
+    "conflict": "Les données ont été modifiées entre-temps par quelqu’un d’autre. Rechargez la page et réessayez.",
+    "server": "Une erreur s’est produite sur le serveur. Veuillez réessayer plus tard.",
+    "cancelled": "La requête a été annulée.",
+    "unknown": "Une erreur inattendue s’est produite."
+  }
+}

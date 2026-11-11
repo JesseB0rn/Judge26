@@ -1,0 +1,78 @@
+{
+  "unknownTeam": "Squadra sconosciuta",
+  "gameStatus": {
+    "scheduled": "Pianificata",
+    "completed": "Conclusa",
+    "disqualified": "Squalificata",
+    "absent": "Assente"
+  },
+  "export": {
+    "sheet": "Manche",
+    "attempt": "Tentativo",
+    "day": "Giorno",
+    "position": "Posizione",
+    "points": "Punti",
+    "time": "Tempo (s)",
+    "label": "Manche e risultati",
+    "title": "manche {event}"
+  },
+  "reasons": {
+    "no_compatible_table": "Nessun tavolo attivo con un giudice assegnato accetta questa categoria.",
+    "no_active_table": "Nessun tavolo attivo disponibile.",
+    "missing_table_judge": "Assegni un giudice al tavolo prima di pianificarvi delle manche.",
+    "table_inactive": "Il tavolo assegnato è disattivato.",
+    "incompatible_category": "Il tavolo non è disponibile per questa categoria.",
+    "sequence_in_use": "Questo numero d’ordine è già usato su questo tavolo in questo turno."
+  },
+  "issues": {
+    "table_required": "Assegni un tavolo prima di stabilire l’ordine.",
+    "invalid_table": "Il tavolo appartiene a un altro evento.",
+    "table_inactive": "Il tavolo è disattivato.",
+    "incompatible_category": "Il tavolo non è disponibile per questa categoria.",
+    "missing_table_judge": "Assegni un giudice al tavolo prima di pianificarvi delle manche.",
+    "sequence_required": "L’ordine deve essere un numero positivo.",
+    "sequence_in_use": "Questo numero d’ordine è già usato su questo tavolo in questo turno.",
+    "missing_table": "Assegni questa squadra a un tavolo."
+  },
+  "generate": {
+    "title": "Verifica e generazione del programma",
+    "noConflicts": "Nessun conflitto nel programma attuale.",
+    "conflicts": "Nessun conflitto nel programma attuale | Un conflitto nel programma attuale | {count} conflitti nel programma attuale",
+    "explanation": "La generazione crea le manche mancanti per le squadre approvate e assegna ogni manche a un tavolo compatibile con un giudice. L’ordine è distinto per ogni turno e tavolo. Nulla cambia finché non tutte le manche possono essere assegnate.",
+    "previewButton": "Anteprima",
+    "generate": "Genera il programma",
+    "permission": "Solo i responsabili dell’evento e gli admin possono creare manche o generare programmi.",
+    "wouldCreate": "Non verrebbe creata nessuna manche mancante. | Verrebbe creata una manche mancante. | Verrebbero create {count} manche mancanti.",
+    "created": "Nessuna manche mancante creata. | Una manche mancante creata. | {count} manche mancanti create.",
+    "preview": "Anteprima: {count} assegnazioni di manche sono pronte.",
+    "nothingSaved": "Non è stato salvato nulla.",
+    "saved": "Programma salvato: {count} assegnazioni di manche aggiornate.",
+    "infeasible": "Alcune squadre non hanno potuto essere assegnate a un tavolo attivo con un giudice."
+  },
+  "sequence": {
+    "title": "Pianifica la manche",
+    "description": "Scelga il tavolo e l’ordine della squadra su questo tavolo per questo turno.",
+    "selectTable": "Scelga un tavolo",
+    "sequence": "Ordine su questo tavolo"
+  },
+  "games": {
+    "title": "Manche",
+    "summary": "{assigned} assegnate · {unassigned} non assegnate",
+    "setSequence": "Imposta l’ordine per {team}",
+    "empty": "Ancora nessuna manche. Generi il programma dopo aver creato turni, squadre approvate e tavoli."
+  },
+  "tables": {
+    "title": "Tavoli",
+    "allCategories": "tutte le categorie",
+    "noJudge": "Nessun giudice",
+    "deactivated": "disattivato",
+    "empty": "Ancora nessun tavolo.",
+    "name": "Nome del tavolo",
+    "active": "Attivo",
+    "judge": "Giudice assegnato",
+    "selectJudge": "Scelga un giudice",
+    "categories": "Categorie (nessuna scelta = tutte le categorie)",
+    "save": "Salva il tavolo",
+    "add": "Aggiungi tavolo"
+  }
+}

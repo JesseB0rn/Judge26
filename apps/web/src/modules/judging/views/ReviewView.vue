@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import { listEvents } from '@/modules/events/api'
@@ -41,10 +42,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PageHeader
-    title="Review"
-    description="Approve or return the score sheets judges have submitted."
-  />
+  <PageHeader :title="t('shell.nav.review')" :description="t('system.dashboard.review')" />
   <ErrorAlert :error="error" />
   <Skeleton v-if="loading" class="h-24 w-full" />
   <ReviewQueue v-else-if="events.length" :key="events.length" :events="events" />
@@ -53,6 +51,6 @@ onMounted(async () => {
     class="rounded-xl border border-dashed p-8 text-center text-muted-foreground"
     data-testid="no-review-events"
   >
-    You do not review scores for any event.
+    {{ t('judging.review.noEvents') }}
   </p>
 </template>

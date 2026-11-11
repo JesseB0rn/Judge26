@@ -1,0 +1,47 @@
+{
+  "template": "Template",
+  "code": "Code",
+  "any": "any",
+  "teamSize": "Team size",
+  "age": "Age",
+  "maxTeams": "Max. teams",
+  "ranking": "Ranking",
+  "rankingFor": "Rounds and ranking for {code}",
+  "rules": "Rules",
+  "rulesFor": "Scoring rules for {code}",
+  "empty": "No categories yet.",
+  "confirmDelete": "Delete category {code}?",
+  "deleted": "Category deleted.",
+  "addFromTemplate": "Add from template",
+  "addFromTemplateTitle": "Add category from template",
+  "saveAsTemplate": "Save as template",
+  "saveAsTemplateOf": "Save {code} as template",
+  "copy": {
+    "description": "The copy is independent: later changes to the original do not affect it.",
+    "target": "Copy to",
+    "keepCode": "Leave empty to keep {code}.",
+    "keepOriginalCode": "Leave empty to keep the original code.",
+    "submit": "Copy"
+  },
+  "form": {
+    "editTitle": "Edit category",
+    "newCategory": "New category",
+    "newTemplate": "New template",
+    "minTeamSize": "Min. team size",
+    "maxTeamSize": "Max. team size",
+    "minAge": "Min. age",
+    "minAgeHint": "0 = no limit. Age = season − birth year.",
+    "maxAge": "Max. age",
+    "noLimit": "0 = no limit.",
+    "maxTeams": "Max. approved teams",
+    "unlimited": "0 = unlimited."
+  },
+  "library": {
+    "confirmDelete": "Delete template {code}? Copies are not affected.",
+    "deleted": "Template deleted.",
+    "description": "Reusable category templates. Events receive independent copies.",
+    "empty": "No templates yet.",
+    "copyToEvent": "Copy template to event",
+    "copyToEventOf": "Copy {code} to event"
+  }
+}

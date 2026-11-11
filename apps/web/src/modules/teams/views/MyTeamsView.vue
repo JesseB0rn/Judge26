@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -29,17 +30,17 @@ const submitRegistration = useSubmit(
     await updateTeam(team.id, { status: 'submitted' })
     await load()
   },
-  { success: 'Registration submitted.' },
+  { success: () => t('teams.form.submitted') },
 )
 
 onMounted(() => Promise.all([load(), schedule.load()]))
 </script>
 
 <template>
-  <PageHeader title="My teams" description="Team registrations you manage as coach.">
+  <PageHeader :title="t('shell.nav.myTeams')" :description="t('teams.mine.description')">
     <template #actions>
       <Button as-child variant="outline"
-        ><RouterLink to="/events">Register a team</RouterLink></Button
+        ><RouterLink to="/events">{{ t('events.detail.registerTeam') }}</RouterLink></Button
       >
     </template>
   </PageHeader>
@@ -47,11 +48,13 @@ onMounted(() => Promise.all([load(), schedule.load()]))
   <Table data-testid="my-teams">
     <TableHeader>
       <TableRow>
-        <TableHead>Team</TableHead>
-        <TableHead>Event</TableHead>
-        <TableHead>Category</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+        <TableHead>{{ t('teams.team') }}</TableHead>
+        <TableHead>{{ t('events.event') }}</TableHead>
+        <TableHead>{{ t('teams.category') }}</TableHead>
+        <TableHead>{{ t('common.status') }}</TableHead>
+        <TableHead class="w-0"
+          ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+        >
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -72,27 +75,29 @@ onMounted(() => Promise.all([load(), schedule.load()]))
             :disabled="submitRegistration.pending.value"
             @click="submitRegistration.run(team)"
           >
-            {{ team.status === 'rejected' ? 'Resubmit' : 'Submit' }}
+            {{ team.status === 'rejected' ? t('teams.mine.resubmit') : t('teams.mine.submit') }}
           </Button>
         </TableCell>
       </TableRow>
       <TableEmpty v-if="!loading && !teams?.length" :colspan="5">
-        You have not registered any teams yet.
+        {{ t('teams.mine.empty') }}
       </TableEmpty>
     </TableBody>
   </Table>
 
-  <h2 class="mt-8 mb-2 text-lg font-semibold">Schedule</h2>
+  <h2 class="mt-8 mb-2 text-lg font-semibold">{{ t('events.tabs.schedule') }}</h2>
   <ErrorAlert :error="schedule.error.value" />
-  <p v-if="schedule.loading.value" class="text-sm text-muted-foreground">Loading schedule…</p>
+  <p v-if="schedule.loading.value" class="text-sm text-muted-foreground">
+    {{ t('teams.mine.loadingSchedule') }}
+  </p>
   <Table data-testid="my-schedule">
     <TableHeader>
       <TableRow>
-        <TableHead>Round</TableHead>
-        <TableHead>When</TableHead>
-        <TableHead>Table</TableHead>
-        <TableHead>Sequence</TableHead>
-        <TableHead>Team</TableHead>
+        <TableHead>{{ t('teams.mine.round') }}</TableHead>
+        <TableHead>{{ t('teams.mine.when') }}</TableHead>
+        <TableHead>{{ t('teams.mine.table') }}</TableHead>
+        <TableHead>{{ t('teams.mine.sequence') }}</TableHead>
+        <TableHead>{{ t('teams.team') }}</TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -103,7 +108,7 @@ onMounted(() => Promise.all([load(), schedule.load()]))
             game.expand.round.day.label || formatDay(game.expand.round.day.date)
           }}</template>
           <template v-if="game.expand?.round?.starts_at">
-            · from {{ game.expand.round.starts_at }}</template
+            · {{ t('teams.mine.from', { time: game.expand.round.starts_at }) }}</template
           >
           <template v-if="!game.expand?.round?.day && !game.expand?.round?.starts_at">–</template>
         </TableCell>
@@ -112,7 +117,7 @@ onMounted(() => Promise.all([load(), schedule.load()]))
         <TableCell class="font-medium">{{ game.expand?.team?.name }}</TableCell>
       </TableRow>
       <TableEmpty v-if="!schedule.loading.value && !schedule.data.value?.length" :colspan="5">
-        No games of your teams are scheduled yet.
+        {{ t('teams.mine.noGames') }}
       </TableEmpty>
     </TableBody>
   </Table>

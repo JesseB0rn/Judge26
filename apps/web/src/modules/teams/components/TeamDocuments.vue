@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import {
   DownloadIcon,
@@ -47,7 +48,7 @@ const sizeError = ref('')
 function onFile(event: Event) {
   const picked = (event.target as HTMLInputElement).files?.[0] ?? null
   sizeError.value =
-    picked && picked.size > DOCUMENT_MAX_BYTES ? 'The file is larger than 20 MB.' : ''
+    picked && picked.size > DOCUMENT_MAX_BYTES ? t('teams.documents.tooLarge', { max: 20 }) : ''
   file.value = sizeError.value ? null : picked
   if (picked && !title.value) title.value = defaultTitle(picked.name)
 }
@@ -61,16 +62,16 @@ const upload = useSubmit(
     if (input.value) input.value.value = ''
     await load()
   },
-  { success: 'Document uploaded.' },
+  { success: () => t('teams.documents.uploaded') },
 )
 
 const remove = useSubmit(
   async (doc: TeamDocumentRecord) => {
-    if (!confirm(`Delete ${doc.title}?`)) return
+    if (!confirm(t('common.confirmDeleteItem', { item: doc.title }))) return
     await deleteTeamDocument(doc.id)
     await load()
   },
-  { success: 'Document deleted.' },
+  { success: () => t('teams.documents.deleted') },
 )
 
 const icons = { image: ImageIcon, pdf: FileTextIcon, other: FileIcon }
@@ -81,10 +82,8 @@ onMounted(load)
 <template>
   <Card id="documents" class="max-w-3xl scroll-mt-4" data-testid="team-documents">
     <CardHeader>
-      <CardTitle>Documents</CardTitle>
-      <CardDescription>
-        Visible to the team's coach and the event's judges, head judges and managers.
-      </CardDescription>
+      <CardTitle>{{ t('teams.documents.title') }}</CardTitle>
+      <CardDescription>{{ t('teams.documents.visibility') }}</CardDescription>
     </CardHeader>
     <CardContent class="flex flex-col gap-4">
       <ErrorAlert :error="error ?? remove.error.value" />
@@ -118,12 +117,14 @@ onMounted(load)
               :href="documentUrl(doc, token)"
               target="_blank"
               rel="noopener"
-              :aria-label="`Open ${doc.title}`"
+              :aria-label="t('common.openItem', { item: doc.title })"
               ><ExternalLinkIcon
             /></a>
           </Button>
           <Button as-child size="icon" variant="ghost">
-            <a :href="documentUrl(doc, token, true)" :aria-label="`Download ${doc.title}`"
+            <a
+              :href="documentUrl(doc, token, true)"
+              :aria-label="t('common.downloadItem', { item: doc.title })"
               ><DownloadIcon
             /></a>
           </Button>
@@ -131,7 +132,7 @@ onMounted(load)
             v-if="editable"
             size="icon"
             variant="ghost"
-            :aria-label="`Delete ${doc.title}`"
+            :aria-label="t('common.deleteItem', { item: doc.title })"
             :disabled="remove.pending.value"
             @click="remove.run(doc)"
           >
@@ -143,7 +144,7 @@ onMounted(load)
         v-else-if="!loading"
         class="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground"
       >
-        No documents yet.
+        {{ t('teams.documents.empty') }}
       </p>
 
       <form
@@ -153,7 +154,7 @@ onMounted(load)
         @submit.prevent="upload.run()"
       >
         <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-          <Label for="document-file">File (PDF, image, Office, max. 20 MB)</Label>
+          <Label for="document-file">{{ t('teams.documents.file', { max: 20 }) }}</Label>
           <input
             id="document-file"
             ref="input"
@@ -165,11 +166,11 @@ onMounted(load)
           />
         </div>
         <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-          <Label for="document-title">Title</Label>
+          <Label for="document-title">{{ t('common.title') }}</Label>
           <Input id="document-title" v-model="title" required maxlength="100" />
         </div>
         <Button type="submit" :disabled="!file || !title.trim() || upload.pending.value">
-          <UploadIcon /> Upload
+          <UploadIcon /> {{ t('teams.documents.upload') }}
         </Button>
       </form>
       <p v-if="sizeError" class="text-sm text-destructive" role="alert">{{ sizeError }}</p>

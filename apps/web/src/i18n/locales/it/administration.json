@@ -1,0 +1,112 @@
+{
+  "audit": {
+    "areas": {
+      "events": "Eventi",
+      "competition_days": "Giorni di gara",
+      "categories": "Categorie",
+      "teams": "Squadre",
+      "team_documents": "Documenti delle squadre",
+      "role_assignments": "Ruoli",
+      "game_rules": "Giochi",
+      "rulesets": "Regolamenti",
+      "rounds": "Turni",
+      "round_phases": "Fasi del pianificatore",
+      "schedule_blocks": "Blocchi del pianificatore",
+      "schedule_columns": "Colonne del pianificatore",
+      "tables": "Tavoli",
+      "games": "Risultati delle manche",
+      "ranking_snapshots": "Classifiche salvate",
+      "mail_templates": "Modelli di e-mail",
+      "mail_outbox": "E-mail"
+    },
+    "filterArea": "Filtra per ambito",
+    "allAreas": "Tutti gli ambiti",
+    "searchPlaceholder": "Cerca azioni, utenti, elementi",
+    "search": "Cerca nel registro",
+    "entries": "nessuna voce | una voce | {count} voci",
+    "who": "Chi",
+    "what": "Cosa",
+    "detailsOf": "Dettagli di {entry}",
+    "empty": "Nessuna voce.",
+    "description": "Azioni amministrative di tutti gli eventi: chi ha modificato cosa, quando e da dove. La cronologia dei fogli di punteggio è conservata con ogni manche."
+  },
+  "staff": {
+    "assigned": "Ruolo assegnato.",
+    "role": "Ruolo",
+    "removeRole": "Rimuovi il ruolo",
+    "empty": "Nessuno staff assegnato.",
+    "assign": "Assegna un ruolo",
+    "userEmail": "E-mail dell’utente",
+    "userEmailHint": "La persona deve avere già un account.",
+    "submit": "Assegna"
+  },
+  "users": {
+    "description": "Gli account e i loro ruoli. I ruoli degli eventi si assegnano nella scheda «Staff» di ogni evento.",
+    "searchPlaceholder": "Cerca per nome o e-mail",
+    "search": "Cerca utenti",
+    "roles": "Ruoli",
+    "unverified": "non confermato",
+    "removeAdmin": "Rimuovi admin",
+    "makeAdmin": "Nomina admin",
+    "empty": "Nessun utente trovato.",
+    "truncated": "Visualizzati {shown} utenti su {total}. Affini la ricerca per trovare gli altri."
+  },
+  "monitoring": {
+    "description": "Se il server, l’invio di e-mail e i backup funzionano, e gli ultimi errori. Aggiornato ogni 30 secondi.",
+    "overall": {
+      "ok": "Tutti i sistemi funzionano",
+      "degraded": "Richiede attenzione",
+      "down": "Non disponibile"
+    },
+    "checkStatus": {
+      "ok": "OK",
+      "warn": "Avviso",
+      "down": "Non disponibile"
+    },
+    "checks": {
+      "database": "Database",
+      "errors": "Errori",
+      "mail": "Invio di e-mail",
+      "backups": "Backup"
+    },
+    "uptime": {
+      "minutes": "{minutes} min",
+      "hours": "{hours} h {minutes} min",
+      "days": "0 giorni | 1 giorno | {count} giorni"
+    },
+    "upChecked": "attivo da {uptime} · controllato il {checked}",
+    "alertsOff": "Gli avvisi via e-mail sono disattivati (MONITORING_ALERT_EMAIL)",
+    "recentErrors": "Errori recenti",
+    "allLogs": "Tutti i log (dashboard, superutenti)",
+    "time": "Ora",
+    "source": "Origine",
+    "error": "Errore",
+    "sources": {
+      "server": "server",
+      "browser": "browser"
+    },
+    "httpStatus": "stato {status}",
+    "noErrors": "Nessun errore nelle ultime 24 ore.",
+    "detail": {
+      "database_ok": "Raggiungibile",
+      "database_down": "Non raggiungibile: {error}",
+      "logs_disabled": "I log sono disattivati (Settings → Logs), gli errori non vengono conservati.",
+      "errors_none": "Nessuno negli ultimi {minutes} minuti",
+      "errors_some": "{server} errori del server e {browser} del browser negli ultimi {minutes} minuti",
+      "smtp_missing": "SMTP non è configurato, le e-mail non possono essere inviate",
+      "mail_failed": "nessuna e-mail non riuscita nelle ultime 24 ore | un’e-mail non riuscita nelle ultime 24 ore | {count} e-mail non riuscite nelle ultime 24 ore",
+      "mail_stuck": "nessuna e-mail in ritardo | un’e-mail in ritardo, il processo di invio potrebbe non essere attivo | {count} e-mail in ritardo, il processo di invio potrebbe non essere attivo",
+      "mail_captured": "Intercettate (senza SMTP)",
+      "mail_delivering": "Invio in corso",
+      "mail_queued": "nessuna e-mail in coda | un’e-mail in coda | {count} e-mail in coda",
+      "backups_off": "I backup automatici sono disattivati (BACKUP_CRON)",
+      "backups_off_dev": "I backup automatici sono disattivati (non in produzione)",
+      "backups_unlisted": "Impossibile elencare i backup: {error}",
+      "backups_missing": "Non esiste alcun backup (pianificazione «{cron}»)",
+      "backups_none_yet": "Ancora nessun backup (pianificazione «{cron}»)",
+      "backups_stale": "L’ultimo backup è troppo vecchio: {hours} ore fa",
+      "backups_latest": "Ultimo backup {hours} ore fa (pianificazione «{cron}»)",
+      "check_failed": "Controllo non riuscito: {error}"
+    }
+  }
+}

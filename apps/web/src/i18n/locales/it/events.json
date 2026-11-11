@@ -1,0 +1,63 @@
+{
+  "event": "Evento",
+  "season": "Stagione",
+  "venue": "Luogo",
+  "status": {
+    "draft": "Bozza",
+    "published": "Pubblicato",
+    "archived": "Archiviato"
+  },
+  "registration": {
+    "archived": "Evento archiviato",
+    "unpublished": "Non ancora pubblicato",
+    "notYetOpen": "Iscrizioni non ancora aperte",
+    "open": "Iscrizioni aperte",
+    "closed": "Iscrizioni chiuse"
+  },
+  "days": {
+    "title": "Giorni di gara",
+    "hoursSaved": "Orari salvati.",
+    "startOf": "Inizio il {day}",
+    "endOf": "Fine il {day}",
+    "empty": "Ancora nessun giorno di gara.",
+    "labelPlaceholder": "p. es. Giorno 1",
+    "add": "Aggiungi giorno"
+  },
+  "form": {
+    "editTitle": "Modifica evento",
+    "newTitle": "Nuovo evento",
+    "description": "I giorni di gara e le categorie si gestiscono nella pagina dell’evento.",
+    "opens": "Apertura iscrizioni",
+    "closes": "Chiusura iscrizioni"
+  },
+  "detail": {
+    "updated": "Evento aggiornato.",
+    "seasonLine": "Stagione {season}",
+    "publish": "Pubblica",
+    "archive": "Archivia",
+    "restore": "Ripristina",
+    "reviewScores": "Verifica punteggi",
+    "planner": "Pianificatore",
+    "registerTeam": "Iscrivi una squadra",
+    "archivedNotice": "Questo evento è archiviato. I suoi dati sono di sola lettura.",
+    "details": "Dettagli",
+    "registration": "Iscrizioni:",
+    "opens": "Apertura:",
+    "closes": "Chiusura:"
+  },
+  "tabs": {
+    "overview": "Panoramica",
+    "categories": "Categorie",
+    "teams": "Squadre",
+    "schedule": "Programma",
+    "publication": "Risultati pubblici",
+    "messages": "Messaggi",
+    "activity": "Attività",
+    "staff": "Staff"
+  },
+  "list": {
+    "description": "Le competizioni a cui ha accesso.",
+    "registration": "Iscrizioni",
+    "empty": "Nessun evento disponibile."
+  }
+}

@@ -76,6 +76,8 @@ describe('GameSequenceDialog', () => {
     )
     await openDialog()
     await click(buttonByText('Save'))
-    expect(document.body.textContent).toContain('Sequence is already used.')
+    expect(document.body.textContent).toContain(
+      'That sequence number is already used on this table in this round.',
+    )
   })
 })

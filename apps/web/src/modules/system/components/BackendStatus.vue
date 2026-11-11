@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, translatedLabels } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { RefreshCwIcon } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
@@ -10,11 +11,9 @@ import { fetchAppInfo, fetchHealth, type AppInfo, type HealthStatus } from '../a
 
 const info = ref<AppInfo | null>(null)
 const health = ref<HealthStatus | null>(null)
-const HEALTH: Record<HealthStatus, string> = {
-  ok: 'all checks OK',
-  degraded: 'needs attention',
-  down: 'down',
-}
+const HEALTH = translatedLabels<HealthStatus>(['ok', 'degraded', 'down'], (s) =>
+  t(`system.status.health.${s}`),
+)
 const error = ref<AppError | null>(null)
 const loading = ref(false)
 
@@ -41,20 +40,25 @@ onMounted(load)
   <Card data-testid="backend-status">
     <CardHeader>
       <CardTitle class="flex items-center gap-2">
-        Backend
-        <Badge v-if="info" data-testid="backend-status-badge">online</Badge>
+        {{ t('system.status.backend') }}
+        <Badge v-if="info" data-testid="backend-status-badge">{{
+          t('system.status.online')
+        }}</Badge>
         <Badge v-else-if="error" variant="destructive" data-testid="backend-status-badge">
-          offline
+          {{ t('system.status.offline') }}
         </Badge>
-        <Badge v-else variant="secondary" data-testid="backend-status-badge">checking…</Badge>
+        <Badge v-else variant="secondary" data-testid="backend-status-badge">{{
+          t('system.status.checking')
+        }}</Badge>
       </CardTitle>
       <CardDescription>{{ config.pocketbaseUrl }}</CardDescription>
     </CardHeader>
     <CardContent class="flex items-center justify-between gap-4 text-sm">
       <p v-if="info" class="text-muted-foreground">
-        Environment: <span class="font-medium text-foreground">{{ info.environment }}</span>
+        {{ t('system.status.environment') }}
+        <span class="font-medium text-foreground">{{ info.environment }}</span>
         <template v-if="info.version">
-          · Version
+          · {{ t('system.status.version') }}
           <span class="font-medium text-foreground" data-testid="backend-version"
             >{{ info.version
             }}<template v-if="info.commit && info.commit !== 'unknown'">
@@ -63,7 +67,7 @@ onMounted(load)
           >
         </template>
         <template v-if="health">
-          · Health
+          · {{ t('system.status.healthLabel') }}
           <span
             class="font-medium"
             :class="health === 'ok' ? 'text-foreground' : 'text-destructive'"
@@ -73,10 +77,10 @@ onMounted(load)
         </template>
       </p>
       <p v-else-if="error" class="text-destructive" role="alert">{{ error.message }}</p>
-      <p v-else class="text-muted-foreground">Contacting server…</p>
+      <p v-else class="text-muted-foreground">{{ t('system.status.contacting') }}</p>
       <Button variant="outline" size="sm" :disabled="loading" @click="load">
         <RefreshCwIcon :class="{ 'animate-spin': loading }" />
-        Retry
+        {{ t('common.retry') }}
       </Button>
     </CardContent>
   </Card>

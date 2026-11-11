@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { PlusIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +19,7 @@ function remove(index: number) {
 
 <template>
   <fieldset class="flex flex-col gap-2" :disabled="disabled">
-    <legend class="mb-2 text-sm font-medium">Team members</legend>
+    <legend class="mb-2 text-sm font-medium">{{ t('teams.membersEditor.title') }}</legend>
     <div
       v-for="(member, i) in members"
       :key="i"
@@ -27,23 +28,23 @@ function remove(index: number) {
     >
       <Input
         v-model="member.first_name"
-        :aria-label="`Member ${i + 1} first name`"
-        placeholder="First name"
+        :aria-label="t('teams.membersEditor.firstNameOf', { n: i + 1 })"
+        :placeholder="t('teams.firstName')"
         required
       />
       <Input
         v-model="member.last_name"
-        :aria-label="`Member ${i + 1} last name`"
-        placeholder="Last name"
+        :aria-label="t('teams.membersEditor.lastNameOf', { n: i + 1 })"
+        :placeholder="t('teams.lastName')"
         required
       />
       <Input
         v-model.number="member.birth_year"
-        :aria-label="`Member ${i + 1} birth year`"
+        :aria-label="t('teams.membersEditor.birthYearOf', { n: i + 1 })"
         type="number"
         min="1900"
         max="2100"
-        placeholder="Birth year"
+        :placeholder="t('teams.birthYear')"
         required
       />
       <Button
@@ -51,13 +52,15 @@ function remove(index: number) {
         type="button"
         variant="ghost"
         size="icon"
-        :aria-label="`Remove member ${i + 1}`"
+        :aria-label="t('teams.membersEditor.remove', { n: i + 1 })"
         @click="remove(i)"
       >
         <Trash2Icon />
       </Button>
     </div>
-    <p v-if="!members.length" class="text-sm text-muted-foreground">No members added yet.</p>
+    <p v-if="!members.length" class="text-sm text-muted-foreground">
+      {{ t('teams.membersEditor.empty') }}
+    </p>
     <Button
       v-if="!disabled && (!max || members.length < max)"
       type="button"
@@ -65,7 +68,7 @@ function remove(index: number) {
       class="self-start"
       @click="add"
     >
-      <PlusIcon /> Add member
+      <PlusIcon /> {{ t('teams.membersEditor.add') }}
     </Button>
   </fieldset>
 </template>

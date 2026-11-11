@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useSessionStore } from '@/shared/auth/session'
 import { config } from '@/shared/config/env'
+import { t } from '@/i18n'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 const session = useSessionStore()
 const router = useRouter()
@@ -23,8 +25,8 @@ async function logout() {
 const work = computed(() => {
   if (!session.isAuthenticated || !session.isVerified) return []
   return [
-    session.isJudge && { to: '/judging', label: 'Judging' },
-    session.canReview && { to: '/review', label: 'Review' },
+    session.isJudge && { to: '/judging', label: t('shell.nav.judging') },
+    session.canReview && { to: '/review', label: t('shell.nav.review') },
   ].filter((l): l is { to: string; label: string } => !!l)
 })
 const browse = computed(() => {
@@ -32,21 +34,21 @@ const browse = computed(() => {
   return [
     ...(signedIn
       ? [
-          { to: '/events', label: 'Events' },
-          { to: '/teams', label: 'My teams' },
+          { to: '/events', label: t('shell.nav.events') },
+          { to: '/teams', label: t('shell.nav.myTeams') },
         ]
       : []),
-    { to: '/live', label: 'Live results' },
+    { to: '/live', label: t('shell.nav.live') },
   ]
 })
 const admin = computed(() =>
   session.isAuthenticated && session.isVerified && session.isAdmin
     ? [
-        { to: '/admin/categories', label: 'Categories' },
-        { to: '/admin/users', label: 'Users' },
-        { to: '/admin/emails', label: 'Emails' },
-        { to: '/admin/audit', label: 'Audit log' },
-        { to: '/admin/monitoring', label: 'System health' },
+        { to: '/admin/categories', label: t('shell.nav.categories') },
+        { to: '/admin/users', label: t('shell.nav.users') },
+        { to: '/admin/emails', label: t('shell.nav.emails') },
+        { to: '/admin/audit', label: t('shell.nav.audit') },
+        { to: '/admin/monitoring', label: t('shell.nav.monitoring') },
       ]
     : [],
 )
@@ -67,7 +69,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
         <!-- On phones the navigation gets its own scrollable row instead of overflowing. -->
         <nav
           class="order-last -mx-4 flex w-[calc(100%+2rem)] min-w-0 items-center gap-1 overflow-x-auto border-t px-4 py-2 sm:order-none sm:mx-0 sm:w-auto sm:border-t-0 sm:px-0"
-          aria-label="Main"
+          :aria-label="t('shell.mainNavigation')"
         >
           <RouterLink
             v-for="link in work"
@@ -90,7 +92,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
             <span class="mx-1 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
             <span
               class="shrink-0 px-1 text-xs font-medium tracking-wider text-muted-foreground uppercase"
-              >Admin</span
+              >{{ t('shell.nav.admin') }}</span
             >
             <RouterLink
               v-for="link in admin"
@@ -103,6 +105,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
           </template>
         </nav>
         <div class="ml-auto flex h-14 items-center gap-2">
+          <LanguageSwitcher />
           <span
             v-if="config.environment !== 'production'"
             class="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900"
@@ -113,13 +116,17 @@ const activeClass = '!bg-foreground !text-background font-medium'
             <span class="hidden text-sm text-muted-foreground lg:inline" data-testid="current-user">
               {{ session.user?.name || session.user?.email }}
             </span>
-            <Button variant="ghost" size="sm" @click="logout"><LogOutIcon /> Sign out</Button>
+            <Button variant="ghost" size="sm" @click="logout"
+              ><LogOutIcon /> {{ t('shell.signOut') }}</Button
+            >
           </template>
           <template v-else>
             <Button as-child variant="ghost" size="sm"
-              ><RouterLink to="/login">Sign in</RouterLink></Button
+              ><RouterLink to="/login">{{ t('shell.signIn') }}</RouterLink></Button
             >
-            <Button as-child size="sm"><RouterLink to="/register">Register</RouterLink></Button>
+            <Button as-child size="sm"
+              ><RouterLink to="/register">{{ t('shell.register') }}</RouterLink></Button
+            >
           </template>
         </div>
       </div>

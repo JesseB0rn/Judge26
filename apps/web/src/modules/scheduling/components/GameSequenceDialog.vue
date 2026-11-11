@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { reactive, watch } from 'vue'
 import {
   Dialog,
@@ -48,25 +49,30 @@ watch(open, (isOpen) => {
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-lg">
       <DialogHeader>
-        <DialogTitle>{{ game ? gameLabel(game) : 'Schedule game' }}</DialogTitle>
-        <DialogDescription>
-          Choose the table and the team’s sequence on that table for this round.
-        </DialogDescription>
+        <DialogTitle>{{ game ? gameLabel(game) : t('scheduling.sequence.title') }}</DialogTitle>
+        <DialogDescription>{{ t('scheduling.sequence.description') }}</DialogDescription>
       </DialogHeader>
       <form id="placement-form" class="flex flex-col gap-4" @submit.prevent="run()">
         <ErrorAlert :error="error" />
         <div class="grid gap-4 sm:grid-cols-2">
-          <FormField v-slot="{ id }" label="Table" name="table" :errors="fieldErrors">
+          <FormField
+            v-slot="{ id }"
+            :label="t('teams.mine.table')"
+            name="table"
+            :errors="fieldErrors"
+          >
             <NativeSelect :id="id" v-model="form.table" class="w-full" required>
-              <NativeSelectOption value="">Select a table</NativeSelectOption>
+              <NativeSelectOption value="">{{
+                t('scheduling.sequence.selectTable')
+              }}</NativeSelectOption>
               <NativeSelectOption v-for="table in tables" :key="table.id" :value="table.id">
-                {{ table.name }}{{ table.active ? '' : ' (deactivated)' }}
+                {{ table.name }}{{ table.active ? '' : ` (${t('scheduling.tables.deactivated')})` }}
               </NativeSelectOption>
             </NativeSelect>
           </FormField>
           <FormField
             v-slot="{ id }"
-            label="Sequence on this table"
+            :label="t('scheduling.sequence.sequence')"
             name="sequence"
             :errors="fieldErrors"
           >
@@ -82,8 +88,12 @@ watch(open, (isOpen) => {
         </div>
       </form>
       <DialogFooter>
-        <Button type="button" variant="outline" @click="open = false">Cancel</Button>
-        <Button type="submit" form="placement-form" :disabled="pending">Save</Button>
+        <Button type="button" variant="outline" @click="open = false">{{
+          t('common.cancel')
+        }}</Button>
+        <Button type="submit" form="placement-form" :disabled="pending">{{
+          t('common.save')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

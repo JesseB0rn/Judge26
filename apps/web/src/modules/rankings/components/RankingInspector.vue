@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon, XIcon } from '@lucide/vue'
 import type { Aggregation, CalcOp, Operand, SortKey } from '@judge26/ranking-engine'
@@ -40,7 +41,7 @@ const sources = computed(() => [
   ...props.def.rounds.map((r, i) => ({
     block: `round:${i}`,
     value: `round:${r.key}`,
-    label: `${r.label || r.key} (round)`,
+    label: `${r.label || r.key} (${t('rankings.inspector.roundSuffix')})`,
   })),
   ...(props.def.calculations ?? [])
     .map((c, i) => ({ block: `calc:${i}`, value: `calc:${c.id}`, label: c.label || c.id }))
@@ -90,20 +91,16 @@ function setBy(
   else setAttempts({ by: value })
 }
 
+const option = (value: 'zero' | 'exclude' | 'unranked') => ({
+  value,
+  get label() {
+    return t(`rankings.inspector.policy.${value}`)
+  },
+})
 const policyOptions = {
-  missing: [
-    { value: 'zero', label: 'count as 0' },
-    { value: 'exclude', label: 'ignore the round' },
-    { value: 'unranked', label: 'leave team unranked' },
-  ],
-  disqualified: [
-    { value: 'zero', label: 'count as 0' },
-    { value: 'exclude', label: 'ignore the round' },
-  ],
-  absent: [
-    { value: 'zero', label: 'count as 0' },
-    { value: 'exclude', label: 'ignore the round' },
-  ],
+  missing: [option('zero'), option('exclude'), option('unranked')],
+  disqualified: [option('zero'), option('exclude')],
+  absent: [option('zero'), option('exclude')],
 }
 const policy = (name: string) =>
   ((props.def.policies as Record<string, string> | undefined) ?? {})[name] ?? 'zero'
@@ -117,17 +114,23 @@ const ordered = (op: CalcOp | undefined) =>
     <div class="flex items-start justify-between gap-2">
       <div>
         <p class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          {{ kind === 'round' ? 'Round' : kind === 'calc' ? 'Calculation' : 'Ranking' }}
+          {{
+            kind === 'round'
+              ? t('teams.mine.round')
+              : kind === 'calc'
+                ? t('rankings.inspector.calculation')
+                : t('categories.ranking')
+          }}
         </p>
         <p class="font-semibold">
-          {{ round?.label || round?.key || calc?.label || calc?.id || 'Ranking rules' }}
+          {{ round?.label || round?.key || calc?.label || calc?.id || t('rankings.builder.rules') }}
         </p>
       </div>
       <Button
         v-if="kind !== 'ranking' && !readonly"
         variant="ghost"
         size="icon-sm"
-        aria-label="Delete block"
+        :aria-label="t('rankings.inspector.deleteBlock')"
         @click="emit('apply', removeBlock(def, block), null)"
         ><Trash2Icon
       /></Button>
@@ -141,31 +144,33 @@ const ordered = (op: CalcOp | undefined) =>
       <!-- Round -->
       <template v-if="round">
         <InspectorField
-          label="Key"
+          :label="t('rankings.rounds.key')"
           :model-value="round.key"
-          hint="Games reference the round by this key."
+          :hint="t('rankings.inspector.keyHint')"
           @commit="emit('apply', updateRound(def, index, { key: $event }))"
         />
         <InspectorField
-          label="Label"
+          :label="t('common.label')"
           :model-value="round.label"
           @commit="emit('apply', updateRound(def, index, { label: $event || undefined }))"
         />
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-muted-foreground" :for="`att-${block}`"
-            >Several attempts count as</label
-          >
+          <label class="text-xs font-medium text-muted-foreground" :for="`att-${block}`">{{
+            t('rankings.inspector.attempts')
+          }}</label>
           <NativeSelect
             :id="`att-${block}`"
             :model-value="round.attempts?.op ?? ''"
-            aria-label="Several attempts count as"
+            :aria-label="t('rankings.inspector.attempts')"
             @update:model-value="
               $event
                 ? setAttempts(opPatch(round.attempts ?? {}, String($event) as CalcOp))
                 : setAttempts(undefined)
             "
           >
-            <NativeSelectOption value="">Best attempt (default)</NativeSelectOption>
+            <NativeSelectOption value="">{{
+              t('rankings.inspector.bestDefault')
+            }}</NativeSelectOption>
             <NativeSelectOption
               v-for="o in OPS.filter((o) => o.op !== 'DIFFERENCE')"
               :key="o.op"
@@ -176,7 +181,7 @@ const ordered = (op: CalcOp | undefined) =>
         </div>
         <InspectorField
           v-if="round.attempts?.op === 'SUM_BEST_N'"
-          label="N (attempts)"
+          :label="t('rankings.inspector.nAttempts')"
           type="number"
           :model-value="round.attempts.n"
           @commit="setAttempts({ n: $event })"
@@ -186,24 +191,24 @@ const ordered = (op: CalcOp | undefined) =>
       <!-- Calculation -->
       <template v-if="calc">
         <InspectorField
-          label="Label"
+          :label="t('common.label')"
           :model-value="calc.label"
           @commit="emit('apply', updateCalculation(def, index, { label: $event }))"
         />
         <InspectorField
-          label="Id"
+          :label="t('rankings.inspector.id')"
           :model-value="calc.id"
-          hint="Other calculations and the ranking refer to it."
+          :hint="t('rankings.inspector.idHint')"
           @commit="emit('apply', updateCalculation(def, index, { id: $event }))"
         />
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-muted-foreground" :for="`op-${block}`"
-            >Operation</label
-          >
+          <label class="text-xs font-medium text-muted-foreground" :for="`op-${block}`">{{
+            t('rankings.inspector.operation')
+          }}</label>
           <NativeSelect
             :id="`op-${block}`"
             :model-value="calc.op"
-            aria-label="Operation"
+            :aria-label="t('rankings.inspector.operation')"
             @update:model-value="
               emit('apply', updateCalculation(def, index, opPatch(calc, String($event) as CalcOp)))
             "
@@ -215,7 +220,7 @@ const ordered = (op: CalcOp | undefined) =>
         </div>
         <InspectorField
           v-if="calc.op === 'SUM_BEST_N'"
-          label="N (results)"
+          :label="t('rankings.inspector.nResults')"
           type="number"
           :model-value="calc.n"
           @commit="emit('apply', updateCalculation(def, index, { n: $event }))"
@@ -224,13 +229,17 @@ const ordered = (op: CalcOp | undefined) =>
         <!-- Operands: inspector equivalent of the input wires -->
         <div class="flex flex-col gap-1" data-testid="operands">
           <p class="text-xs font-medium text-muted-foreground">
-            {{ calc.op === 'DIFFERENCE' ? 'Operands (a − b)' : 'Inputs, in order' }}
+            {{
+              calc.op === 'DIFFERENCE'
+                ? t('rankings.inspector.operands')
+                : t('rankings.inspector.inputs')
+            }}
           </p>
           <div v-for="(o, j) in calc.operands" :key="j" class="flex items-center gap-1">
             <NativeSelect
               class="min-w-0 flex-1"
               :model-value="operandValue(o)"
-              :aria-label="`Input ${j + 1}`"
+              :aria-label="t('rankings.inspector.input', { n: j + 1 })"
               size="sm"
               @update:model-value="wire(String($event), j)"
             >
@@ -241,7 +250,7 @@ const ordered = (op: CalcOp | undefined) =>
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Move input up"
+              :aria-label="t('rankings.inspector.moveInputUp')"
               :disabled="j === 0"
               @click="emit('apply', moveOperand(def, index, j, j - 1))"
               ><ArrowUpIcon
@@ -249,7 +258,7 @@ const ordered = (op: CalcOp | undefined) =>
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Remove input"
+              :aria-label="t('rankings.inspector.removeInput')"
               @click="emit('apply', removeOperand(def, index, j))"
               ><XIcon
             /></Button>
@@ -257,11 +266,13 @@ const ordered = (op: CalcOp | undefined) =>
           <NativeSelect
             v-if="calc.op !== 'DIFFERENCE' || calc.operands.length < 2"
             model-value=""
-            aria-label="Add input"
+            :aria-label="t('rankings.inspector.addInput')"
             size="sm"
             @update:model-value="$event && wire(String($event), calc.operands.length)"
           >
-            <NativeSelectOption value="">+ Add input…</NativeSelectOption>
+            <NativeSelectOption value="">{{
+              t('rankings.inspector.addInputOption')
+            }}</NativeSelectOption>
             <NativeSelectOption v-for="s in sources" :key="s.value" :value="s.value">{{
               s.label
             }}</NativeSelectOption>
@@ -275,7 +286,9 @@ const ordered = (op: CalcOp | undefined) =>
         class="flex flex-col gap-1"
         data-testid="sort-keys"
       >
-        <p class="text-xs font-medium text-muted-foreground">"Best" means, in order</p>
+        <p class="text-xs font-medium text-muted-foreground">
+          {{ t('rankings.inspector.bestMeans') }}
+        </p>
         <div
           v-for="(k, j) in sortKeys(calc ?? round?.attempts)"
           :key="j"
@@ -283,7 +296,7 @@ const ordered = (op: CalcOp | undefined) =>
         >
           <NativeSelect
             :model-value="k.field"
-            aria-label="Field"
+            :aria-label="t('rankings.inspector.field')"
             size="sm"
             @update:model-value="
               setBy(calc ? 'calc' : 'attempts', calc ?? round?.attempts, j, {
@@ -291,12 +304,14 @@ const ordered = (op: CalcOp | undefined) =>
               })
             "
           >
-            <NativeSelectOption value="points">points</NativeSelectOption>
-            <NativeSelectOption value="time">time</NativeSelectOption>
+            <NativeSelectOption value="points">{{
+              t('rankings.fields.points')
+            }}</NativeSelectOption>
+            <NativeSelectOption value="time">{{ t('rankings.fields.time') }}</NativeSelectOption>
           </NativeSelect>
           <NativeSelect
             :model-value="k.order"
-            aria-label="Order"
+            :aria-label="t('rankings.inspector.order')"
             size="sm"
             @update:model-value="
               setBy(calc ? 'calc' : 'attempts', calc ?? round?.attempts, j, {
@@ -304,13 +319,13 @@ const ordered = (op: CalcOp | undefined) =>
               })
             "
           >
-            <NativeSelectOption value="desc">high first</NativeSelectOption>
-            <NativeSelectOption value="asc">low first</NativeSelectOption>
+            <NativeSelectOption value="desc">{{ t('rankings.inspector.desc') }}</NativeSelectOption>
+            <NativeSelectOption value="asc">{{ t('rankings.inspector.asc') }}</NativeSelectOption>
           </NativeSelect>
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Remove sort key"
+            :aria-label="t('rankings.inspector.removeSortKey')"
             @click="setBy(calc ? 'calc' : 'attempts', calc ?? round?.attempts, j, null)"
             ><XIcon
           /></Button>
@@ -325,7 +340,7 @@ const ordered = (op: CalcOp | undefined) =>
               order: 'asc',
             })
           "
-          ><PlusIcon /> Sort key</Button
+          ><PlusIcon /> {{ t('rankings.inspector.sortKey') }}</Button
         >
       </div>
 
@@ -333,7 +348,7 @@ const ordered = (op: CalcOp | undefined) =>
       <template v-if="kind === 'ranking'">
         <div class="flex flex-col gap-2" data-testid="ranking-keys">
           <p class="text-xs font-medium text-muted-foreground">
-            Rank by (first key decides, the next ones break ties)
+            {{ t('rankings.inspector.rankBy') }}
           </p>
           <div
             v-for="(k, j) in def.ranking.keys"
@@ -346,7 +361,7 @@ const ordered = (op: CalcOp | undefined) =>
               <NativeSelect
                 class="min-w-0 flex-1"
                 :model-value="operandValue(k.source)"
-                :aria-label="`Key ${j + 1} source`"
+                :aria-label="t('rankings.inspector.keySource', { n: j + 1 })"
                 size="sm"
                 @update:model-value="wire(String($event), j)"
               >
@@ -357,7 +372,7 @@ const ordered = (op: CalcOp | undefined) =>
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Move key up"
+                :aria-label="t('rankings.inspector.moveKeyUp')"
                 :disabled="j === 0"
                 @click="emit('apply', moveKey(def, j, j - 1))"
                 ><ArrowUpIcon
@@ -365,7 +380,7 @@ const ordered = (op: CalcOp | undefined) =>
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Move key down"
+                :aria-label="t('rankings.inspector.moveKeyDown')"
                 :disabled="j === def.ranking.keys.length - 1"
                 @click="emit('apply', moveKey(def, j, j + 1))"
                 ><ArrowDownIcon
@@ -373,7 +388,7 @@ const ordered = (op: CalcOp | undefined) =>
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Remove key"
+                :aria-label="t('rankings.inspector.removeKey')"
                 @click="emit('apply', removeKey(def, j))"
                 ><XIcon
               /></Button>
@@ -381,25 +396,33 @@ const ordered = (op: CalcOp | undefined) =>
             <div class="grid grid-cols-2 gap-1 pl-6">
               <NativeSelect
                 :model-value="k.field"
-                aria-label="Field"
+                :aria-label="t('rankings.inspector.field')"
                 size="sm"
                 @update:model-value="emit('apply', updateKey(def, j, { field: $event }))"
               >
-                <NativeSelectOption value="points">points</NativeSelectOption>
-                <NativeSelectOption value="time">time</NativeSelectOption>
+                <NativeSelectOption value="points">{{
+                  t('rankings.fields.points')
+                }}</NativeSelectOption>
+                <NativeSelectOption value="time">{{
+                  t('rankings.fields.time')
+                }}</NativeSelectOption>
               </NativeSelect>
               <NativeSelect
                 :model-value="k.order"
-                aria-label="Order"
+                :aria-label="t('rankings.inspector.order')"
                 size="sm"
                 @update:model-value="emit('apply', updateKey(def, j, { order: $event }))"
               >
-                <NativeSelectOption value="desc">high first</NativeSelectOption>
-                <NativeSelectOption value="asc">low first</NativeSelectOption>
+                <NativeSelectOption value="desc">{{
+                  t('rankings.inspector.desc')
+                }}</NativeSelectOption>
+                <NativeSelectOption value="asc">{{
+                  t('rankings.inspector.asc')
+                }}</NativeSelectOption>
               </NativeSelect>
               <InspectorField
                 class="col-span-2"
-                label="Column label"
+                :label="t('rankings.inspector.columnLabel')"
                 :model-value="k.label"
                 @commit="emit('apply', updateKey(def, j, { label: $event || undefined }))"
               />
@@ -407,12 +430,16 @@ const ordered = (op: CalcOp | undefined) =>
           </div>
           <NativeSelect
             model-value=""
-            aria-label="Add ranking key"
+            :aria-label="t('rankings.builder.addKey')"
             size="sm"
             @update:model-value="$event && wire(String($event), def.ranking.keys.length)"
           >
             <NativeSelectOption value="">
-              {{ def.ranking.keys.length ? '+ Add tie-breaker…' : '+ Add ranking key…' }}
+              {{
+                def.ranking.keys.length
+                  ? t('rankings.inspector.addTieBreakerOption')
+                  : t('rankings.inspector.addKeyOption')
+              }}
             </NativeSelectOption>
             <NativeSelectOption v-for="s in sources" :key="s.value" :value="s.value">{{
               s.label
@@ -421,31 +448,37 @@ const ordered = (op: CalcOp | undefined) =>
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-muted-foreground" for="ranking-ties"
-            >When all keys are equal</label
-          >
+          <label class="text-xs font-medium text-muted-foreground" for="ranking-ties">{{
+            t('rankings.inspector.ties')
+          }}</label>
           <NativeSelect
             id="ranking-ties"
             :model-value="def.ranking.ties ?? 'shared'"
-            aria-label="When all keys are equal"
+            :aria-label="t('rankings.inspector.ties')"
             @update:model-value="emit('apply', updateRanking(def, { ties: $event }))"
           >
-            <NativeSelectOption value="shared">shared rank</NativeSelectOption>
-            <NativeSelectOption value="name">order by team name</NativeSelectOption>
+            <NativeSelectOption value="shared">{{
+              t('rankings.inspector.tiesShared')
+            }}</NativeSelectOption>
+            <NativeSelectOption value="name">{{
+              t('rankings.inspector.tiesName')
+            }}</NativeSelectOption>
           </NativeSelect>
         </div>
 
         <div class="flex flex-col gap-2" data-testid="policies">
-          <p class="text-xs font-medium text-muted-foreground">Results that are…</p>
+          <p class="text-xs font-medium text-muted-foreground">
+            {{ t('rankings.inspector.resultsThatAre') }}
+          </p>
           <div
             v-for="(options, name) in policyOptions"
             :key="name"
             class="flex items-center justify-between gap-2 text-sm"
           >
-            <span>{{ name }}</span>
+            <span>{{ t(`rankings.inspector.policyName.${name}`) }}</span>
             <NativeSelect
               :model-value="policy(name)"
-              :aria-label="`Policy ${name}`"
+              :aria-label="t(`rankings.inspector.policyName.${name}`)"
               size="sm"
               @update:model-value="emit('apply', setPolicy(def, name, String($event)))"
             >
@@ -458,14 +491,14 @@ const ordered = (op: CalcOp | undefined) =>
 
         <div class="grid grid-cols-2 gap-2">
           <InspectorField
-            label="Decimal places (0–4)"
+            :label="t('rankings.inspector.precision')"
             type="number"
             :model-value="def.precision"
             placeholder="2"
             @commit="emit('apply', updateSettings(def, { precision: $event }))"
           />
           <InspectorField
-            label="Time resolution (ms)"
+            :label="t('rankings.inspector.timeResolution')"
             type="number"
             :model-value="def.timeResolutionMs"
             placeholder="1"

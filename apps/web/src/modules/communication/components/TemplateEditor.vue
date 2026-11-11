@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isLocale, t, type Locale } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { SaveIcon } from '@lucide/vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -10,7 +11,13 @@ import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
 import type { MailTemplateRecord } from '@/shared/types/records'
 import { updateTemplate } from '../api'
-import { previewDocument, renderTemplate, SAMPLE_VALUES, unknownVariables } from '../lib'
+import {
+  ACCOUNT_TEMPLATES,
+  previewDocument,
+  renderTemplate,
+  sampleValues,
+  unknownVariables,
+} from '../lib'
 
 /** Edits one notification's subject and body with a live preview (M7-02). */
 const props = defineProps<{ template: MailTemplateRecord; variables: string[] }>()
@@ -35,8 +42,13 @@ const dirty = computed(
     enabled.value !== props.template.enabled,
 )
 const unknown = computed(() => unknownVariables(`${subject.value} ${body.value}`, props.variables))
-const previewSubject = computed(() => renderTemplate(subject.value, SAMPLE_VALUES, false))
-const preview = computed(() => previewDocument(renderTemplate(body.value, SAMPLE_VALUES, true)))
+const language = computed<Locale>(() =>
+  isLocale(props.template.language) ? props.template.language : 'en',
+)
+const samples = computed(() => sampleValues(language.value))
+const previewSubject = computed(() => renderTemplate(subject.value, samples.value, false))
+const preview = computed(() => previewDocument(renderTemplate(body.value, samples.value, true)))
+const isAccountEmail = computed(() => ACCOUNT_TEMPLATES.includes(props.template.key))
 
 const save = useSubmit(
   async () => {
@@ -47,7 +59,7 @@ const save = useSubmit(
     })
     emit('saved', saved)
   },
-  { success: 'Template saved.' },
+  { success: () => t('communication.editor.saved') },
 )
 
 const token = (name: string) => `{{${name}}}`
@@ -76,19 +88,25 @@ function insert(name: string) {
     @submit.prevent="save.run()"
   >
     <div class="flex flex-col gap-4">
-      <label class="inline-flex min-h-10 items-center gap-2 text-sm">
+      <label v-if="!isAccountEmail" class="inline-flex min-h-10 items-center gap-2 text-sm">
         <input v-model="enabled" type="checkbox" class="size-5 accent-foreground" name="enabled" />
-        Send this email
+        {{ t('communication.editor.enabled') }}
       </label>
-      <FormField v-slot="{ id }" label="Subject" name="subject" :errors="save.fieldErrors.value">
+      <p v-else class="text-sm text-muted-foreground">{{ t('communication.editor.alwaysSent') }}</p>
+      <FormField
+        v-slot="{ id }"
+        :label="t('communication.subject')"
+        name="subject"
+        :errors="save.fieldErrors.value"
+      >
         <Input :id="id" v-model="subject" name="subject" required maxlength="300" />
       </FormField>
       <FormField
         v-slot="{ id }"
-        label="Body (HTML)"
+        :label="t('communication.editor.body')"
         name="body"
         :errors="save.fieldErrors.value"
-        description="Values are inserted where a variable is written as {{name}}."
+        :description="t('communication.editor.bodyHint', { example: '{{name}}' })"
       >
         <Textarea
           :id="id"
@@ -100,7 +118,7 @@ function insert(name: string) {
           class="font-mono text-xs"
         />
       </FormField>
-      <div class="flex flex-wrap gap-1" aria-label="Variables">
+      <div class="flex flex-wrap gap-1" :aria-label="t('communication.editor.variables')">
         <Button
           v-for="v in variables"
           :key="v"
@@ -114,25 +132,27 @@ function insert(name: string) {
       </div>
       <Alert v-if="unknown.length" variant="destructive" data-testid="unknown-variables">
         <AlertDescription>
-          Unknown variable{{ unknown.length > 1 ? 's' : '' }}: {{ unknown.join(', ') }}
+          {{ t('communication.editor.unknown', unknown.length, { variables: unknown.join(', ') }) }}
         </AlertDescription>
       </Alert>
       <ErrorAlert :error="save.error.value" />
       <div class="flex gap-2">
         <Button type="submit" :disabled="!dirty || save.pending.value || unknown.length > 0">
-          <SaveIcon /> Save
+          <SaveIcon /> {{ t('common.save') }}
         </Button>
-        <Button type="button" variant="outline" :disabled="!dirty" @click="reset">Discard</Button>
+        <Button type="button" variant="outline" :disabled="!dirty" @click="reset">{{
+          t('communication.editor.discard')
+        }}</Button>
       </div>
     </div>
     <div class="flex flex-col gap-2">
-      <p class="text-sm font-medium">Preview with example values</p>
+      <p class="text-sm font-medium">{{ t('communication.editor.preview') }}</p>
       <p class="rounded-md border px-3 py-2 text-sm" data-testid="preview-subject">
         {{ previewSubject }}
       </p>
       <!-- Sandboxed: template HTML never runs scripts in the app. -->
       <iframe
-        title="Email preview"
+        :title="t('communication.editor.previewTitle')"
         sandbox=""
         class="min-h-96 w-full flex-1 rounded-md border bg-white"
         :srcdoc="preview"

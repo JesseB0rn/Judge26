@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
@@ -152,16 +153,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       class="-mt-4 inline-flex min-h-11 items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
       data-testid="back-link"
     >
-      <ArrowLeftIcon class="size-4" /> My games
+      <ArrowLeftIcon class="size-4" /> {{ t('judging.myGames') }}
     </RouterLink>
 
     <ErrorAlert :error="error" />
     <Alert v-if="offline" class="border-amber-300 bg-amber-50 text-amber-950">
       <CloudOffIcon />
-      <AlertDescription
-        >No connection. Showing the teams saved on this device; documents need a
-        connection.</AlertDescription
-      >
+      <AlertDescription>{{ t('judging.check.offline') }}</AlertDescription>
     </Alert>
     <Skeleton v-if="loading && !block" class="h-40 w-full" />
 
@@ -170,13 +168,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       class="rounded-xl border border-dashed p-8 text-center text-muted-foreground"
       data-testid="no-check"
     >
-      This round has no robot check at your table.
+      {{ t('judging.check.none') }}
     </p>
 
     <template v-if="block">
       <header>
         <p class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          Robot check
+          {{ t('judging.check.title') }}
         </p>
         <h1 class="text-2xl font-semibold tracking-tight">
           {{ block.round.name }} · {{ block.category.code }}
@@ -193,20 +191,22 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       >
         <CheckIcon />
         <AlertDescription class="flex flex-wrap items-center gap-x-3">
-          <template v-if="scoringStarted"
-            >Scoring of this round has started; the check is over.</template
-          >
+          <template v-if="scoringStarted">{{ t('judging.check.over') }}</template>
           <template v-else>
-            You finished this robot check.
+            {{ t('judging.check.finished') }}
             <button type="button" class="font-medium underline" @click="reopen">
-              Mark as not done
+              {{ t('judging.check.reopen') }}
             </button>
           </template>
         </AlertDescription>
       </Alert>
 
       <!-- All teams of the check; the current one is highlighted. -->
-      <ol class="flex gap-2 overflow-x-auto pb-1" aria-label="Teams" data-testid="check-teams">
+      <ol
+        class="flex gap-2 overflow-x-auto pb-1"
+        :aria-label="t('events.tabs.teams')"
+        data-testid="check-teams"
+      >
         <li v-for="(team, i) in teams" :key="team.id" class="shrink-0">
           <button
             type="button"
@@ -241,9 +241,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
           <span class="min-w-0 flex-1">
             <span class="block truncate text-2xl font-bold">{{ current.name }}</span>
-            <span class="block text-sm text-muted-foreground"
-              >Team {{ index + 1 }} of {{ teams.length }}</span
-            >
+            <span class="block text-sm text-muted-foreground">{{
+              t('judging.check.teamOf', { n: index + 1, total: teams.length })
+            }}</span>
           </span>
           <Button as-child variant="outline" size="touch">
             <RouterLink
@@ -252,7 +252,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                 params: { id: current.game },
                 query: { from: route.fullPath },
               }"
-              ><PlayIcon /> Score</RouterLink
+              ><PlayIcon /> {{ t('judging.dashboard.score') }}</RouterLink
             >
           </Button>
         </div>
@@ -263,7 +263,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           class="rounded-lg border border-dashed p-4 text-center text-muted-foreground"
           data-testid="no-documents"
         >
-          No documents for this team.
+          {{ t('judging.check.noDocuments') }}
         </p>
 
         <article
@@ -284,12 +284,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                 :href="documentUrl(doc, token)"
                 target="_blank"
                 rel="noopener"
-                :aria-label="`Open ${doc.title}`"
+                :aria-label="t('common.openItem', { item: doc.title })"
                 ><ExternalLinkIcon
               /></a>
             </Button>
             <Button as-child size="icon-touch" variant="ghost">
-              <a :href="documentUrl(doc, token, true)" :aria-label="`Download ${doc.title}`"
+              <a
+                :href="documentUrl(doc, token, true)"
+                :aria-label="t('common.downloadItem', { item: doc.title })"
                 ><DownloadIcon
               /></a>
             </Button>
@@ -314,7 +316,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
       <!-- Step navigation stays in reach on tablets. -->
       <nav
         class="fixed inset-x-0 bottom-0 z-10 border-t bg-background/95 p-3 backdrop-blur"
-        aria-label="Robot check steps"
+        :aria-label="t('judging.check.steps')"
       >
         <div class="mx-auto flex max-w-4xl items-center gap-3">
           <Button
@@ -324,7 +326,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             data-testid="check-prev"
             @click="go(index - 1)"
           >
-            <ChevronLeftIcon /> Previous
+            <ChevronLeftIcon /> {{ t('judging.check.previous') }}
           </Button>
           <span class="flex-1 text-center text-sm text-muted-foreground tabular-nums"
             >{{ index + 1 }} / {{ teams.length }}</span
@@ -335,13 +337,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             data-testid="check-next"
             @click="go(index + 1)"
           >
-            Next team <ChevronRightIcon />
+            {{ t('judging.check.next') }} <ChevronRightIcon />
           </Button>
           <Button v-else-if="!done" size="touch" data-testid="check-finish" @click="finish">
-            <CheckIcon /> Finish robot check
+            <CheckIcon /> {{ t('judging.check.finish') }}
           </Button>
           <Button v-else as-child variant="outline" size="touch">
-            <RouterLink :to="back">My games <ChevronRightIcon /></RouterLink>
+            <RouterLink :to="back">{{ t('judging.myGames') }} <ChevronRightIcon /></RouterLink>
           </Button>
         </div>
       </nav>
