@@ -59,10 +59,12 @@ async function waitForHealthy(url: string, proc: ChildProcess, output: () => str
  * Starts an isolated PocketBase instance for integration tests. Pass an existing
  * `dataDir` to restart against previously persisted data.
  */
-export async function startPocketBase(options: { dataDir?: string } = {}): Promise<TestServer> {
+export async function startPocketBase(
+  options: { dataDir?: string; env?: Record<string, string>; publicDir?: string } = {},
+): Promise<TestServer> {
   const dataDir = options.dataDir ?? mkdtempSync(join(tmpdir(), 'judge26-pb-'))
   const common = [`--dir=${dataDir}`, `--migrationsDir=${migrationsDir}`, `--hooksDir=${hooksDir}`]
-  const env = { ...process.env, PB_ENV: 'test', APP_URL: TEST_APP_URL }
+  const env = { ...process.env, PB_ENV: 'test', APP_URL: TEST_APP_URL, ...options.env }
 
   execFileSync(
     binaryPath,
@@ -78,7 +80,13 @@ export async function startPocketBase(options: { dataDir?: string } = {}): Promi
   // --hooksWatch=false: otherwise editing a hook restarts the server mid-test.
   const proc = spawn(
     binaryPath,
-    ['serve', `--http=127.0.0.1:${port}`, '--hooksWatch=false', ...common],
+    [
+      'serve',
+      `--http=127.0.0.1:${port}`,
+      '--hooksWatch=false',
+      ...(options.publicDir ? [`--publicDir=${options.publicDir}`] : []),
+      ...common,
+    ],
     { env },
   )
   let output = ''

@@ -197,3 +197,44 @@ export interface RankingSnapshotRecord extends BaseRecord {
   fingerprint: string
   created_by: string
 }
+
+/** Configurable email of a notification (M7-02). Keys are fixed by the server. */
+export interface MailTemplateRecord extends BaseRecord {
+  key: string
+  name: string
+  enabled: boolean
+  subject: string
+  body: string
+}
+
+export type MailStatus = 'pending' | 'sent' | 'failed'
+
+/** A queued notification and its delivery state (M7-01). Read-only. */
+export interface MailOutboxRecord extends BaseRecord {
+  template: string
+  to: string
+  subject: string
+  html: string
+  status: MailStatus
+  attempts: number
+  next_attempt_at: string
+  last_error: string
+  sent_at: string
+  immediate: boolean
+  event: string
+  team: string
+  expand?: { team?: TeamRecord }
+}
+
+/** An administrative action (M7-08). Written by the server only. */
+export interface AuditLogRecord extends BaseRecord {
+  actor: string
+  actor_label: string
+  action: string
+  collection: string
+  record: string
+  event: string
+  summary: string
+  changes: Record<string, unknown> | null
+  ip: string
+}

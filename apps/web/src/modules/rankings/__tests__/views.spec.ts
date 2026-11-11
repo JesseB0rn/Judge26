@@ -27,6 +27,10 @@ vi.mock('@/modules/live/useLiveUpdates', () => ({
 }))
 vi.mock('../api')
 vi.mock('@/modules/scoring/api')
+vi.mock('@/shared/export/download', async (original) => ({
+  ...(await original<typeof import('@/shared/export/download')>()),
+  downloadTables: vi.fn<typeof import('@/shared/export/download').downloadTables>(),
+}))
 const mocked = vi.mocked(api)
 
 const manager = { roles: [makeRole('event_manager', 'event1')] }
@@ -123,6 +127,21 @@ describe('RankingView', () => {
     ])
     expect(wrapper.get('[data-team=Alpha]').text()).toContain('10')
     expect(wrapper.get('[data-testid=provisional]').text()).toContain('1 of 3 games')
+  })
+
+  it('M7-05 / M7-06 / M7-07: exports the shown ranking and links the printable report', async () => {
+    const { downloadTables } = await import('@/shared/export/download')
+    const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: judge })
+    await click(buttonByText('Excel'))
+    const [title, format, tables] = vi.mocked(downloadTables).mock.calls[0]!
+    expect(title).toBe('ranking RoboMission Junior')
+    expect(format).toBe('xlsx')
+    expect(tables.map((t) => t.name)).toEqual(['Ranking', 'Results'])
+    expect(tables[0]!.rows.map((r) => [r[0], r[2]])).toEqual([
+      [1, 'Bravo'],
+      [2, 'Alpha'],
+    ])
+    expect(wrapper.get('a[href*="report"]').text()).toContain('PDF')
   })
 
   it('staff without management rights cannot edit', async () => {
@@ -280,7 +299,13 @@ describe('RankingView', () => {
     await click(buttonByText('Save result', dialog()))
     expect(mocked.saveGame).toHaveBeenCalledWith(
       expect.stringMatching(/^game-/),
-      expect.objectContaining({ points: 105, time_ms: 120_000, attempt: 1 }),
+      // M7-T10: edits state the version they are based on.
+      expect.objectContaining({
+        points: 105,
+        time_ms: 120_000,
+        attempt: 1,
+        expected_updated: '2026-01-01 00:00:00.000Z',
+      }),
     )
 
     await click(

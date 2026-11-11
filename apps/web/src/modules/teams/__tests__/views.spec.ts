@@ -40,6 +40,10 @@ vi.mock('@/shared/composables/useFileToken', async () => {
   const { ref } = await import('vue')
   return { useFileToken: () => ({ token: ref('tok'), refresh: async () => 'tok' }) }
 })
+vi.mock('@/shared/export/download', async (original) => ({
+  ...(await original<typeof import('@/shared/export/download')>()),
+  downloadTables: vi.fn<typeof import('@/shared/export/download').downloadTables>(),
+}))
 const mocked = vi.mocked(api)
 
 const manager = { roles: [makeRole('event_manager', 'event1')] }
@@ -201,6 +205,29 @@ describe('team views', () => {
       expect(wrapper.findAll('[data-team]').map((r) => r.attributes('data-team'))).toEqual([
         'Bot Builders',
       ])
+    })
+
+    it('M7-05: staff export the filtered teams with their members', async () => {
+      const { downloadTables } = await import('@/shared/export/download')
+      const { wrapper } = await mountView(EventTeamsTab, {
+        props: { event: makeEvent(), staff: true, canManage: true },
+        session: manager,
+      })
+      await wrapper.get('select[aria-label="Filter by status"]').setValue('approved')
+      await click(buttonByText('CSV'))
+      const [, format, tables] = vi.mocked(downloadTables).mock.calls[0]!
+      expect(format).toBe('csv')
+      expect(tables.map((t) => t.name)).toEqual(['Teams', 'Members'])
+      expect(tables[0]!.rows.map((r) => r[0])).toEqual(
+        wrapper.findAll('[data-team]').map((r) => r.attributes('data-team')),
+      )
+      document.body.replaceChildren()
+
+      // Coaches (not staff) see only their own teams and get no export.
+      await mountView(EventTeamsTab, {
+        props: { event: makeEvent(), staff: false, canManage: false },
+      })
+      expect(() => buttonByText('CSV')).toThrow('No button')
     })
 
     it('M1-13: shows how many documents each team has', async () => {

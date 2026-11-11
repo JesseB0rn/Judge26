@@ -49,6 +49,8 @@ pnpm --filter @judge26/backend superuser upsert admin@example.com <password>
 | `pnpm test:integration` | Backend integration tests against a real PocketBase        |
 | `pnpm test:e2e`         | End-to-end tests (Playwright; builds and starts both apps) |
 | `pnpm test:all`         | All of the above test layers                               |
+| `pnpm test:docker`      | Build the production image and smoke-test it (Docker)      |
+| `pnpm smoke <url>`      | Smoke-test a running deployment                            |
 
 Before the first E2E run, install the browser: `pnpm --filter @judge26/e2e install-browsers`.
 
@@ -74,21 +76,36 @@ docs/         Architecture, API notes, specifications and test plans
   [M3 rounds and ranking](docs/specifications/M3-rounds-and-ranking.md),
   [M4 tables and scheduling](docs/specifications/M4-tables-and-scheduling.md),
   [M5 judging](docs/specifications/M5-judging.md),
-  [M6 live competition](docs/specifications/M6-live.md)
+  [M6 live competition](docs/specifications/M6-live.md),
+  [M7 communication](docs/specifications/M7-communication.md),
+  [M7 exports](docs/specifications/M7-exports.md),
+  [M7 audit, backups and security](docs/specifications/M7-audit-backup-security.md),
+  [M7 deployment](docs/specifications/M7-deployment.md)
 - Test plans: [M0 foundation](docs/test-plans/M0-foundation.md),
   [M1 identity and events](docs/test-plans/M1-identity-events.md),
   [M2 scoring engine](docs/test-plans/M2-scoring-engine.md),
   [M3 rounds and ranking](docs/test-plans/M3-rounds-and-ranking.md),
   [M4 tables and scheduling](docs/test-plans/M4-tables-and-scheduling.md),
   [M5 judging](docs/test-plans/M5-judging.md),
-  [M6 live competition](docs/test-plans/M6-live.md)
+  [M6 live competition](docs/test-plans/M6-live.md),
+  [M7 communication](docs/test-plans/M7-communication.md),
+  [M7 exports](docs/test-plans/M7-exports.md),
+  [M7 audit, backups and security](docs/test-plans/M7-audit-backup-security.md),
+  [M7 deployment](docs/test-plans/M7-deployment.md)
+- Operations: [deployment](docs/operations/deployment.md),
+  [backup and restore](docs/operations/backup-and-restore.md)
 - [Architecture decision records](docs/architecture/decisions/)
 
 ## Production
 
 ```sh
-docker compose up --build
+cp .env.example .env    # configure
+docker compose up -d --build                                            # HTTP on :8090
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d  # with HTTPS (Caddy)
+pnpm smoke http://localhost:8090                                        # verify
 ```
 
-Builds a single image in which PocketBase serves both the API and the built SPA on port 8090,
-with data persisted in the `pb_data` volume. See the [architecture overview](docs/architecture/overview.md#deployment).
+A single image in which PocketBase serves the API and the built SPA, with data in the `pb_data`
+volume. Tagged releases are published to `ghcr.io/jesseb0rn/judge26`. See the
+[deployment runbook](docs/operations/deployment.md) and the
+[backup and restore runbook](docs/operations/backup-and-restore.md).

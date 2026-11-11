@@ -57,3 +57,5 @@ apps/backend/hooks/lib/scoring-engine.js
 apps/backend/hooks/lib/ranking-engine.js
 apps/backend/hooks/lib/scheduling-engine.js
 /graphify-out
+# Deployment secrets (see .env.example)
+.env

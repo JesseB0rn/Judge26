@@ -1,0 +1,31 @@
+# HTTPS in front of the app (M7-14): Caddy obtains and renews certificates automatically.
+#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+# Requires DOMAIN in .env, DNS pointing at this host and ports 80/443 reachable.
+services:
+  app:
+    # Only Caddy talks to the app.
+    ports: !reset []
+    expose:
+      - '8090'
+
+  caddy:
+    image: caddy:2.11.9-alpine@sha256:78bd35025c7ba85961dd149ae670315129954e77abe2383ac47c89106b35ade9
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

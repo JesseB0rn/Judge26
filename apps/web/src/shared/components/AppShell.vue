@@ -44,6 +44,8 @@ const admin = computed(() =>
     ? [
         { to: '/admin/categories', label: 'Categories' },
         { to: '/admin/users', label: 'Users' },
+        { to: '/admin/emails', label: 'Emails' },
+        { to: '/admin/audit', label: 'Audit log' },
       ]
     : [],
 )

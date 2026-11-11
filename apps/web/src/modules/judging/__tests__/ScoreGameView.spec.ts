@@ -383,6 +383,7 @@ describe('ScoreGameView', () => {
       'game1',
       expect.objectContaining({ values: { ...COMPLETE, blocks: 5 } }),
       'Video review: five blocks',
+      expect.any(Number),
     )
   })
 

@@ -23,6 +23,7 @@
     "@vueuse/core": "^15.0.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
+    "fflate": "0.8.2",
     "papaparse": "^5.7.0",
     "pinia": "^4.0.3",
     "pocketbase": "^0.28.2",

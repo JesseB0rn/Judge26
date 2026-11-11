@@ -63,8 +63,22 @@ routerAdd(
         return e.json(200, judging.approve(e.app, e.auth, id))
       case 'reject':
         return e.json(200, judging.reject(e.app, e.auth, id, body))
-      case 'correct':
-        return e.json(200, judging.correct(e.app, e.auth, id, body))
+      case 'correct': {
+        const result = judging.correct(e.app, e.auth, id, body)
+        const audit = require(`${__hooks}/lib/audit.js`)
+        const game = e.app.findRecordById('games', id)
+        audit.log(e.app, {
+          auth: e.auth,
+          action: 'score.correct',
+          collection: 'games',
+          record: id,
+          event: audit.eventOf(e.app, 'games', game),
+          summary: `Corrected a finalized score: ${body.reason || ''}`,
+          changes: { points: game.getFloat('points'), time_ms: game.getInt('time_ms') },
+          ip: audit.requestIp(e),
+        })
+        return e.json(200, result)
+      }
       default:
         throw new NotFoundError('Unknown action.')
     }

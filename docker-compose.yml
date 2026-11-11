@@ -1,15 +1,30 @@
-# Production-like deployment: a single container serving API + SPA.
-#   docker compose up --build
-# Then create the first superuser:
-#   docker compose exec app /pb/pocketbase superuser upsert admin@example.com <password> --dir=/pb/pb_data
+# Production deployment (M7-14): one container serving API + SPA, data in the pb_data volume.
+# See docs/operations/deployment.md.
+#
+#   cp .env.example .env    # then edit it
+#   docker compose up -d --build
+#
+# With HTTPS (Caddy, automatic certificates): add -f docker-compose.caddy.yml.
+name: judge26
+
 services:
   app:
-    build: .
+    image: ${JUDGE26_IMAGE:-judge26:local}
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
     ports:
-      - '8090:8090'
+      - '${JUDGE26_PORT:-8090}:8090'
     environment:
-      # Public URL of the app, used in verification and password-reset emails.
+      # Public URL of the app, used in email links.
       APP_URL: ${APP_URL:-http://localhost:8090}
+      # First superuser (dashboard /_/): created, or its password reset, on every start.
+      PB_SUPERUSER_EMAIL: ${PB_SUPERUSER_EMAIL:-}
+      PB_SUPERUSER_PASSWORD: ${PB_SUPERUSER_PASSWORD:-}
+      # Encrypts SMTP/S3 secrets stored in the settings (32 characters). Never change it later.
+      PB_ENCRYPTION_KEY: ${PB_ENCRYPTION_KEY:-}
       MAIL_SENDER_ADDRESS: ${MAIL_SENDER_ADDRESS:-}
       MAIL_SENDER_NAME: ${MAIL_SENDER_NAME:-Judge26}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -17,9 +32,20 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_TLS: ${SMTP_TLS:-false}
+      # Automatic backups (docs/operations/backup-and-restore.md); "off" disables them.
+      BACKUP_CRON: '${BACKUP_CRON:-30 3 * * *}'
+      BACKUP_MAX_KEEP: ${BACKUP_MAX_KEEP:-14}
+      TZ: ${TZ:-Europe/Zurich}
     volumes:
       - pb_data:/pb/pb_data
     restart: unless-stopped
+    # Let PocketBase finish running requests and close the database cleanly.
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '5'
 
 volumes:
   pb_data:

@@ -496,6 +496,18 @@ function correct(app, auth, gameId, body) {
     if (!sheet || sheet.getString('status') !== 'finalized') {
       conflict('Only finalized scores can be corrected.', sheet ? sheet.getString('status') : '')
     }
+    // M7-T10: a correction based on an outdated score never overwrites a newer correction.
+    const expected = body && body.expected_corrections
+    if (
+      expected !== undefined &&
+      expected !== null &&
+      Number(expected) !== sheet.getInt('corrections')
+    ) {
+      conflict(
+        'The score was corrected by someone else in the meantime. Reload it and check again.',
+        'finalized',
+      )
+    }
     const ruleset = rulesetFor(tx, ctx, sheet)
     const game = tx.findRecordById('games', gameId)
     const before = snapshot(game)

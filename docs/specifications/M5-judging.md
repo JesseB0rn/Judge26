@@ -122,16 +122,16 @@ in milliseconds.
 
 ## API
 
-| Method | Path                            | Who                    | Body / result                                                         |
-| ------ | ------------------------------- | ---------------------- | --------------------------------------------------------------------- |
-| GET    | `/api/judging/assignments`      | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹ |
-| GET    | `/api/events/{id}/judging`      | reviewers              | All games of the event with their score status                        |
-| GET    | `/api/games/{id}/sheet`         | table judge, reviewers | Context, ruleset, sheet, history, permissions                         |
-| PUT    | `/api/games/{id}/sheet`         | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at }` → draft      |
-| POST   | `/api/games/{id}/sheet/submit`  | table judge, reviewers | Same body → `submitted`                                               |
-| POST   | `/api/games/{id}/sheet/approve` | reviewers              | → `finalized`, game updated                                           |
-| POST   | `/api/games/{id}/sheet/reject`  | reviewers              | `{ reason }` → `rejected`                                             |
-| POST   | `/api/games/{id}/sheet/correct` | reviewers              | `{ reason, outcome, values, time_ms, points? }` on a finalized score  |
+| Method | Path                            | Who                    | Body / result                                                                                                                                       |
+| ------ | ------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/judging/assignments`      | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹                                                                               |
+| GET    | `/api/events/{id}/judging`      | reviewers              | All games of the event with their score status                                                                                                      |
+| GET    | `/api/games/{id}/sheet`         | table judge, reviewers | Context, ruleset, sheet, history, permissions                                                                                                       |
+| PUT    | `/api/games/{id}/sheet`         | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at }` → draft                                                                                    |
+| POST   | `/api/games/{id}/sheet/submit`  | table judge, reviewers | Same body → `submitted`                                                                                                                             |
+| POST   | `/api/games/{id}/sheet/approve` | reviewers              | → `finalized`, game updated                                                                                                                         |
+| POST   | `/api/games/{id}/sheet/reject`  | reviewers              | `{ reason }` → `rejected`                                                                                                                           |
+| POST   | `/api/games/{id}/sheet/correct` | reviewers              | `{ reason, outcome, values, time_ms, points?, expected_corrections? }` on a finalized score; an outdated `expected_corrections` gets `409` (M7-T10) |
 
 ¹ Each row has `check`: `null` if the round has no robot check, otherwise
 `{ day: { id, date, label } | null, starts_at, duration_minutes }` (`day` null and `starts_at`

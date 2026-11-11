@@ -50,6 +50,18 @@ routerAdd(
     }
     const dryRun = !!e.requestInfo().body.dry_run
     const result = schedule.generate(e.app, eventId, dryRun)
+    if (!dryRun && result.status === 'complete') {
+      const audit = require(`${__hooks}/lib/audit.js`)
+      audit.log(e.app, {
+        auth: e.auth,
+        action: 'schedule.generate',
+        collection: 'events',
+        record: eventId,
+        event: eventId,
+        summary: 'Generated the schedule',
+        ip: audit.requestIp(e),
+      })
+    }
     if (result.status === 'complete') return e.json(200, { ...result, dry_run: dryRun })
     return e.json(409, result)
   },

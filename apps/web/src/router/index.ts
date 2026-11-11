@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authRoutes } from '@/modules/auth/routes'
 import { administrationRoutes } from '@/modules/administration/routes'
+import { communicationRoutes } from '@/modules/communication/routes'
 import { categoryRoutes } from '@/modules/categories/routes'
 import { eventRoutes } from '@/modules/events/routes'
 import { scoringRoutes } from '@/modules/scoring/routes'
@@ -22,6 +23,7 @@ export const routes = [
   ...liveRoutes,
   ...teamRoutes,
   ...administrationRoutes,
+  ...communicationRoutes,
   // Contains the catch-all route and must stay last.
   ...systemRoutes,
 ]
