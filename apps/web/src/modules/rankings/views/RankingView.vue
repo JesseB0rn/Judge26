@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { PrinterIcon } from '@lucide/vue'
 import {
   rank,
   defaultRankingConfig,
   EXAMPLE_RANKING_CONFIG,
+  type Ranking,
   type RankingConfig,
+  type TeamInput,
 } from '@judge26/ranking-engine'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -18,6 +21,7 @@ import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import { getCategory, listGameRules, listRulesets } from '@/modules/scoring/api'
 import { activeVersionForRound } from '@/modules/scoring/lib'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import ExportButtons from '@/shared/export/ExportButtons.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
@@ -44,6 +48,7 @@ import {
   saveRankingConfig,
 } from '../api'
 import { parseRankingConfig, toTeamInputs } from '../lib'
+import { rankingTable, resultsTable } from '../export'
 import GameDialog from '../components/GameDialog.vue'
 import RankingBuilder from '../components/RankingBuilder.vue'
 import RankingConfigEditor from '../components/RankingConfigEditor.vue'
@@ -91,11 +96,28 @@ const savedText = computed(() =>
 )
 const parsed = computed(() => parseRankingConfig(text.value))
 const dirty = computed(() => text.value !== savedText.value)
+const inputs = computed(() => toTeamInputs(teams.value, games.value, rounds.value))
 const ranking = computed(() =>
-  parsed.value.config
-    ? rank(parsed.value.config, toTeamInputs(teams.value, games.value, rounds.value))
-    : undefined,
+  parsed.value.config ? rank(parsed.value.config, inputs.value) : undefined,
 )
+
+// Exports (M7-05, M7-06): the ranking as shown, and the results it was computed from.
+function exportTables(data: { ranking: Ranking; config: RankingConfig; inputs: TeamInput[] }) {
+  const context = { ...data, teams: teams.value, rounds: rounds.value }
+  return [rankingTable(context), resultsTable(context)]
+}
+const liveExport = () =>
+  exportTables({
+    ranking: ranking.value!,
+    config: parsed.value.definition as RankingConfig,
+    inputs: inputs.value,
+  })
+const snapshotExport = () =>
+  exportTables({
+    ranking: shownSnapshot.value!.result,
+    config: shownSnapshot.value!.config as RankingConfig,
+    inputs: (shownSnapshot.value!.inputs as TeamInput[]) ?? [],
+  })
 const unknownRounds = computed(() => {
   const config = parsed.value.config
   if (!config) return []
@@ -276,6 +298,18 @@ onMounted(load)
             <span v-else-if="category.public_live" class="text-sm text-muted-foreground"
               >Live ranking is public</span
             >
+            <div class="ml-auto flex flex-wrap gap-1">
+              <ExportButtons
+                :title="`ranking ${category.name}`"
+                :tables="liveExport"
+                :disabled="dirty"
+              />
+              <Button v-if="!dirty" as-child variant="outline" size="sm">
+                <RouterLink :to="{ name: 'category-ranking-report', params: { id: category.id } }"
+                  ><PrinterIcon /> PDF</RouterLink
+                >
+              </Button>
+            </div>
           </div>
           <Alert v-if="dirty">
             <AlertDescription>Preview with unsaved configuration changes.</AlertDescription>
@@ -395,6 +429,22 @@ onMounted(load)
             </NativeSelectOption>
           </NativeSelect>
           <template v-if="shownSnapshot">
+            <div class="flex flex-wrap gap-1">
+              <ExportButtons
+                :title="`${category.name} ${shownSnapshot.title}`"
+                :tables="snapshotExport"
+              />
+              <Button as-child variant="outline" size="sm">
+                <RouterLink
+                  :to="{
+                    name: 'category-ranking-report',
+                    params: { id: category.id },
+                    query: { snapshot: shownSnapshot.id },
+                  }"
+                  ><PrinterIcon /> PDF</RouterLink
+                >
+              </Button>
+            </div>
             <p class="font-mono text-xs text-muted-foreground" data-testid="snapshot-fingerprint">
               Fingerprint {{ shownSnapshot.fingerprint }} · configuration
               {{ shownSnapshot.config_fingerprint }}

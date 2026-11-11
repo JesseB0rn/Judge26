@@ -191,9 +191,9 @@ export async function getScoreSheet(gameId: string) {
 }
 
 /** Records a final result directly (as a manager would in the M3 result form). */
-export async function recordResult(gameId: string, points: number) {
+export async function recordResult(gameId: string, points: number, timeMs = 0) {
   const pb = await superuser()
-  return pb.collection('games').update(gameId, { status: 'completed', points })
+  return pb.collection('games').update(gameId, { status: 'completed', points, time_ms: timeMs })
 }
 
 /** Sets the category's public results (M6-10). */

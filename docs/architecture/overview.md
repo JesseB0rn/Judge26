@@ -71,6 +71,12 @@ event's `live_revisions` record, which hooks increase after every committed chan
 through the public endpoints. A light poll of the same record covers missed messages. See
 [ADR 0007](decisions/0007-live-results-and-publication.md).
 
+## Exports
+
+CSV and Excel files and the printable ranking report are generated in the browser from the data a
+page shows (`src/shared/export/`), so they respect the API rules and match the screen. See
+[M7 exports](../specifications/M7-exports.md).
+
 ## Email
 
 Notifications are queued in an outbox in the same transaction as the change that caused them and

@@ -83,6 +83,7 @@ export async function mountView<C extends Component>(
     'events',
     'category-scoring',
     'category-ranking',
+    'category-ranking-report',
     'category-library',
     'judging',
     'judging-game',

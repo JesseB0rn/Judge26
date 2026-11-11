@@ -16,11 +16,13 @@ import {
 } from '@/components/ui/table'
 import { listEventCategories } from '@/modules/categories/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import ExportButtons from '@/shared/export/ExportButtons.vue'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
 import type { EventRecord, TeamRecord, TeamStatus } from '@/shared/types/records'
 import { listEventTeams, updateTeam } from '../api'
 import { listEventTeamDocuments } from '../documents'
 import { TEAM_STATUS_LABELS } from '../lib'
+import { membersTable, teamsTable } from '../export'
 import RejectDialog from './RejectDialog.vue'
 import TeamImportDialog from './TeamImportDialog.vue'
 import TeamStatusBadge from './TeamStatusBadge.vue'
@@ -54,6 +56,12 @@ const filtered = computed(() =>
       (!categoryFilter.value || t.category === categoryFilter.value),
   ),
 )
+
+// Export (M7-05, M7-06): the teams as filtered, with their members on a second sheet.
+const exportTables = () => [
+  teamsTable(filtered.value, categories.data.value ?? []),
+  membersTable(filtered.value, categories.data.value ?? [], props.event.season),
+]
 
 const approve = useSubmit(
   async (team: TeamRecord) => {
@@ -95,7 +103,14 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
           {{ c.code }}
         </NativeSelectOption>
       </NativeSelect>
-      <Button v-if="canManage" variant="outline" class="ml-auto" @click="importOpen = true">
+      <ExportButtons
+        v-if="staff"
+        class="ml-auto"
+        :title="`teams ${event.name}`"
+        :tables="exportTables"
+        :disabled="!filtered.length"
+      />
+      <Button v-if="canManage" variant="outline" @click="importOpen = true">
         <UploadIcon /> Import CSV
       </Button>
     </div>
