@@ -6,9 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { config } from '@/shared/config/env'
-import { fetchAppInfo, type AppInfo } from '../api'
+import { fetchAppInfo, fetchHealth, type AppInfo, type HealthStatus } from '../api'
 
 const info = ref<AppInfo | null>(null)
+const health = ref<HealthStatus | null>(null)
+const HEALTH: Record<HealthStatus, string> = {
+  ok: 'all checks OK',
+  degraded: 'needs attention',
+  down: 'down',
+}
 const error = ref<AppError | null>(null)
 const loading = ref(false)
 
@@ -17,8 +23,11 @@ async function load() {
   error.value = null
   try {
     info.value = await fetchAppInfo()
+    // Extra information: without it the server still shows as online.
+    health.value = await fetchHealth().catch(() => null)
   } catch (e) {
     info.value = null
+    health.value = null
     error.value = toAppError(e)
   } finally {
     loading.value = false
@@ -51,6 +60,15 @@ onMounted(load)
             }}<template v-if="info.commit && info.commit !== 'unknown'">
               ({{ info.commit.slice(0, 7) }})</template
             ></span
+          >
+        </template>
+        <template v-if="health">
+          · Health
+          <span
+            class="font-medium"
+            :class="health === 'ok' ? 'text-foreground' : 'text-destructive'"
+            data-testid="backend-health"
+            >{{ HEALTH[health] }}</span
           >
         </template>
       </p>

@@ -108,6 +108,10 @@ Automatic daily backups run in production; see the
 [backup and restore runbook](../operations/backup-and-restore.md). Administrative changes are
 recorded in an audit log ([M7 spec](../specifications/M7-audit-backup-security.md)).
 
+Health checks (database, errors, email delivery, backups), browser error reports and alert emails
+are in `hooks/monitoring.pb.js`; the public `/api/app/health` is the container health check and the
+target for uptime monitors ([M7 monitoring](../specifications/M7-monitoring.md)).
+
 ## Decisions
 
 See [decisions/](decisions/) for architecture decision records.

@@ -46,6 +46,7 @@ const admin = computed(() =>
         { to: '/admin/users', label: 'Users' },
         { to: '/admin/emails', label: 'Emails' },
         { to: '/admin/audit', label: 'Audit log' },
+        { to: '/admin/monitoring', label: 'System health' },
       ]
     : [],
 )

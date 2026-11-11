@@ -59,6 +59,13 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'GET', path: '/api/dev/mails', access: 'dev' },
   { method: 'POST', path: '/api/dev/mail-failures', access: 'dev' },
   { method: 'POST', path: '/api/dev/mail-outbox/process', access: 'dev' },
+  // Monitoring (M7-13): the health status is public, details are for admins.
+  { method: 'GET', path: '/api/app/health', access: 'public' },
+  { method: 'POST', path: '/api/app/client-errors', access: 'public' },
+  { method: 'GET', path: '/api/app/monitoring', access: 'auth' },
+  { method: 'POST', path: '/api/dev/monitoring/run', access: 'dev' },
+  { method: 'POST', path: '/api/dev/monitoring/error', access: 'dev' },
+  { method: 'GET', path: '/api/dev/monitoring/crash', access: 'dev' },
   { method: 'POST', path: '/api/categories/{id}/copy', access: 'auth' },
   { method: 'GET', path: '/api/judging/assignments', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/judging', access: 'auth' },

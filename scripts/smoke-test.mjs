@@ -38,6 +38,15 @@ await check('API is healthy', async () => {
   assert(res.status === 200, `status ${res.status}`)
 })
 
+// Degraded (e.g. no SMTP yet, no backup yet) is reported but does not fail the smoke test.
+await check('monitoring reports the server as up (M7-13)', async () => {
+  const res = await get('/api/app/health')
+  const body = await res.json()
+  assert(res.status === 200, `status ${res.status} (${body.status})`)
+  assert(['ok', 'degraded'].includes(body.status), `health ${body.status}`)
+  return body.status
+})
+
 let info
 await check('hooks are loaded and the production build runs', async () => {
   const res = await get('/api/app/info')
@@ -149,6 +158,16 @@ if (email && password) {
     const settings = await res.json()
     assert(settings.backups?.cron, 'no backup schedule')
     return settings.backups.cron
+  })
+  await check('monitoring checks run (M7-13)', async () => {
+    const res = await get('/api/app/monitoring', auth())
+    assert(res.status === 200, `status ${res.status}`)
+    const body = await res.json()
+    assert(body.checks?.length, 'no checks')
+    const failing = body.checks.filter((c) => c.status !== 'ok')
+    return failing.length
+      ? `${body.status}: ${failing.map((c) => `${c.label}: ${c.detail}`).join('; ')}`
+      : 'all checks ok'
   })
 }
 
