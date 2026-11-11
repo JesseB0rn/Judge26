@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { RefreshCwIcon } from '@lucide/vue'
@@ -8,7 +9,13 @@ import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { useLoader } from '@/shared/composables/useSubmit'
 import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { listEventScores } from '../api'
-import { filterAssignments, scoreState, tableOptions, type ScoreState } from '../lib'
+import {
+  filterAssignments,
+  SCORE_STATE_LABELS,
+  scoreState,
+  tableOptions,
+  type ScoreState,
+} from '../lib'
 import AssignmentList from './AssignmentList.vue'
 import FilterChips from '@/shared/components/FilterChips.vue'
 
@@ -28,13 +35,9 @@ const {
 if (!props.events.some((e) => e.id === eventId.value)) eventId.value = props.events[0]?.id ?? ''
 const { data, loading, error, load } = useLoader(() => listEventScores(eventId.value))
 
-const STATES: { value: ScoreState; label: string }[] = [
-  { value: 'submitted', label: 'Waiting for review' },
-  { value: 'returned', label: 'Returned' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'open', label: 'Not scored' },
-  { value: 'final', label: 'Final' },
-]
+const STATES: ScoreState[] = ['submitted', 'returned', 'draft', 'open', 'final']
+const stateLabel = (state: ScoreState) =>
+  state === 'submitted' ? t('judging.review.waiting') : SCORE_STATE_LABELS[state]
 
 const rows = computed(() => data.value ?? [])
 const tables = computed(() => tableOptions(rows.value))
@@ -44,7 +47,7 @@ const counts = computed(() => {
   return map
 })
 const stateOptions = computed(() =>
-  STATES.map((s) => ({ value: s.value, label: `${s.label} (${counts.value[s.value] ?? 0})` })),
+  STATES.map((s) => ({ value: s, label: `${stateLabel(s)} (${counts.value[s] ?? 0})` })),
 )
 const filtered = computed(() =>
   filterAssignments(rows.value, { day: '', table: table.value }).filter(
@@ -65,18 +68,23 @@ watch(eventId, () => {
       <FilterChips
         v-if="events.length > 1"
         v-model="eventId"
-        label="Event"
+        :label="t('events.event')"
         :options="events.map((e) => ({ value: e.id, label: e.name }))"
         required
       />
       <span v-else class="font-medium">{{ events[0]?.name }}</span>
       <Button variant="outline" size="touch" :disabled="loading" @click="load">
-        <RefreshCwIcon :class="{ 'animate-spin': loading }" /> Refresh
+        <RefreshCwIcon :class="{ 'animate-spin': loading }" /> {{ t('common.refresh') }}
       </Button>
     </div>
     <ErrorAlert :error="error" />
-    <FilterChips v-model="state" label="Status" :options="stateOptions" />
-    <FilterChips v-if="tables.length > 1" v-model="table" label="Table" :options="tables" />
+    <FilterChips v-model="state" :label="t('common.status')" :options="stateOptions" />
+    <FilterChips
+      v-if="tables.length > 1"
+      v-model="table"
+      :label="t('teams.mine.table')"
+      :options="tables"
+    />
     <Skeleton v-if="loading && !data" class="h-24 w-full" />
     <AssignmentList :rows="filtered" show-table :from="route.fullPath" />
     <p
@@ -84,7 +92,7 @@ watch(eventId, () => {
       class="rounded-xl border border-dashed p-6 text-center text-muted-foreground"
       data-testid="review-empty"
     >
-      {{ state === 'submitted' ? 'Nothing waiting for review.' : 'No games match these filters.' }}
+      {{ state === 'submitted' ? t('judging.review.nothingWaiting') : t('judging.noMatch') }}
     </p>
   </div>
 </template>

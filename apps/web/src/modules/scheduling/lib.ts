@@ -1,16 +1,16 @@
+import { t, te } from '@/i18n'
 import type { GameRecord } from '@/shared/types/records'
 
-export const REASON_LABELS: Record<string, string> = {
-  no_compatible_table: 'No active, assigned-judge table accepts this category.',
-  no_active_table: 'No active table is available.',
-  missing_table_judge: 'Assign a judge to the table before scheduling games there.',
-  table_inactive: 'The assigned table is deactivated.',
-  incompatible_category: 'The table is not available for this category.',
-  sequence_in_use: 'That sequence number is already used on this table in this round.',
+/** Why a game cannot be placed (codes from apps/backend/hooks/lib/schedule.js). */
+export function reasonLabel(reason: string): string {
+  const key = `scheduling.reasons.${reason}`
+  return te(key) ? t(key) : reason
 }
 
-export function reasonLabel(reason: string): string {
-  return REASON_LABELS[reason] ?? reason
+/** A schedule issue in the current language; the server's English text for unknown codes. */
+export function issueMessage(issue: { code: string; message: string }): string {
+  const key = `scheduling.issues.${issue.code}`
+  return te(key) ? t(key) : issue.message
 }
 
 /** Assigned games first, ordered by round, table and per-table sequence. */
@@ -30,7 +30,7 @@ export function isPlaced(game: GameRecord): boolean {
 
 /** "Alpha (Round 1)" style label used in lists and messages. */
 export function gameLabel(game: GameRecord): string {
-  const team = game.expand?.team?.name ?? 'Unknown team'
+  const team = game.expand?.team?.name ?? t('scheduling.unknownTeam')
   const round = game.expand?.round?.name
   return round ? `${team} (${round})` : team
 }

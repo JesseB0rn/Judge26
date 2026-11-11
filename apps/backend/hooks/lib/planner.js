@@ -110,7 +110,15 @@ function checkColumnDelete(app, column) {
     c: column.id,
   })
   if (used.length) {
-    throw new BadRequestError('Blocks are still placed in this column. Move or delete them first.')
+    throw new BadRequestError(
+      'Blocks are still placed in this column. Move or delete them first.',
+      {
+        _error: new ValidationError(
+          'column_in_use',
+          'Blocks are still placed in this column. Move or delete them first.',
+        ),
+      },
+    )
   }
 }
 

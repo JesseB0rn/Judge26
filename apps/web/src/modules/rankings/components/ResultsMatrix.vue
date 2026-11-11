@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,7 +36,11 @@ const cell = computed(() => {
 const label = (g: GameRecord) => {
   if (g.status === 'completed')
     return `${g.points}${g.time_ms > 0 ? ' / ' + formatTime(g.time_ms) : ''}`
-  return g.status === 'disqualified' ? 'DQ' : g.status === 'absent' ? 'absent' : 'scheduled'
+  return g.status === 'disqualified'
+    ? t('judging.dq')
+    : g.status === 'absent'
+      ? t('scheduling.gameStatus.absent')
+      : t('scheduling.gameStatus.scheduled')
 }
 </script>
 
@@ -43,7 +48,7 @@ const label = (g: GameRecord) => {
   <Table data-testid="results-matrix">
     <TableHeader>
       <TableRow>
-        <TableHead>Team</TableHead>
+        <TableHead>{{ t('teams.team') }}</TableHead>
         <TableHead v-for="round in rounds" :key="round.id">{{ round.name }}</TableHead>
       </TableRow>
     </TableHeader>
@@ -65,16 +70,18 @@ const label = (g: GameRecord) => {
               v-if="editable"
               size="xs"
               variant="ghost"
-              :aria-label="`Results of ${team.name} in ${round.name}`"
+              :aria-label="t('rankings.matrix.resultsOf', { team: team.name, round: round.name })"
               @click="emit('open', team, round)"
             >
-              {{ cell(team.id, round.id).length ? 'Edit' : 'Enter' }}
+              {{ cell(team.id, round.id).length ? t('common.edit') : t('rankings.matrix.enter') }}
             </Button>
             <span v-else-if="!cell(team.id, round.id).length" class="text-muted-foreground">–</span>
           </div>
         </TableCell>
       </TableRow>
-      <TableEmpty v-if="!teams.length" :colspan="rounds.length + 1">No approved teams.</TableEmpty>
+      <TableEmpty v-if="!teams.length" :colspan="rounds.length + 1">{{
+        t('rankings.matrix.empty')
+      }}</TableEmpty>
     </TableBody>
   </Table>
 </template>

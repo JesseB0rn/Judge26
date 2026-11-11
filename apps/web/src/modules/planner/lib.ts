@@ -1,3 +1,4 @@
+import { t, te, translatedLabels } from '@/i18n'
 import {
   PHASE_ORDER,
   type BlockColor,
@@ -56,7 +57,7 @@ export function clampStart(start: number, duration: number): number {
 
 export function timeRange(starts_at: string, duration: number): string {
   const start = toMinutes(starts_at)
-  if (start === null) return 'Not placed'
+  if (start === null) return t('live.schedule.notPlaced')
   return `${starts_at}–${formatTime(start + duration)}`
 }
 
@@ -87,20 +88,14 @@ export function isPlaced(item: { day: string; starts_at: string }, days?: Planne
   return !days || days.some((d) => d.id === item.day)
 }
 
-export const PHASE_LABELS: Record<PhaseKind, string> = {
-  maintenance: 'Maintenance / practice',
-  check: 'Robot check',
-  scoring: 'Scoring run',
-}
+const PHASES: PhaseKind[] = ['maintenance', 'check', 'scoring']
 
-export const PHASE_SHORT: Record<PhaseKind, string> = {
-  maintenance: 'Maintenance',
-  check: 'Robot check',
-  scoring: 'Scoring',
-}
+export const PHASE_LABELS = translatedLabels(PHASES, (p) => t(`planner.phase.${p}`))
+
+export const PHASE_SHORT = translatedLabels(PHASES, (p) => t(`planner.phaseShort.${p}`))
 
 export function dayName(day: PlannerDay | undefined): string {
-  if (!day) return 'No day'
+  if (!day) return t('judging.noDay')
   return day.label || day.date
 }
 
@@ -409,4 +404,10 @@ export const PHASE_CLASSES: Record<PhaseKind, string> = {
 
 export function blockClasses(color: BlockColor | '' | undefined): string {
   return COLOR_CLASSES[color || 'slate']
+}
+
+/** A planner warning in the current language (codes from apps/backend/hooks/lib/planner.js). */
+export function issueText(issue: { code: string; message: string }): string {
+  const key = `planner.issues.${issue.code}`
+  return te(key) ? t(key) : issue.message
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,14 +16,11 @@ onMounted(load)
 </script>
 
 <template>
-  <PageHeader
-    title="Live results"
-    description="Rankings, schedules and progress of competitions."
-  />
+  <PageHeader :title="t('shell.nav.live')" :description="t('live.events.description')" />
   <ErrorAlert :error="error" />
   <Skeleton v-if="loading && !events" class="h-24 w-full" />
   <p v-else-if="events && !events.length" class="text-muted-foreground">
-    No competitions are public yet.
+    {{ t('live.events.empty') }}
   </p>
   <div v-else class="grid gap-4 md:grid-cols-2">
     <RouterLink
@@ -37,14 +35,15 @@ onMounted(load)
           <CardTitle>{{ event.name }}</CardTitle>
         </CardHeader>
         <CardContent class="text-sm text-muted-foreground">
-          Season {{ event.season }}<template v-if="event.venue"> · {{ event.venue }}</template>
+          {{ t('events.detail.seasonLine', { season: event.season })
+          }}<template v-if="event.venue"> · {{ event.venue }}</template>
           <template v-if="event.days.length">
             · {{ formatDay(event.days[0]!.date) }}
             <template v-if="event.days.length > 1">
               – {{ formatDay(event.days[event.days.length - 1]!.date) }}</template
             >
           </template>
-          <span v-if="event.status === 'archived'"> · finished</span>
+          <span v-if="event.status === 'archived'"> · {{ t('live.events.finished') }}</span>
         </CardContent>
       </Card>
     </RouterLink>

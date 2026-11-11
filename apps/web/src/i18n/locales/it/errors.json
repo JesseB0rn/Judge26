@@ -1,0 +1,13 @@
+{
+  "kind": {
+    "network": "Il server non è raggiungibile. Verifichi la connessione e riprovi.",
+    "validation": "Alcuni valori non sono validi.",
+    "unauthorized": "Effettui l’accesso per continuare.",
+    "forbidden": "Non ha l’autorizzazione per eseguire questa azione.",
+    "not_found": "L’elemento richiesto non è stato trovato.",
+    "conflict": "I dati sono stati modificati nel frattempo da qualcun altro. Ricarichi la pagina e riprovi.",
+    "server": "Si è verificato un errore sul server. Riprovi più tardi.",
+    "cancelled": "La richiesta è stata annullata.",
+    "unknown": "Si è verificato un errore imprevisto."
+  }
+}

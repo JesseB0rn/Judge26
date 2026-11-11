@@ -24,7 +24,9 @@ onRecordValidate((e) => {
 
 // Snapshots are never modified (M3-17, M3-T13), not even by superusers.
 onRecordUpdate((e) => {
-  throw new BadRequestError('Ranking snapshots cannot be changed.')
+  throw new BadRequestError('Ranking snapshots cannot be changed.', {
+    _error: new ValidationError('snapshot_immutable', 'Ranking snapshots cannot be changed.'),
+  })
 }, 'ranking_snapshots')
 
 // POST /api/categories/{id}/ranking/snapshots  { title } -> snapshot record
@@ -41,7 +43,12 @@ routerAdd(
       !eventId ||
       !access.canManageEvent(e.app, e.auth, eventId)
     ) {
-      throw new ForbiddenError('Only event managers can publish ranking snapshots.')
+      throw new ForbiddenError('Only event managers can publish ranking snapshots.', {
+        _error: new ValidationError(
+          'managers_only',
+          'Only event managers can publish ranking snapshots.',
+        ),
+      })
     }
     const title = String(e.requestInfo().body.title || '').trim()
     if (!title) {
@@ -51,7 +58,12 @@ routerAdd(
     }
     const configJson = category.getString('ranking')
     if (!configJson || configJson === 'null') {
-      throw new BadRequestError('This category has no ranking configuration.')
+      throw new BadRequestError('This category has no ranking configuration.', {
+        _error: new ValidationError(
+          'ranking_not_configured',
+          'This category has no ranking configuration.',
+        ),
+      })
     }
 
     const engine = require(`${__hooks}/lib/ranking-engine.js`)

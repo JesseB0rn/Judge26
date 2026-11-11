@@ -11,8 +11,10 @@ See [ADR 0008](../architecture/decisions/0008-transactional-email-outbox.md).
   `SMTP_PASSWORD`, `SMTP_TLS`, `MAIL_SENDER_ADDRESS`, `MAIL_SENDER_NAME`, `APP_URL`), see the
   [development guide](../development.md#emails). Without SMTP in development and test, messages
   are captured instead of sent (`GET /api/dev/mails`).
-- Account emails (verification, password reset) are PocketBase's own and are sent directly; their
-  templates are on the `users` collection (PocketBase dashboard → _users_ → _Options_).
+- Account emails (verification, password reset) are PocketBase's own and are sent directly, but
+  rendered from the `auth_verification` / `auth_password_reset` templates in the user's language
+  (`hooks/mail.pb.js`). The `users` collection's own templates (PocketBase dashboard) are only used
+  if those templates are missing.
 - Application notifications are records in `mail_outbox`:
 
 | Field             | Meaning                                                                                 |
@@ -49,6 +51,11 @@ Admins edit templates on **Emails** (`/admin/emails`): subject, HTML body and wh
 sent at all. The preview renders example values in a sandboxed frame. Templates cannot be created,
 deleted or re-keyed; changes apply to messages queued afterwards (queued messages keep their text).
 
+Every notification has one template per language (`de`, `fr`, `it`, `en`; `key` + `language`
+unique, the language cannot be changed). A message uses the template in the recipient's language,
+else the English one; see [languages](i18n.md#recipient-language-of-emails). Account emails cannot be
+turned off.
+
 Variables are written `{{name}}`. Values are HTML-escaped in the body (the subject is plain text and
 kept on one line), except `schedule`, which the server renders as a list. A template may only use
 its own variables (`400`, `unknown_variable`); `GET /api/mail/templates/variables` lists them.
@@ -59,6 +66,8 @@ its own variables (`400`, `unknown_variable`); `GET /api/mail/templates/variable
 | `registration_approved`  | A registration becomes `approved`          | as above, and `review_note`                                                                     |
 | `registration_rejected`  | A registration becomes `rejected`          | as above, and `review_note` (the required reason)                                               |
 | `schedule_changed`       | A manager notifies teams of their schedule | `coach_name`, `team_name`, `event_name`, `schedule`, `schedule_text`, `message`, `schedule_url` |
+| `auth_verification`      | A user asks to confirm their email address | `name`, `action_url`, `app_name`                                                                |
+| `auth_password_reset`    | A user asks to reset their password        | `name`, `action_url`, `app_name`                                                                |
 
 `team_url` is `{APP_URL}/teams/{id}`, `schedule_url` the public event page `{APP_URL}/live/{id}`.
 

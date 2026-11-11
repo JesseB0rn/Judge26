@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { PrinterIcon } from '@lucide/vue'
@@ -198,7 +199,7 @@ const saveConfig = useSubmit(
     }
     text.value = savedText.value
   },
-  { success: 'Ranking configuration saved.' },
+  { success: () => t('rankings.view.configSaved') },
 )
 
 function useTemplate(config: RankingConfig) {
@@ -243,7 +244,7 @@ const publish = useSubmit(
     snapshotTitle.value = ''
     tab.value = 'snapshots'
   },
-  { success: 'Ranking snapshot published.' },
+  { success: () => t('rankings.view.snapshotPublished') },
 )
 
 onMounted(load)
@@ -254,37 +255,47 @@ onMounted(load)
   <Skeleton v-if="loading && !category" class="h-10 w-1/2" />
   <template v-else-if="category">
     <PageHeader
-      :title="`Rounds & ranking: ${category.name}`"
-      :description="event ? `${category.code} · ${event.name}` : `${category.code} · template`"
+      :title="t('rankings.view.title', { category: category.name })"
+      :description="
+        event
+          ? `${category.code} · ${event.name}`
+          : `${category.code} · ${t('categories.template')}`
+      "
     >
       <template #actions>
         <Button v-if="plannerBack" as-child variant="outline">
-          <RouterLink :to="plannerBack">Back to planner</RouterLink>
+          <RouterLink :to="plannerBack">{{ t('rankings.view.backToPlanner') }}</RouterLink>
         </Button>
         <Button v-if="event" as-child variant="outline">
           <RouterLink
             :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
-            >Back to event</RouterLink
+            >{{ t('rankings.view.backToEvent') }}</RouterLink
           >
         </Button>
         <Button v-else as-child variant="outline">
-          <RouterLink :to="{ name: 'category-library' }">Back to library</RouterLink>
+          <RouterLink :to="{ name: 'category-library' }">{{
+            t('rankings.view.backToLibrary')
+          }}</RouterLink>
         </Button>
       </template>
     </PageHeader>
 
     <Tabs v-model="tab">
       <TabsList>
-        <TabsTrigger v-if="!isTemplate" value="ranking">Ranking</TabsTrigger>
-        <TabsTrigger v-if="!isTemplate" value="results">Results</TabsTrigger>
-        <TabsTrigger value="rounds">Rounds</TabsTrigger>
-        <TabsTrigger value="configuration">Configuration</TabsTrigger>
-        <TabsTrigger v-if="!isTemplate" value="snapshots">Snapshots</TabsTrigger>
+        <TabsTrigger v-if="!isTemplate" value="ranking">{{ t('categories.ranking') }}</TabsTrigger>
+        <TabsTrigger v-if="!isTemplate" value="results">{{
+          t('rankings.view.results')
+        }}</TabsTrigger>
+        <TabsTrigger value="rounds">{{ t('administration.audit.areas.rounds') }}</TabsTrigger>
+        <TabsTrigger value="configuration">{{ t('rankings.view.configuration') }}</TabsTrigger>
+        <TabsTrigger v-if="!isTemplate" value="snapshots">{{
+          t('rankings.view.snapshots')
+        }}</TabsTrigger>
       </TabsList>
 
       <TabsContent v-if="!isTemplate" value="ranking" class="flex flex-col gap-4">
         <Alert v-if="!parsed.config">
-          <AlertDescription>Configure the ranking to see results.</AlertDescription>
+          <AlertDescription>{{ t('rankings.view.configureFirst') }}</AlertDescription>
         </Alert>
         <template v-else-if="ranking">
           <div class="flex flex-wrap items-center gap-2">
@@ -293,14 +304,14 @@ onMounted(load)
               v-if="category.published_snapshot"
               class="text-sm text-muted-foreground"
               data-testid="publication-state"
-              >Official ranking published</span
+              >{{ t('live.publication.published').replace(/\.$/, '') }}</span
             >
-            <span v-else-if="category.public_live" class="text-sm text-muted-foreground"
-              >Live ranking is public</span
-            >
+            <span v-else-if="category.public_live" class="text-sm text-muted-foreground">{{
+              t('rankings.view.livePublic')
+            }}</span>
             <div class="ml-auto flex flex-wrap gap-1">
               <ExportButtons
-                :title="`ranking ${category.name}`"
+                :title="t('rankings.export.title', { category: category.name })"
                 :tables="liveExport"
                 :disabled="dirty"
               />
@@ -312,11 +323,11 @@ onMounted(load)
             </div>
           </div>
           <Alert v-if="dirty">
-            <AlertDescription>Preview with unsaved configuration changes.</AlertDescription>
+            <AlertDescription>{{ t('rankings.view.unsavedPreview') }}</AlertDescription>
           </Alert>
           <Alert v-if="openGames" data-testid="provisional">
             <AlertDescription>
-              Provisional: {{ openGames }} of {{ games.length }} games have no final result yet.
+              {{ t('rankings.view.provisional', { open: openGames, total: games.length }) }}
             </AlertDescription>
           </Alert>
           <RankingTable :ranking="ranking" :config="parsed.config.config" />
@@ -325,7 +336,7 @@ onMounted(load)
             class="text-sm text-destructive"
             data-testid="ranking-issues"
           >
-            {{ ranking.issues.length }} result(s) ignored:
+            {{ t('rankings.view.ignored', ranking.issues.length) }}
             {{ ranking.issues.map((i) => i.message).join(' ') }}
           </p>
           <form
@@ -336,23 +347,25 @@ onMounted(load)
             <Input
               v-model="snapshotTitle"
               class="max-w-xs"
-              placeholder="e.g. Official ranking day 1"
-              aria-label="Snapshot title"
+              :placeholder="t('rankings.view.snapshotPlaceholder')"
+              :aria-label="t('rankings.view.snapshotTitle')"
               required
             />
-            <Button type="submit" :disabled="publish.pending.value || dirty"
-              >Publish snapshot</Button
-            >
-            <span v-if="dirty" class="text-sm text-muted-foreground"
-              >Save the configuration first.</span
-            >
+            <Button type="submit" :disabled="publish.pending.value || dirty">{{
+              t('rankings.view.publishSnapshot')
+            }}</Button>
+            <span v-if="dirty" class="text-sm text-muted-foreground">{{
+              t('rankings.view.saveFirst')
+            }}</span>
           </form>
           <ErrorAlert :error="publish.error.value" />
         </template>
       </TabsContent>
 
       <TabsContent v-if="!isTemplate" value="results">
-        <Alert v-if="!rounds.length"><AlertDescription>Add rounds first.</AlertDescription></Alert>
+        <Alert v-if="!rounds.length"
+          ><AlertDescription>{{ t('rankings.view.addRoundsFirst') }}</AlertDescription></Alert
+        >
         <ResultsMatrix
           v-else
           :teams="teams"
@@ -384,11 +397,11 @@ onMounted(load)
               useTemplate(defaultRankingConfig(rounds.map((r) => ({ key: r.key, label: r.name }))))
             "
           >
-            Generate from rounds
+            {{ t('rankings.view.generate') }}
           </Button>
-          <Button variant="outline" @click="useTemplate(EXAMPLE_RANKING_CONFIG)"
-            >Load example</Button
-          >
+          <Button variant="outline" @click="useTemplate(EXAMPLE_RANKING_CONFIG)">{{
+            t('rankings.view.example')
+          }}</Button>
           <Button
             class="ml-auto"
             :disabled="
@@ -396,14 +409,13 @@ onMounted(load)
             "
             @click="saveConfig.run()"
           >
-            Save configuration
+            {{ t('rankings.view.saveConfig') }}
           </Button>
         </div>
         <ErrorAlert :error="saveConfig.error.value" />
         <Alert v-if="unknownRounds.length" variant="destructive">
           <AlertDescription>
-            The configuration references rounds that do not exist yet:
-            {{ unknownRounds.join(', ') }}. Their results count as missing.
+            {{ t('rankings.view.unknownRounds', { rounds: unknownRounds.join(', ') }) }}
           </AlertDescription>
         </Alert>
         <EditorModeToggle v-model="editor" />
@@ -418,14 +430,24 @@ onMounted(load)
 
       <TabsContent v-if="!isTemplate" value="snapshots" class="flex flex-col gap-3">
         <p v-if="!snapshots.length" class="text-sm text-muted-foreground">
-          No snapshots published yet.
+          {{ t('rankings.view.noSnapshots') }}
         </p>
         <template v-else>
-          <NativeSelect v-model="selectedSnapshot" aria-label="Snapshot" class="max-w-md">
-            <NativeSelectOption value="">Select a snapshot</NativeSelectOption>
+          <NativeSelect
+            v-model="selectedSnapshot"
+            :aria-label="t('rankings.view.snapshot')"
+            class="max-w-md"
+          >
+            <NativeSelectOption value="">{{
+              t('rankings.view.selectSnapshot')
+            }}</NativeSelectOption>
             <NativeSelectOption v-for="s in snapshots" :key="s.id" :value="s.id">
               {{ s.title }} – {{ formatDateTime(s.created)
-              }}{{ s.id === category.published_snapshot ? ' · official (public)' : '' }}
+              }}{{
+                s.id === category.published_snapshot
+                  ? ` · ${t('rankings.view.officialPublic')}`
+                  : ''
+              }}
             </NativeSelectOption>
           </NativeSelect>
           <template v-if="shownSnapshot">
@@ -446,8 +468,12 @@ onMounted(load)
               </Button>
             </div>
             <p class="font-mono text-xs text-muted-foreground" data-testid="snapshot-fingerprint">
-              Fingerprint {{ shownSnapshot.fingerprint }} · configuration
-              {{ shownSnapshot.config_fingerprint }}
+              {{
+                t('rankings.view.fingerprints', {
+                  result: shownSnapshot.fingerprint,
+                  config: shownSnapshot.config_fingerprint,
+                })
+              }}
             </p>
             <RankingTable
               :ranking="shownSnapshot.result"

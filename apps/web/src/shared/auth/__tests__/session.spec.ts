@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { pb } from '@/shared/api/pocketbase'
 import { makeRole, makeUser } from '@/test/utils'
+import { locale, setLocale } from '@/i18n'
 import { useSessionStore } from '../session'
 
 type AsyncFn = (...args: unknown[]) => Promise<unknown>
@@ -10,6 +11,7 @@ const users = {
   authWithPassword: vi.fn<AsyncFn>(),
   authRefresh: vi.fn<AsyncFn>(),
   create: vi.fn<AsyncFn>(),
+  update: vi.fn<AsyncFn>(),
   requestVerification: vi.fn<AsyncFn>(),
   confirmVerification: vi.fn<AsyncFn>(),
   requestPasswordReset: vi.fn<AsyncFn>(),
@@ -82,6 +84,7 @@ describe('session store', () => {
       email: 'new@example.com',
       password: 'password1',
       passwordConfirm: 'password1',
+      language: 'en',
     })
     expect(users.requestVerification).toHaveBeenCalledWith('new@example.com')
   })
@@ -108,5 +111,35 @@ describe('session store', () => {
     await session.requestPasswordReset('a@example.com')
     await session.confirmPasswordReset('tok', 'new-password')
     expect(users.confirmPasswordReset).toHaveBeenCalledWith('tok', 'new-password', 'new-password')
+  })
+
+  describe('language (i18n)', () => {
+    beforeEach(() => setLocale('en'))
+
+    it('applies the language saved on the account when signing in', async () => {
+      users.authWithPassword.mockImplementation(async () => signIn(makeUser({ language: 'fr' })))
+      roleAssignments.getFullList.mockResolvedValue([])
+      await useSessionStore().login('a@b.c', 'pw')
+      expect(locale.value).toBe('fr')
+      expect(users.update).not.toHaveBeenCalled()
+    })
+
+    it('saves the current language on an account without one', async () => {
+      const user = makeUser()
+      users.authWithPassword.mockImplementation(async () => signIn(user))
+      roleAssignments.getFullList.mockResolvedValue([])
+      setLocale('it')
+      await useSessionStore().login('a@b.c', 'pw')
+      expect(users.update).toHaveBeenCalledWith(user.id, { language: 'it' })
+    })
+
+    it('switching the language saves it on the account', async () => {
+      const user = makeUser({ language: 'en' })
+      signIn(user)
+      const session = useSessionStore()
+      await session.setLanguage('de')
+      expect(locale.value).toBe('de')
+      expect(users.update).toHaveBeenCalledWith(user.id, { language: 'de' })
+    })
   })
 })

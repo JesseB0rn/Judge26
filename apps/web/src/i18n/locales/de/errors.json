@@ -1,0 +1,13 @@
+{
+  "kind": {
+    "network": "Der Server ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "validation": "Einige Angaben sind ungültig.",
+    "unauthorized": "Bitte melden Sie sich an, um fortzufahren.",
+    "forbidden": "Sie haben keine Berechtigung für diese Aktion.",
+    "not_found": "Der gesuchte Eintrag wurde nicht gefunden.",
+    "conflict": "Die Daten wurden inzwischen von jemand anderem geändert. Laden Sie neu und versuchen Sie es erneut.",
+    "server": "Auf dem Server ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+    "cancelled": "Die Anfrage wurde abgebrochen.",
+    "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+  }
+}

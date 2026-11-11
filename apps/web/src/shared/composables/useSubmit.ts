@@ -8,7 +8,8 @@ import { toAppError, type AppError } from '@/shared/api/errors'
  */
 export function useSubmit<A extends unknown[], R>(
   action: (...args: A) => Promise<R>,
-  options: { success?: string } = {},
+  /** Toast after success; a function is called then, so the message is in the current language. */
+  options: { success?: string | (() => string) } = {},
 ) {
   const pending = ref(false)
   const error = ref<AppError | null>(null)
@@ -19,7 +20,9 @@ export function useSubmit<A extends unknown[], R>(
     error.value = null
     try {
       const result = await action(...args)
-      if (options.success) toast.success(options.success)
+      if (options.success) {
+        toast.success(typeof options.success === 'function' ? options.success() : options.success)
+      }
       return result
     } catch (e) {
       error.value = toAppError(e)

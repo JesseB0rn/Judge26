@@ -1,3 +1,4 @@
+import { t, translatedLabels } from '@/i18n'
 import { isRegistrationOpen } from '@/modules/events/lib'
 import type {
   CategoryRecord,
@@ -7,13 +8,10 @@ import type {
   TeamStatus,
 } from '@/shared/types/records'
 
-export const TEAM_STATUS_LABELS: Record<TeamStatus, string> = {
-  draft: 'Draft',
-  submitted: 'Submitted',
-  approved: 'Approved',
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-}
+export const TEAM_STATUS_LABELS = translatedLabels<TeamStatus>(
+  ['draft', 'submitted', 'approved', 'rejected', 'withdrawn'],
+  (status) => t(`teams.status.${status}`),
+)
 
 /** Statuses that require a complete team (mirrors the backend). */
 export const COMPLETE_STATUSES: TeamStatus[] = ['submitted', 'approved']
@@ -43,29 +41,29 @@ export function validateMembers(
   const errors: string[] = []
   members.forEach((m, i) => {
     const n = i + 1
-    if (!m.first_name?.trim()) errors.push(`Member ${n}: first name is required.`)
-    if (!m.last_name?.trim()) errors.push(`Member ${n}: last name is required.`)
+    if (!m.first_name?.trim()) errors.push(t('teams.validation.firstNameRequired', { n }))
+    if (!m.last_name?.trim()) errors.push(t('teams.validation.lastNameRequired', { n }))
     if (!Number.isInteger(m.birth_year) || m.birth_year < 1900 || m.birth_year > 2100) {
-      errors.push(`Member ${n}: birth year must be a whole number between 1900 and 2100.`)
+      errors.push(t('teams.validation.birthYear', { n }))
     }
   })
 
   const { category, season, complete } = options
   if (!complete) return errors
-  if (members.length === 0) errors.push('A team needs at least one member.')
+  if (members.length === 0) errors.push(t('teams.validation.noMembers'))
   if (!category) return errors
   const { min_team_size: min, max_team_size: max, min_age: minAge, max_age: maxAge } = category
-  if (min > 0 && members.length < min) errors.push(`The category requires at least ${min} members.`)
-  if (max > 0 && members.length > max) errors.push(`The category allows at most ${max} members.`)
+  if (min > 0 && members.length < min) errors.push(t('teams.validation.tooFew', { min }))
+  if (max > 0 && members.length > max) errors.push(t('teams.validation.tooMany', { max }))
   if (season) {
     members.forEach((m, i) => {
       if (!Number.isInteger(m.birth_year)) return
       const age = season - m.birth_year
       if (minAge > 0 && age < minAge) {
-        errors.push(`Member ${i + 1} is ${age} in ${season}; minimum age is ${minAge}.`)
+        errors.push(t('teams.validation.tooYoung', { n: i + 1, age, season, minAge }))
       }
       if (maxAge > 0 && age > maxAge) {
-        errors.push(`Member ${i + 1} is ${age} in ${season}; maximum age is ${maxAge}.`)
+        errors.push(t('teams.validation.tooOld', { n: i + 1, age, season, maxAge }))
       }
     })
   }

@@ -19,7 +19,9 @@ import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
 import { formatDateTime } from '@/shared/format'
+import { locale, t } from '@/i18n'
 import { notifySchedule, scheduleNotices } from '../api'
+import { describeItem } from '../lib'
 
 /**
  * Schedule notifications (M7-04): compares every approved team's current schedule with what its
@@ -31,7 +33,7 @@ const emit = defineEmits<{ sent: [] }>()
 const message = ref('')
 const { data, loading, error, load } = useLoader(() => scheduleNotices(props.eventId))
 const withSchedule = computed(
-  () => data.value?.teams.filter((t) => t.items.length || t.notified_at).length ?? 0,
+  () => data.value?.teams.filter((n) => n.items.length || n.notified_at).length ?? 0,
 )
 
 const send = useSubmit(async (scope: 'changed' | 'all') => {
@@ -45,9 +47,7 @@ const send = useSubmit(async (scope: 'changed' | 'all') => {
 async function run(scope: 'changed' | 'all') {
   const queued = await send.run(scope)
   if (queued !== undefined) {
-    toast.success(
-      queued ? `${queued} email${queued === 1 ? '' : 's'} queued.` : 'Nobody to notify.',
-    )
+    toast.success(t('communication.notify.queued', queued))
   }
 }
 
@@ -57,77 +57,84 @@ onMounted(load)
 <template>
   <Card data-testid="schedule-notify">
     <CardHeader>
-      <CardTitle>Schedule notifications</CardTitle>
-      <CardDescription>
-        Coaches of approved teams receive their team's games (round, time, table and position). A
-        team is <strong>affected</strong> when its schedule changed since the last email.
-      </CardDescription>
+      <CardTitle>{{ t('communication.notify.title') }}</CardTitle>
+      <CardDescription>{{ t('communication.notify.description') }}</CardDescription>
     </CardHeader>
     <CardContent class="flex flex-col gap-4">
       <ErrorAlert :error="error ?? send.error.value" />
       <div class="flex flex-wrap items-center gap-2">
         <Badge :variant="data?.changed ? 'default' : 'secondary'" data-testid="affected-count">
-          {{ data?.changed ?? 0 }} affected
+          {{ t('communication.notify.affected', { count: data?.changed ?? 0 }) }}
         </Badge>
-        <span class="text-sm text-muted-foreground"
-          >of {{ data?.teams.length ?? 0 }} approved teams</span
-        >
+        <span class="text-sm text-muted-foreground">{{
+          t('communication.notify.ofApproved', { count: data?.teams.length ?? 0 })
+        }}</span>
         <Button variant="ghost" size="sm" :disabled="loading" @click="load">
-          <RefreshCwIcon /> Refresh
+          <RefreshCwIcon /> {{ t('common.refresh') }}
         </Button>
       </div>
       <template v-if="editable">
         <FormField
           v-slot="{ id }"
-          label="Message (optional)"
+          :label="t('communication.notify.message')"
           name="message"
-          description="Added to every email, e.g. the reason for the change."
+          :description="t('communication.notify.messageHint')"
         >
           <Textarea :id="id" v-model="message" rows="2" maxlength="2000" />
         </FormField>
         <div class="flex flex-wrap gap-2">
           <Button :disabled="!data?.changed || send.pending.value" @click="run('changed')">
-            <BellIcon /> Notify affected teams
+            <BellIcon /> {{ t('communication.notify.sendChanged') }}
           </Button>
           <Button
             variant="outline"
             :disabled="!withSchedule || send.pending.value"
             @click="run('all')"
           >
-            Send to all teams
+            {{ t('communication.notify.sendAll') }}
           </Button>
         </div>
       </template>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Team</TableHead>
-            <TableHead>Current schedule</TableHead>
-            <TableHead>Last notified</TableHead>
+            <TableHead>{{ t('teams.team') }}</TableHead>
+            <TableHead>{{ t('communication.notify.current') }}</TableHead>
+            <TableHead>{{ t('communication.notify.lastNotified') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="t in data?.teams" :key="t.team.id" :data-changed="t.changed">
+          <TableRow
+            v-for="notice in data?.teams"
+            :key="notice.team.id"
+            :data-changed="notice.changed"
+          >
             <TableCell>
-              {{ t.team.name }}
-              <span class="block text-xs text-muted-foreground">{{ t.coach_email }}</span>
+              {{ notice.team.name }}
+              <span class="block text-xs text-muted-foreground">{{ notice.coach_email }}</span>
             </TableCell>
             <TableCell class="whitespace-normal text-sm">
-              <ul v-if="t.items.length">
-                <li v-for="(item, i) in t.items" :key="i">{{ item.text }}</li>
+              <ul v-if="notice.items.length">
+                <li v-for="(item, i) in notice.items" :key="i">{{ describeItem(item, locale) }}</li>
               </ul>
-              <span v-else class="text-muted-foreground">No games</span>
+              <span v-else class="text-muted-foreground">{{
+                t('communication.notify.noGames')
+              }}</span>
             </TableCell>
             <TableCell class="whitespace-nowrap">
-              <Badge v-if="t.changed" variant="outline">Changed</Badge>
+              <Badge v-if="notice.changed" variant="outline">{{
+                t('communication.notify.changed')
+              }}</Badge>
               <span class="block text-xs text-muted-foreground">{{
-                t.notified_at ? formatDateTime(t.notified_at) : 'Never'
+                notice.notified_at
+                  ? formatDateTime(notice.notified_at)
+                  : t('communication.notify.never')
               }}</span>
             </TableCell>
           </TableRow>
-          <TableEmpty v-if="!loading && !data?.teams.length" :colspan="3"
-            >No approved teams yet.</TableEmpty
-          >
+          <TableEmpty v-if="!loading && !data?.teams.length" :colspan="3">{{
+            t('communication.notify.empty')
+          }}</TableEmpty>
         </TableBody>
       </Table>
     </CardContent>

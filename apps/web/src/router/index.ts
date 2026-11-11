@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { isLocale, locale } from '@/i18n'
 import { authRoutes } from '@/modules/auth/routes'
 import { administrationRoutes } from '@/modules/administration/routes'
 import { communicationRoutes } from '@/modules/communication/routes'
@@ -36,6 +37,9 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const session = useSessionStore()
   await session.ensureInitialized()
+  // `?lang=fr` picks the language, e.g. for a shared TV display link (docs/specifications/i18n.md).
+  const lang = to.query.lang
+  if (isLocale(lang) && lang !== locale.value) void session.setLanguage(lang)
   return resolveAccess(to, session)
 })
 

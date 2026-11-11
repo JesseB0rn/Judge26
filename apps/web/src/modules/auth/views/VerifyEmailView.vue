@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -17,7 +18,7 @@ const confirm = useSubmit(async () => {
   confirmed.value = true
 })
 const resend = useSubmit(() => session.requestVerification(), {
-  success: 'Verification email sent.',
+  success: () => t('auth.verify.resent'),
 })
 
 onMounted(() => {
@@ -26,32 +27,31 @@ onMounted(() => {
 </script>
 
 <template>
-  <AuthCard v-if="token" title="Email verification">
-    <p v-if="confirm.pending.value" class="text-muted-foreground">Verifying…</p>
+  <AuthCard v-if="token" :title="t('auth.verify.confirmTitle')">
+    <p v-if="confirm.pending.value" class="text-muted-foreground">
+      {{ t('auth.verify.verifying') }}
+    </p>
     <template v-else-if="confirmed">
-      <p data-testid="verification-success">Your email address has been verified.</p>
+      <p data-testid="verification-success">{{ t('auth.verify.success') }}</p>
       <Button as-child>
-        <RouterLink :to="session.isAuthenticated ? '/' : '/login'">Continue</RouterLink>
+        <RouterLink :to="session.isAuthenticated ? '/' : '/login'">{{
+          t('common.continue')
+        }}</RouterLink>
       </Button>
     </template>
     <ErrorAlert v-else :error="confirm.error.value" />
   </AuthCard>
 
-  <AuthCard
-    v-else
-    title="Verify your email"
-    description="We sent you a link to confirm your email address."
-  >
-    <p class="text-sm text-muted-foreground">
-      Open the link in the email to activate your account. Until then, you cannot access events or
-      register teams.
-    </p>
+  <AuthCard v-else :title="t('auth.verify.title')" :description="t('auth.verify.description')">
+    <p class="text-sm text-muted-foreground">{{ t('auth.verify.explanation') }}</p>
     <ErrorAlert :error="resend.error.value" />
     <div v-if="session.isAuthenticated" class="flex gap-2">
       <Button variant="outline" :disabled="resend.pending.value" @click="resend.run()">
-        Resend email
+        {{ t('auth.verify.resend') }}
       </Button>
-      <Button variant="ghost" @click="session.refresh().catch(() => {})">I have verified</Button>
+      <Button variant="ghost" @click="session.refresh().catch(() => {})">{{
+        t('auth.verify.done')
+      }}</Button>
     </div>
   </AuthCard>
 </template>

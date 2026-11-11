@@ -1,0 +1,5 @@
+{
+  "label": "{title} exportieren",
+  "excel": "Excel",
+  "failed": "Export fehlgeschlagen: {message}"
+}

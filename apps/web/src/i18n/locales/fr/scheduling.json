@@ -1,0 +1,78 @@
+{
+  "unknownTeam": "Équipe inconnue",
+  "gameStatus": {
+    "scheduled": "Planifiée",
+    "completed": "Terminée",
+    "disqualified": "Disqualifiée",
+    "absent": "Absente"
+  },
+  "export": {
+    "sheet": "Manches",
+    "attempt": "Essai",
+    "day": "Jour",
+    "position": "Position",
+    "points": "Points",
+    "time": "Temps (s)",
+    "label": "Manches et résultats",
+    "title": "manches {event}"
+  },
+  "reasons": {
+    "no_compatible_table": "Aucune table active avec un juge attribué n’accepte cette catégorie.",
+    "no_active_table": "Aucune table active n’est disponible.",
+    "missing_table_judge": "Attribuez un juge à la table avant d’y planifier des manches.",
+    "table_inactive": "La table attribuée est désactivée.",
+    "incompatible_category": "La table n’est pas disponible pour cette catégorie.",
+    "sequence_in_use": "Ce numéro d’ordre est déjà utilisé sur cette table pour ce tour."
+  },
+  "issues": {
+    "table_required": "Attribuez une table avant de fixer l’ordre de passage.",
+    "invalid_table": "La table appartient à un autre événement.",
+    "table_inactive": "La table est désactivée.",
+    "incompatible_category": "La table n’est pas disponible pour cette catégorie.",
+    "missing_table_judge": "Attribuez un juge à la table avant d’y planifier des manches.",
+    "sequence_required": "L’ordre de passage doit être un nombre positif.",
+    "sequence_in_use": "Ce numéro d’ordre est déjà utilisé sur cette table pour ce tour.",
+    "missing_table": "Attribuez cette équipe à une table."
+  },
+  "generate": {
+    "title": "Contrôle et génération de l’horaire",
+    "noConflicts": "Aucun conflit dans l’horaire actuel.",
+    "conflicts": "Aucun conflit dans l’horaire actuel | Un conflit dans l’horaire actuel | {count} conflits dans l’horaire actuel",
+    "explanation": "La génération crée les manches manquantes des équipes acceptées et attribue chaque manche à une table compatible dotée d’un juge. L’ordre de passage est propre à chaque tour et à chaque table. Rien ne change tant que toutes les manches ne peuvent pas être attribuées.",
+    "previewButton": "Aperçu",
+    "generate": "Générer l’horaire",
+    "permission": "Seuls les responsables d’événement et les admins peuvent créer des manches ou générer des horaires.",
+    "wouldCreate": "Aucune manche manquante ne serait créée. | Une manche manquante serait créée. | {count} manches manquantes seraient créées.",
+    "created": "Aucune manche manquante créée. | Une manche manquante créée. | {count} manches manquantes créées.",
+    "preview": "Aperçu : {count} attributions de manches sont prêtes.",
+    "nothingSaved": "Rien n’a été enregistré.",
+    "saved": "Horaire enregistré : {count} attributions de manches mises à jour.",
+    "infeasible": "Certaines équipes n’ont pu être attribuées à aucune table active dotée d’un juge."
+  },
+  "sequence": {
+    "title": "Planifier la manche",
+    "description": "Choisissez la table et l’ordre de passage de l’équipe sur cette table pour ce tour.",
+    "selectTable": "Choisir une table",
+    "sequence": "Ordre de passage sur cette table"
+  },
+  "games": {
+    "title": "Manches",
+    "summary": "{assigned} attribuée(s) · {unassigned} non attribuée(s)",
+    "setSequence": "Fixer l’ordre de passage de {team}",
+    "empty": "Aucune manche pour l’instant. Générez l’horaire une fois les tours, les équipes acceptées et les tables créés."
+  },
+  "tables": {
+    "title": "Tables",
+    "allCategories": "toutes les catégories",
+    "noJudge": "Aucun juge",
+    "deactivated": "désactivée",
+    "empty": "Aucune table pour l’instant.",
+    "name": "Nom de la table",
+    "active": "Active",
+    "judge": "Juge attribué",
+    "selectJudge": "Choisir un juge",
+    "categories": "Catégories (aucune choisie = toutes les catégories)",
+    "save": "Enregistrer la table",
+    "add": "Ajouter une table"
+  }
+}

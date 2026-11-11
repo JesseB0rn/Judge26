@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { reactive, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,37 +45,49 @@ const submit = useSubmit(async () => {
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>{{ rule ? 'Edit game' : 'New game' }}</DialogTitle>
+        <DialogTitle>{{ rule ? t('scoring.game.edit') : t('scoring.game.new') }}</DialogTitle>
         <DialogDescription>
-          Each game has its own score sheet and versions. Rounds choose the game they play.
+          {{ t('scoring.game.description') }}
         </DialogDescription>
       </DialogHeader>
       <form class="flex flex-col gap-3" @submit.prevent="submit.run()">
         <ErrorAlert :error="submit.error.value" />
-        <FormField v-slot="{ id }" label="Name" name="name" :errors="submit.fieldErrors.value">
-          <Input :id="id" v-model="form.name" required placeholder="e.g. Obstacle course" />
+        <FormField
+          v-slot="{ id }"
+          :label="t('common.name')"
+          name="name"
+          :errors="submit.fieldErrors.value"
+        >
+          <Input
+            :id="id"
+            v-model="form.name"
+            required
+            :placeholder="t('scoring.game.namePlaceholder')"
+          />
         </FormField>
         <FormField
           v-slot="{ id }"
-          label="Key"
+          :label="t('rankings.rounds.key')"
           name="key"
           :errors="submit.fieldErrors.value"
-          description="Short identifier, unique in the category."
+          :description="t('scoring.game.keyHint')"
         >
           <Input :id="id" v-model="form.key" required pattern="[A-Za-z][A-Za-z0-9_\-]*" />
         </FormField>
         <FormField
           v-slot="{ id }"
-          label="Description"
+          :label="t('common.description')"
           name="description"
           :errors="submit.fieldErrors.value"
         >
           <Textarea :id="id" v-model="form.description" rows="3" />
         </FormField>
         <DialogFooter>
-          <Button type="button" variant="outline" @click="open = false">Cancel</Button>
+          <Button type="button" variant="outline" @click="open = false">{{
+            t('common.cancel')
+          }}</Button>
           <Button type="submit" :disabled="submit.pending.value">
-            {{ rule ? 'Save' : 'Create game' }}
+            {{ rule ? t('common.save') : t('scoring.game.create') }}
           </Button>
         </DialogFooter>
       </form>

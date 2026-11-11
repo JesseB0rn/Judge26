@@ -1,0 +1,47 @@
+{
+  "template": "Vorlage",
+  "code": "Kürzel",
+  "any": "beliebig",
+  "teamSize": "Teamgrösse",
+  "age": "Alter",
+  "maxTeams": "Max. Teams",
+  "ranking": "Rangliste",
+  "rankingFor": "Runden und Rangliste für {code}",
+  "rules": "Regeln",
+  "rulesFor": "Bewertungsregeln für {code}",
+  "empty": "Noch keine Kategorien.",
+  "confirmDelete": "Kategorie {code} löschen?",
+  "deleted": "Kategorie gelöscht.",
+  "addFromTemplate": "Aus Vorlage hinzufügen",
+  "addFromTemplateTitle": "Kategorie aus Vorlage hinzufügen",
+  "saveAsTemplate": "Als Vorlage speichern",
+  "saveAsTemplateOf": "{code} als Vorlage speichern",
+  "copy": {
+    "description": "Die Kopie ist unabhängig: Spätere Änderungen am Original wirken sich nicht auf sie aus.",
+    "target": "Kopieren nach",
+    "keepCode": "Leer lassen, um {code} zu behalten.",
+    "keepOriginalCode": "Leer lassen, um das ursprüngliche Kürzel zu behalten.",
+    "submit": "Kopieren"
+  },
+  "form": {
+    "editTitle": "Kategorie bearbeiten",
+    "newCategory": "Neue Kategorie",
+    "newTemplate": "Neue Vorlage",
+    "minTeamSize": "Min. Teamgrösse",
+    "maxTeamSize": "Max. Teamgrösse",
+    "minAge": "Mindestalter",
+    "minAgeHint": "0 = keine Grenze. Alter = Saison − Geburtsjahr.",
+    "maxAge": "Höchstalter",
+    "noLimit": "0 = keine Grenze.",
+    "maxTeams": "Max. genehmigte Teams",
+    "unlimited": "0 = unbegrenzt."
+  },
+  "library": {
+    "confirmDelete": "Vorlage {code} löschen? Kopien sind nicht betroffen.",
+    "deleted": "Vorlage gelöscht.",
+    "description": "Wiederverwendbare Kategorievorlagen. Anlässe erhalten unabhängige Kopien.",
+    "empty": "Noch keine Vorlagen.",
+    "copyToEvent": "Vorlage in Anlass kopieren",
+    "copyToEventOf": "{code} in Anlass kopieren"
+  }
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, reactive, watch } from 'vue'
 import { CopyIcon, Trash2Icon } from '@lucide/vue'
 import {
@@ -105,7 +106,8 @@ const duplicate = useSubmit(async () => {
 })
 
 const remove = useSubmit(async () => {
-  if (!props.block?.id || !confirm(`Delete “${props.block.title}”?`)) return
+  if (!props.block?.id || !confirm(t('common.confirmDeleteItem', { item: props.block.title })))
+    return
   await deleteBlock(props.block.id)
   emit('deleted', props.block.id)
   open.value = false
@@ -136,7 +138,7 @@ function toggleCategory(id: string, checked: boolean) {
 
 const coverage = computed(() => {
   const ids = [...(props.block?.categories ?? []), ...(props.block?.columns ?? [])]
-  if (!ids.length) return 'All columns'
+  if (!ids.length) return t('planner.block.allColumns')
   return [...props.categories, ...(props.customColumns ?? [])]
     .filter((c) => ids.includes(c.id))
     .map((c) => c.name)
@@ -150,42 +152,62 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
     <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>{{
-          editable ? (isNew ? 'New block' : 'Edit block') : (block?.title ?? 'Block')
+          editable
+            ? isNew
+              ? t('planner.block.new')
+              : t('planner.block.edit')
+            : (block?.title ?? t('planner.block.block'))
         }}</DialogTitle>
         <DialogDescription v-if="editable">
-          Custom blocks can sit anywhere and never cause conflicts.
+          {{ t('planner.block.description') }}
         </DialogDescription>
       </DialogHeader>
 
       <dl v-if="!editable && block" class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-        <dt class="text-muted-foreground">When</dt>
+        <dt class="text-muted-foreground">{{ t('teams.mine.when') }}</dt>
         <dd>
           {{ dayName(days.find((d) => d.id === block?.day)) }},
           {{ timeRange(block.starts_at, block.duration_minutes ?? 0) }}
         </dd>
         <template v-if="block.place">
-          <dt class="text-muted-foreground">Place</dt>
+          <dt class="text-muted-foreground">{{ t('planner.block.place') }}</dt>
           <dd>{{ block.place }}</dd>
         </template>
         <template v-if="block.responsibility">
-          <dt class="text-muted-foreground">Responsible</dt>
+          <dt class="text-muted-foreground">{{ t('planner.block.responsible') }}</dt>
           <dd>{{ block.responsibility }}</dd>
         </template>
-        <dt class="text-muted-foreground">Columns</dt>
+        <dt class="text-muted-foreground">{{ t('planner.block.columns') }}</dt>
         <dd>{{ coverage }}</dd>
         <template v-if="internal">
-          <dt class="text-muted-foreground">Visibility</dt>
-          <dd>{{ block.public ? 'Public' : 'Internal (staff only)' }}</dd>
+          <dt class="text-muted-foreground">{{ t('planner.block.visibility') }}</dt>
+          <dd>{{ block.public ? t('live.publication.public') : t('planner.internal') }}</dd>
         </template>
       </dl>
 
       <form v-else id="block-form" class="flex flex-col gap-4" @submit.prevent="save.run()">
         <ErrorAlert :error="error" />
-        <FormField v-slot="{ id }" label="Title" name="title" :errors="save.fieldErrors.value">
-          <Input :id="id" v-model="form.title" required maxlength="100" placeholder="e.g. Lunch" />
+        <FormField
+          v-slot="{ id }"
+          :label="t('common.title')"
+          name="title"
+          :errors="save.fieldErrors.value"
+        >
+          <Input
+            :id="id"
+            v-model="form.title"
+            required
+            maxlength="100"
+            :placeholder="t('planner.block.titlePlaceholder')"
+          />
         </FormField>
         <div class="grid gap-4 sm:grid-cols-3">
-          <FormField v-slot="{ id }" label="Day" name="day" :errors="save.fieldErrors.value">
+          <FormField
+            v-slot="{ id }"
+            :label="t('scheduling.export.day')"
+            name="day"
+            :errors="save.fieldErrors.value"
+          >
             <NativeSelect :id="id" v-model="form.day" class="w-full" required>
               <NativeSelectOption v-for="d in days" :key="d.id" :value="d.id">{{
                 d.label ? `${d.label} (${formatDay(d.date)})` : formatDay(d.date)
@@ -194,7 +216,7 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
           </FormField>
           <FormField
             v-slot="{ id }"
-            label="Start"
+            :label="t('planner.start')"
             name="starts_at"
             :errors="save.fieldErrors.value"
           >
@@ -202,7 +224,7 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
           </FormField>
           <FormField
             v-slot="{ id }"
-            label="Duration (min)"
+            :label="t('planner.durationMin')"
             name="duration_minutes"
             :errors="save.fieldErrors.value"
           >
@@ -218,12 +240,22 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
           </FormField>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
-          <FormField v-slot="{ id }" label="Place" name="place" :errors="save.fieldErrors.value">
-            <Input :id="id" v-model="form.place" maxlength="100" placeholder="e.g. Hall B" />
+          <FormField
+            v-slot="{ id }"
+            :label="t('planner.block.place')"
+            name="place"
+            :errors="save.fieldErrors.value"
+          >
+            <Input
+              :id="id"
+              v-model="form.place"
+              maxlength="100"
+              :placeholder="t('planner.block.placePlaceholder')"
+            />
           </FormField>
           <FormField
             v-slot="{ id }"
-            label="Responsibility"
+            :label="t('planner.block.responsibility')"
             name="responsibility"
             :errors="save.fieldErrors.value"
           >
@@ -231,13 +263,13 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
               :id="id"
               v-model="form.responsibility"
               maxlength="200"
-              placeholder="e.g. Head judge"
+              :placeholder="t('planner.block.responsibilityPlaceholder')"
             />
           </FormField>
         </div>
         <fieldset class="flex flex-col gap-2">
-          <legend class="mb-1 text-sm font-medium">Columns</legend>
-          <p class="text-xs text-muted-foreground">None selected: the block covers all columns.</p>
+          <legend class="mb-1 text-sm font-medium">{{ t('planner.block.columns') }}</legend>
+          <p class="text-xs text-muted-foreground">{{ t('planner.block.columnsHint') }}</p>
           <div class="flex flex-wrap gap-x-4 gap-y-2">
             <label
               v-for="category in categories"
@@ -274,8 +306,12 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
           </p>
         </fieldset>
         <fieldset class="flex flex-col gap-2">
-          <legend class="mb-1 text-sm font-medium">Color</legend>
-          <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Color">
+          <legend class="mb-1 text-sm font-medium">{{ t('planner.block.color') }}</legend>
+          <div
+            class="flex flex-wrap gap-2"
+            role="radiogroup"
+            :aria-label="t('planner.block.color')"
+          >
             <label v-for="color in BLOCK_COLORS" :key="color" class="cursor-pointer">
               <input v-model="form.color" type="radio" :value="color" class="peer sr-only" />
               <span
@@ -289,7 +325,7 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
         </fieldset>
         <label class="flex items-center gap-2 text-sm">
           <input v-model="form.public" type="checkbox" class="size-4 accent-primary" />
-          Public — shown to coaches and on the public pages
+          {{ t('planner.block.publicHint') }}
         </label>
       </form>
 
@@ -301,25 +337,31 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
             variant="outline"
             :disabled="remove.pending.value"
             @click="remove.run()"
-            ><Trash2Icon /> Delete</Button
+            ><Trash2Icon /> {{ t('planner.block.delete') }}</Button
           >
           <Button
             v-if="!isNew"
             type="button"
             variant="outline"
             :disabled="duplicate.pending.value"
-            title="Creates a copy with the values above, e.g. on another day"
+            :title="t('planner.block.duplicateHint')"
             @click="duplicate.run()"
-            ><CopyIcon /> Duplicate</Button
+            ><CopyIcon /> {{ t('planner.block.duplicate') }}</Button
           >
         </div>
         <div class="flex gap-2">
-          <Button type="button" variant="outline" @click="open = false">Cancel</Button>
-          <Button type="submit" form="block-form" :disabled="save.pending.value">Save</Button>
+          <Button type="button" variant="outline" @click="open = false">{{
+            t('common.cancel')
+          }}</Button>
+          <Button type="submit" form="block-form" :disabled="save.pending.value">{{
+            t('common.save')
+          }}</Button>
         </div>
       </DialogFooter>
       <DialogFooter v-else>
-        <Button type="button" variant="outline" @click="open = false">Close</Button>
+        <Button type="button" variant="outline" @click="open = false">{{
+          t('planner.close')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

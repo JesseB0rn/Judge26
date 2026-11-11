@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, te, translatedLabels } from '@/i18n'
 import type { RulesetDefinition, ScoringNode } from '@judge26/scoring-engine'
 import { formatDateTime } from '@/shared/format'
 import { formatTime } from '../lib'
@@ -7,13 +8,10 @@ import type { AuditEntry, ScoreSnapshot } from '../types'
 /** Audit trail of a game's score (M5-13): who changed what, when and why. */
 const props = defineProps<{ entries: AuditEntry[]; definition?: RulesetDefinition | null }>()
 
-const ACTIONS: Record<AuditEntry['action'], string> = {
-  submitted: 'Submitted',
-  approved: 'Approved',
-  rejected: 'Returned to judge',
-  corrected: 'Corrected',
-  manual_edit: 'Result edited',
-}
+const ACTIONS = translatedLabels<AuditEntry['action']>(
+  ['submitted', 'approved', 'rejected', 'corrected', 'manual_edit'],
+  (action) => t(`judging.history.actions.${action}`),
+)
 
 function labels(): Map<string, string> {
   const map = new Map<string, string>()
@@ -26,9 +24,19 @@ function labels(): Map<string, string> {
 }
 
 const show = (v: unknown) =>
-  v === undefined || v === null ? '–' : v === true ? 'yes' : v === false ? 'no' : String(v)
+  v === undefined || v === null
+    ? '–'
+    : v === true
+      ? t('common.yes')
+      : v === false
+        ? t('common.no')
+        : String(v)
+const outcomeLabel = (outcome: string) => {
+  const key = `judging.outcome.${outcome}`
+  return te(key) ? t(key) : outcome
+}
 const points = (s: ScoreSnapshot | null) =>
-  !s ? '–' : s.outcome !== 'completed' ? s.outcome : String(s.points ?? '–')
+  !s ? '–' : s.outcome !== 'completed' ? outcomeLabel(s.outcome) : String(s.points ?? '–')
 const time = (s: ScoreSnapshot | null) => (s && s.time_ms > 0 ? formatTime(s.time_ms) : '–')
 
 /** Criteria whose value differs between before and after. */
@@ -59,21 +67,26 @@ const changed = (entry: AuditEntry) =>
       <div class="flex flex-wrap items-baseline gap-x-2">
         <span class="font-semibold">{{ ACTIONS[entry.action] }}</span>
         <span class="text-muted-foreground"
-          >{{ entry.actor.name || 'System' }} · {{ formatDateTime(entry.created) }}</span
+          >{{ entry.actor.name || t('judging.history.system') }} ·
+          {{ formatDateTime(entry.created) }}</span
         >
       </div>
       <p v-if="entry.reason" class="mt-1">“{{ entry.reason }}”</p>
       <p v-if="changed(entry)" class="mt-1 tabular-nums" data-testid="history-change">
-        Points {{ points(entry.before) }} → <strong>{{ points(entry.after) }}</strong> · Time
+        {{ t('scheduling.export.points') }} {{ points(entry.before) }} →
+        <strong>{{ points(entry.after) }}</strong> · {{ t('judging.time') }}
         {{ time(entry.before) }} → <strong>{{ time(entry.after) }}</strong>
       </p>
       <p v-else-if="entry.after && entry.action === 'submitted'" class="mt-1 tabular-nums">
-        Points {{ points(entry.after) }} · Time {{ time(entry.after) }}
+        {{ t('scheduling.export.points') }} {{ points(entry.after) }} · {{ t('judging.time') }}
+        {{ time(entry.after) }}
       </p>
       <ul v-if="changes(entry).length" class="mt-1 list-disc pl-5 text-muted-foreground">
         <li v-for="c in changes(entry)" :key="c.key">{{ c.label }}: {{ c.from }} → {{ c.to }}</li>
       </ul>
     </li>
-    <li v-if="!entries.length" class="text-sm text-muted-foreground">No changes yet.</li>
+    <li v-if="!entries.length" class="text-sm text-muted-foreground">
+      {{ t('judging.history.empty') }}
+    </li>
   </ol>
 </template>

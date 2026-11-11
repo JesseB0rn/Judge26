@@ -1,0 +1,134 @@
+{
+  "core": {
+    "failed_to_authenticate": "L’indirizzo e-mail o la password non sono corretti.",
+    "invalid_data": "Alcuni valori non sono validi. Verifichi i campi evidenziati.",
+    "invalid_verification_token": "Il link di conferma non è valido o è scaduto.",
+    "invalid_reset_token": "Il link per reimpostare la password non è valido o è scaduto."
+  },
+  "validation_required": "Non può essere vuoto.",
+  "validation_invalid_email": "Deve essere un indirizzo e-mail valido.",
+  "validation_is_email": "Deve essere un indirizzo e-mail valido.",
+  "validation_invalid_url": "Deve essere un URL valido.",
+  "validation_is_url": "Deve essere un URL valido.",
+  "validation_invalid_value": "Valore non valido.",
+  "validation_in_invalid": "Deve essere un valore valido.",
+  "validation_invalid_format": "Il formato non è valido.",
+  "validation_match_invalid": "Il formato non è valido.",
+  "validation_invalid_date": "Deve essere una data valida.",
+  "validation_invalid_number": "Deve essere un numero valido.",
+  "validation_not_unique": "Questo valore è già in uso.",
+  "validation_values_mismatch": "I valori non corrispondono.",
+  "validation_length_out_of_range": "Deve contenere tra {min} e {max} caratteri.",
+  "validation_length_too_long": "Può contenere al massimo {max} caratteri.",
+  "validation_length_too_short": "Deve contenere almeno {min} caratteri.",
+  "validation_min_text_constraint": "Deve contenere almeno {min} caratteri.",
+  "validation_max_text_constraint": "Può contenere al massimo {max} caratteri.",
+  "validation_min_number_constraint": "Deve essere almeno {min}.",
+  "validation_max_number_constraint": "Può essere al massimo {max}.",
+  "validation_min_greater_equal_than_required": "Deve essere almeno {threshold}.",
+  "validation_max_less_equal_than_required": "Può essere al massimo {threshold}.",
+  "validation_file_size_limit": "Il file è troppo grande.",
+  "validation_invalid_mime_type": "Questo tipo di file non è consentito.",
+  "validation_missing_rel_records": "L’elemento selezionato non esiste.",
+  "event_not_found": "L’evento non è stato trovato.",
+  "event_archived": "Gli eventi archiviati sono di sola lettura.",
+  "review_not_allowed": "Solo i giudici capo e i responsabili dell’evento possono verificare i punteggi.",
+  "too_many_reports": "Troppe segnalazioni di errore, riprovi più tardi.",
+  "unknown_action": "Azione sconosciuta.",
+  "game_not_found": "La manche non è stata trovata.",
+  "category_not_found": "La categoria non è stata trovata.",
+  "ruleset_not_found": "Il regolamento non è stato trovato.",
+  "message_not_found": "Il messaggio non è stato trovato.",
+  "categories_not_allowed": "Non può creare categorie qui.",
+  "not_verified": "Confermi prima il suo indirizzo e-mail.",
+  "own_schedule_only": "Può vedere solo il suo programma.",
+  "game_not_assigned": "Questa manche non le è assegnata.",
+  "sign_in_required": "Acceda per vedere il programma.",
+  "correction_not_allowed": "Solo i giudici capo e i responsabili dell’evento possono correggere i punteggi definitivi.",
+  "staff_only": "Solo lo staff dell’evento può farlo.",
+  "managers_only": "Solo i responsabili dell’evento e gli admin possono farlo.",
+  "admins_only": "Solo gli amministratori possono farlo.",
+  "ranking_not_configured": "Questa categoria non ha una configurazione della classifica.",
+  "audit_immutable": "Le voci di registro dei punteggi non possono essere modificate.",
+  "snapshot_immutable": "Le istantanee della classifica non possono essere modificate.",
+  "ruleset_published": "I regolamenti pubblicati non possono essere modificati. Crei invece una nuova versione.",
+  "retry_failed_only": "Solo i messaggi non riusciti possono essere ritentati.",
+  "game_has_score": "Le manche con un punteggio inviato o definitivo non possono essere eliminate.",
+  "table_in_use": "Su questo tavolo sono ancora pianificate delle manche. Le sposti prima.",
+  "column_in_use": "In questa colonna ci sono ancora dei blocchi. Li sposti o li elimini prima.",
+  "game_rule_category": "Un gioco non può essere spostato in un’altra categoria.",
+  "game_rule_used": "Questo gioco è stato usato per valutare dei risultati e non può essere eliminato.",
+  "sheet_submitted": "Questo foglio di punteggio è già stato inviato ed è in attesa di verifica.",
+  "sheet_finalized": "Questo punteggio è definitivo. Solo un giudice capo può correggerlo.",
+  "approve_submitted_only": "Solo i fogli di punteggio inviati possono essere approvati.",
+  "reject_submitted_only": "Solo i fogli di punteggio inviati possono essere rimandati.",
+  "correct_finalized_only": "Solo i punteggi definitivi possono essere corretti.",
+  "corrected_meanwhile": "Il punteggio è stato corretto nel frattempo da qualcun altro. Lo ricarichi e verifichi di nuovo.",
+  "result_finalized": "Questo risultato è definitivo. Usi una correzione motivata del punteggio per modificarlo.",
+  "result_in_review": "Questo risultato è in attesa di verifica nel flusso di valutazione.",
+  "changed_meanwhile": "È stato modificato nel frattempo da qualcun altro. Ricarichi e riprovi.",
+  "table_required": "Assegni un tavolo prima di stabilire l’ordine.",
+  "invalid_table": "Il tavolo appartiene a un altro evento.",
+  "table_inactive": "Il tavolo è disattivato.",
+  "incompatible_category": "Il tavolo non è disponibile per questa categoria.",
+  "missing_table_judge": "Assegni un giudice al tavolo prima di pianificarvi delle manche.",
+  "sequence_in_use": "Questo numero d’ordine è già usato su questo tavolo in questo turno.",
+  "invalid_category": "Scelga una categoria di questo evento.",
+  "invalid_column": "Scelga colonne di questo evento.",
+  "invalid_date": "Deve essere una data valida (AAAA-MM-GG).",
+  "invalid_day": "Scelga un giorno di gara di questo evento.",
+  "crosses_midnight": "Un blocco deve terminare entro mezzanotte.",
+  "invalid_judge": "Il giudice assegnato deve far parte dello staff di questo evento.",
+  "unknown_template": "Modello sconosciuto.",
+  "invalid_ruleset": "Usi un regolamento pubblicato di questa categoria.",
+  "invalid_scope": "Scelga chi avvisare.",
+  "category_full": "La categoria è al completo.",
+  "invalid_status": "Questo stato non è possibile per una nuova iscrizione.",
+  "invalid_transition": "L’iscrizione non può passare a questo stato.",
+  "invalid_team": "La squadra non è iscritta nella categoria di questo turno.",
+  "team_not_approved": "Solo le squadre approvate possono giocare manche.",
+  "invalid_game_rule": "Scelga un gioco di questa categoria.",
+  "invalid_snapshot": "Scelga un’istantanea della classifica di questa categoria.",
+  "fields": {
+    "registration_closes_at": {
+      "invalid_range": "La chiusura delle iscrizioni deve seguire l’apertura."
+    },
+    "ends_at": {
+      "invalid_range": "Il giorno deve terminare dopo l’inizio."
+    },
+    "max_age": {
+      "invalid_range": "L’età massima non deve essere inferiore all’età minima."
+    },
+    "max_team_size": {
+      "invalid_range": "La dimensione massima della squadra non deve essere inferiore alla minima."
+    },
+    "email": {
+      "not_found": "Non esiste alcun utente con questo indirizzo e-mail."
+    },
+    "event": {
+      "not_allowed": "Il ruolo admin è globale e non può essere limitato a un evento.",
+      "required": "Questo ruolo deve essere assegnato a un evento."
+    },
+    "day": {
+      "required": "Scelga il giorno di questa fase."
+    },
+    "game_rule": {
+      "required": "Scelga il gioco."
+    },
+    "message": {
+      "required": "È richiesto un messaggio."
+    },
+    "review_note": {
+      "required": "È richiesto un motivo per respingere un’iscrizione."
+    },
+    "title": {
+      "required": "È richiesto un titolo."
+    },
+    "sequence": {
+      "required": "L’ordine deve essere un numero positivo."
+    },
+    "active": {
+      "table_in_use": "Su questo tavolo sono ancora pianificate delle manche."
+    }
+  }
+}

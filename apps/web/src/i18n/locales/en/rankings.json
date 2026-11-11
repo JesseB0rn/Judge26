@@ -1,0 +1,216 @@
+{
+  "fields": {
+    "points": "points",
+    "time": "time"
+  },
+  "ops": {
+    "ADD": {
+      "label": "Sum",
+      "hint": "Adds points and times"
+    },
+    "MAX": {
+      "label": "Maximum",
+      "hint": "Highest points (no time)"
+    },
+    "MIN": {
+      "label": "Minimum",
+      "hint": "Lowest points (no time)"
+    },
+    "DIFFERENCE": {
+      "label": "Difference",
+      "hint": "First minus second"
+    },
+    "BEST_BY": {
+      "label": "Best",
+      "hint": "Best whole result, keeps its time"
+    },
+    "WORST_BY": {
+      "label": "Worst",
+      "hint": "Worst whole result"
+    },
+    "SUM_BEST_N": {
+      "label": "Sum of best N",
+      "hint": "Adds the N best results"
+    }
+  },
+  "builder": {
+    "roundLabel": "Round {n}",
+    "noOutput": "The ranking has no output to wire.",
+    "noInputs": "Rounds have no inputs: wire into a calculation or the ranking.",
+    "bestAttempt": "best attempt",
+    "bestNBy": "best {n} by {sort}",
+    "opBy": "{op} by {sort}",
+    "wireHere": "wire here",
+    "wireToAdd": "+ wire to add",
+    "tiesName": "ties: by team name",
+    "tiesShared": "ties: shared rank",
+    "addTieBreaker": "+ tie-breaker",
+    "addKey": "+ ranking key",
+    "empty": "No ranking configuration yet. Use \"{generate}\" or \"{example}\" to start.",
+    "syntaxError": "The JSON has a syntax error ({error}). Fix it in the JSON editor first.",
+    "incomplete": "The configuration needs a rounds list and ranking keys before the builder can show it. Fix it in the JSON editor first.",
+    "add": "Add {block}",
+    "probe": "Probe team",
+    "none": "None",
+    "help": "Drag from a block's ▶ output to an input terminal of a calculation, or to the ranking to add a ranking key (the first key ranks, the next ones break ties). Select a wire or block and press Delete to remove it. Choose a probe team to see its results on every wire.",
+    "selectHint": "Select a block to edit it. The ranking block holds tie-breaks and policies.",
+    "rules": "Ranking rules"
+  },
+  "inspector": {
+    "roundSuffix": "round",
+    "calculation": "Calculation",
+    "deleteBlock": "Delete block",
+    "keyHint": "Games reference the round by this key.",
+    "attempts": "Several attempts count as",
+    "bestDefault": "Best attempt (default)",
+    "nAttempts": "N (attempts)",
+    "id": "Id",
+    "idHint": "Other calculations and the ranking refer to it.",
+    "operation": "Operation",
+    "nResults": "N (results)",
+    "operands": "Operands (a − b)",
+    "inputs": "Inputs, in order",
+    "input": "Input {n}",
+    "moveInputUp": "Move input up",
+    "removeInput": "Remove input",
+    "addInput": "Add input",
+    "addInputOption": "+ Add input…",
+    "bestMeans": "\"Best\" means, in order",
+    "field": "Field",
+    "order": "Order",
+    "desc": "high first",
+    "asc": "low first",
+    "removeSortKey": "Remove sort key",
+    "sortKey": "Sort key",
+    "rankBy": "Rank by (first key decides, the next ones break ties)",
+    "keySource": "Key {n} source",
+    "moveKeyUp": "Move key up",
+    "moveKeyDown": "Move key down",
+    "removeKey": "Remove key",
+    "columnLabel": "Column label",
+    "addTieBreakerOption": "+ Add tie-breaker…",
+    "addKeyOption": "+ Add ranking key…",
+    "ties": "When all keys are equal",
+    "tiesShared": "shared rank",
+    "tiesName": "order by team name",
+    "resultsThatAre": "Results that are…",
+    "policyName": {
+      "missing": "missing",
+      "disqualified": "disqualified",
+      "absent": "absent"
+    },
+    "policy": {
+      "zero": "count as 0",
+      "exclude": "ignore the round",
+      "unranked": "leave team unranked"
+    },
+    "precision": "Decimal places (0–4)",
+    "timeResolution": "Time resolution (ms)"
+  },
+  "game": {
+    "description": "Record the result. Several attempts per round are possible.",
+    "confirmDelete": "Delete attempt {attempt}?",
+    "newAttempt": "New attempt ({attempt})",
+    "notPlayed": "Scheduled (not played)",
+    "seconds": "Time (seconds)",
+    "secondsHint": "Leave empty if not timed.",
+    "secondsPlaceholder": "e.g. {example}",
+    "useSheet": "Score with ruleset version {version}",
+    "deleteAttempt": "Delete attempt",
+    "save": "Save result"
+  },
+  "config": {
+    "json": "Ranking configuration (JSON)",
+    "empty": "No ranking configuration yet.",
+    "invalidJson": "Invalid JSON: {error}",
+    "valid": "The configuration is valid."
+  },
+  "table": {
+    "byName": "by name",
+    "by": "by {key}",
+    "decided": "Decided",
+    "shared": "Shared rank",
+    "missingResults": "Some round results are missing",
+    "explain": "Explain {team}"
+  },
+  "matrix": {
+    "resultsOf": "Results of {team} in {round}",
+    "enter": "Enter",
+    "empty": "No approved teams."
+  },
+  "rounds": {
+    "notSet": "Not set",
+    "gone": "The round being edited no longer exists.",
+    "confirmDelete": "Delete {round}? All results recorded in this round are deleted too.",
+    "key": "Key",
+    "game": "Game",
+    "phases": "Phases",
+    "phaseSummary": "Testing {testing}m · Scoring {scoring}m · Total {total}m",
+    "empty": "No rounds yet.",
+    "keyHint": "Used in the ranking configuration, e.g. R1.",
+    "name": "Round name",
+    "gameHint": "The score sheet judges use in this round.",
+    "day": "Competition day",
+    "dayHint": "Judges filter their games by day.",
+    "testing": "Maintenance / testing (minutes)",
+    "scoring": "Scoring phase (minutes)",
+    "total": "Total round duration: {minutes} minutes.",
+    "save": "Save round",
+    "add": "Add round"
+  },
+  "export": {
+    "title": "ranking {category}",
+    "shared": "Shared",
+    "roundPoints": "{round} points",
+    "roundTime": "{round} time (s)",
+    "roundStatus": "{round} status",
+    "provisional": "Provisional",
+    "decidedBy": "Decided by"
+  },
+  "report": {
+    "noSnapshot": "This snapshot does not exist or belongs to another category.",
+    "notConfigured": "The ranking of this category is not configured.",
+    "back": "Back",
+    "print": "Print / save as PDF",
+    "printHint": "Choose “Save as PDF” as the printer to get a file.",
+    "provisional": "Provisional: no games are open. | Provisional: one game has no final result yet. | Provisional: {count} games have no final result yet.",
+    "missingNote": "Some round results of this team are missing.",
+    "snapshotOf": "Snapshot of {date} · fingerprint",
+    "generated": "Generated {date} by Judge26."
+  },
+  "view": {
+    "configSaved": "Ranking configuration saved.",
+    "snapshotPublished": "Ranking snapshot published.",
+    "title": "Rounds & ranking: {category}",
+    "backToPlanner": "Back to planner",
+    "backToEvent": "Back to event",
+    "backToLibrary": "Back to library",
+    "results": "Results",
+    "configuration": "Configuration",
+    "snapshots": "Snapshots",
+    "configureFirst": "Configure the ranking to see results.",
+    "livePublic": "Live ranking is public",
+    "unsavedPreview": "Preview with unsaved configuration changes.",
+    "provisional": "Provisional: {open} of {total} games have no final result yet.",
+    "ignored": "No results ignored: | One result ignored: | {count} results ignored:",
+    "snapshotPlaceholder": "e.g. Official ranking day 1",
+    "snapshotTitle": "Snapshot title",
+    "publishSnapshot": "Publish snapshot",
+    "saveFirst": "Save the configuration first.",
+    "addRoundsFirst": "Add rounds first.",
+    "generate": "Generate from rounds",
+    "example": "Load example",
+    "saveConfig": "Save configuration",
+    "unknownRounds": "The configuration references rounds that do not exist yet: {rounds}. Their results count as missing.",
+    "noSnapshots": "No snapshots published yet.",
+    "snapshot": "Snapshot",
+    "selectSnapshot": "Select a snapshot",
+    "officialPublic": "official (public)",
+    "fingerprints": "Fingerprint {result} · configuration {config}"
+  },
+  "resultStatus": {
+    "missing": "missing",
+    "absent": "absent",
+    "disqualified": "disqualified"
+  }
+}

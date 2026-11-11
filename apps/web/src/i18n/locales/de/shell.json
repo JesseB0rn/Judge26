@@ -1,0 +1,20 @@
+{
+  "language": "Sprache",
+  "mainNavigation": "Hauptnavigation",
+  "signIn": "Anmelden",
+  "signOut": "Abmelden",
+  "register": "Registrieren",
+  "nav": {
+    "judging": "Bewerten",
+    "review": "Prüfen",
+    "events": "Anlässe",
+    "myTeams": "Meine Teams",
+    "live": "Live-Resultate",
+    "admin": "Admin",
+    "categories": "Kategorien",
+    "users": "Benutzer",
+    "emails": "E-Mails",
+    "audit": "Protokoll",
+    "monitoring": "Systemzustand"
+  }
+}

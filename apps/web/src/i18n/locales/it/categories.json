@@ -1,0 +1,47 @@
+{
+  "template": "Modello",
+  "code": "Codice",
+  "any": "qualsiasi",
+  "teamSize": "Dimensione squadra",
+  "age": "Età",
+  "maxTeams": "Squadre max.",
+  "ranking": "Classifica",
+  "rankingFor": "Turni e classifica per {code}",
+  "rules": "Regole",
+  "rulesFor": "Regole di punteggio per {code}",
+  "empty": "Ancora nessuna categoria.",
+  "confirmDelete": "Eliminare la categoria {code}?",
+  "deleted": "Categoria eliminata.",
+  "addFromTemplate": "Aggiungi da modello",
+  "addFromTemplateTitle": "Aggiungi categoria da modello",
+  "saveAsTemplate": "Salva come modello",
+  "saveAsTemplateOf": "Salva {code} come modello",
+  "copy": {
+    "description": "La copia è indipendente: le modifiche successive all’originale non la riguardano.",
+    "target": "Copia in",
+    "keepCode": "Lasci vuoto per mantenere {code}.",
+    "keepOriginalCode": "Lasci vuoto per mantenere il codice originale.",
+    "submit": "Copia"
+  },
+  "form": {
+    "editTitle": "Modifica categoria",
+    "newCategory": "Nuova categoria",
+    "newTemplate": "Nuovo modello",
+    "minTeamSize": "Dimensione min. squadra",
+    "maxTeamSize": "Dimensione max. squadra",
+    "minAge": "Età min.",
+    "minAgeHint": "0 = nessun limite. Età = stagione − anno di nascita.",
+    "maxAge": "Età max.",
+    "noLimit": "0 = nessun limite.",
+    "maxTeams": "Squadre approvate max.",
+    "unlimited": "0 = illimitato."
+  },
+  "library": {
+    "confirmDelete": "Eliminare il modello {code}? Le copie non sono interessate.",
+    "deleted": "Modello eliminato.",
+    "description": "Modelli di categoria riutilizzabili. Gli eventi ne ricevono copie indipendenti.",
+    "empty": "Ancora nessun modello.",
+    "copyToEvent": "Copia il modello in un evento",
+    "copyToEventOf": "Copia {code} in un evento"
+  }
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import RankingTable from '@/modules/rankings/components/RankingTable.vue'
@@ -27,18 +28,18 @@ const sourceModel = computed({
 <template>
   <div class="flex flex-col gap-4" data-testid="public-ranking">
     <Alert v-if="!shown" data-testid="not-published">
-      <AlertDescription>Results for this category have not been published yet.</AlertDescription>
+      <AlertDescription>{{ t('live.ranking.notPublished') }}</AlertDescription>
     </Alert>
     <template v-else>
       <div class="flex flex-wrap items-center justify-between gap-3">
         <FilterChips
           v-if="both"
           v-model="sourceModel"
-          label="Ranking"
+          :label="t('categories.ranking')"
           required
           :options="[
-            { value: 'official', label: 'Official' },
-            { value: 'live', label: 'Live' },
+            { value: 'official', label: t('live.ranking.official') },
+            { value: 'live', label: t('live.ranking.live') },
           ]"
         />
         <p
@@ -47,17 +48,26 @@ const sourceModel = computed({
           data-testid="official-title"
         >
           <span class="font-medium text-foreground">{{ ranking.official.title }}</span>
-          · official, published {{ formatDateTime(ranking.official.published_at) }}
+          ·
+          {{
+            t('live.ranking.officialPublished', {
+              date: formatDateTime(ranking.official.published_at),
+            })
+          }}
         </p>
         <p v-else class="text-sm text-muted-foreground" data-testid="live-title">
-          <span class="font-medium text-foreground">Live ranking</span> · from final scores, not
-          official
+          <span class="font-medium text-foreground">{{ t('live.ranking.liveTitle') }}</span> ·
+          {{ t('live.ranking.liveHint') }}
         </p>
       </div>
       <Alert v-if="provisional" data-testid="provisional">
         <AlertDescription>
-          Provisional: {{ progress.total - progress.done }} of {{ progress.total }} games are not
-          final yet. Teams marked “provisional” are missing round results.
+          {{
+            t('live.ranking.provisional', {
+              open: progress.total - progress.done,
+              total: progress.total,
+            })
+          }}
         </AlertDescription>
       </Alert>
       <ProgressBar v-if="shown.source === 'live'" :progress="progress" />

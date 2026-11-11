@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, te } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import { RefreshCwIcon } from '@lucide/vue'
@@ -19,7 +20,13 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { config } from '@/shared/config/env'
 import { formatDateTime } from '@/shared/format'
-import { fetchMonitoring, type CheckStatus, type HealthStatus, type Monitoring } from '../api'
+import {
+  fetchMonitoring,
+  type CheckStatus,
+  type HealthCheck,
+  type HealthStatus,
+  type Monitoring,
+} from '../api'
 
 /** System health (M7-13): health checks and recent errors, refreshed every 30 seconds. */
 const data = ref<Monitoring | null>(null)
@@ -42,21 +49,27 @@ async function load() {
 onMounted(load)
 useIntervalFn(load, 30_000)
 
-const OVERALL: Record<
-  HealthStatus,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' }
-> = {
-  ok: { label: 'All systems normal', variant: 'default' },
-  degraded: { label: 'Needs attention', variant: 'secondary' },
-  down: { label: 'Down', variant: 'destructive' },
+const OVERALL: Record<HealthStatus, 'default' | 'secondary' | 'destructive'> = {
+  ok: 'default',
+  degraded: 'secondary',
+  down: 'destructive',
 }
-const CHECK: Record<
-  CheckStatus,
-  { label: string; variant: 'outline' | 'secondary' | 'destructive' }
-> = {
-  ok: { label: 'OK', variant: 'outline' },
-  warn: { label: 'Warning', variant: 'secondary' },
-  down: { label: 'Down', variant: 'destructive' },
+const CHECK: Record<CheckStatus, 'outline' | 'secondary' | 'destructive'> = {
+  ok: 'outline',
+  warn: 'secondary',
+  down: 'destructive',
+}
+
+/** The check's result in the current language; the server's English text for unknown codes. */
+function checkDetail(check: HealthCheck): string {
+  if (!check.messages?.length) return check.detail
+  const parts = check.messages.map((m) => {
+    const key = `administration.monitoring.detail.${m.code}`
+    if (!te(key)) return ''
+    const count = m.params.count
+    return typeof count === 'number' ? t(key, count, m.params) : t(key, m.params)
+  })
+  return parts.every(Boolean) ? parts.join('; ') : check.detail
 }
 
 const uptime = computed(() => {
@@ -65,9 +78,11 @@ const uptime = computed(() => {
     0,
     Math.floor((Date.parse(data.value.checked_at) - Date.parse(data.value.started_at)) / 60000),
   )
-  if (minutes < 60) return `${minutes} min`
+  if (minutes < 60) return t('administration.monitoring.uptime.minutes', { minutes })
   const hours = Math.floor(minutes / 60)
-  return hours < 48 ? `${hours} h ${minutes % 60} min` : `${Math.floor(hours / 24)} days`
+  return hours < 48
+    ? t('administration.monitoring.uptime.hours', { hours, minutes: minutes % 60 })
+    : t('administration.monitoring.uptime.days', Math.floor(hours / 24))
 })
 
 /** The PocketBase dashboard's logs (superusers only). */
@@ -83,13 +98,13 @@ function toggle(id: string) {
 
 <template>
   <PageHeader
-    title="System health"
-    description="Whether the server, email delivery and backups are working, and the latest errors. Refreshed every 30 seconds."
+    :title="t('shell.nav.monitoring')"
+    :description="t('administration.monitoring.description')"
   >
     <template #actions>
       <Button variant="outline" size="sm" :disabled="loading" @click="load">
         <RefreshCwIcon :class="{ 'animate-spin': loading }" />
-        Refresh
+        {{ t('common.refresh') }}
       </Button>
     </template>
   </PageHeader>
@@ -99,16 +114,23 @@ function toggle(id: string) {
 
     <template v-if="data">
       <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm" data-testid="health-summary">
-        <Badge :variant="OVERALL[data.status].variant" data-testid="health-status">
-          {{ OVERALL[data.status].label }}
+        <Badge :variant="OVERALL[data.status]" data-testid="health-status">
+          {{ t(`administration.monitoring.overall.${data.status}`) }}
         </Badge>
         <span class="text-muted-foreground">
-          Version <span class="font-medium text-foreground">{{ data.version }}</span>
+          {{ t('system.status.version') }}
+          <span class="font-medium text-foreground">{{ data.version }}</span>
           <template v-if="data.commit !== 'unknown'"> ({{ data.commit.slice(0, 7) }})</template>
-          · up {{ uptime }} · checked {{ formatDateTime(data.checked_at) }}
+          ·
+          {{
+            t('administration.monitoring.upChecked', {
+              uptime,
+              checked: formatDateTime(data.checked_at),
+            })
+          }}
         </span>
         <span v-if="!data.alerts" class="text-muted-foreground" data-testid="alerts-off">
-          · Email alerts are off (MONITORING_ALERT_EMAIL)
+          · {{ t('administration.monitoring.alertsOff') }}
         </span>
       </div>
 
@@ -116,23 +138,25 @@ function toggle(id: string) {
         <Card v-for="check in data.checks" :key="check.id" :data-testid="`check-${check.id}`">
           <CardHeader>
             <CardTitle class="flex items-center justify-between gap-2">
-              {{ check.label }}
-              <Badge :variant="CHECK[check.status].variant">{{ CHECK[check.status].label }}</Badge>
+              {{ t(`administration.monitoring.checks.${check.id}`) }}
+              <Badge :variant="CHECK[check.status]">{{
+                t(`administration.monitoring.checkStatus.${check.status}`)
+              }}</Badge>
             </CardTitle>
-            <CardDescription>{{ check.detail }}</CardDescription>
+            <CardDescription>{{ checkDetail(check) }}</CardDescription>
           </CardHeader>
         </Card>
       </div>
 
       <section class="flex flex-col gap-3">
         <div class="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 class="text-lg font-semibold">Recent errors</h2>
+          <h2 class="text-lg font-semibold">{{ t('administration.monitoring.recentErrors') }}</h2>
           <a
             :href="logsUrl"
             target="_blank"
             rel="noopener"
             class="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >All logs (dashboard, superusers)</a
+            >{{ t('administration.monitoring.allLogs') }}</a
           >
         </div>
         <Card>
@@ -140,9 +164,9 @@ function toggle(id: string) {
             <Table data-testid="recent-errors">
               <TableHeader>
                 <TableRow>
-                  <TableHead class="w-40">Time</TableHead>
-                  <TableHead class="w-24">Source</TableHead>
-                  <TableHead>Error</TableHead>
+                  <TableHead class="w-40">{{ t('administration.monitoring.time') }}</TableHead>
+                  <TableHead class="w-24">{{ t('administration.monitoring.source') }}</TableHead>
+                  <TableHead>{{ t('administration.monitoring.error') }}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -152,14 +176,19 @@ function toggle(id: string) {
                       {{ formatDateTime(entry.created) }}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{{ entry.source }}</Badge>
+                      <Badge variant="outline">{{
+                        t(`administration.monitoring.sources.${entry.source}`)
+                      }}</Badge>
                     </TableCell>
                     <TableCell class="break-all whitespace-normal">
                       <div class="font-medium">{{ entry.message }}</div>
                       <div v-if="entry.url" class="text-xs text-muted-foreground">
                         {{ entry.url
                         }}<template v-if="entry.status !== null">
-                          · status {{ entry.status }}</template
+                          ·
+                          {{
+                            t('administration.monitoring.httpStatus', { status: entry.status })
+                          }}</template
                         >
                       </div>
                     </TableCell>
@@ -173,7 +202,7 @@ function toggle(id: string) {
                   </TableRow>
                 </template>
                 <TableEmpty v-if="!data.recent_errors.length" :colspan="3">
-                  No errors in the last 24 hours.
+                  {{ t('administration.monitoring.noErrors') }}
                 </TableEmpty>
               </TableBody>
             </Table>

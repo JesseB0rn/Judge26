@@ -1,0 +1,92 @@
+{
+  "phase": {
+    "maintenance": "Unterhalt / Training",
+    "check": "Roboterkontrolle",
+    "scoring": "Wertungslauf"
+  },
+  "phaseShort": {
+    "maintenance": "Unterhalt",
+    "check": "Roboterkontrolle",
+    "scoring": "Wertung"
+  },
+  "issues": {
+    "outside_day": "Ausserhalb der Zeiten dieses Tages.",
+    "phase_order": "Die Phasen müssen in der Reihenfolge Unterhalt, Roboterkontrolle, Wertung stattfinden.",
+    "round_overlap": "Überschneidet sich mit einer anderen Runde derselben Kategorie.",
+    "table_overlap": "Eine andere Runde nutzt zur selben Zeit denselben Tisch.",
+    "judge_overlap": "Dieselbe Schiedsrichterin oder derselbe Schiedsrichter wird zur selben Zeit an zwei Tischen gebraucht."
+  },
+  "internal": "Intern (nur Personal)",
+  "done": "Fertig",
+  "close": "Schliessen",
+  "duration": "Dauer",
+  "minutes": "{count} Minuten",
+  "minutesShort": "{count} Min.",
+  "start": "Beginn",
+  "startHint": "Leer: nicht platziert",
+  "durationMin": "Dauer (Min.)",
+  "unplace": "Entfernen",
+  "columns": {
+    "confirmDelete": "Die Spalte «{column}» löschen?",
+    "title": "Eigene Spalten",
+    "description": "Spalten neben den Kategorien, z. B. Besucher oder Coaches. Eigene Blöcke können an jedem Tag darin platziert werden.",
+    "nameOf": "Name von {column}",
+    "left": "{column} nach links",
+    "right": "{column} nach rechts",
+    "empty": "Noch keine eigenen Spalten.",
+    "placeholder": "z. B. Besucher",
+    "newName": "Name der neuen Spalte",
+    "add": "Spalte hinzufügen",
+    "hint": "Interne Spalten sieht nur das Personal des Anlasses. Eine Spalte mit Blöcken kann nicht gelöscht werden."
+  },
+  "phaseDialog": {
+    "confirmRemoveCheck": "Die Roboterkontrolle dieser Runde entfernen?",
+    "hint": "Die Dauer von Unterhalt und Wertung ist zugleich die Phasendauer der Runde. Der Wertungstag ist der Tag der Runde.",
+    "settings": "Einstellungen der Runde",
+    "removeCheck": "Roboterkontrolle entfernen",
+    "addCheck": "Roboterkontrolle hinzufügen"
+  },
+  "block": {
+    "allColumns": "Alle Spalten",
+    "new": "Neuer Block",
+    "edit": "Block bearbeiten",
+    "block": "Block",
+    "description": "Eigene Blöcke können überall stehen und verursachen nie Konflikte.",
+    "place": "Ort",
+    "responsible": "Verantwortlich",
+    "columns": "Spalten",
+    "visibility": "Sichtbarkeit",
+    "titlePlaceholder": "z. B. Mittagessen",
+    "placePlaceholder": "z. B. Halle B",
+    "responsibility": "Verantwortung",
+    "responsibilityPlaceholder": "z. B. Oberschiedsrichter/in",
+    "columnsHint": "Keine gewählt: Der Block deckt alle Spalten ab.",
+    "color": "Farbe",
+    "publicHint": "Öffentlich – für Coaches und auf den öffentlichen Seiten sichtbar",
+    "delete": "Löschen",
+    "duplicateHint": "Erstellt eine Kopie mit den obigen Werten, z. B. an einem anderen Tag",
+    "duplicate": "Duplizieren"
+  },
+  "board": {
+    "unplaced": "Noch nicht platziert",
+    "trayHint": "In die Spalte der Runde ziehen oder zum Platzieren öffnen.",
+    "noDays": "Noch keine Wettkampftage. Fügen Sie Tage in der Übersicht des Anlasses hinzu.",
+    "customColumn": "eigene Spalte"
+  },
+  "view": {
+    "linkGone": "Der verlinkte Block existiert nicht mehr.",
+    "conflict": "Jemand anderes hat diesen Block inzwischen geändert. Der Planer wurde neu geladen.",
+    "title": "Zeitplaner",
+    "print": "Drucken",
+    "shownColumns": "Angezeigte Spalten",
+    "showAll": "Alle anzeigen",
+    "days": "Tage",
+    "shownDays": "Angezeigte Tage",
+    "moveLater": "Spätere Phasen mitverschieben",
+    "moveLaterHint": "(oder beim Ablegen die Umschalttaste halten)",
+    "undoTitle": "Rückgängig (Ctrl+Z)",
+    "warnings": "keine Warnungen | eine Warnung | {count} Warnungen",
+    "narrow": "Bearbeiten ist auf Tablets und grösseren Bildschirmen möglich.",
+    "help": "Ziehen Sie Blöcke, um sie zu verschieben, ziehen Sie den unteren Rand, um die Grösse zu ändern, und ziehen Sie auf freier Fläche, um einen Block zu erstellen. Mit der Tastatur: Pfeiltasten verschieben (Umschalt: 15 Min., links/rechts: Tag), Alt+Pfeile ändern die Grösse, Enter öffnet."
+  }
+}

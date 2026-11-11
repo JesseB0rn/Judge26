@@ -54,10 +54,20 @@ describe('EventScheduleTab', () => {
     ])
     const { wrapper } = await mountTab()
     expect(wrapper.get('[data-testid=schedule-issues]').text()).toContain(
-      '1 conflict(s) in the current schedule',
+      'One conflict in the current schedule',
     )
     expect(wrapper.get('[data-testid=schedule-issues]').text()).toContain(
-      'Alpha (Round 1): Sequence is used.',
+      'Alpha (Round 1): That sequence number is already used on this table in this round.',
+    )
+  })
+
+  it('shows the server message for issue codes it does not know', async () => {
+    mocked.listScheduleIssues.mockResolvedValue([
+      { code: 'something_new', field: 'sequence', gameId: 'g1', message: 'As sent.' },
+    ])
+    const { wrapper } = await mountTab()
+    expect(wrapper.get('[data-testid=schedule-issues]').text()).toContain(
+      'Alpha (Round 1): As sent.',
     )
   })
 
@@ -86,7 +96,9 @@ describe('EventScheduleTab', () => {
     await flushPromises()
 
     expect(mocked.generateSchedule).toHaveBeenCalledWith('event1', true)
-    expect(wrapper.get('[data-testid=generation-summary]').text()).toContain('Only 1 of 2')
+    expect(wrapper.get('[data-testid=generation-summary]').text()).toContain(
+      'Some teams could not be assigned to an active table with a judge.',
+    )
     expect(wrapper.get('[data-testid=unplaced]').text()).toContain(
       'Bravo (Round 1): No active, assigned-judge table accepts this category.',
     )

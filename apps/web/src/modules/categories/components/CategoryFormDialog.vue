@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { reactive, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -70,27 +71,43 @@ watch(open, (isOpen) => {
     <DialogContent class="sm:max-w-lg">
       <DialogHeader>
         <DialogTitle>
-          {{ category ? 'Edit category' : eventId ? 'New category' : 'New template' }}
+          {{
+            category
+              ? t('categories.form.editTitle')
+              : eventId
+                ? t('categories.form.newCategory')
+                : t('categories.form.newTemplate')
+          }}
         </DialogTitle>
       </DialogHeader>
       <form id="category-form" class="flex flex-col gap-4" @submit.prevent="run()">
         <ErrorAlert :error="error" />
         <FieldGroup>
           <div class="grid grid-cols-[2fr_1fr] gap-4">
-            <FormField v-slot="{ id }" label="Name" name="name" :errors="fieldErrors">
+            <FormField v-slot="{ id }" :label="t('common.name')" name="name" :errors="fieldErrors">
               <Input :id="id" v-model="form.name" required />
             </FormField>
-            <FormField v-slot="{ id }" label="Code" name="code" :errors="fieldErrors">
+            <FormField
+              v-slot="{ id }"
+              :label="t('categories.code')"
+              name="code"
+              :errors="fieldErrors"
+            >
               <Input :id="id" v-model="form.code" required pattern="[A-Za-z0-9_\-]+" />
             </FormField>
           </div>
-          <FormField v-slot="{ id }" label="Description" name="description" :errors="fieldErrors">
+          <FormField
+            v-slot="{ id }"
+            :label="t('common.description')"
+            name="description"
+            :errors="fieldErrors"
+          >
             <Textarea :id="id" v-model="form.description" rows="2" />
           </FormField>
           <div class="grid grid-cols-2 gap-4">
             <FormField
               v-slot="{ id }"
-              label="Min. team size"
+              :label="t('categories.form.minTeamSize')"
               name="min_team_size"
               :errors="fieldErrors"
             >
@@ -98,7 +115,7 @@ watch(open, (isOpen) => {
             </FormField>
             <FormField
               v-slot="{ id }"
-              label="Max. team size"
+              :label="t('categories.form.maxTeamSize')"
               name="max_team_size"
               :errors="fieldErrors"
             >
@@ -106,37 +123,39 @@ watch(open, (isOpen) => {
             </FormField>
             <FormField
               v-slot="{ id }"
-              label="Min. age"
+              :label="t('categories.form.minAge')"
               name="min_age"
               :errors="fieldErrors"
-              description="0 = no limit. Age = season − birth year."
+              :description="t('categories.form.minAgeHint')"
             >
               <Input :id="id" v-model.number="form.min_age" type="number" min="0" max="100" />
             </FormField>
             <FormField
               v-slot="{ id }"
-              label="Max. age"
+              :label="t('categories.form.maxAge')"
               name="max_age"
               :errors="fieldErrors"
-              description="0 = no limit."
+              :description="t('categories.form.noLimit')"
             >
               <Input :id="id" v-model.number="form.max_age" type="number" min="0" max="100" />
             </FormField>
           </div>
           <FormField
             v-slot="{ id }"
-            label="Max. approved teams"
+            :label="t('categories.form.maxTeams')"
             name="max_teams"
             :errors="fieldErrors"
-            description="0 = unlimited."
+            :description="t('categories.form.unlimited')"
           >
             <Input :id="id" v-model.number="form.max_teams" type="number" min="0" />
           </FormField>
         </FieldGroup>
       </form>
       <DialogFooter>
-        <Button variant="outline" @click="open = false">Cancel</Button>
-        <Button type="submit" form="category-form" :disabled="pending">Save</Button>
+        <Button variant="outline" @click="open = false">{{ t('common.cancel') }}</Button>
+        <Button type="submit" form="category-form" :disabled="pending">{{
+          t('common.save')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

@@ -26,7 +26,9 @@ routerAdd(
   (e) => {
     const access = require(`${__hooks}/lib/access.js`)
     if (!access.isVerifiedUser(e.auth) || !access.isAdmin(e.app, e.auth)) {
-      throw new ForbiddenError('Only admins can view the system health.')
+      throw new ForbiddenError('Only admins can view the system health.', {
+        _error: new ValidationError('admins_only', 'Only admins can view the system health.'),
+      })
     }
     const monitoring = require(`${__hooks}/lib/monitoring.js`)
     const result = monitoring.evaluate(e.app)
@@ -49,7 +51,10 @@ routerAdd('POST', '/api/app/client-errors', (e) => {
     e.auth,
     e.request.header.get('User-Agent'),
   )
-  if (!accepted) throw new TooManyRequestsError('Too many error reports, try again later.')
+  if (!accepted)
+    throw new TooManyRequestsError('Too many error reports, try again later.', {
+      _error: new ValidationError('too_many_reports', 'Too many error reports, try again later.'),
+    })
   return e.noContent(204)
 })
 

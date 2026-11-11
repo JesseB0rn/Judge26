@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, te, type MessageKey } from '@/i18n'
 import type { ResultExplanation } from '@judge26/ranking-engine'
 import { formatTime } from '../lib'
 
@@ -13,7 +14,9 @@ defineProps<{ result: ResultExplanation; selected?: boolean }>()
         result.label
       }}</span>
       <span v-if="result.status !== 'ok'" class="rounded bg-muted px-1 text-xs">{{
-        result.status
+        te(`rankings.resultStatus.${result.status}`)
+          ? t(`rankings.resultStatus.${result.status}` as MessageKey)
+          : result.status
       }}</span>
       <span class="text-xs text-muted-foreground">{{ result.formula }}</span>
       <span class="ml-auto tabular-nums">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import {
   Dialog,
   DialogContent,
@@ -25,9 +26,7 @@ const emit = defineEmits<{ saved: [] }>()
     <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
       <DialogHeader>
         <DialogTitle>{{ team?.name }} – {{ round?.name }}</DialogTitle>
-        <DialogDescription
-          >Record the result. Several attempts per round are possible.</DialogDescription
-        >
+        <DialogDescription>{{ t('rankings.game.description') }}</DialogDescription>
       </DialogHeader>
       <GameForm
         v-if="open && team && round"

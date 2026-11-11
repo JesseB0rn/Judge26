@@ -1,0 +1,134 @@
+{
+  "core": {
+    "failed_to_authenticate": "E-Mail-Adresse oder Passwort ist falsch.",
+    "invalid_data": "Einige Angaben sind ungültig. Prüfen Sie die markierten Felder.",
+    "invalid_verification_token": "Der Bestätigungslink ist ungültig oder abgelaufen.",
+    "invalid_reset_token": "Der Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen."
+  },
+  "validation_required": "Darf nicht leer sein.",
+  "validation_invalid_email": "Muss eine gültige E-Mail-Adresse sein.",
+  "validation_is_email": "Muss eine gültige E-Mail-Adresse sein.",
+  "validation_invalid_url": "Muss eine gültige URL sein.",
+  "validation_is_url": "Muss eine gültige URL sein.",
+  "validation_invalid_value": "Ungültiger Wert.",
+  "validation_in_invalid": "Muss ein gültiger Wert sein.",
+  "validation_invalid_format": "Das Format ist ungültig.",
+  "validation_match_invalid": "Das Format ist ungültig.",
+  "validation_invalid_date": "Muss ein gültiges Datum sein.",
+  "validation_invalid_number": "Muss eine gültige Zahl sein.",
+  "validation_not_unique": "Dieser Wert wird bereits verwendet.",
+  "validation_values_mismatch": "Die Werte stimmen nicht überein.",
+  "validation_length_out_of_range": "Muss zwischen {min} und {max} Zeichen lang sein.",
+  "validation_length_too_long": "Darf höchstens {max} Zeichen lang sein.",
+  "validation_length_too_short": "Muss mindestens {min} Zeichen lang sein.",
+  "validation_min_text_constraint": "Muss mindestens {min} Zeichen lang sein.",
+  "validation_max_text_constraint": "Darf höchstens {max} Zeichen lang sein.",
+  "validation_min_number_constraint": "Muss mindestens {min} sein.",
+  "validation_max_number_constraint": "Darf höchstens {max} sein.",
+  "validation_min_greater_equal_than_required": "Muss mindestens {threshold} sein.",
+  "validation_max_less_equal_than_required": "Darf höchstens {threshold} sein.",
+  "validation_file_size_limit": "Die Datei ist zu gross.",
+  "validation_invalid_mime_type": "Dieser Dateityp ist nicht erlaubt.",
+  "validation_missing_rel_records": "Der gewählte Eintrag existiert nicht.",
+  "event_not_found": "Der Anlass wurde nicht gefunden.",
+  "event_archived": "Archivierte Anlässe können nur gelesen werden.",
+  "review_not_allowed": "Nur Oberschiedsrichter/innen und die Anlassleitung können Punkte prüfen.",
+  "too_many_reports": "Zu viele Fehlermeldungen, versuchen Sie es später erneut.",
+  "unknown_action": "Unbekannte Aktion.",
+  "game_not_found": "Der Lauf wurde nicht gefunden.",
+  "category_not_found": "Die Kategorie wurde nicht gefunden.",
+  "ruleset_not_found": "Das Regelwerk wurde nicht gefunden.",
+  "message_not_found": "Die Nachricht wurde nicht gefunden.",
+  "categories_not_allowed": "Sie können hier keine Kategorien erstellen.",
+  "not_verified": "Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.",
+  "own_schedule_only": "Sie können nur Ihren eigenen Zeitplan ansehen.",
+  "game_not_assigned": "Dieser Lauf ist Ihnen nicht zugeteilt.",
+  "sign_in_required": "Melden Sie sich an, um den Zeitplan zu sehen.",
+  "correction_not_allowed": "Nur Oberschiedsrichter/innen und die Anlassleitung können definitive Punkte korrigieren.",
+  "staff_only": "Nur das Personal des Anlasses kann das tun.",
+  "managers_only": "Nur die Anlassleitung und Admins können das tun.",
+  "admins_only": "Nur Administratoren können das tun.",
+  "ranking_not_configured": "Diese Kategorie hat keine Ranglistenkonfiguration.",
+  "audit_immutable": "Protokolleinträge von Bewertungen können nicht geändert werden.",
+  "snapshot_immutable": "Ranglisten-Stände können nicht geändert werden.",
+  "ruleset_published": "Veröffentlichte Regelwerke können nicht geändert werden. Erstellen Sie stattdessen eine neue Version.",
+  "retry_failed_only": "Nur fehlgeschlagene Nachrichten können erneut gesendet werden.",
+  "game_has_score": "Läufe mit eingereichten oder definitiven Punkten können nicht gelöscht werden.",
+  "table_in_use": "An diesem Tisch sind noch Läufe geplant. Verschieben Sie sie zuerst.",
+  "column_in_use": "In dieser Spalte stehen noch Blöcke. Verschieben oder löschen Sie sie zuerst.",
+  "game_rule_category": "Ein Spiel kann nicht in eine andere Kategorie verschoben werden.",
+  "game_rule_used": "Mit diesem Spiel wurden bereits Resultate bewertet; es kann nicht gelöscht werden.",
+  "sheet_submitted": "Dieser Bewertungsbogen wurde bereits eingereicht und wartet auf die Prüfung.",
+  "sheet_finalized": "Diese Punkte sind definitiv. Nur Oberschiedsrichter/innen können sie korrigieren.",
+  "approve_submitted_only": "Nur eingereichte Bewertungsbogen können genehmigt werden.",
+  "reject_submitted_only": "Nur eingereichte Bewertungsbogen können zurückgewiesen werden.",
+  "correct_finalized_only": "Nur definitive Punkte können korrigiert werden.",
+  "corrected_meanwhile": "Die Punkte wurden inzwischen von jemand anderem korrigiert. Laden Sie neu und prüfen Sie erneut.",
+  "result_finalized": "Dieses Resultat ist definitiv. Ändern Sie es mit einer begründeten Punktekorrektur.",
+  "result_in_review": "Dieses Resultat wartet im Bewertungsablauf auf die Prüfung.",
+  "changed_meanwhile": "Dies wurde inzwischen von jemand anderem geändert. Laden Sie neu und versuchen Sie es erneut.",
+  "table_required": "Weisen Sie einen Tisch zu, bevor Sie die Reihenfolge festlegen.",
+  "invalid_table": "Der Tisch gehört zu einem anderen Anlass.",
+  "table_inactive": "Der Tisch ist deaktiviert.",
+  "incompatible_category": "Der Tisch ist für diese Kategorie nicht verfügbar.",
+  "missing_table_judge": "Weisen Sie dem Tisch einen Schiedsrichter zu, bevor Sie dort Läufe planen.",
+  "sequence_in_use": "Diese Reihenfolgenummer ist an diesem Tisch in dieser Runde bereits vergeben.",
+  "invalid_category": "Wählen Sie eine Kategorie dieses Anlasses.",
+  "invalid_column": "Wählen Sie Spalten dieses Anlasses.",
+  "invalid_date": "Muss ein gültiges Datum sein (JJJJ-MM-TT).",
+  "invalid_day": "Wählen Sie einen Wettkampftag dieses Anlasses.",
+  "crosses_midnight": "Ein Block muss bis Mitternacht enden.",
+  "invalid_judge": "Der zugewiesene Schiedsrichter muss zum Personal dieses Anlasses gehören.",
+  "unknown_template": "Unbekannte Vorlage.",
+  "invalid_ruleset": "Verwenden Sie ein veröffentlichtes Regelwerk dieser Kategorie.",
+  "invalid_scope": "Wählen Sie, wer benachrichtigt werden soll.",
+  "category_full": "Die Kategorie ist voll.",
+  "invalid_status": "Dieser Status ist für eine neue Anmeldung nicht möglich.",
+  "invalid_transition": "Die Anmeldung kann nicht in diesen Status wechseln.",
+  "invalid_team": "Das Team ist nicht in der Kategorie dieser Runde angemeldet.",
+  "team_not_approved": "Nur genehmigte Teams können Läufe spielen.",
+  "invalid_game_rule": "Wählen Sie ein Spiel dieser Kategorie.",
+  "invalid_snapshot": "Wählen Sie einen Ranglisten-Stand dieser Kategorie.",
+  "fields": {
+    "registration_closes_at": {
+      "invalid_range": "Der Anmeldeschluss muss nach dem Anmeldebeginn liegen."
+    },
+    "ends_at": {
+      "invalid_range": "Der Tag muss nach seinem Beginn enden."
+    },
+    "max_age": {
+      "invalid_range": "Das Höchstalter darf nicht unter dem Mindestalter liegen."
+    },
+    "max_team_size": {
+      "invalid_range": "Die maximale Teamgrösse darf nicht unter der minimalen liegen."
+    },
+    "email": {
+      "not_found": "Es gibt keinen Benutzer mit dieser E-Mail-Adresse."
+    },
+    "event": {
+      "not_allowed": "Die Admin-Rolle gilt global und kann nicht auf einen Anlass beschränkt werden.",
+      "required": "Diese Rolle muss einem Anlass zugeordnet sein."
+    },
+    "day": {
+      "required": "Wählen Sie den Tag dieser Phase."
+    },
+    "game_rule": {
+      "required": "Wählen Sie das Spiel."
+    },
+    "message": {
+      "required": "Eine Nachricht ist erforderlich."
+    },
+    "review_note": {
+      "required": "Beim Ablehnen einer Anmeldung ist eine Begründung erforderlich."
+    },
+    "title": {
+      "required": "Ein Titel ist erforderlich."
+    },
+    "sequence": {
+      "required": "Die Reihenfolge muss eine positive Zahl sein."
+    },
+    "active": {
+      "table_in_use": "An diesem Tisch sind noch Läufe geplant."
+    }
+  }
+}

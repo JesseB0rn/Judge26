@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ChevronRightIcon } from '@lucide/vue'
@@ -27,8 +28,8 @@ const entries = computed(() => buildTimeline(props.rows, props.checks ?? []))
 function result(row: Assignment) {
   const sheet = row.sheet
   const status = sheet?.outcome ?? row.status
-  if (status === 'absent') return 'Absent'
-  if (status === 'disqualified') return 'DQ'
+  if (status === 'absent') return t('scheduling.gameStatus.absent')
+  if (status === 'disqualified') return t('judging.dq')
   if (sheet && sheet.status !== 'draft') return `${sheet.points}`
   if (!sheet && row.status === 'completed') return `${row.points}`
   return ''
@@ -62,20 +63,30 @@ function time(row: Assignment) {
               class="flex min-h-16 items-center gap-3 px-3 py-2 hover:bg-muted/60 focus-visible:bg-muted focus-visible:outline-none"
               :class="{ 'bg-sky-50/70': row.id === highlight }"
               :data-game="row.id"
-              :aria-label="`Score ${row.team.name}`"
+              :aria-label="t('judging.list.score', { team: row.team.name })"
             >
               <span
                 class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted text-lg font-bold tabular-nums"
-                :title="`Position ${row.sequence} on ${row.table?.name ?? 'the table'}`"
+                :title="
+                  row.table
+                    ? t('judging.list.positionOn', {
+                        position: row.sequence,
+                        table: row.table.name,
+                      })
+                    : t('judging.list.position', { position: row.sequence })
+                "
               >
                 {{ row.sequence || '–' }}
               </span>
               <span class="min-w-0 flex-1">
                 <span class="block truncate text-base font-semibold">{{ row.team.name }}</span>
                 <span class="block truncate text-sm text-muted-foreground">
-                  <template v-if="showTable">{{ row.table?.name ?? 'No table' }} · </template
+                  <template v-if="showTable"
+                    >{{ row.table?.name ?? t('judging.noTable') }} · </template
                   >{{ row.round.name
-                  }}<template v-if="row.attempt > 1"> · Attempt {{ row.attempt }}</template>
+                  }}<template v-if="row.attempt > 1">
+                    · {{ t('judging.attempt', { attempt: row.attempt }) }}</template
+                  >
                 </span>
               </span>
               <span v-if="result(row)" class="text-right tabular-nums">

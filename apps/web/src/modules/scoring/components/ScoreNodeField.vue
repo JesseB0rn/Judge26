@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { MinusIcon, PlusIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -32,10 +33,10 @@ const iconSize = computed(() => (props.touch ? 'icon-touch' : 'icon-lg'))
 const selectionHint = computed(() => {
   if (props.node.type !== 'group' || !props.node.selection) return ''
   const { min, max } = props.node.selection
-  if (min !== undefined && min === max) return `Choose exactly ${min}`
-  if (max !== undefined && min) return `Choose ${min}–${max}`
-  if (max !== undefined) return `Choose at most ${max}`
-  return `Choose at least ${min}`
+  if (min !== undefined && min === max) return t('scoring.field.chooseExactly', { n: min })
+  if (max !== undefined && min) return t('scoring.field.chooseRange', { min, max })
+  if (max !== undefined) return t('scoring.field.chooseAtMost', { n: max })
+  return t('scoring.field.chooseAtLeast', { n: min ?? '' })
 })
 
 function setNumber(raw: string | number) {
@@ -69,13 +70,15 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       <span v-if="selectionHint" class="font-normal text-muted-foreground"
         >· {{ selectionHint }}</span
       >
-      <span v-if="node.deduction" class="font-normal text-destructive">· deduction</span>
+      <span v-if="node.deduction" class="font-normal text-destructive"
+        >· {{ t('scoring.field.deduction') }}</span
+      >
       <span class="ml-auto tabular-nums" data-testid="node-points">{{
         explanation?.points ?? 0
       }}</span>
     </legend>
     <p v-if="node.description" class="text-sm text-muted-foreground">{{ node.description }}</p>
-    <p v-if="inactive" class="text-sm text-muted-foreground">Not available: condition not met.</p>
+    <p v-if="inactive" class="text-sm text-muted-foreground">{{ t('scoring.field.inactive') }}</p>
     <p v-for="msg in nodeIssues" :key="msg" class="text-sm text-destructive" role="alert">
       {{ msg }}
     </p>
@@ -112,7 +115,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
         <span
           v-if="'required' in node && node.required"
           class="text-destructive"
-          aria-label="required"
+          :aria-label="t('scoring.field.required')"
           >*</span
         >
       </component>
@@ -133,7 +136,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
           :class="{ 'min-w-28': touch }"
           @click="emit('set', node.id, value === true ? undefined : true)"
         >
-          Yes ({{ node.deduction ? '−' : '+' }}{{ node.points }})
+          {{ t('scoring.field.yes') }} ({{ node.deduction ? '−' : '+' }}{{ node.points }})
         </Button>
         <Button
           type="button"
@@ -144,7 +147,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
           :class="{ 'min-w-20 aria-pressed:ring-2 aria-pressed:ring-foreground/30': touch }"
           @click="emit('set', node.id, value === false ? undefined : false)"
         >
-          No
+          {{ t('scoring.field.no') }}
         </Button>
       </div>
 
@@ -154,7 +157,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
           :size="iconSize"
           variant="outline"
           :disabled="locked"
-          aria-label="Decrease"
+          :aria-label="t('scoring.field.decrease')"
           @click="step(-1)"
         >
           <MinusIcon />
@@ -177,7 +180,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
           :size="iconSize"
           variant="outline"
           :disabled="locked"
-          aria-label="Increase"
+          :aria-label="t('scoring.field.increase')"
           @click="step(1)"
         >
           <PlusIcon />
@@ -216,7 +219,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       >
     </div>
     <p v-if="node.description" class="text-sm text-muted-foreground">{{ node.description }}</p>
-    <p v-if="inactive" class="text-sm text-muted-foreground">Not available: condition not met.</p>
+    <p v-if="inactive" class="text-sm text-muted-foreground">{{ t('scoring.field.inactive') }}</p>
     <p v-for="msg in nodeIssues" :key="msg" class="text-sm text-destructive" role="alert">
       {{ msg }}
     </p>

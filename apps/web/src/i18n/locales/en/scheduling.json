@@ -1,0 +1,78 @@
+{
+  "unknownTeam": "Unknown team",
+  "gameStatus": {
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "disqualified": "Disqualified",
+    "absent": "Absent"
+  },
+  "export": {
+    "sheet": "Games",
+    "attempt": "Attempt",
+    "day": "Day",
+    "position": "Position",
+    "points": "Points",
+    "time": "Time (s)",
+    "label": "Games and results",
+    "title": "games {event}"
+  },
+  "reasons": {
+    "no_compatible_table": "No active, assigned-judge table accepts this category.",
+    "no_active_table": "No active table is available.",
+    "missing_table_judge": "Assign a judge to the table before scheduling games there.",
+    "table_inactive": "The assigned table is deactivated.",
+    "incompatible_category": "The table is not available for this category.",
+    "sequence_in_use": "That sequence number is already used on this table in this round."
+  },
+  "issues": {
+    "table_required": "Assign a table before setting the team sequence.",
+    "invalid_table": "The table belongs to a different event.",
+    "table_inactive": "The table is deactivated.",
+    "incompatible_category": "The table is not available for this category.",
+    "missing_table_judge": "Assign a judge to the table before scheduling games there.",
+    "sequence_required": "The team sequence must be a positive number.",
+    "sequence_in_use": "That sequence number is already used on this table in this round.",
+    "missing_table": "Assign this team to a table."
+  },
+  "generate": {
+    "title": "Schedule check and generation",
+    "noConflicts": "No conflicts in the current schedule.",
+    "conflicts": "No conflicts in the current schedule | One conflict in the current schedule | {count} conflicts in the current schedule",
+    "explanation": "Generation creates missing games for approved teams and assigns each game to a compatible table with a judge. Team sequence is separate for each round and table. Nothing changes unless all games can be assigned.",
+    "previewButton": "Preview",
+    "generate": "Generate schedule",
+    "permission": "Only event managers and admins can create games or generate schedules.",
+    "wouldCreate": "No missing games would be created. | One missing game would be created. | {count} missing games would be created.",
+    "created": "No missing games created. | One missing game created. | {count} missing games created.",
+    "preview": "Preview: {count} game assignments are ready.",
+    "nothingSaved": "Nothing was saved.",
+    "saved": "Schedule saved: {count} game assignments updated.",
+    "infeasible": "Some teams could not be assigned to an active table with a judge."
+  },
+  "sequence": {
+    "title": "Schedule game",
+    "description": "Choose the table and the team’s sequence on that table for this round.",
+    "selectTable": "Select a table",
+    "sequence": "Sequence on this table"
+  },
+  "games": {
+    "title": "Games",
+    "summary": "{assigned} assigned · {unassigned} unassigned",
+    "setSequence": "Set sequence for {team}",
+    "empty": "No games yet. Generate the schedule after creating rounds, approved teams, and tables."
+  },
+  "tables": {
+    "title": "Tables",
+    "allCategories": "all categories",
+    "noJudge": "No judge",
+    "deactivated": "deactivated",
+    "empty": "No tables yet.",
+    "name": "Table name",
+    "active": "Active",
+    "judge": "Assigned judge",
+    "selectJudge": "Select a judge",
+    "categories": "Categories (none selected = all categories)",
+    "save": "Save table",
+    "add": "Add table"
+  }
+}

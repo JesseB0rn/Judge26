@@ -1,0 +1,78 @@
+{
+  "unknownTeam": "Unbekanntes Team",
+  "gameStatus": {
+    "scheduled": "Geplant",
+    "completed": "Abgeschlossen",
+    "disqualified": "Disqualifiziert",
+    "absent": "Nicht angetreten"
+  },
+  "export": {
+    "sheet": "Läufe",
+    "attempt": "Versuch",
+    "day": "Tag",
+    "position": "Position",
+    "points": "Punkte",
+    "time": "Zeit (s)",
+    "label": "Läufe und Resultate",
+    "title": "laeufe {event}"
+  },
+  "reasons": {
+    "no_compatible_table": "Kein aktiver Tisch mit zugewiesenem Schiedsrichter nimmt diese Kategorie an.",
+    "no_active_table": "Kein aktiver Tisch verfügbar.",
+    "missing_table_judge": "Weisen Sie dem Tisch einen Schiedsrichter zu, bevor Sie dort Läufe planen.",
+    "table_inactive": "Der zugewiesene Tisch ist deaktiviert.",
+    "incompatible_category": "Der Tisch ist für diese Kategorie nicht verfügbar.",
+    "sequence_in_use": "Diese Reihenfolgenummer ist an diesem Tisch in dieser Runde bereits vergeben."
+  },
+  "issues": {
+    "table_required": "Weisen Sie einen Tisch zu, bevor Sie die Reihenfolge festlegen.",
+    "invalid_table": "Der Tisch gehört zu einem anderen Anlass.",
+    "table_inactive": "Der Tisch ist deaktiviert.",
+    "incompatible_category": "Der Tisch ist für diese Kategorie nicht verfügbar.",
+    "missing_table_judge": "Weisen Sie dem Tisch einen Schiedsrichter zu, bevor Sie dort Läufe planen.",
+    "sequence_required": "Die Reihenfolge muss eine positive Zahl sein.",
+    "sequence_in_use": "Diese Reihenfolgenummer ist an diesem Tisch in dieser Runde bereits vergeben.",
+    "missing_table": "Weisen Sie dieses Team einem Tisch zu."
+  },
+  "generate": {
+    "title": "Zeitplan prüfen und erstellen",
+    "noConflicts": "Keine Konflikte im aktuellen Zeitplan.",
+    "conflicts": "Keine Konflikte im aktuellen Zeitplan | Ein Konflikt im aktuellen Zeitplan | {count} Konflikte im aktuellen Zeitplan",
+    "explanation": "Die Erstellung legt fehlende Läufe für genehmigte Teams an und teilt jeden Lauf einem passenden Tisch mit Schiedsrichter zu. Die Reihenfolge gilt je Runde und Tisch. Es ändert sich nichts, solange nicht alle Läufe zugeteilt werden können.",
+    "previewButton": "Vorschau",
+    "generate": "Zeitplan erstellen",
+    "permission": "Nur die Anlassleitung und Admins können Läufe anlegen oder Zeitpläne erstellen.",
+    "wouldCreate": "Es würden keine fehlenden Läufe angelegt. | Ein fehlender Lauf würde angelegt. | {count} fehlende Läufe würden angelegt.",
+    "created": "Keine fehlenden Läufe angelegt. | Ein fehlender Lauf angelegt. | {count} fehlende Läufe angelegt.",
+    "preview": "Vorschau: {count} Zuteilungen sind bereit.",
+    "nothingSaved": "Es wurde nichts gespeichert.",
+    "saved": "Zeitplan gespeichert: {count} Zuteilungen aktualisiert.",
+    "infeasible": "Einige Teams konnten keinem aktiven Tisch mit Schiedsrichter zugeteilt werden."
+  },
+  "sequence": {
+    "title": "Lauf planen",
+    "description": "Wählen Sie den Tisch und die Reihenfolge des Teams an diesem Tisch für diese Runde.",
+    "selectTable": "Tisch wählen",
+    "sequence": "Reihenfolge an diesem Tisch"
+  },
+  "games": {
+    "title": "Läufe",
+    "summary": "{assigned} zugeteilt · {unassigned} nicht zugeteilt",
+    "setSequence": "Reihenfolge für {team} festlegen",
+    "empty": "Noch keine Läufe. Erstellen Sie den Zeitplan, sobald Runden, genehmigte Teams und Tische vorhanden sind."
+  },
+  "tables": {
+    "title": "Tische",
+    "allCategories": "alle Kategorien",
+    "noJudge": "Kein Schiedsrichter",
+    "deactivated": "deaktiviert",
+    "empty": "Noch keine Tische.",
+    "name": "Name des Tisches",
+    "active": "Aktiv",
+    "judge": "Zugewiesener Schiedsrichter",
+    "selectJudge": "Schiedsrichter wählen",
+    "categories": "Kategorien (keine gewählt = alle Kategorien)",
+    "save": "Tisch speichern",
+    "add": "Tisch hinzufügen"
+  }
+}

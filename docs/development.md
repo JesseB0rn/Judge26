@@ -120,6 +120,31 @@ briefing and the award ceremony, with a custom "Coaches" column for the coach br
 
   Generated components may be adapted but are excluded from coverage.
 
+### Languages (i18n)
+
+The app ships in German, French, Italian and English; each user picks one
+([specification](specifications/i18n.md), [ADR 0009](architecture/decisions/0009-internationalization.md)).
+
+- Never write user-visible text in components: add a message to
+  `src/i18n/locales/<language>/<module>.json` for **all four** languages (English defines the keys)
+  and use `t('module.key')` from `@/i18n` in templates and scripts. A new module file is registered
+  in `src/i18n/schema.ts`.
+- Parameters: `"Delete {item}?"` → `t('common.confirmDeleteItem', { item })`. Plurals: three forms
+  `"no teams | one team | {count} teams"` → `t(key, count)`.
+- Status and option labels: `translatedLabels(keys, (k) => t(...))` returns a lookup object whose
+  values follow the current language.
+- Format dates and numbers with `src/shared/format.ts` (`formatDateTime`, `formatDay`, `formatTime`,
+  `formatNumber`) or `localeTag()`, never with `toLocale*String(undefined, …)`.
+- `pnpm lint` rejects raw text in templates (`@intlify/vue-i18n/no-raw-text`);
+  `src/i18n/__tests__/messages.spec.ts` checks that every language has the same keys, placeholders
+  and plural forms, that messages compile and that Swiss German has no `ß`.
+- Server messages: give new errors a code (`fieldError(field, code, message)`, or
+  `{ _error: new ValidationError(code, message) }` as the error's data) and add `server.<code>` (or
+  `server.fields.<field>.<code>` when the code means different things per field) to the web
+  messages. Emails are rendered on the server from per-language templates; new default templates
+  go into a migration for every language.
+- Unit and e2e tests run in English (jsdom's and Playwright's `en-US`).
+
 ### Error handling (M0-06)
 
 - All API errors are converted with `toAppError()` (`src/shared/api/errors.ts`) into an
@@ -128,7 +153,8 @@ briefing and the award ceremony, with a custom "Coaches" column for the coach br
 - Components that handle an error locally use `toAppError()`; otherwise call `reportError()`
   to show a toast. Uncaught component errors and unhandled promise rejections are reported
   automatically (`installErrorHandling`).
-- Server and network error details are never shown to users.
+- Server and network error details are never shown to users. Messages are translated (see
+  [Languages](#languages-i18n)).
 
 ## Testing
 

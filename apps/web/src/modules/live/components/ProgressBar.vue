@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import type { Progress } from '../lib'
 
 /** Done / in review / remaining games as a stacked bar with numbers (M6-08). */
@@ -10,10 +11,11 @@ defineProps<{ progress: Progress; label?: string }>()
     <div class="flex flex-wrap items-baseline justify-between gap-2 text-sm">
       <span v-if="label" class="font-medium">{{ label }}</span>
       <span class="text-muted-foreground tabular-nums" data-testid="progress-text">
-        {{ progress.done }} of {{ progress.total }} games done<template v-if="progress.inReview">
-          · {{ progress.inReview }} in review</template
+        {{ t('live.progress.done', { done: progress.done, total: progress.total })
+        }}<template v-if="progress.inReview">
+          · {{ t('live.progress.inReview', { count: progress.inReview }) }}</template
         >
-        · {{ progress.remaining }} remaining
+        · {{ t('live.progress.remaining', { count: progress.remaining }) }}
       </span>
     </div>
     <div
@@ -21,7 +23,7 @@ defineProps<{ progress: Progress; label?: string }>()
       role="progressbar"
       :aria-valuenow="progress.done"
       :aria-valuemax="progress.total"
-      :aria-label="label ? `${label} progress` : 'Progress'"
+      :aria-label="label ? t('live.progress.labelOf', { label }) : t('live.progress.title')"
     >
       <div
         class="bg-emerald-500"

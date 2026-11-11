@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -47,11 +48,11 @@ const router = useRouter()
 // opened the sheet without such a list (e.g. a shared link) goes to the review queue.
 const back = computed(() => {
   const from = backTarget(route.query.from)
-  if (from) return { to: from, label: from.startsWith('/review') ? 'Review queue' : 'My games' }
+  if (from) return { to: from, review: from.startsWith('/review') }
   if (p.value?.permissions.canReview || p.value?.permissions.canCorrect) {
-    return { to: `/review?event=${p.value.event.id}`, label: 'Review queue' }
+    return { to: `/review?event=${p.value.event.id}`, review: true }
   }
-  return { to: '/judging', label: 'My games' }
+  return { to: '/judging', review: false }
 })
 
 const submitOpen = ref(false)
@@ -73,7 +74,7 @@ const context = computed(() => {
     ruleset?.game_rule?.name,
     table?.name,
     game.sequence > 0 ? `#${game.sequence}` : '',
-    game.attempt > 1 ? `Attempt ${game.attempt}` : '',
+    game.attempt > 1 ? t('judging.attempt', { attempt: game.attempt }) : '',
   ]
     .filter(Boolean)
     .join(' · ')
@@ -94,7 +95,9 @@ const values = computed({
 
 const missingIds = computed(() => s.problems.value.map((i) => i.nodeId!).filter(Boolean))
 const missingLabels = computed(() =>
-  [...new Set(missingIds.value)].map((id) => s.ruleset.value?.nodes.get(id)?.label ?? 'Points'),
+  [...new Set(missingIds.value)].map(
+    (id) => s.ruleset.value?.nodes.get(id)?.label ?? t('scheduling.export.points'),
+  ),
 )
 
 function scrollToMissing() {
@@ -113,7 +116,7 @@ async function confirmSubmit() {
   if (await s.submit()) {
     submitOpen.value = false
     showMissing.value = false
-    toast.success('Score submitted.')
+    toast.success(t('judging.sheet.submitted'))
   } else submitOpen.value = false
 }
 
@@ -122,7 +125,7 @@ async function confirmSubmit() {
 async function approve() {
   const team = p.value?.team.name
   if (await s.approve()) {
-    toast.success(`${team}: score approved and final.`)
+    toast.success(t('judging.sheet.approved', { team: team ?? '' }))
     await router.push(back.value.to)
   }
 }
@@ -131,7 +134,7 @@ async function reject(reason: string) {
   const team = p.value?.team.name
   if (await s.reject(reason)) {
     rejectOpen.value = false
-    toast.success(`${team}: score returned to the judge.`)
+    toast.success(t('judging.sheet.returned', { team: team ?? '' }))
     await router.push(back.value.to)
   }
 }
@@ -144,7 +147,7 @@ function requestCorrection() {
 async function correct(reason: string) {
   if (await s.correct(reason)) {
     correctOpen.value = false
-    toast.success('Correction saved.')
+    toast.success(t('judging.sheet.corrected'))
   }
 }
 
@@ -161,7 +164,8 @@ function setManualPoints(raw: string | number) {
       class="-mt-4 inline-flex min-h-11 items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
       data-testid="back-link"
     >
-      <ArrowLeftIcon class="size-4" /> {{ back.label }}
+      <ArrowLeftIcon class="size-4" />
+      {{ back.review ? t('judging.reviewQueue') : t('judging.myGames') }}
     </RouterLink>
 
     <ErrorAlert :error="s.loadError.value" />
@@ -189,7 +193,7 @@ function setManualPoints(raw: string | number) {
               <span
                 v-if="s.correcting.value"
                 class="rounded-full border border-violet-300 bg-violet-50 px-3 py-1 text-sm font-medium text-violet-900"
-                >Correcting</span
+                >{{ t('judging.sheet.correcting') }}</span
               >
               <SaveIndicator
                 v-if="s.editable.value && !s.correcting.value"
@@ -202,9 +206,9 @@ function setManualPoints(raw: string | number) {
             class="flex min-w-24 flex-col items-end rounded-xl border-2 px-3 py-1.5"
             :class="state === 'final' ? 'border-emerald-400' : 'border-foreground/80'"
           >
-            <span class="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
-              >Total</span
-            >
+            <span class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{{
+              t('judging.sheet.total')
+            }}</span>
             <span
               class="text-5xl leading-none font-bold tabular-nums"
               data-testid="live-total"
@@ -222,11 +226,8 @@ function setManualPoints(raw: string | number) {
       </Alert>
       <Alert v-if="s.fromCache.value" class="border-amber-300 bg-amber-50 text-amber-950">
         <CloudOffIcon />
-        <AlertTitle>No connection</AlertTitle>
-        <AlertDescription
-          >You can keep scoring. Changes are stored on this device and sent when the connection is
-          back.</AlertDescription
-        >
+        <AlertTitle>{{ t('judging.sheet.noConnection') }}</AlertTitle>
+        <AlertDescription>{{ t('judging.sheet.offline') }}</AlertDescription>
       </Alert>
       <Alert
         v-if="sheet?.review_note && (state === 'returned' || state === 'draft')"
@@ -234,36 +235,42 @@ function setManualPoints(raw: string | number) {
         data-testid="review-note"
       >
         <Undo2Icon />
-        <AlertTitle>Returned by {{ sheet.reviewed_by.name || 'the head judge' }}</AlertTitle>
+        <AlertTitle>{{
+          t('judging.sheet.returnedBy', {
+            name: sheet.reviewed_by.name || t('judging.sheet.theHeadJudge'),
+          })
+        }}</AlertTitle>
         <AlertDescription>{{ sheet.review_note }}</AlertDescription>
       </Alert>
       <Alert v-if="state === 'submitted'" class="border-sky-300 bg-sky-50 text-sky-950">
-        <AlertTitle>Submitted – waiting for the head judge</AlertTitle>
-        <AlertDescription
-          >Submitted by {{ sheet?.submitted_by.name || 'a judge' }}. The score can no longer be
-          changed here.</AlertDescription
-        >
+        <AlertTitle>{{ t('judging.sheet.waiting') }}</AlertTitle>
+        <AlertDescription>{{
+          t('judging.sheet.submittedBy', {
+            name: sheet?.submitted_by.name || t('judging.sheet.aJudge'),
+          })
+        }}</AlertDescription>
       </Alert>
       <Alert
         v-if="state === 'final' && !s.correcting.value"
         class="border-emerald-300 bg-emerald-50 text-emerald-950"
       >
         <CheckIcon />
-        <AlertTitle>Final score</AlertTitle>
+        <AlertTitle>{{ t('judging.sheet.final') }}</AlertTitle>
         <AlertDescription>
-          Approved by {{ sheet?.reviewed_by.name || 'the head judge'
-          }}<template v-if="sheet?.corrections"> · corrected {{ sheet.corrections }}×</template>. It
-          counts in the ranking.
+          {{
+            t('judging.sheet.approvedBy', {
+              name: sheet?.reviewed_by.name || t('judging.sheet.theHeadJudge'),
+            })
+          }}<template v-if="sheet?.corrections">
+            · {{ t('judging.sheet.correctedTimes', { count: sheet.corrections }) }}</template
+          >. {{ t('judging.sheet.counts') }}
         </AlertDescription>
       </Alert>
       <Alert v-if="p.event.status === 'archived'">
-        <AlertDescription>The event is archived. Scores are read-only.</AlertDescription>
+        <AlertDescription>{{ t('judging.sheet.archived') }}</AlertDescription>
       </Alert>
       <Alert v-if="!p.ruleset && s.input.value.outcome === 'completed'">
-        <AlertDescription
-          >This round's game has no published score sheet. Enter the points
-          directly.</AlertDescription
-        >
+        <AlertDescription>{{ t('judging.sheet.noRuleset') }}</AlertDescription>
       </Alert>
 
       <OutcomePicker
@@ -296,7 +303,7 @@ function setManualPoints(raw: string | number) {
           touch
         />
         <div v-else class="flex flex-col gap-2 rounded-lg border p-3">
-          <label for="manual-points" class="font-medium">Points</label>
+          <label for="manual-points" class="font-medium">{{ t('scheduling.export.points') }}</label>
           <Input
             id="manual-points"
             class="h-12 w-40 text-lg"
@@ -310,14 +317,16 @@ function setManualPoints(raw: string | number) {
         </div>
       </template>
       <p v-else class="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
-        No score sheet needed: the game is recorded as
-        <strong>{{ s.input.value.outcome === 'absent' ? 'absent' : 'disqualified' }}</strong> with
-        no points.
+        {{
+          s.input.value.outcome === 'absent'
+            ? t('judging.sheet.noSheetAbsent')
+            : t('judging.sheet.noSheetDisqualified')
+        }}
       </p>
 
       <details class="group rounded-lg border p-3" data-testid="history">
         <summary class="flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium">
-          <HistoryIcon class="size-4" /> History ({{ p.history.length }})
+          <HistoryIcon class="size-4" /> {{ t('judging.sheet.history') }} ({{ p.history.length }})
         </summary>
         <div class="mt-3">
           <ScoreHistory :entries="p.history" :definition="p.ruleset?.definition" />
@@ -343,53 +352,56 @@ function setManualPoints(raw: string | number) {
               >
                 <CircleAlertIcon class="size-5 shrink-0" />
                 <span class="text-sm">
-                  <strong>{{ missingLabels.length }} missing:</strong>
+                  <strong>{{ t('judging.sheet.missing', { count: missingLabels.length }) }}</strong>
                   {{ missingLabels.slice(0, 3).join(', ')
                   }}{{ missingLabels.length > 3 ? ', …' : '' }}
                 </span>
               </button>
               <span v-else class="flex flex-1 items-center gap-2 text-sm text-emerald-700">
-                <CheckIcon class="size-5" /> Ready to submit
+                <CheckIcon class="size-5" /> {{ t('judging.sheet.ready') }}
               </span>
               <Button size="touch" class="min-w-40" :disabled="s.busy.value" @click="requestSubmit">
-                <SendIcon /> Submit score
+                <SendIcon /> {{ t('judging.submit.submit') }}
               </Button>
             </template>
 
             <!-- Head judge: review a submitted sheet. -->
             <template v-else-if="p.permissions.canReview">
-              <span class="flex-1 text-sm text-muted-foreground"
-                >Check the sheet, then approve or return it.</span
-              >
+              <span class="flex-1 text-sm text-muted-foreground">{{
+                t('judging.sheet.reviewHint')
+              }}</span>
               <Button
                 size="touch"
                 variant="destructive"
                 :disabled="s.busy.value"
                 @click="rejectOpen = true"
               >
-                <Undo2Icon /> Return
+                <Undo2Icon /> {{ t('judging.sheet.return') }}
               </Button>
               <Button size="touch" class="min-w-36" :disabled="s.busy.value" @click="approve">
-                <CheckIcon /> Approve
+                <CheckIcon /> {{ t('teams.review.approve') }}
               </Button>
             </template>
 
             <!-- Head judge: correct a final score. -->
             <template v-else-if="s.correcting.value">
               <span class="flex-1 text-sm text-violet-900">
-                Changing a final score. A reason is required.
+                {{ t('judging.sheet.correctingHint') }}
               </span>
-              <Button size="touch" variant="outline" @click="s.cancelCorrection">Cancel</Button>
+              <Button size="touch" variant="outline" @click="s.cancelCorrection">{{
+                t('common.cancel')
+              }}</Button>
               <Button size="touch" :disabled="s.busy.value" @click="requestCorrection">
-                <CheckIcon /> Save correction
+                <CheckIcon /> {{ t('judging.sheet.saveCorrection') }}
               </Button>
             </template>
             <template v-else-if="p.permissions.canCorrect">
               <span class="flex-1 text-sm text-muted-foreground"
-                >{{ formatTime(s.input.value.time_ms) }} · {{ s.total.value ?? '–' }} points</span
+                >{{ formatTime(s.input.value.time_ms) }} ·
+                {{ t('judging.sheet.points', { points: s.total.value ?? '–' }) }}</span
               >
               <Button size="touch" variant="outline" @click="s.startCorrection">
-                <PencilIcon /> Correct score
+                <PencilIcon /> {{ t('judging.sheet.correct') }}
               </Button>
             </template>
 
@@ -397,7 +409,10 @@ function setManualPoints(raw: string | number) {
               <span class="flex-1" />
               <Button size="touch" as-child>
                 <RouterLink :to="back.to"
-                  ><ArrowLeftIcon /> Back to {{ back.label.toLowerCase() }}</RouterLink
+                  ><ArrowLeftIcon />
+                  {{
+                    back.review ? t('judging.sheet.backToReview') : t('judging.sheet.backToGames')
+                  }}</RouterLink
                 >
               </Button>
             </template>
@@ -417,9 +432,9 @@ function setManualPoints(raw: string | number) {
       />
       <ReasonDialog
         v-model:open="rejectOpen"
-        title="Return to the judge"
-        description="The judge sees the reason and can fix and resubmit the sheet."
-        confirm-label="Return sheet"
+        :title="t('judging.sheet.returnTitle')"
+        :description="t('judging.sheet.returnDescription')"
+        :confirm-label="t('judging.sheet.returnConfirm')"
         destructive
         :busy="s.busy.value"
         :error="s.actionError.value"
@@ -427,9 +442,9 @@ function setManualPoints(raw: string | number) {
       />
       <ReasonDialog
         v-model:open="correctOpen"
-        title="Save correction"
-        description="The old and new values and your reason are recorded in the history."
-        confirm-label="Save correction"
+        :title="t('judging.sheet.saveCorrection')"
+        :description="t('judging.sheet.correctionDescription')"
+        :confirm-label="t('judging.sheet.saveCorrection')"
         :busy="s.busy.value"
         :error="s.actionError.value"
         @confirm="correct"

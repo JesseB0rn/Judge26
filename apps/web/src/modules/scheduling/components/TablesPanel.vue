@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref } from 'vue'
 import { PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -56,7 +57,7 @@ function toggleCategory(id: string, checked: boolean) {
 }
 
 function categoryNames(table: TableRecord): string {
-  if (table.categories.length === 0) return 'all categories'
+  if (table.categories.length === 0) return t('scheduling.tables.allCategories')
   return table.categories
     .map((id) => props.categories.find((c) => c.id === id)?.name ?? '?')
     .join(', ')
@@ -65,7 +66,9 @@ function categoryNames(table: TableRecord): string {
 
 <template>
   <Card>
-    <CardHeader><CardTitle>Tables</CardTitle></CardHeader>
+    <CardHeader
+      ><CardTitle>{{ t('scheduling.tables.title') }}</CardTitle></CardHeader
+    >
     <CardContent class="flex flex-col gap-4">
       <ErrorAlert :error="remove.error.value" />
       <ul v-if="tables.length" class="divide-y" data-testid="tables">
@@ -74,15 +77,17 @@ function categoryNames(table: TableRecord): string {
             <span class="font-medium">{{ table.name }}</span>
             <span class="text-muted-foreground"> · {{ categoryNames(table) }}</span>
             <span class="text-muted-foreground">
-              · {{ table.expand?.judge?.name ?? 'No judge' }}</span
+              · {{ table.expand?.judge?.name ?? t('scheduling.tables.noJudge') }}</span
             >
-            <span v-if="!table.active" class="ml-2 text-xs text-destructive">deactivated</span>
+            <span v-if="!table.active" class="ml-2 text-xs text-destructive">{{
+              t('scheduling.tables.deactivated')
+            }}</span>
           </span>
           <span v-if="editable" class="flex gap-1">
             <Button
               variant="ghost"
               size="icon-sm"
-              :aria-label="`Edit ${table.name}`"
+              :aria-label="t('common.editItem', { item: table.name })"
               @click="startEdit(table)"
             >
               <PencilIcon />
@@ -90,7 +95,7 @@ function categoryNames(table: TableRecord): string {
             <Button
               variant="ghost"
               size="icon-sm"
-              :aria-label="`Delete ${table.name}`"
+              :aria-label="t('common.deleteItem', { item: table.name })"
               @click="remove.run(table)"
             >
               <Trash2Icon />
@@ -98,38 +103,40 @@ function categoryNames(table: TableRecord): string {
           </span>
         </li>
       </ul>
-      <p v-else class="text-sm text-muted-foreground">No tables yet.</p>
+      <p v-else class="text-sm text-muted-foreground">{{ t('scheduling.tables.empty') }}</p>
 
       <form v-if="editable" class="flex flex-col gap-3" @submit.prevent="save.run()">
         <ErrorAlert :error="save.error.value" />
         <div class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
           <FormField
             v-slot="{ id }"
-            label="Table name"
+            :label="t('scheduling.tables.name')"
             name="name"
             :errors="save.fieldErrors.value"
           >
             <Input :id="id" v-model="form.name" required maxlength="100" />
           </FormField>
           <label class="flex items-center gap-2 text-sm">
-            <input v-model="form.active" type="checkbox" /> Active
+            <input v-model="form.active" type="checkbox" /> {{ t('scheduling.tables.active') }}
           </label>
         </div>
         <FormField
           v-slot="{ id }"
-          label="Assigned judge"
+          :label="t('scheduling.tables.judge')"
           name="judge"
           :errors="save.fieldErrors.value"
         >
           <NativeSelect :id="id" v-model="form.judge" class="w-full" required>
-            <NativeSelectOption value="">Select a judge</NativeSelectOption>
+            <NativeSelectOption value="">{{
+              t('scheduling.tables.selectJudge')
+            }}</NativeSelectOption>
             <NativeSelectOption v-for="judge in judges" :key="judge.id" :value="judge.id">
               {{ judge.name }}
             </NativeSelectOption>
           </NativeSelect>
         </FormField>
         <fieldset class="flex flex-col gap-1 text-sm">
-          <legend class="text-muted-foreground">Categories (none selected = all categories)</legend>
+          <legend class="text-muted-foreground">{{ t('scheduling.tables.categories') }}</legend>
           <label v-for="category in categories" :key="category.id" class="flex items-center gap-2">
             <input
               type="checkbox"
@@ -141,10 +148,11 @@ function categoryNames(table: TableRecord): string {
         </fieldset>
         <div class="flex gap-2">
           <Button type="submit" :disabled="save.pending.value">
-            <PlusIcon v-if="!editingId" /> {{ editingId ? 'Save table' : 'Add table' }}
+            <PlusIcon v-if="!editingId" />
+            {{ editingId ? t('scheduling.tables.save') : t('scheduling.tables.add') }}
           </Button>
           <Button v-if="editingId" type="button" variant="outline" @click="startEdit()">
-            Cancel
+            {{ t('common.cancel') }}
           </Button>
         </div>
       </form>

@@ -61,8 +61,10 @@ describe('M7 communication', () => {
   const failNext = (count: number) => post('/api/dev/mail-failures', { count })
   const outboxFor = (to: string) =>
     fx.su.collection('mail_outbox').getFullList<Outbox>({ filter: `to = "${to}"`, sort: 'created' })
-  const template = (key: string) =>
-    fx.su.collection('mail_templates').getFirstListItem(`key = "${key}"`)
+  const template = (key: string, language = 'en') =>
+    fx.su
+      .collection('mail_templates')
+      .getFirstListItem(`key = "${key}" && language = "${language}"`)
 
   let n = 0
   async function registration(eventData: Record<string, unknown> = {}) {
@@ -83,12 +85,16 @@ describe('M7 communication', () => {
   describe('templates (M7-02)', () => {
     it('ships a template per notification; only admins read and edit them', async () => {
       const list = await admin.pb.collection('mail_templates').getFullList()
-      expect(list.map((t) => t.key).sort()).toEqual([
+      // One template per notification and language (i18n), account emails included.
+      expect([...new Set(list.map((t) => t.key))].sort()).toEqual([
+        'auth_password_reset',
+        'auth_verification',
         'registration_approved',
         'registration_rejected',
         'registration_submitted',
         'schedule_changed',
       ])
+      expect(list).toHaveLength(6 * 4)
       expect(list.every((t) => t.enabled)).toBe(true)
 
       const manager = await fx.user({

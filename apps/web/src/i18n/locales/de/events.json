@@ -1,0 +1,63 @@
+{
+  "event": "Anlass",
+  "season": "Saison",
+  "venue": "Austragungsort",
+  "status": {
+    "draft": "Entwurf",
+    "published": "Veröffentlicht",
+    "archived": "Archiviert"
+  },
+  "registration": {
+    "archived": "Anlass archiviert",
+    "unpublished": "Noch nicht veröffentlicht",
+    "notYetOpen": "Anmeldung noch nicht offen",
+    "open": "Anmeldung offen",
+    "closed": "Anmeldung geschlossen"
+  },
+  "days": {
+    "title": "Wettkampftage",
+    "hoursSaved": "Zeiten gespeichert.",
+    "startOf": "Beginn am {day}",
+    "endOf": "Ende am {day}",
+    "empty": "Noch keine Wettkampftage.",
+    "labelPlaceholder": "z. B. Tag 1",
+    "add": "Tag hinzufügen"
+  },
+  "form": {
+    "editTitle": "Anlass bearbeiten",
+    "newTitle": "Neuer Anlass",
+    "description": "Wettkampftage und Kategorien werden auf der Seite des Anlasses verwaltet.",
+    "opens": "Anmeldung ab",
+    "closes": "Anmeldeschluss"
+  },
+  "detail": {
+    "updated": "Anlass aktualisiert.",
+    "seasonLine": "Saison {season}",
+    "publish": "Veröffentlichen",
+    "archive": "Archivieren",
+    "restore": "Wiederherstellen",
+    "reviewScores": "Punkte prüfen",
+    "planner": "Planer",
+    "registerTeam": "Team anmelden",
+    "archivedNotice": "Dieser Anlass ist archiviert. Seine Daten können nur gelesen werden.",
+    "details": "Details",
+    "registration": "Anmeldung:",
+    "opens": "Ab:",
+    "closes": "Bis:"
+  },
+  "tabs": {
+    "overview": "Übersicht",
+    "categories": "Kategorien",
+    "teams": "Teams",
+    "schedule": "Zeitplan",
+    "publication": "Öffentliche Resultate",
+    "messages": "Nachrichten",
+    "activity": "Aktivität",
+    "staff": "Personal"
+  },
+  "list": {
+    "description": "Wettbewerbe, auf die Sie Zugriff haben.",
+    "registration": "Anmeldung",
+    "empty": "Keine Anlässe verfügbar."
+  }
+}

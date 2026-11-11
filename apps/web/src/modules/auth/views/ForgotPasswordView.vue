@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -20,19 +21,19 @@ const { run, pending, error, fieldErrors } = useSubmit(async () => {
 </script>
 
 <template>
-  <AuthCard title="Reset password" description="We will email you a link to choose a new password.">
+  <AuthCard :title="t('auth.forgot.title')" :description="t('auth.forgot.description')">
     <p v-if="sent" data-testid="reset-sent">
-      If an account exists for {{ email }}, a reset link is on its way.
+      {{ t('auth.forgot.sent', { email }) }}
     </p>
     <form v-else class="flex flex-col gap-4" @submit.prevent="run()">
       <ErrorAlert :error="error" />
-      <FormField v-slot="{ id }" label="Email" name="email" :errors="fieldErrors">
+      <FormField v-slot="{ id }" :label="t('auth.email')" name="email" :errors="fieldErrors">
         <Input :id="id" v-model="email" type="email" autocomplete="email" required />
       </FormField>
-      <Button type="submit" :disabled="pending">Send reset link</Button>
+      <Button type="submit" :disabled="pending">{{ t('auth.forgot.submit') }}</Button>
     </form>
     <template #footer
-      ><RouterLink to="/login" class="underline">Back to sign in</RouterLink></template
+      ><RouterLink to="/login" class="underline">{{ t('auth.backToSignIn') }}</RouterLink></template
     >
   </AuthCard>
 </template>

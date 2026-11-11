@@ -1,0 +1,47 @@
+{
+  "template": "Modèle",
+  "code": "Code",
+  "any": "libre",
+  "teamSize": "Taille de l’équipe",
+  "age": "Âge",
+  "maxTeams": "Équipes max.",
+  "ranking": "Classement",
+  "rankingFor": "Tours et classement pour {code}",
+  "rules": "Règles",
+  "rulesFor": "Règles de score pour {code}",
+  "empty": "Aucune catégorie pour l’instant.",
+  "confirmDelete": "Supprimer la catégorie {code} ?",
+  "deleted": "Catégorie supprimée.",
+  "addFromTemplate": "Ajouter depuis un modèle",
+  "addFromTemplateTitle": "Ajouter une catégorie depuis un modèle",
+  "saveAsTemplate": "Enregistrer comme modèle",
+  "saveAsTemplateOf": "Enregistrer {code} comme modèle",
+  "copy": {
+    "description": "La copie est indépendante : les modifications ultérieures de l’original ne la concernent pas.",
+    "target": "Copier vers",
+    "keepCode": "Laisser vide pour garder {code}.",
+    "keepOriginalCode": "Laisser vide pour garder le code d’origine.",
+    "submit": "Copier"
+  },
+  "form": {
+    "editTitle": "Modifier la catégorie",
+    "newCategory": "Nouvelle catégorie",
+    "newTemplate": "Nouveau modèle",
+    "minTeamSize": "Taille min. de l’équipe",
+    "maxTeamSize": "Taille max. de l’équipe",
+    "minAge": "Âge min.",
+    "minAgeHint": "0 = sans limite. Âge = saison − année de naissance.",
+    "maxAge": "Âge max.",
+    "noLimit": "0 = sans limite.",
+    "maxTeams": "Équipes acceptées max.",
+    "unlimited": "0 = illimité."
+  },
+  "library": {
+    "confirmDelete": "Supprimer le modèle {code} ? Les copies ne sont pas concernées.",
+    "deleted": "Modèle supprimé.",
+    "description": "Modèles de catégories réutilisables. Les événements en reçoivent des copies indépendantes.",
+    "empty": "Aucun modèle pour l’instant.",
+    "copyToEvent": "Copier le modèle vers un événement",
+    "copyToEventOf": "Copier {code} vers un événement"
+  }
+}

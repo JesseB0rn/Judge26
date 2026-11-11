@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { FilePlusIcon, PencilIcon, PlusIcon, SaveIcon, SendIcon, Trash2Icon } from '@lucide/vue'
@@ -165,26 +166,25 @@ const save = useSubmit(
     const saved = await saveDraft(selected.value.id, { definition: parsed.value.definition })
     applyLocal(versions.value.map((v) => (v.id === saved.id ? saved : v)))
   },
-  { success: 'Draft saved.' },
+  { success: () => t('scoring.view.draftSaved') },
 )
 
 const publishSubmit = useSubmit(
   async () => {
     if (!selected.value || !parsed.value.ruleset) return
-    if (
-      !confirm(
-        `Publish version ${selected.value.version}? Published versions can never be changed.`,
-      )
-    )
-      return
+    if (!confirm(t('scoring.view.confirmPublish', { version: selected.value.version }))) return
     const published = await publish(selected.value.id, parsed.value.definition)
     applyLocal(versions.value.map((v) => (v.id === published.id ? published : v)))
   },
-  { success: 'Version published.' },
+  { success: () => t('scoring.view.published') },
 )
 
 const remove = useSubmit(async () => {
-  if (!selected.value || !confirm(`Delete draft version ${selected.value.version}?`)) return
+  if (
+    !selected.value ||
+    !confirm(t('scoring.view.confirmDeleteDraft', { version: selected.value.version }))
+  )
+    return
   const id = selected.value.id
   await deleteDraft(id)
   applyLocal(versions.value.filter((v) => v.id !== id))
@@ -212,12 +212,12 @@ const removeRule = useSubmit(
   async () => {
     const rule = selectedRule.value
     if (!rule) return
-    if (!confirm(`Delete the game “${rule.name}” with all its versions?`)) return
+    if (!confirm(t('scoring.view.confirmDeleteGame', { game: rule.name }))) return
     await deleteGameRule(rule.id)
     game.value = ''
     await load()
   },
-  { success: 'Game deleted.' },
+  { success: () => t('scoring.view.gameDeleted') },
 )
 
 const actionError = computed(
@@ -229,7 +229,15 @@ const actionError = computed(
     removeRule.error.value,
 )
 const label = (v: RulesetRecord) =>
-  `Version ${v.version} – ${v.status === 'published' ? (v.id === active.value?.id ? 'active' : 'published') : 'draft'}`
+  t('scoring.view.versionLabel', {
+    version: v.version,
+    state:
+      v.status === 'published'
+        ? v.id === active.value?.id
+          ? t('scoring.view.active')
+          : t('scoring.view.publishedState')
+        : t('scoring.view.draftState'),
+  })
 
 onMounted(() => load())
 </script>
@@ -239,18 +247,27 @@ onMounted(() => load())
   <Skeleton v-if="loading && !category" class="h-10 w-1/2" />
   <template v-else-if="category">
     <PageHeader
-      :title="`Scoring: ${category.name}`"
-      :description="event ? `${category.code} · ${event.name}` : `${category.code} · template`"
+      :title="t('scoring.view.title', { category: category.name })"
+      :description="
+        event
+          ? `${category.code} · ${event.name}`
+          : `${category.code} · ${t('categories.template')}`
+      "
     >
       <template #actions>
         <Button v-if="event" as-child variant="outline">
-          <RouterLink :to="{ name: 'event', params: { id: event.id } }">Back to event</RouterLink>
+          <RouterLink :to="{ name: 'event', params: { id: event.id } }">{{
+            t('rankings.view.backToEvent')
+          }}</RouterLink>
         </Button>
         <Button v-else as-child variant="outline">
-          <RouterLink :to="{ name: 'category-library' }">Back to library</RouterLink>
+          <RouterLink :to="{ name: 'category-library' }">{{
+            t('rankings.view.backToLibrary')
+          }}</RouterLink>
         </Button>
         <Button v-if="canManage" :disabled="newDraft.pending.value" @click="newDraft.run()">
-          <FilePlusIcon /> {{ shown.length ? 'New draft from selected' : 'Create first draft' }}
+          <FilePlusIcon />
+          {{ shown.length ? t('scoring.view.newDraft') : t('scoring.view.firstDraft') }}
         </Button>
       </template>
     </PageHeader>
@@ -262,8 +279,8 @@ onMounted(() => load())
       class="mb-4 flex flex-wrap items-center gap-2"
       data-testid="game-rules"
     >
-      <span class="text-sm font-medium">Game</span>
-      <NativeSelect v-if="rules.length" v-model="game" aria-label="Game">
+      <span class="text-sm font-medium">{{ t('rankings.rounds.game') }}</span>
+      <NativeSelect v-if="rules.length" v-model="game" :aria-label="t('rankings.rounds.game')">
         <NativeSelectOption v-for="r in rules" :key="r.id" :value="r.id">{{
           r.name
         }}</NativeSelectOption>
@@ -273,7 +290,7 @@ onMounted(() => load())
           v-if="selectedRule"
           variant="ghost"
           size="icon"
-          aria-label="Edit game"
+          :aria-label="t('scoring.game.edit')"
           @click="openRuleDialog(selectedRule)"
           ><PencilIcon
         /></Button>
@@ -281,20 +298,22 @@ onMounted(() => load())
           v-if="selectedRule && rules.length > 1"
           variant="ghost"
           size="icon"
-          aria-label="Delete game"
+          :aria-label="t('scoring.view.deleteGame')"
           :disabled="removeRule.pending.value"
           @click="removeRule.run()"
           ><Trash2Icon
         /></Button>
-        <Button variant="outline" size="sm" @click="openRuleDialog()"><PlusIcon /> New game</Button>
+        <Button variant="outline" size="sm" @click="openRuleDialog()"
+          ><PlusIcon /> {{ t('scoring.game.new') }}</Button
+        >
       </template>
       <p v-if="rules.length > 1" class="basis-full text-sm text-muted-foreground">
-        A category can play different games in different rounds. Choose each round's game in the
+        {{ t('scoring.view.gamesHint') }}
         <RouterLink
           class="underline"
           :to="{ name: 'category-ranking', params: { id: category.id }, query: { tab: 'rounds' } }"
-          >rounds</RouterLink
-        >.
+          >{{ t('scoring.view.gamesHintLink') }}</RouterLink
+        >
       </p>
       <p v-if="selectedRule?.description" class="basis-full text-sm text-muted-foreground">
         {{ selectedRule.description }}
@@ -304,16 +323,14 @@ onMounted(() => load())
 
     <Alert v-if="!shown.length" class="mb-4">
       <AlertDescription>
-        No scoring ruleset yet.
-        <template v-if="canManage"
-          >Create a first draft; it starts from an example ruleset.</template
-        >
+        {{ t('scoring.view.none') }}
+        <template v-if="canManage">{{ t('scoring.view.noneHint') }}</template>
       </AlertDescription>
     </Alert>
 
     <template v-else>
       <div class="mb-4 flex flex-wrap items-center gap-2">
-        <NativeSelect v-model="selectedId" aria-label="Version">
+        <NativeSelect v-model="selectedId" :aria-label="t('scoring.view.version')">
           <NativeSelectOption v-for="v in shown" :key="v.id" :value="v.id">{{
             label(v)
           }}</NativeSelectOption>
@@ -323,7 +340,11 @@ onMounted(() => load())
           :variant="selected.status === 'published' ? 'default' : 'outline'"
           data-testid="ruleset-status"
         >
-          {{ selected.status === 'published' ? 'Published' : 'Draft' }}
+          {{
+            selected.status === 'published'
+              ? t('events.status.published')
+              : t('events.status.draft')
+          }}
         </Badge>
         <span v-if="selected?.fingerprint" class="font-mono text-xs text-muted-foreground">
           {{ selected.fingerprint }}
@@ -334,15 +355,19 @@ onMounted(() => load())
             :disabled="!dirty || !!parsed.syntaxError || save.pending.value"
             @click="save.run()"
           >
-            <SaveIcon /> Save draft
+            <SaveIcon /> {{ t('teams.form.saveDraft') }}
           </Button>
           <Button
             :disabled="!parsed.ruleset || publishSubmit.pending.value"
             @click="publishSubmit.run()"
           >
-            <SendIcon /> Publish
+            <SendIcon /> {{ t('events.detail.publish') }}
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Delete draft" @click="remove.run()"
+          <Button
+            variant="ghost"
+            size="icon"
+            :aria-label="t('teams.form.deleteDraft')"
+            @click="remove.run()"
             ><Trash2Icon
           /></Button>
         </div>
@@ -350,34 +375,34 @@ onMounted(() => load())
 
       <Tabs v-model="tab">
         <TabsList>
-          <TabsTrigger value="preview">Preview</TabsTrigger>
-          <TabsTrigger value="definition">Definition</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="preview">{{ t('scheduling.generate.previewButton') }}</TabsTrigger>
+          <TabsTrigger value="definition">{{ t('scoring.view.definition') }}</TabsTrigger>
+          <TabsTrigger value="history">{{ t('judging.sheet.history') }}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="preview">
           <Alert v-if="!parsed.ruleset" variant="destructive">
-            <AlertDescription>Fix the definition to preview the score sheet.</AlertDescription>
+            <AlertDescription>{{ t('scoring.view.fixFirst') }}</AlertDescription>
           </Alert>
           <div v-else-if="result" class="grid gap-4 lg:grid-cols-[3fr_2fr]">
             <ScoreSheet v-model="values" :ruleset="parsed.ruleset" :result="result" />
             <Card>
               <CardHeader>
-                <CardTitle>Calculation</CardTitle>
+                <CardTitle>{{ t('rankings.inspector.calculation') }}</CardTitle>
               </CardHeader>
               <CardContent class="flex flex-col gap-3 text-sm">
                 <p v-if="result.valid" class="text-muted-foreground" data-testid="sheet-valid">
-                  Complete: this sheet could be submitted.
+                  {{ t('scoring.view.complete') }}
                 </p>
                 <p v-else class="text-muted-foreground" data-testid="sheet-incomplete">
-                  {{ result.issues.length }} issue(s) block submission.
+                  {{ t('scoring.view.blocking', result.issues.length) }}
                 </p>
                 <ul data-testid="explanation">
                   <ExplanationTree :explanation="result.explanation" />
                 </ul>
-                <Button variant="outline" size="sm" class="self-start" @click="values = {}"
-                  >Reset values</Button
-                >
+                <Button variant="outline" size="sm" class="self-start" @click="values = {}">{{
+                  t('scoring.view.reset')
+                }}</Button>
               </CardContent>
             </Card>
           </div>
@@ -386,8 +411,7 @@ onMounted(() => load())
         <TabsContent value="definition">
           <Alert v-if="selected?.status === 'published'" class="mb-2">
             <AlertDescription>
-              Published versions are read-only. Create a new draft to make changes; existing results
-              keep using the version they were scored with.
+              {{ t('scoring.view.readOnly') }}
             </AlertDescription>
           </Alert>
           <EditorModeToggle v-model="editor" class="mb-3" />
@@ -404,17 +428,23 @@ onMounted(() => load())
           <Table data-testid="ruleset-history">
             <TableHeader>
               <TableRow>
-                <TableHead>Version</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Published</TableHead>
-                <TableHead>Fingerprint</TableHead>
-                <TableHead>Notes</TableHead>
+                <TableHead>{{ t('scoring.view.version') }}</TableHead>
+                <TableHead>{{ t('common.status') }}</TableHead>
+                <TableHead>{{ t('events.status.published') }}</TableHead>
+                <TableHead>{{ t('scoring.view.fingerprint') }}</TableHead>
+                <TableHead>{{ t('scoring.view.notes') }}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-for="v in shown" :key="v.id">
                 <TableCell>{{ v.version }}</TableCell>
-                <TableCell>{{ v.status }}{{ v.id === active?.id ? ' (active)' : '' }}</TableCell>
+                <TableCell
+                  >{{
+                    v.status === 'published'
+                      ? t('scoring.view.publishedState')
+                      : t('scoring.view.draftState')
+                  }}{{ v.id === active?.id ? ` (${t('scoring.view.active')})` : '' }}</TableCell
+                >
                 <TableCell>{{ formatDateTime(v.published_at) }}</TableCell>
                 <TableCell class="font-mono text-xs">{{ v.fingerprint || '–' }}</TableCell>
                 <TableCell class="whitespace-normal">{{ v.notes || '–' }}</TableCell>

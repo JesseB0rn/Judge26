@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, watch } from 'vue'
 import { listEventDays } from '@/modules/rankings/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
@@ -35,7 +36,7 @@ let reloadPromise: Promise<void> | undefined
 const labels = computed(() => {
   const map: Record<string, string> = {}
   for (const game of games.data.value ?? []) {
-    const team = game.expand?.team?.name ?? 'Unknown team'
+    const team = game.expand?.team?.name ?? t('scheduling.unknownTeam')
     const round = game.expand?.round?.name
     map[game.id] = round ? `${team} (${round})` : team
   }
@@ -64,9 +65,9 @@ watch(() => props.event.id, reload)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-end gap-2">
-      <span class="text-sm text-muted-foreground">Games and results</span>
+      <span class="text-sm text-muted-foreground">{{ t('scheduling.export.label') }}</span>
       <ExportButtons
-        :title="`games ${event.name}`"
+        :title="t('scheduling.export.title', { event: event.name })"
         :tables="
           () => [
             gamesTable(games.data.value ?? [], categories.data.value ?? [], days.data.value ?? []),
@@ -76,7 +77,9 @@ watch(() => props.event.id, reload)
       />
     </div>
     <ErrorAlert :error="firstError" />
-    <p v-if="loading && !games.data.value" class="text-sm text-muted-foreground">Loading…</p>
+    <p v-if="loading && !games.data.value" class="text-sm text-muted-foreground">
+      {{ t('common.loading') }}
+    </p>
     <div class="grid gap-4 lg:grid-cols-2">
       <TablesPanel
         :event-id="event.id"

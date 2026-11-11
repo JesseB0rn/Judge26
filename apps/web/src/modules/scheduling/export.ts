@@ -1,3 +1,4 @@
+import { t, translatedLabels } from '@/i18n'
 import type { ExportTable } from '@/shared/export/table'
 import type {
   CategoryRecord,
@@ -8,12 +9,10 @@ import type {
 
 // Games export (M7-05, M7-06): the schedule with each game's result, in playing order.
 
-const STATUS: Record<GameStatus, string> = {
-  scheduled: 'Scheduled',
-  completed: 'Completed',
-  disqualified: 'Disqualified',
-  absent: 'Absent',
-}
+const STATUS = translatedLabels<GameStatus>(
+  ['scheduled', 'completed', 'disqualified', 'absent'],
+  (status) => t(`scheduling.gameStatus.${status}`),
+)
 
 /** Games need `expand: round,team,table` (as listed by the schedule). */
 export function gamesTable(
@@ -39,18 +38,18 @@ export function gamesTable(
     )
   })
   return {
-    name: 'Games',
+    name: t('scheduling.export.sheet'),
     columns: [
-      { header: 'Category' },
-      { header: 'Round' },
-      { header: 'Attempt', type: 'number', decimals: 0 },
-      { header: 'Day' },
-      { header: 'Table' },
-      { header: 'Position', type: 'number', decimals: 0 },
-      { header: 'Team' },
-      { header: 'Status' },
-      { header: 'Points', type: 'number' },
-      { header: 'Time (s)', type: 'duration' },
+      { header: t('teams.category') },
+      { header: t('teams.mine.round') },
+      { header: t('scheduling.export.attempt'), type: 'number', decimals: 0 },
+      { header: t('scheduling.export.day') },
+      { header: t('teams.mine.table') },
+      { header: t('scheduling.export.position'), type: 'number', decimals: 0 },
+      { header: t('teams.team') },
+      { header: t('common.status') },
+      { header: t('scheduling.export.points'), type: 'number' },
+      { header: t('scheduling.export.time'), type: 'duration' },
     ],
     rows: sorted.map((g) => {
       const round = g.expand?.round

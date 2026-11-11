@@ -1,0 +1,134 @@
+{
+  "core": {
+    "failed_to_authenticate": "L’adresse e-mail ou le mot de passe est incorrect.",
+    "invalid_data": "Certaines valeurs ne sont pas valables. Vérifiez les champs signalés.",
+    "invalid_verification_token": "Le lien de confirmation n’est pas valable ou a expiré.",
+    "invalid_reset_token": "Le lien de réinitialisation du mot de passe n’est pas valable ou a expiré."
+  },
+  "validation_required": "Ne peut pas être vide.",
+  "validation_invalid_email": "Doit être une adresse e-mail valable.",
+  "validation_is_email": "Doit être une adresse e-mail valable.",
+  "validation_invalid_url": "Doit être une URL valable.",
+  "validation_is_url": "Doit être une URL valable.",
+  "validation_invalid_value": "Valeur non valable.",
+  "validation_in_invalid": "Doit être une valeur valable.",
+  "validation_invalid_format": "Le format n’est pas valable.",
+  "validation_match_invalid": "Le format n’est pas valable.",
+  "validation_invalid_date": "Doit être une date valable.",
+  "validation_invalid_number": "Doit être un nombre valable.",
+  "validation_not_unique": "Cette valeur est déjà utilisée.",
+  "validation_values_mismatch": "Les valeurs ne correspondent pas.",
+  "validation_length_out_of_range": "Doit comporter entre {min} et {max} caractères.",
+  "validation_length_too_long": "Doit comporter au plus {max} caractères.",
+  "validation_length_too_short": "Doit comporter au moins {min} caractères.",
+  "validation_min_text_constraint": "Doit comporter au moins {min} caractères.",
+  "validation_max_text_constraint": "Doit comporter au plus {max} caractères.",
+  "validation_min_number_constraint": "Doit être au moins {min}.",
+  "validation_max_number_constraint": "Doit être au plus {max}.",
+  "validation_min_greater_equal_than_required": "Doit être au moins {threshold}.",
+  "validation_max_less_equal_than_required": "Doit être au plus {threshold}.",
+  "validation_file_size_limit": "Le fichier est trop volumineux.",
+  "validation_invalid_mime_type": "Ce type de fichier n’est pas autorisé.",
+  "validation_missing_rel_records": "L’élément choisi n’existe pas.",
+  "event_not_found": "L’événement est introuvable.",
+  "event_archived": "Les événements archivés sont en lecture seule.",
+  "review_not_allowed": "Seuls les juges principaux et les responsables d’événement peuvent contrôler les scores.",
+  "too_many_reports": "Trop de rapports d’erreur, réessayez plus tard.",
+  "unknown_action": "Action inconnue.",
+  "game_not_found": "La manche est introuvable.",
+  "category_not_found": "La catégorie est introuvable.",
+  "ruleset_not_found": "Le règlement est introuvable.",
+  "message_not_found": "Le message est introuvable.",
+  "categories_not_allowed": "Vous ne pouvez pas créer de catégories ici.",
+  "not_verified": "Veuillez d’abord confirmer votre adresse e-mail.",
+  "own_schedule_only": "Vous ne pouvez consulter que votre propre horaire.",
+  "game_not_assigned": "Cette manche ne vous est pas attribuée.",
+  "sign_in_required": "Connectez-vous pour voir l’horaire.",
+  "correction_not_allowed": "Seuls les juges principaux et les responsables d’événement peuvent corriger les scores définitifs.",
+  "staff_only": "Seule l’organisation de l’événement peut faire cela.",
+  "managers_only": "Seuls les responsables d’événement et les admins peuvent faire cela.",
+  "admins_only": "Seuls les administrateurs peuvent faire cela.",
+  "ranking_not_configured": "Cette catégorie n’a pas de configuration de classement.",
+  "audit_immutable": "Les entrées d’audit des scores ne peuvent pas être modifiées.",
+  "snapshot_immutable": "Les classements figés ne peuvent pas être modifiés.",
+  "ruleset_published": "Les règlements publiés ne peuvent pas être modifiés. Créez plutôt une nouvelle version.",
+  "retry_failed_only": "Seuls les messages en échec peuvent être relancés.",
+  "game_has_score": "Les manches avec un score soumis ou définitif ne peuvent pas être supprimées.",
+  "table_in_use": "Des manches sont encore planifiées sur cette table. Déplacez-les d’abord.",
+  "column_in_use": "Des blocs se trouvent encore dans cette colonne. Déplacez-les ou supprimez-les d’abord.",
+  "game_rule_category": "Un jeu ne peut pas être déplacé dans une autre catégorie.",
+  "game_rule_used": "Ce jeu a servi à évaluer des résultats et ne peut pas être supprimé.",
+  "sheet_submitted": "Cette feuille de score a déjà été soumise et attend le contrôle.",
+  "sheet_finalized": "Ce score est définitif. Seul·e un·e juge principal·e peut le corriger.",
+  "approve_submitted_only": "Seules les feuilles de score soumises peuvent être validées.",
+  "reject_submitted_only": "Seules les feuilles de score soumises peuvent être renvoyées.",
+  "correct_finalized_only": "Seuls les scores définitifs peuvent être corrigés.",
+  "corrected_meanwhile": "Le score a été corrigé entre-temps par quelqu’un d’autre. Rechargez-le et vérifiez à nouveau.",
+  "result_finalized": "Ce résultat est définitif. Utilisez une correction de score motivée pour le modifier.",
+  "result_in_review": "Ce résultat attend le contrôle dans le processus d’évaluation.",
+  "changed_meanwhile": "Cela a été modifié entre-temps par quelqu’un d’autre. Rechargez et réessayez.",
+  "table_required": "Attribuez une table avant de fixer l’ordre de passage.",
+  "invalid_table": "La table appartient à un autre événement.",
+  "table_inactive": "La table est désactivée.",
+  "incompatible_category": "La table n’est pas disponible pour cette catégorie.",
+  "missing_table_judge": "Attribuez un juge à la table avant d’y planifier des manches.",
+  "sequence_in_use": "Ce numéro d’ordre est déjà utilisé sur cette table pour ce tour.",
+  "invalid_category": "Choisissez une catégorie de cet événement.",
+  "invalid_column": "Choisissez des colonnes de cet événement.",
+  "invalid_date": "Doit être une date valable (AAAA-MM-JJ).",
+  "invalid_day": "Choisissez un jour de compétition de cet événement.",
+  "crosses_midnight": "Un bloc doit se terminer avant minuit.",
+  "invalid_judge": "Le juge attribué doit faire partie de l’organisation de cet événement.",
+  "unknown_template": "Modèle inconnu.",
+  "invalid_ruleset": "Utilisez un règlement publié de cette catégorie.",
+  "invalid_scope": "Choisissez qui notifier.",
+  "category_full": "La catégorie est complète.",
+  "invalid_status": "Ce statut n’est pas possible pour une nouvelle inscription.",
+  "invalid_transition": "L’inscription ne peut pas passer à ce statut.",
+  "invalid_team": "L’équipe n’est pas inscrite dans la catégorie de ce tour.",
+  "team_not_approved": "Seules les équipes acceptées peuvent jouer des manches.",
+  "invalid_game_rule": "Choisissez un jeu de cette catégorie.",
+  "invalid_snapshot": "Choisissez un classement figé de cette catégorie.",
+  "fields": {
+    "registration_closes_at": {
+      "invalid_range": "La clôture des inscriptions doit suivre leur ouverture."
+    },
+    "ends_at": {
+      "invalid_range": "Le jour doit se terminer après son début."
+    },
+    "max_age": {
+      "invalid_range": "L’âge maximum ne doit pas être inférieur à l’âge minimum."
+    },
+    "max_team_size": {
+      "invalid_range": "La taille maximale de l’équipe ne doit pas être inférieure à la taille minimale."
+    },
+    "email": {
+      "not_found": "Aucun utilisateur n’a cette adresse e-mail."
+    },
+    "event": {
+      "not_allowed": "Le rôle admin est global et ne peut pas être limité à un événement.",
+      "required": "Ce rôle doit être attribué pour un événement."
+    },
+    "day": {
+      "required": "Choisissez le jour de cette phase."
+    },
+    "game_rule": {
+      "required": "Choisissez le jeu."
+    },
+    "message": {
+      "required": "Un message est obligatoire."
+    },
+    "review_note": {
+      "required": "Un motif est obligatoire pour refuser une inscription."
+    },
+    "title": {
+      "required": "Un titre est obligatoire."
+    },
+    "sequence": {
+      "required": "L’ordre de passage doit être un nombre positif."
+    },
+    "active": {
+      "table_in_use": "Des manches sont encore planifiées sur cette table."
+    }
+  }
+}

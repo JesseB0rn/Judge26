@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 /**
  * Visual aggregation builder model (M3-18): maps a ranking configuration onto a block diagram
  * (rounds → calculations → ranking) and applies edits. Pure functions over the same format as
@@ -45,15 +46,29 @@ export function isBuildable(config: unknown): config is Draft {
   return isObject(config.ranking) && Array.isArray(config.ranking.keys)
 }
 
-export const OPS: { op: CalcOp; label: string; glyph: string; hint: string }[] = [
-  { op: 'ADD', label: 'Sum', glyph: 'Σ', hint: 'Adds points and times' },
-  { op: 'MAX', label: 'Maximum', glyph: 'MAX', hint: 'Highest points (no time)' },
-  { op: 'MIN', label: 'Minimum', glyph: 'MIN', hint: 'Lowest points (no time)' },
-  { op: 'DIFFERENCE', label: 'Difference', glyph: 'a−b', hint: 'First minus second' },
-  { op: 'BEST_BY', label: 'Best', glyph: 'BEST', hint: 'Best whole result, keeps its time' },
-  { op: 'WORST_BY', label: 'Worst', glyph: 'WRST', hint: 'Worst whole result' },
-  { op: 'SUM_BEST_N', label: 'Sum of best N', glyph: 'ΣN', hint: 'Adds the N best results' },
-]
+const GLYPHS: Record<CalcOp, string> = {
+  ADD: 'Σ',
+  MAX: 'MAX',
+  MIN: 'MIN',
+  DIFFERENCE: 'a−b',
+  BEST_BY: 'BEST',
+  WORST_BY: 'WRST',
+  SUM_BEST_N: 'ΣN',
+}
+
+/** Calculations of the builder palette; label and hint are read in the current language. */
+export const OPS: readonly { op: CalcOp; label: string; glyph: string; hint: string }[] = (
+  Object.keys(GLYPHS) as CalcOp[]
+).map((op) => ({
+  op,
+  glyph: GLYPHS[op],
+  get label() {
+    return t(`rankings.ops.${op}.label`)
+  },
+  get hint() {
+    return t(`rankings.ops.${op}.hint`)
+  },
+}))
 const ORDERED: CalcOp[] = ['BEST_BY', 'WORST_BY', 'SUM_BEST_N']
 
 export const refOf = (o: Operand) => ('round' in o ? o.round : o.calc)
@@ -96,7 +111,7 @@ export function operandOf(def: Draft, block: string): Operand | undefined {
 export function addRound(def: Draft): { def: Draft; key: string } {
   const next = clone(def)
   const key = unique(next, 'R')
-  next.rounds.push({ key, label: `Round ${key.slice(1)}` })
+  next.rounds.push({ key, label: t('rankings.builder.roundLabel', { n: key.slice(1) }) })
   return { def: next, key: `round:${next.rounds.length - 1}` }
 }
 
@@ -270,7 +285,7 @@ export function removeKey(def: Draft, index: number): Draft {
  */
 export function connect(def: Draft, from: string, to: string, port: string): Draft | string {
   const operand = operandOf(def, from)
-  if (!operand) return 'The ranking has no output to wire.'
+  if (!operand) return t('rankings.builder.noOutput')
   const index = Number(port.replace('in', ''))
   const next = clone(def)
   if (to === 'ranking') {
@@ -281,7 +296,7 @@ export function connect(def: Draft, from: string, to: string, port: string): Dra
   }
   const [kind, i] = to.split(':')
   const calc = kind === 'calc' ? next.calculations?.[Number(i)] : undefined
-  if (!calc) return 'Rounds have no inputs: wire into a calculation or the ranking.'
+  if (!calc) return t('rankings.builder.noInputs')
   const operands = Array.isArray(calc.operands) ? calc.operands : (calc.operands = [])
   if (index < operands.length) operands[index] = operand
   else operands.push(operand)
@@ -309,17 +324,19 @@ const sortText = (by: Aggregation['by']) =>
     .join(' ')
 
 export function describeAggregation(agg: Partial<Aggregation> | undefined) {
-  if (!agg) return 'best attempt'
+  if (!agg) return t('rankings.builder.bestAttempt')
   const meta = OPS.find((o) => o.op === agg.op)
   if (!meta) return String(agg.op ?? '?')
-  if (agg.op === 'SUM_BEST_N') return `best ${agg.n ?? '?'} by ${sortText(agg.by)}`
+  if (agg.op === 'SUM_BEST_N') {
+    return t('rankings.builder.bestNBy', { n: agg.n ?? '?', sort: sortText(agg.by) })
+  }
   if (agg.op === 'BEST_BY' || agg.op === 'WORST_BY')
-    return `${meta.label.toLowerCase()} by ${sortText(agg.by)}`
-  return meta.label.toLowerCase()
+    return t('rankings.builder.opBy', { op: meta.label, sort: sortText(agg.by) })
+  return meta.label
 }
 
 const fieldText = (k: Pick<RankingKey, 'field' | 'order'>) =>
-  `${k.field === 'time' ? 'time' : 'points'} ${k.order === 'asc' ? '↑' : '↓'}`
+  `${k.field === 'time' ? t('rankings.fields.time') : t('rankings.fields.points')} ${k.order === 'asc' ? '↑' : '↓'}`
 
 export function issuesByBlock(def: Draft, issues: Issue[]) {
   const map = new Map<string, string[]>()
@@ -386,12 +403,14 @@ export function toDiagram(
         c.op === 'DIFFERENCE'
           ? ['a', 'b'].map((name, j) => ({
               id: `in${j}`,
-              label: operands[j] ? `${name}: ${label(operands[j])}` : `${name}: wire here`,
+              label: operands[j]
+                ? `${name}: ${label(operands[j])}`
+                : `${name}: ${t('rankings.builder.wireHere')}`,
               spare: !operands[j],
             }))
           : [
               ...operands.map((o, j) => ({ id: `in${j}`, label: label(o) })),
-              { id: `in${operands.length}`, label: '+ wire to add', spare: true },
+              { id: `in${operands.length}`, label: t('rankings.builder.wireToAdd'), spare: true },
             ]
       const badges: string[] = []
       if (c.op === 'SUM_BEST_N') badges.push(`n=${c.n ?? '?'}`)
@@ -419,8 +438,11 @@ export function toDiagram(
       shape: 'indicator',
       tone: 'sink',
       glyph: '#',
-      title: 'Ranking',
-      subtitle: def.ranking.ties === 'name' ? 'ties: by team name' : 'ties: shared rank',
+      title: t('categories.ranking'),
+      subtitle:
+        def.ranking.ties === 'name'
+          ? t('rankings.builder.tiesName')
+          : t('rankings.builder.tiesShared'),
       inputs: [
         ...def.ranking.keys.map((k, j) => ({
           id: `in${j}`,
@@ -428,7 +450,9 @@ export function toDiagram(
         })),
         {
           id: `in${def.ranking.keys.length}`,
-          label: def.ranking.keys.length ? '+ tie-breaker' : '+ ranking key',
+          label: def.ranking.keys.length
+            ? t('rankings.builder.addTieBreaker')
+            : t('rankings.builder.addKey'),
           spare: true,
         },
       ],

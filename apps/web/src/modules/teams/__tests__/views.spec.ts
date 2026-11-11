@@ -299,7 +299,7 @@ describe('team views', () => {
       expect(errors).toContain('already exists')
       expect(errors).toContain('Unknown category code "XX"')
 
-      await click(buttonByText('Import 1 team(s)'))
+      await click(buttonByText('Import one team'))
       expect(mocked.importTeams).toHaveBeenCalledWith(
         'event1',
         [expect.objectContaining({ name: 'New Team', category: 'cat1' })],

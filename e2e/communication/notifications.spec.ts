@@ -40,7 +40,7 @@ test.describe('M7 notifications', () => {
 
     await card.getByLabel('Message (optional)').fill('Please arrive 30 minutes early.')
     await card.getByRole('button', { name: 'Notify affected teams' }).click()
-    await expect(page.getByText('1 email queued.')).toBeVisible()
+    await expect(page.getByText('One email queued.')).toBeVisible()
     await expect(card.getByTestId('affected-count')).toHaveText('0 affected')
 
     await processOutbox()

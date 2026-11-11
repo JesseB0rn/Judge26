@@ -1,0 +1,216 @@
+{
+  "fields": {
+    "points": "points",
+    "time": "temps"
+  },
+  "ops": {
+    "ADD": {
+      "label": "Somme",
+      "hint": "Additionne les points et les temps"
+    },
+    "MAX": {
+      "label": "Maximum",
+      "hint": "Points les plus élevés (sans temps)"
+    },
+    "MIN": {
+      "label": "Minimum",
+      "hint": "Points les plus bas (sans temps)"
+    },
+    "DIFFERENCE": {
+      "label": "Différence",
+      "hint": "Le premier moins le second"
+    },
+    "BEST_BY": {
+      "label": "Meilleur",
+      "hint": "Meilleur résultat complet, avec son temps"
+    },
+    "WORST_BY": {
+      "label": "Moins bon",
+      "hint": "Moins bon résultat complet"
+    },
+    "SUM_BEST_N": {
+      "label": "Somme des N meilleurs",
+      "hint": "Additionne les N meilleurs résultats"
+    }
+  },
+  "builder": {
+    "roundLabel": "Tour {n}",
+    "noOutput": "Le classement n’a pas de sortie à relier.",
+    "noInputs": "Les tours n’ont pas d’entrées : reliez à un calcul ou au classement.",
+    "bestAttempt": "meilleur essai",
+    "bestNBy": "{n} meilleurs selon {sort}",
+    "opBy": "{op} selon {sort}",
+    "wireHere": "relier ici",
+    "wireToAdd": "+ relier pour ajouter",
+    "tiesName": "égalités : par nom d’équipe",
+    "tiesShared": "égalités : rang partagé",
+    "addTieBreaker": "+ critère de départage",
+    "addKey": "+ critère de classement",
+    "empty": "Pas encore de configuration de classement. Commencez avec « {generate} » ou « {example} ».",
+    "syntaxError": "Le JSON contient une erreur de syntaxe ({error}). Corrigez-la d’abord dans l’éditeur JSON.",
+    "incomplete": "La configuration doit contenir une liste de tours et des critères de classement pour que l’éditeur puisse l’afficher. Corrigez-la d’abord dans l’éditeur JSON.",
+    "add": "Ajouter {block}",
+    "probe": "Équipe témoin",
+    "none": "Aucune",
+    "help": "Faites glisser la sortie ▶ d’un bloc vers une entrée d’un calcul, ou vers le classement pour ajouter un critère (le premier critère classe, les suivants départagent). Sélectionnez un lien ou un bloc et appuyez sur Suppr pour le retirer. Choisissez une équipe témoin pour voir ses résultats sur chaque lien.",
+    "selectHint": "Sélectionnez un bloc pour le modifier. Le bloc de classement contient les départages et les règles.",
+    "rules": "Règles de classement"
+  },
+  "inspector": {
+    "roundSuffix": "tour",
+    "calculation": "Calcul",
+    "deleteBlock": "Supprimer le bloc",
+    "keyHint": "Les manches font référence au tour par ce code.",
+    "attempts": "Plusieurs essais comptent comme",
+    "bestDefault": "Meilleur essai (par défaut)",
+    "nAttempts": "N (essais)",
+    "id": "ID",
+    "idHint": "Les autres calculs et le classement y font référence.",
+    "operation": "Opération",
+    "nResults": "N (résultats)",
+    "operands": "Opérandes (a − b)",
+    "inputs": "Entrées, dans l’ordre",
+    "input": "Entrée {n}",
+    "moveInputUp": "Monter l’entrée",
+    "removeInput": "Retirer l’entrée",
+    "addInput": "Ajouter une entrée",
+    "addInputOption": "+ Ajouter une entrée…",
+    "bestMeans": "« Meilleur » signifie, dans l’ordre",
+    "field": "Champ",
+    "order": "Ordre",
+    "desc": "élevés d’abord",
+    "asc": "bas d’abord",
+    "removeSortKey": "Retirer le critère de tri",
+    "sortKey": "Critère de tri",
+    "rankBy": "Classer selon (le premier critère décide, les suivants départagent)",
+    "keySource": "Source du critère {n}",
+    "moveKeyUp": "Monter le critère",
+    "moveKeyDown": "Descendre le critère",
+    "removeKey": "Retirer le critère",
+    "columnLabel": "Libellé de colonne",
+    "addTieBreakerOption": "+ Ajouter un critère de départage…",
+    "addKeyOption": "+ Ajouter un critère de classement…",
+    "ties": "Si tous les critères sont égaux",
+    "tiesShared": "rang partagé",
+    "tiesName": "trier par nom d’équipe",
+    "resultsThatAre": "Résultats qui sont…",
+    "policyName": {
+      "missing": "manquants",
+      "disqualified": "disqualifiés",
+      "absent": "absents"
+    },
+    "policy": {
+      "zero": "comptent pour 0",
+      "exclude": "ignorer le tour",
+      "unranked": "ne pas classer l’équipe"
+    },
+    "precision": "Décimales (0–4)",
+    "timeResolution": "Résolution du temps (ms)"
+  },
+  "game": {
+    "description": "Enregistrez le résultat. Plusieurs essais par tour sont possibles.",
+    "confirmDelete": "Supprimer l’essai {attempt} ?",
+    "newAttempt": "Nouvel essai ({attempt})",
+    "notPlayed": "Planifiée (non jouée)",
+    "seconds": "Temps (secondes)",
+    "secondsHint": "Laisser vide si le temps n’est pas mesuré.",
+    "secondsPlaceholder": "p. ex. {example}",
+    "useSheet": "Évaluer avec le règlement version {version}",
+    "deleteAttempt": "Supprimer l’essai",
+    "save": "Enregistrer le résultat"
+  },
+  "config": {
+    "json": "Configuration du classement (JSON)",
+    "empty": "Pas encore de configuration de classement.",
+    "invalidJson": "JSON non valable : {error}",
+    "valid": "La configuration est valable."
+  },
+  "table": {
+    "byName": "par nom",
+    "by": "selon {key}",
+    "decided": "Décidé",
+    "shared": "Rang partagé",
+    "missingResults": "Certains résultats de tour manquent",
+    "explain": "Expliquer {team}"
+  },
+  "matrix": {
+    "resultsOf": "Résultats de {team} au {round}",
+    "enter": "Saisir",
+    "empty": "Aucune équipe acceptée."
+  },
+  "rounds": {
+    "notSet": "Non défini",
+    "gone": "Le tour en cours de modification n’existe plus.",
+    "confirmDelete": "Supprimer {round} ? Tous les résultats enregistrés dans ce tour seront aussi supprimés.",
+    "key": "Code",
+    "game": "Jeu",
+    "phases": "Phases",
+    "phaseSummary": "Essais {testing} min · Évaluation {scoring} min · Total {total} min",
+    "empty": "Aucun tour pour l’instant.",
+    "keyHint": "Utilisé dans la configuration du classement, p. ex. R1.",
+    "name": "Nom du tour",
+    "gameHint": "La feuille de score utilisée par les juges dans ce tour.",
+    "day": "Jour de compétition",
+    "dayHint": "Les juges filtrent leurs manches par jour.",
+    "testing": "Maintenance / essais (minutes)",
+    "scoring": "Phase d’évaluation (minutes)",
+    "total": "Durée totale du tour : {minutes} minutes.",
+    "save": "Enregistrer le tour",
+    "add": "Ajouter un tour"
+  },
+  "export": {
+    "title": "classement {category}",
+    "shared": "Partagé",
+    "roundPoints": "{round} points",
+    "roundTime": "{round} temps (s)",
+    "roundStatus": "{round} statut",
+    "provisional": "Provisoire",
+    "decidedBy": "Décidé par"
+  },
+  "report": {
+    "noSnapshot": "Ce classement figé n’existe pas ou appartient à une autre catégorie.",
+    "notConfigured": "Le classement de cette catégorie n’est pas configuré.",
+    "back": "Retour",
+    "print": "Imprimer / enregistrer en PDF",
+    "printHint": "Choisissez « Enregistrer au format PDF » comme imprimante pour obtenir un fichier.",
+    "provisional": "Provisoire : aucune manche ouverte. | Provisoire : une manche n’a pas encore de résultat définitif. | Provisoire : {count} manches n’ont pas encore de résultat définitif.",
+    "missingNote": "Certains résultats de tour de cette équipe manquent.",
+    "snapshotOf": "Classement figé du {date} · empreinte",
+    "generated": "Généré le {date} par Judge26."
+  },
+  "view": {
+    "configSaved": "Configuration du classement enregistrée.",
+    "snapshotPublished": "Classement figé publié.",
+    "title": "Tours et classement : {category}",
+    "backToPlanner": "Retour au planificateur",
+    "backToEvent": "Retour à l’événement",
+    "backToLibrary": "Retour à la bibliothèque",
+    "results": "Résultats",
+    "configuration": "Configuration",
+    "snapshots": "Classements figés",
+    "configureFirst": "Configurez le classement pour voir les résultats.",
+    "livePublic": "Le classement en direct est public",
+    "unsavedPreview": "Aperçu avec des modifications de configuration non enregistrées.",
+    "provisional": "Provisoire : {open} manches sur {total} n’ont pas encore de résultat définitif.",
+    "ignored": "Aucun résultat ignoré : | Un résultat ignoré : | {count} résultats ignorés :",
+    "snapshotPlaceholder": "p. ex. Classement officiel jour 1",
+    "snapshotTitle": "Titre du classement figé",
+    "publishSnapshot": "Publier le classement figé",
+    "saveFirst": "Enregistrez d’abord la configuration.",
+    "addRoundsFirst": "Ajoutez d’abord des tours.",
+    "generate": "Générer à partir des tours",
+    "example": "Charger un exemple",
+    "saveConfig": "Enregistrer la configuration",
+    "unknownRounds": "La configuration fait référence à des tours qui n’existent pas encore : {rounds}. Leurs résultats comptent comme manquants.",
+    "noSnapshots": "Aucun classement figé publié pour l’instant.",
+    "snapshot": "Classement figé",
+    "selectSnapshot": "Choisir un classement figé",
+    "officialPublic": "officiel (public)",
+    "fingerprints": "Empreinte {result} · configuration {config}"
+  },
+  "resultStatus": {
+    "missing": "manquant",
+    "absent": "absent",
+    "disqualified": "disqualifié"
+  }
+}

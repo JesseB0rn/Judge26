@@ -44,6 +44,9 @@ const TEMPLATE_VARIABLES = {
     'message',
     'schedule_url',
   ],
+  // Account emails sent by PocketBase (hooks/mail.pb.js renders them in the user's language).
+  auth_verification: ['name', 'action_url', 'app_name'],
+  auth_password_reset: ['name', 'action_url', 'app_name'],
 }
 const RAW = ['schedule']
 
@@ -86,20 +89,28 @@ function appUrl(app) {
   return String(app.settings().meta.appURL || '').replace(/\/+$/, '')
 }
 
-function findTemplate(app, key) {
-  try {
-    return app.findFirstRecordByFilter('mail_templates', 'key = {:key}', { key })
-  } catch (_) {
-    return null
+/** The template in `language`, else the English one (null if neither exists). */
+function findTemplate(app, key, language) {
+  const find = (lang) => {
+    try {
+      return app.findFirstRecordByFilter('mail_templates', 'key = {:key} && language = {:lang}', {
+        key,
+        lang,
+      })
+    } catch (_) {
+      return null
+    }
   }
+  const i18n = require(`${__hooks}/lib/i18n.js`)
+  return find(i18n.language(language)) || find(i18n.FALLBACK)
 }
 
 /**
- * Queues a message from a template. Returns the outbox record, or null if the template is
- * disabled or missing or there is no recipient.
+ * Queues a message from a template in `options.language` (the recipient's). Returns the outbox
+ * record, or null if the template is disabled or missing or there is no recipient.
  */
 function enqueue(app, options) {
-  const template = findTemplate(app, options.template)
+  const template = findTemplate(app, options.template, options.language)
   if (!template || !template.getBool('enabled') || !options.to) return null
   const vars = options.vars || {}
   const record = new Record(app.findCollectionByNameOrId('mail_outbox'))
@@ -202,7 +213,9 @@ function processDue(app, limit) {
 function retry(app, id) {
   const record = app.findRecordById('mail_outbox', id)
   if (record.getString('status') !== 'failed') {
-    throw new BadRequestError('Only failed messages can be retried.')
+    throw new BadRequestError('Only failed messages can be retried.', {
+      _error: new ValidationError('retry_failed_only', 'Only failed messages can be retried.'),
+    })
   }
   record.set('status', 'pending')
   record.set('attempts', 0)
@@ -227,20 +240,31 @@ function queueRegistration(app, team) {
   if (!template) return null
   const category = app.findRecordById('categories', team.getString('category'))
   const event = app.findRecordById('events', team.getString('event'))
+  const i18n = require(`${__hooks}/lib/i18n.js`)
+  const language = coachLanguage(app, team)
   return enqueue(app, {
     template,
     to: team.getString('coach_email'),
     event: event.id,
     team: team.id,
     immediate: true,
+    language,
     vars: {
-      coach_name: team.getString('coach_name') || 'coach',
+      coach_name: team.getString('coach_name') || i18n.t(language, 'coach'),
       team_name: team.getString('name'),
       category_name: category.getString('name'),
       event_name: event.getString('name'),
       team_url: `${appUrl(app)}/teams/${team.id}`,
       review_note: team.getString('review_note'),
     },
+  })
+}
+
+/** Language of a team's coach: the coach account's, else the account with the coach email's. */
+function coachLanguage(app, team) {
+  return require(`${__hooks}/lib/i18n.js`).languageOf(app, {
+    userId: team.getString('coach'),
+    email: team.getString('coach_email'),
   })
 }
 
@@ -265,12 +289,19 @@ function requireScheduleNotifier(e) {
   const access = require(`${__hooks}/lib/access.js`)
   const eventId = e.request.pathValue('id')
   if (!access.isVerifiedUser(e.auth) || !access.canManageEvent(e.app, e.auth, eventId)) {
-    throw new ForbiddenError('Only event managers and admins can notify teams.')
+    throw new ForbiddenError('Only event managers and admins can notify teams.', {
+      _error: new ValidationError(
+        'managers_only',
+        'Only event managers and admins can notify teams.',
+      ),
+    })
   }
   try {
     return e.app.findRecordById('events', eventId)
   } catch (_) {
-    throw new NotFoundError('Event not found.')
+    throw new NotFoundError('Event not found.', {
+      _error: new ValidationError('event_not_found', 'Event not found.'),
+    })
   }
 }
 
@@ -353,28 +384,41 @@ function eventSchedules(app, eventId) {
   })
 }
 
-function describeItem(item) {
-  const parts = [item.round + (item.attempt > 1 ? ` (attempt ${item.attempt})` : '')]
+/** One game of a schedule as a line of text in `language` (default English). */
+function describeItem(item, language) {
+  const t = require(`${__hooks}/lib/i18n.js`).t
+  const lang = language || 'en'
+  const parts = [
+    item.attempt > 1
+      ? t(lang, 'attempt', { round: item.round, attempt: item.attempt })
+      : item.round,
+  ]
   if (item.day) parts.push(item.day.label || item.day.date)
-  if (item.starts_at) parts.push(`from ${item.starts_at}`)
+  if (item.starts_at) parts.push(t(lang, 'from', { time: item.starts_at }))
   parts.push(
-    item.table ? `table ${item.table}, position ${item.sequence}` : 'table not assigned yet',
+    item.table
+      ? t(lang, 'table', { table: item.table, position: item.sequence })
+      : t(lang, 'noTable'),
   )
   if (item.check) {
     const day = item.check.day.label || item.check.day.date
-    parts.push(`robot check ${day}${item.check.starts_at ? ` ${item.check.starts_at}` : ''}`)
+    parts.push(
+      t(lang, 'check', { day: `${day}${item.check.starts_at ? ` ${item.check.starts_at}` : ''}` }),
+    )
   }
   return parts.join(' · ')
 }
 
-function scheduleHtml(items) {
-  if (!items.length) return '<p><em>No games are currently scheduled for this team.</em></p>'
-  return `<ul>${items.map((i) => `<li>${escapeHtml(describeItem(i))}</li>`).join('')}</ul>`
+function scheduleHtml(items, language) {
+  const t = require(`${__hooks}/lib/i18n.js`).t
+  if (!items.length) return `<p><em>${escapeHtml(t(language, 'noGames'))}</em></p>`
+  return `<ul>${items.map((i) => `<li>${escapeHtml(describeItem(i, language))}</li>`).join('')}</ul>`
 }
 
-function scheduleText(items) {
-  if (!items.length) return 'No games are currently scheduled for this team.'
-  return items.map((i) => `- ${describeItem(i)}`).join('\n')
+function scheduleText(items, language) {
+  const t = require(`${__hooks}/lib/i18n.js`).t
+  if (!items.length) return t(language, 'noGames')
+  return items.map((i) => `- ${describeItem(i, language)}`).join('\n')
 }
 
 function noticeFor(app, teamId) {
@@ -421,17 +465,20 @@ function notifySchedule(app, eventId, changes, message) {
   let queued = 0
   changes.forEach((change) => {
     const team = change.entry.team
+    const language = coachLanguage(app, team)
     const record = enqueue(app, {
       template: 'schedule_changed',
       to: team.getString('coach_email'),
       event: eventId,
       team: team.id,
+      language,
       vars: {
-        coach_name: team.getString('coach_name') || 'coach',
+        coach_name:
+          team.getString('coach_name') || require(`${__hooks}/lib/i18n.js`).t(language, 'coach'),
         team_name: team.getString('name'),
         event_name: event.getString('name'),
-        schedule: scheduleHtml(change.entry.items),
-        schedule_text: scheduleText(change.entry.items),
+        schedule: scheduleHtml(change.entry.items, language),
+        schedule_text: scheduleText(change.entry.items, language),
         message: message || '',
         schedule_url: `${appUrl(app)}/live/${eventId}`,
       },
@@ -447,7 +494,26 @@ function notifySchedule(app, eventId, changes, message) {
   return queued
 }
 
+/**
+ * Account emails (verification, password reset) in the user's language: replaces the subject
+ * and body PocketBase rendered with the auth_* template in users.language. `path` is the web
+ * app's page for the link token. Without a template the PocketBase email is sent unchanged.
+ */
+function localizeAccountEmail(e, key, path) {
+  const template = findTemplate(e.app, key, e.record.getString('language'))
+  const token = e.meta && e.meta.token
+  if (!template || !token) return
+  const vars = {
+    name: e.record.getString('name'),
+    app_name: e.app.settings().meta.appName || 'Judge26',
+    action_url: `${appUrl(e.app)}${path}?token=${encodeURIComponent(token)}`,
+  }
+  e.message.subject = render(template.getString('subject'), vars, false).replace(/\s+/g, ' ').trim()
+  e.message.html = render(template.getString('body'), vars, true)
+}
+
 module.exports = {
+  localizeAccountEmail,
   BACKOFF_MINUTES,
   MAX_ATTEMPTS,
   TEMPLATE_VARIABLES,

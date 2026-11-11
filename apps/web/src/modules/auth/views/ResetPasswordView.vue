@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -22,20 +23,22 @@ const { run, pending, error, fieldErrors } = useSubmit(async () => {
 </script>
 
 <template>
-  <AuthCard title="Choose a new password">
+  <AuthCard :title="t('auth.reset.title')">
     <template v-if="done">
-      <p data-testid="reset-done">Your password has been changed.</p>
-      <Button as-child><RouterLink to="/login">Sign in</RouterLink></Button>
+      <p data-testid="reset-done">{{ t('auth.reset.done') }}</p>
+      <Button as-child
+        ><RouterLink to="/login">{{ t('auth.login.submit') }}</RouterLink></Button
+      >
     </template>
-    <p v-else-if="!token" class="text-destructive">This reset link is invalid.</p>
+    <p v-else-if="!token" class="text-destructive">{{ t('auth.reset.invalidLink') }}</p>
     <form v-else class="flex flex-col gap-4" @submit.prevent="run()">
       <ErrorAlert :error="error" />
       <FormField
         v-slot="{ id }"
-        label="New password"
+        :label="t('auth.reset.newPassword')"
         name="password"
         :errors="fieldErrors"
-        description="At least 8 characters."
+        :description="t('auth.passwordHint')"
       >
         <Input
           :id="id"
@@ -46,7 +49,7 @@ const { run, pending, error, fieldErrors } = useSubmit(async () => {
           required
         />
       </FormField>
-      <Button type="submit" :disabled="pending">Change password</Button>
+      <Button type="submit" :disabled="pending">{{ t('auth.reset.submit') }}</Button>
     </form>
   </AuthCard>
 </template>

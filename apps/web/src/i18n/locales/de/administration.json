@@ -1,0 +1,112 @@
+{
+  "audit": {
+    "areas": {
+      "events": "Anlässe",
+      "competition_days": "Wettkampftage",
+      "categories": "Kategorien",
+      "teams": "Teams",
+      "team_documents": "Teamdokumente",
+      "role_assignments": "Rollen",
+      "game_rules": "Spiele",
+      "rulesets": "Regelwerke",
+      "rounds": "Runden",
+      "round_phases": "Planer-Phasen",
+      "schedule_blocks": "Planer-Blöcke",
+      "schedule_columns": "Planer-Spalten",
+      "tables": "Tische",
+      "games": "Laufresultate",
+      "ranking_snapshots": "Ranglisten-Stände",
+      "mail_templates": "E-Mail-Vorlagen",
+      "mail_outbox": "E-Mails"
+    },
+    "filterArea": "Nach Bereich filtern",
+    "allAreas": "Alle Bereiche",
+    "searchPlaceholder": "Aktionen, Benutzer, Einträge suchen",
+    "search": "Protokoll durchsuchen",
+    "entries": "keine Einträge | ein Eintrag | {count} Einträge",
+    "who": "Wer",
+    "what": "Was",
+    "detailsOf": "Details zu {entry}",
+    "empty": "Keine Einträge.",
+    "description": "Administrative Aktionen in allen Anlässen: wer was wann und von wo geändert hat. Der Verlauf der Bewertungsbogen wird bei jedem Lauf geführt."
+  },
+  "staff": {
+    "assigned": "Rolle zugewiesen.",
+    "role": "Rolle",
+    "removeRole": "Rolle entfernen",
+    "empty": "Kein Personal zugewiesen.",
+    "assign": "Rolle zuweisen",
+    "userEmail": "E-Mail des Benutzers",
+    "userEmailHint": "Die Person muss bereits ein Konto haben.",
+    "submit": "Zuweisen"
+  },
+  "users": {
+    "description": "Konten und ihre Rollen. Rollen für Anlässe werden im Reiter «Personal» des jeweiligen Anlasses vergeben.",
+    "searchPlaceholder": "Nach Name oder E-Mail suchen",
+    "search": "Benutzer suchen",
+    "roles": "Rollen",
+    "unverified": "nicht bestätigt",
+    "removeAdmin": "Admin entfernen",
+    "makeAdmin": "Zum Admin machen",
+    "empty": "Keine Benutzer gefunden.",
+    "truncated": "{shown} von {total} Benutzern angezeigt. Verfeinern Sie die Suche, um weitere zu finden."
+  },
+  "monitoring": {
+    "description": "Ob Server, E-Mail-Versand und Backups funktionieren, und die neusten Fehler. Wird alle 30 Sekunden aktualisiert.",
+    "overall": {
+      "ok": "Alle Systeme normal",
+      "degraded": "Braucht Aufmerksamkeit",
+      "down": "Ausgefallen"
+    },
+    "checkStatus": {
+      "ok": "OK",
+      "warn": "Warnung",
+      "down": "Ausgefallen"
+    },
+    "checks": {
+      "database": "Datenbank",
+      "errors": "Fehler",
+      "mail": "E-Mail-Versand",
+      "backups": "Backups"
+    },
+    "uptime": {
+      "minutes": "{minutes} Min.",
+      "hours": "{hours} Std. {minutes} Min.",
+      "days": "0 Tage | 1 Tag | {count} Tage"
+    },
+    "upChecked": "läuft seit {uptime} · geprüft {checked}",
+    "alertsOff": "E-Mail-Alarme sind ausgeschaltet (MONITORING_ALERT_EMAIL)",
+    "recentErrors": "Neuste Fehler",
+    "allLogs": "Alle Logs (Dashboard, Superuser)",
+    "time": "Zeit",
+    "source": "Quelle",
+    "error": "Fehler",
+    "sources": {
+      "server": "Server",
+      "browser": "Browser"
+    },
+    "httpStatus": "Status {status}",
+    "noErrors": "Keine Fehler in den letzten 24 Stunden.",
+    "detail": {
+      "database_ok": "Erreichbar",
+      "database_down": "Nicht erreichbar: {error}",
+      "logs_disabled": "Logs sind ausgeschaltet (Settings → Logs), Fehler werden nicht aufbewahrt.",
+      "errors_none": "Keine in den letzten {minutes} Minuten",
+      "errors_some": "{server} Server- und {browser} Browserfehler in den letzten {minutes} Minuten",
+      "smtp_missing": "SMTP ist nicht eingerichtet, E-Mails können nicht versendet werden",
+      "mail_failed": "keine E-Mails in den letzten 24 Stunden fehlgeschlagen | eine E-Mail in den letzten 24 Stunden fehlgeschlagen | {count} E-Mails in den letzten 24 Stunden fehlgeschlagen",
+      "mail_stuck": "keine E-Mails überfällig | eine E-Mail überfällig, der Versandauftrag läuft möglicherweise nicht | {count} E-Mails überfällig, der Versandauftrag läuft möglicherweise nicht",
+      "mail_captured": "Abgefangen (kein SMTP)",
+      "mail_delivering": "Versand läuft",
+      "mail_queued": "keine E-Mails in der Warteschlange | eine E-Mail in der Warteschlange | {count} E-Mails in der Warteschlange",
+      "backups_off": "Automatische Backups sind ausgeschaltet (BACKUP_CRON)",
+      "backups_off_dev": "Automatische Backups sind ausgeschaltet (keine Produktion)",
+      "backups_unlisted": "Backups können nicht aufgelistet werden: {error}",
+      "backups_missing": "Es gibt kein Backup (Zeitplan «{cron}»)",
+      "backups_none_yet": "Noch kein Backup (Zeitplan «{cron}»)",
+      "backups_stale": "Letztes Backup ist veraltet: vor {hours} Stunden",
+      "backups_latest": "Letztes Backup vor {hours} Stunden (Zeitplan «{cron}»)",
+      "check_failed": "Prüfung fehlgeschlagen: {error}"
+    }
+  }
+}

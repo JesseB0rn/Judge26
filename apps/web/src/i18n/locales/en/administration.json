@@ -1,0 +1,112 @@
+{
+  "audit": {
+    "areas": {
+      "events": "Events",
+      "competition_days": "Competition days",
+      "categories": "Categories",
+      "teams": "Teams",
+      "team_documents": "Team documents",
+      "role_assignments": "Roles",
+      "game_rules": "Games",
+      "rulesets": "Rulesets",
+      "rounds": "Rounds",
+      "round_phases": "Planner phases",
+      "schedule_blocks": "Planner blocks",
+      "schedule_columns": "Planner columns",
+      "tables": "Tables",
+      "games": "Game results",
+      "ranking_snapshots": "Ranking snapshots",
+      "mail_templates": "Email templates",
+      "mail_outbox": "Emails"
+    },
+    "filterArea": "Filter by area",
+    "allAreas": "All areas",
+    "searchPlaceholder": "Search actions, users, records",
+    "search": "Search the audit log",
+    "entries": "no entries | one entry | {count} entries",
+    "who": "Who",
+    "what": "What",
+    "detailsOf": "Details of {entry}",
+    "empty": "No entries.",
+    "description": "Administrative actions on every event: who changed what, when and from where. Score sheet history is kept with each game."
+  },
+  "staff": {
+    "assigned": "Role assigned.",
+    "role": "Role",
+    "removeRole": "Remove role",
+    "empty": "No staff assigned.",
+    "assign": "Assign role",
+    "userEmail": "User email",
+    "userEmailHint": "The user must already have an account.",
+    "submit": "Assign"
+  },
+  "users": {
+    "description": "Accounts and their roles. Event roles are assigned on each event's Staff tab.",
+    "searchPlaceholder": "Search by name or email",
+    "search": "Search users",
+    "roles": "Roles",
+    "unverified": "unverified",
+    "removeAdmin": "Remove admin",
+    "makeAdmin": "Make admin",
+    "empty": "No users found.",
+    "truncated": "Showing {shown} of {total} users. Refine the search to find others."
+  },
+  "monitoring": {
+    "description": "Whether the server, email delivery and backups are working, and the latest errors. Refreshed every 30 seconds.",
+    "overall": {
+      "ok": "All systems normal",
+      "degraded": "Needs attention",
+      "down": "Down"
+    },
+    "checkStatus": {
+      "ok": "OK",
+      "warn": "Warning",
+      "down": "Down"
+    },
+    "checks": {
+      "database": "Database",
+      "errors": "Errors",
+      "mail": "Email delivery",
+      "backups": "Backups"
+    },
+    "uptime": {
+      "minutes": "{minutes} min",
+      "hours": "{hours} h {minutes} min",
+      "days": "0 days | 1 day | {count} days"
+    },
+    "upChecked": "up {uptime} · checked {checked}",
+    "alertsOff": "Email alerts are off (MONITORING_ALERT_EMAIL)",
+    "recentErrors": "Recent errors",
+    "allLogs": "All logs (dashboard, superusers)",
+    "time": "Time",
+    "source": "Source",
+    "error": "Error",
+    "sources": {
+      "server": "server",
+      "browser": "browser"
+    },
+    "httpStatus": "status {status}",
+    "noErrors": "No errors in the last 24 hours.",
+    "detail": {
+      "database_ok": "Reachable",
+      "database_down": "Not reachable: {error}",
+      "logs_disabled": "Logs are disabled (Settings → Logs), errors are not kept.",
+      "errors_none": "None in the last {minutes} minutes",
+      "errors_some": "{server} server and {browser} browser errors in the last {minutes} minutes",
+      "smtp_missing": "SMTP is not configured, emails cannot be delivered",
+      "mail_failed": "no emails failed in the last 24 hours | one email failed in the last 24 hours | {count} emails failed in the last 24 hours",
+      "mail_stuck": "no emails overdue | one email overdue, the delivery job may not be running | {count} emails overdue, the delivery job may not be running",
+      "mail_captured": "Captured (no SMTP)",
+      "mail_delivering": "Delivering",
+      "mail_queued": "no emails queued | one email queued | {count} emails queued",
+      "backups_off": "Automatic backups are disabled (BACKUP_CRON)",
+      "backups_off_dev": "Automatic backups are disabled (not production)",
+      "backups_unlisted": "Backups cannot be listed: {error}",
+      "backups_missing": "No backup exists (schedule “{cron}”)",
+      "backups_none_yet": "No backup yet (schedule “{cron}”)",
+      "backups_stale": "Latest backup is stale: {hours} hours ago",
+      "backups_latest": "Latest backup {hours} hours ago (schedule “{cron}”)",
+      "check_failed": "Check failed: {error}"
+    }
+  }
+}

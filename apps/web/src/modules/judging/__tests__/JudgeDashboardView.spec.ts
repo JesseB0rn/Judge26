@@ -106,7 +106,7 @@ describe('JudgeDashboardView', () => {
     const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
     expect(wrapper.text()).toContain('No connection')
     expect(games(wrapper)).toEqual(['g1', 'g2', 'g3'])
-    expect(wrapper.get('[data-testid=pending-sync]').text()).toContain('1 score sheet')
+    expect(wrapper.get('[data-testid=pending-sync]').text()).toContain('One score sheet')
   })
 
   it('M5-T14: pending drafts are sent when the dashboard opens', async () => {

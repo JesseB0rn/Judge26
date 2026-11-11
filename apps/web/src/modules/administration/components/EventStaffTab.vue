@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -38,7 +39,7 @@ const add = useSubmit(
     email.value = ''
     await load()
   },
-  { success: 'Role assigned.' },
+  { success: () => t('administration.staff.assigned') },
 )
 const remove = useSubmit(async (id: string) => {
   await removeRole(id)
@@ -55,10 +56,12 @@ onMounted(load)
       <Table data-testid="event-staff">
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+            <TableHead>{{ t('common.name') }}</TableHead>
+            <TableHead>{{ t('auth.email') }}</TableHead>
+            <TableHead>{{ t('administration.staff.role') }}</TableHead>
+            <TableHead class="w-0"
+              ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+            >
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,39 +73,50 @@ onMounted(load)
               <Button
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Remove role`"
+                :aria-label="t('administration.staff.removeRole')"
                 @click="remove.run(a.id)"
               >
                 <Trash2Icon />
               </Button>
             </TableCell>
           </TableRow>
-          <TableEmpty v-if="!loading && !staff?.length" :colspan="4">No staff assigned.</TableEmpty>
+          <TableEmpty v-if="!loading && !staff?.length" :colspan="4">{{
+            t('administration.staff.empty')
+          }}</TableEmpty>
         </TableBody>
       </Table>
     </div>
     <Card>
-      <CardHeader><CardTitle>Assign role</CardTitle></CardHeader>
+      <CardHeader
+        ><CardTitle>{{ t('administration.staff.assign') }}</CardTitle></CardHeader
+      >
       <CardContent>
         <form class="flex flex-col gap-4" @submit.prevent="add.run()">
           <ErrorAlert :error="add.error.value" />
           <FormField
             v-slot="{ id }"
-            label="User email"
+            :label="t('administration.staff.userEmail')"
             name="email"
             :errors="add.fieldErrors.value"
-            description="The user must already have an account."
+            :description="t('administration.staff.userEmailHint')"
           >
             <Input :id="id" v-model="email" type="email" required />
           </FormField>
-          <FormField v-slot="{ id }" label="Role" name="role" :errors="add.fieldErrors.value">
+          <FormField
+            v-slot="{ id }"
+            :label="t('administration.staff.role')"
+            name="role"
+            :errors="add.fieldErrors.value"
+          >
             <NativeSelect :id="id" v-model="role" class="w-full">
               <NativeSelectOption v-for="r in EVENT_ROLES" :key="r" :value="r">{{
                 ROLE_LABELS[r]
               }}</NativeSelectOption>
             </NativeSelect>
           </FormField>
-          <Button type="submit" :disabled="add.pending.value">Assign</Button>
+          <Button type="submit" :disabled="add.pending.value">{{
+            t('administration.staff.submit')
+          }}</Button>
         </form>
       </CardContent>
     </Card>

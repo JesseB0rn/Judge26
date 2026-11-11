@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
+
 /** A row of large toggle chips (filters must be operable by touch, no hover). */
 const props = defineProps<{
   label: string
@@ -16,7 +18,7 @@ const model = defineModel<string>({ required: true })
     <button
       v-for="option in props.required
         ? options
-        : [{ value: '', label: allLabel ?? 'All' }, ...options]"
+        : [{ value: '', label: allLabel ?? t('common.all') }, ...options]"
       :key="option.value"
       type="button"
       role="radio"

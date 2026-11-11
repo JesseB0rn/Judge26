@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ArrowLeftIcon, PrinterIcon } from '@lucide/vue'
@@ -35,8 +36,8 @@ const title = computed(() =>
   shownSnapshot.value
     ? shownSnapshot.value.title
     : openGames.value
-      ? 'Live ranking (provisional)'
-      : 'Live ranking',
+      ? `${t('live.ranking.liveTitle')} (${t('live.provisional')})`
+      : t('live.ranking.liveTitle'),
 )
 const organizations = computed(() => new Map(teams.value.map((t) => [t.id, t.organization])))
 const hasOrganizations = computed(() => teams.value.some((t) => t.organization))
@@ -48,7 +49,7 @@ async function load() {
     if (props.snapshot) {
       const found = (await listSnapshots(props.id)).find((s) => s.id === props.snapshot)
       if (!found) {
-        missing.value = 'This snapshot does not exist or belongs to another category.'
+        missing.value = t('rankings.report.noSnapshot')
         return
       }
       shownSnapshot.value = found
@@ -63,7 +64,7 @@ async function load() {
       category.value.ranking ? JSON.stringify(category.value.ranking) : '',
     )
     if (!parsed.config) {
-      missing.value = 'The ranking of this category is not configured.'
+      missing.value = t('rankings.report.notConfigured')
       return
     }
     const [rounds, games] = await Promise.all([listRounds(props.id), listGames(props.id)])
@@ -93,11 +94,13 @@ onMounted(load)
     <div class="mb-6 flex flex-wrap items-center gap-2 print:hidden">
       <Button as-child variant="outline">
         <RouterLink :to="{ name: 'category-ranking', params: { id } }"
-          ><ArrowLeftIcon /> Back</RouterLink
+          ><ArrowLeftIcon /> {{ t('rankings.report.back') }}</RouterLink
         >
       </Button>
-      <Button :disabled="!shown" @click="print"><PrinterIcon /> Print / save as PDF</Button>
-      <span class="text-sm text-gray-600">Choose “Save as PDF” as the printer to get a file.</span>
+      <Button :disabled="!shown" @click="print"
+        ><PrinterIcon /> {{ t('rankings.report.print') }}</Button
+      >
+      <span class="text-sm text-gray-600">{{ t('rankings.report.printHint') }}</span>
     </div>
 
     <ErrorAlert :error="error" />
@@ -109,7 +112,9 @@ onMounted(load)
     <article v-if="category && shown" data-testid="ranking-report">
       <header class="mb-4 border-b-2 border-black pb-3">
         <p class="text-sm uppercase tracking-wide text-gray-600" data-testid="report-event">
-          {{ event?.name }}<template v-if="event?.season"> · Season {{ event.season }}</template
+          {{ event?.name
+          }}<template v-if="event?.season">
+            · {{ t('events.detail.seasonLine', { season: event.season }) }}</template
           ><template v-if="event?.venue"> · {{ event.venue }}</template>
         </p>
         <h1 class="text-2xl font-bold" data-testid="report-category">
@@ -119,16 +124,15 @@ onMounted(load)
       </header>
 
       <p v-if="!shownSnapshot && openGames" class="mb-3 text-sm" data-testid="report-provisional">
-        Provisional: {{ openGames }} game{{ openGames === 1 ? ' has' : 's have' }} no final result
-        yet.
+        {{ t('rankings.report.provisional', openGames) }}
       </p>
 
       <table class="w-full border-collapse text-sm" data-testid="report-ranking">
         <thead>
           <tr class="border-b border-black text-left">
-            <th class="w-14 py-1 pr-2">Rank</th>
-            <th class="py-1 pr-2">Team</th>
-            <th v-if="hasOrganizations" class="py-1 pr-2">Organization</th>
+            <th class="w-14 py-1 pr-2">{{ t('live.tv.rank') }}</th>
+            <th class="py-1 pr-2">{{ t('teams.team') }}</th>
+            <th v-if="hasOrganizations" class="py-1 pr-2">{{ t('teams.organization') }}</th>
             <th v-for="key in shown.ranking.keys" :key="key.label" class="py-1 pl-2 text-right">
               {{ key.label }}
             </th>
@@ -163,14 +167,16 @@ onMounted(load)
 
       <footer class="mt-4 flex flex-col gap-1 text-xs text-gray-600">
         <p v-if="shown.ranking.entries.some((e) => e.provisional)">
-          * Some round results of this team are missing.
+          * {{ t('rankings.report.missingNote') }}
         </p>
-        <p v-if="shown.ranking.entries.some((e) => e.shared)">= Shared rank.</p>
+        <p v-if="shown.ranking.entries.some((e) => e.shared)">
+          = {{ t('rankings.table.shared') }}.
+        </p>
         <p v-if="shownSnapshot" data-testid="report-fingerprint">
-          Snapshot of {{ formatDateTime(shownSnapshot.created) }} · fingerprint
+          {{ t('rankings.report.snapshotOf', { date: formatDateTime(shownSnapshot.created) }) }}
           <span class="font-mono">{{ shownSnapshot.fingerprint }}</span>
         </p>
-        <p>Generated {{ formatDateTime(generatedAt) }} by Judge26.</p>
+        <p>{{ t('rankings.report.generated', { date: formatDateTime(generatedAt) }) }}</p>
       </footer>
     </article>
   </div>

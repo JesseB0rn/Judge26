@@ -63,7 +63,7 @@ describe('ranking report (M7-07)', () => {
       'RoboMission Elementary (RM-E)',
     )
     expect(wrapper.get('[data-testid=report-title]').text()).toBe('Live ranking (provisional)')
-    expect(wrapper.get('[data-testid=report-provisional]').text()).toContain('1 game has')
+    expect(wrapper.get('[data-testid=report-provisional]').text()).toContain('one game has')
     expect(reportRows()).toEqual([
       ['1', 'Bravo *', 'School B', '120', '50.000 s', '120'],
       ['2', 'Alpha *', 'School A', '100', '60.000 s', '100'],

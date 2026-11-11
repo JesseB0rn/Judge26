@@ -1,0 +1,20 @@
+{
+  "language": "Langue",
+  "mainNavigation": "Navigation principale",
+  "signIn": "Se connecter",
+  "signOut": "Se déconnecter",
+  "register": "S’inscrire",
+  "nav": {
+    "judging": "Arbitrage",
+    "review": "Contrôle",
+    "events": "Événements",
+    "myTeams": "Mes équipes",
+    "live": "Résultats en direct",
+    "admin": "Admin",
+    "categories": "Catégories",
+    "users": "Utilisateurs",
+    "emails": "E-mails",
+    "audit": "Journal d’audit",
+    "monitoring": "État du système"
+  }
+}

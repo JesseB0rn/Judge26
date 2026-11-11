@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, ref } from 'vue'
 import { toast } from 'vue-sonner'
 import type { CalcOp, Ranking } from '@judge26/ranking-engine'
@@ -96,14 +97,18 @@ const blockName = (id: string) => diagram.value.nodes.find((n) => n.id === id)?.
 <template>
   <div data-testid="ranking-builder" @keydown="state.onKeydown($event, readonly)">
     <p v-if="!text.trim()" class="text-sm text-muted-foreground">
-      No ranking configuration yet. Use "Generate from rounds" or "Load example" to start.
+      {{
+        t('rankings.builder.empty', {
+          generate: t('rankings.view.generate'),
+          example: t('rankings.view.example'),
+        })
+      }}
     </p>
     <p v-else-if="parsed.syntaxError" class="text-sm text-destructive" role="alert">
-      The JSON has a syntax error ({{ parsed.syntaxError }}). Fix it in the JSON editor first.
+      {{ t('rankings.builder.syntaxError', { error: parsed.syntaxError }) }}
     </p>
     <p v-else-if="!def" class="text-sm text-destructive" role="alert">
-      The configuration needs a rounds list and ranking keys before the builder can show it. Fix it
-      in the JSON editor first.
+      {{ t('rankings.builder.incomplete') }}
     </p>
 
     <BuilderFrame
@@ -115,18 +120,23 @@ const blockName = (id: string) => diagram.value.nodes.find((n) => n.id === id)?.
       @tidy="tidy"
     >
       <template #palette>
-        <Button variant="outline" size="sm" aria-label="Add Round" @click="add('round')">
+        <Button
+          variant="outline"
+          size="sm"
+          :aria-label="t('rankings.builder.add', { block: t('teams.mine.round') })"
+          @click="add('round')"
+        >
           <span class="rounded-sm bg-[#8b5a2b] px-1 font-mono text-[10px] font-bold text-white"
             >R</span
           >
-          Round
+          {{ t('teams.mine.round') }}
         </Button>
         <Button
           v-for="o in OPS"
           :key="o.op"
           variant="outline"
           size="sm"
-          :aria-label="`Add ${o.label}`"
+          :aria-label="t('rankings.builder.add', { block: o.label })"
           :title="o.hint"
           @click="add(o.op)"
         >
@@ -138,9 +148,16 @@ const blockName = (id: string) => diagram.value.nodes.find((n) => n.id === id)?.
       </template>
 
       <div v-if="ranking?.entries.length && parsed.config" class="flex items-center gap-2 text-sm">
-        <label for="probe-team" class="text-muted-foreground">Probe team</label>
-        <NativeSelect id="probe-team" v-model="probeTeam" size="sm" aria-label="Probe team">
-          <NativeSelectOption value="">None</NativeSelectOption>
+        <label for="probe-team" class="text-muted-foreground">{{
+          t('rankings.builder.probe')
+        }}</label>
+        <NativeSelect
+          id="probe-team"
+          v-model="probeTeam"
+          size="sm"
+          :aria-label="t('rankings.builder.probe')"
+        >
+          <NativeSelectOption value="">{{ t('rankings.builder.none') }}</NativeSelectOption>
           <NativeSelectOption v-for="e in ranking.entries" :key="e.team" :value="e.team">
             {{ e.rank ?? '–' }}. {{ e.name }}
           </NativeSelectOption>
@@ -158,9 +175,7 @@ const blockName = (id: string) => diagram.value.nodes.find((n) => n.id === id)?.
         @delete="onDelete"
       />
       <p class="text-xs text-muted-foreground">
-        Drag from a block's ▶ output to an input terminal of a calculation, or to the ranking to add
-        a ranking key (the first key ranks, the next ones break ties). Select a wire or block and
-        press Delete to remove it. Choose a probe team to see its results on every wire.
+        {{ t('rankings.builder.help') }}
       </p>
       <ul
         v-if="issueInfo.general.length"
@@ -185,10 +200,10 @@ const blockName = (id: string) => diagram.value.nodes.find((n) => n.id === id)?.
           @apply="onApply"
         />
         <div v-else class="flex flex-col gap-2 text-sm text-muted-foreground">
-          <p>Select a block to edit it. The ranking block holds tie-breaks and policies.</p>
-          <Button variant="outline" size="sm" class="self-start" @click="selected = 'ranking'"
-            >Ranking rules</Button
-          >
+          <p>{{ t('rankings.builder.selectHint') }}</p>
+          <Button variant="outline" size="sm" class="self-start" @click="selected = 'ranking'">{{
+            t('rankings.builder.rules')
+          }}</Button>
           <ul v-if="issueInfo.map.size" class="flex flex-col gap-1">
             <li v-for="[id, messages] in issueInfo.map" :key="id">
               <button

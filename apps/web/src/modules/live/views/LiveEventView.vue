@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { TvIcon } from '@lucide/vue'
@@ -178,7 +179,10 @@ const shownRound = computed(() =>
   <template v-if="event.data.value">
     <PageHeader
       :title="event.data.value.event.name"
-      :description="`Season ${event.data.value.event.season}${event.data.value.event.venue ? ' · ' + event.data.value.event.venue : ''}`"
+      :description="
+        t('events.detail.seasonLine', { season: event.data.value.event.season }) +
+        (event.data.value.event.venue ? ' · ' + event.data.value.event.venue : '')
+      "
     >
       <template #actions>
         <LiveIndicator
@@ -194,7 +198,7 @@ const shownRound = computed(() =>
               params: { id: props.id },
               query: day ? { day } : {},
             }"
-            ><TvIcon /> TV mode</RouterLink
+            ><TvIcon /> {{ t('live.tvMode') }}</RouterLink
           >
         </Button>
       </template>
@@ -204,7 +208,7 @@ const shownRound = computed(() =>
       <FilterChips
         v-if="categoryOptions.length > 1"
         :model-value="tab === 'rankings' ? rankingCategory : category"
-        label="Category"
+        :label="t('teams.category')"
         :required="tab === 'rankings'"
         @update:model-value="category = $event"
         :options="categoryOptions"
@@ -212,17 +216,17 @@ const shownRound = computed(() =>
       <FilterChips
         v-if="tab !== 'rankings' && tab !== 'timetable' && dayOptions.length > 1"
         v-model="dayModel"
-        label="Day"
+        :label="t('scheduling.export.day')"
         :options="dayOptions"
       />
     </div>
 
     <Tabs v-model="tab">
       <TabsList>
-        <TabsTrigger value="rankings">Rankings</TabsTrigger>
-        <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger v-if="planner" value="timetable">Timetable</TabsTrigger>
-        <TabsTrigger value="progress">Progress</TabsTrigger>
+        <TabsTrigger value="rankings">{{ t('live.tabs.rankings') }}</TabsTrigger>
+        <TabsTrigger value="schedule">{{ t('events.tabs.schedule') }}</TabsTrigger>
+        <TabsTrigger v-if="planner" value="timetable">{{ t('live.tabs.timetable') }}</TabsTrigger>
+        <TabsTrigger value="progress">{{ t('live.progress.title') }}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="rankings" class="pt-2">
@@ -272,10 +276,10 @@ const shownRound = computed(() =>
       <TabsContent value="progress" class="flex flex-col gap-4 pt-2">
         <Card v-if="overall">
           <CardHeader>
-            <CardTitle>{{ selectedDay ? dayLabel(selectedDay) : 'All days' }}</CardTitle>
+            <CardTitle>{{ selectedDay ? dayLabel(selectedDay) : t('live.allDays') }}</CardTitle>
           </CardHeader>
           <CardContent class="flex flex-col gap-4">
-            <ProgressBar :progress="overall" label="All categories" />
+            <ProgressBar :progress="overall" :label="t('teams.filter.allCategories')" />
             <ProgressBar
               v-for="row in categoryProgress"
               v-show="!category || row.category.id === category"

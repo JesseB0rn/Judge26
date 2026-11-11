@@ -1,0 +1,78 @@
+{
+  "tvMode": "TV mode",
+  "provisional": "provisional",
+  "allDays": "All days",
+  "state": {
+    "upcoming": "Upcoming",
+    "scoring": "Playing",
+    "in_review": "In review",
+    "done": "Done"
+  },
+  "indicator": {
+    "offline": "Offline",
+    "offlineAt": "Offline · data from {time}",
+    "connecting": "Connecting…",
+    "live": "Live",
+    "liveAt": "Live · updated {time}"
+  },
+  "progress": {
+    "title": "Progress",
+    "labelOf": "{label} progress",
+    "done": "{done} of {total} games done",
+    "inReview": "{count} in review",
+    "remaining": "{count} remaining"
+  },
+  "publication": {
+    "updated": "Publication updated.",
+    "officialTitle": "Official ranking",
+    "published": "Official ranking published.",
+    "description": "Choose what the public sees on the live pages and TV displays. The official ranking is a snapshot and never changes after later corrections; the live ranking follows every finalized score and is marked provisional.",
+    "publicPage": "Public page",
+    "draft": "This event is a draft: its public pages are not visible until the event is published.",
+    "livePublic": "Live ranking public",
+    "official": "Official ranking",
+    "showLive": "Show the live ranking of {category} publicly",
+    "public": "Public",
+    "hidden": "Hidden",
+    "configureFirst": "Configure the ranking first.",
+    "officialOf": "Official ranking of {category}",
+    "notPublished": "Not published",
+    "publishedAt": "Published {date}",
+    "publishNow": "Publish current ranking"
+  },
+  "ranking": {
+    "notPublished": "Results for this category have not been published yet.",
+    "official": "Official",
+    "live": "Live",
+    "officialPublished": "official, published {date}",
+    "liveTitle": "Live ranking",
+    "liveHint": "from final scores, not official",
+    "provisional": "Provisional: {open} of {total} games are not final yet. Teams marked “provisional” are missing round results."
+  },
+  "schedule": {
+    "atTables": "At the tables",
+    "toPlay": "{count} to play",
+    "now": "Now",
+    "next": "Next",
+    "empty": "No games scheduled for this selection.",
+    "notPlaced": "Not placed"
+  },
+  "tv": {
+    "rank": "Rank",
+    "noTeams": "No teams to rank.",
+    "nothingPublished": "No results have been published yet.",
+    "doneForToday": "Done for today",
+    "games": "{done} / {total} games",
+    "noGames": "No games on this day.",
+    "fullscreen": "Full screen"
+  },
+  "tabs": {
+    "rankings": "Rankings",
+    "timetable": "Timetable"
+  },
+  "events": {
+    "description": "Rankings, schedules and progress of competitions.",
+    "empty": "No competitions are public yet.",
+    "finished": "finished"
+  }
+}

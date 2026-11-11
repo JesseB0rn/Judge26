@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
@@ -25,14 +26,14 @@ const { run, pending, error } = useSubmit(async () => {
 </script>
 
 <template>
-  <AuthCard title="Sign in" description="Sign in to manage events, teams and scores.">
+  <AuthCard :title="t('auth.login.title')" :description="t('auth.login.description')">
     <form class="flex flex-col gap-4" @submit.prevent="run()">
       <ErrorAlert :error="error" />
       <FieldGroup>
-        <FormField v-slot="{ id }" label="Email" name="email">
+        <FormField v-slot="{ id }" :label="t('auth.email')" name="email">
           <Input :id="id" v-model="email" type="email" autocomplete="email" required />
         </FormField>
-        <FormField v-slot="{ id }" label="Password" name="password">
+        <FormField v-slot="{ id }" :label="t('auth.password')" name="password">
           <Input
             :id="id"
             v-model="password"
@@ -42,14 +43,14 @@ const { run, pending, error } = useSubmit(async () => {
           />
         </FormField>
       </FieldGroup>
-      <Button type="submit" :disabled="pending">Sign in</Button>
+      <Button type="submit" :disabled="pending">{{ t('auth.login.submit') }}</Button>
       <RouterLink to="/auth/forgot-password" class="text-sm text-muted-foreground underline">
-        Forgot your password?
+        {{ t('auth.login.forgotPassword') }}
       </RouterLink>
     </form>
     <template #footer>
-      No account yet?
-      <RouterLink to="/register" class="underline">Create one</RouterLink>
+      {{ t('auth.login.noAccount') }}
+      <RouterLink to="/register" class="underline">{{ t('auth.login.createAccount') }}</RouterLink>
     </template>
   </AuthCard>
 </template>

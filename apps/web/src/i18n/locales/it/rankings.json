@@ -1,0 +1,216 @@
+{
+  "fields": {
+    "points": "punti",
+    "time": "tempo"
+  },
+  "ops": {
+    "ADD": {
+      "label": "Somma",
+      "hint": "Somma punti e tempi"
+    },
+    "MAX": {
+      "label": "Massimo",
+      "hint": "Punteggio più alto (senza tempo)"
+    },
+    "MIN": {
+      "label": "Minimo",
+      "hint": "Punteggio più basso (senza tempo)"
+    },
+    "DIFFERENCE": {
+      "label": "Differenza",
+      "hint": "Il primo meno il secondo"
+    },
+    "BEST_BY": {
+      "label": "Migliore",
+      "hint": "Miglior risultato completo, con il suo tempo"
+    },
+    "WORST_BY": {
+      "label": "Peggiore",
+      "hint": "Peggior risultato completo"
+    },
+    "SUM_BEST_N": {
+      "label": "Somma dei migliori N",
+      "hint": "Somma gli N migliori risultati"
+    }
+  },
+  "builder": {
+    "roundLabel": "Turno {n}",
+    "noOutput": "La classifica non ha un’uscita da collegare.",
+    "noInputs": "I turni non hanno ingressi: colleghi a un calcolo o alla classifica.",
+    "bestAttempt": "miglior tentativo",
+    "bestNBy": "migliori {n} per {sort}",
+    "opBy": "{op} per {sort}",
+    "wireHere": "collegare qui",
+    "wireToAdd": "+ collegare per aggiungere",
+    "tiesName": "parità: per nome della squadra",
+    "tiesShared": "parità: rango condiviso",
+    "addTieBreaker": "+ criterio di spareggio",
+    "addKey": "+ criterio di classifica",
+    "empty": "Ancora nessuna configurazione della classifica. Inizi con «{generate}» o «{example}».",
+    "syntaxError": "Il JSON contiene un errore di sintassi ({error}). Lo corregga prima nell’editor JSON.",
+    "incomplete": "La configurazione deve contenere un elenco di turni e criteri di classifica prima che l’editor possa mostrarla. La corregga prima nell’editor JSON.",
+    "add": "Aggiungi {block}",
+    "probe": "Squadra di prova",
+    "none": "Nessuna",
+    "help": "Trascini dall’uscita ▶ di un blocco a un ingresso di un calcolo, o alla classifica per aggiungere un criterio (il primo criterio classifica, i successivi spareggiano). Selezioni un collegamento o un blocco e prema Canc per rimuoverlo. Scelga una squadra di prova per vederne i risultati su ogni collegamento.",
+    "selectHint": "Selezioni un blocco per modificarlo. Il blocco della classifica contiene spareggi e regole.",
+    "rules": "Regole della classifica"
+  },
+  "inspector": {
+    "roundSuffix": "turno",
+    "calculation": "Calcolo",
+    "deleteBlock": "Elimina il blocco",
+    "keyHint": "Le manche fanno riferimento al turno con questo codice.",
+    "attempts": "Più tentativi contano come",
+    "bestDefault": "Miglior tentativo (predefinito)",
+    "nAttempts": "N (tentativi)",
+    "id": "ID",
+    "idHint": "Altri calcoli e la classifica vi fanno riferimento.",
+    "operation": "Operazione",
+    "nResults": "N (risultati)",
+    "operands": "Operandi (a − b)",
+    "inputs": "Ingressi, in ordine",
+    "input": "Ingresso {n}",
+    "moveInputUp": "Sposta l’ingresso in alto",
+    "removeInput": "Rimuovi l’ingresso",
+    "addInput": "Aggiungi ingresso",
+    "addInputOption": "+ Aggiungi ingresso…",
+    "bestMeans": "«Migliore» significa, in ordine",
+    "field": "Campo",
+    "order": "Ordine",
+    "desc": "alti prima",
+    "asc": "bassi prima",
+    "removeSortKey": "Rimuovi il criterio di ordinamento",
+    "sortKey": "Criterio di ordinamento",
+    "rankBy": "Classificare per (il primo criterio decide, i successivi spareggiano)",
+    "keySource": "Origine del criterio {n}",
+    "moveKeyUp": "Sposta il criterio in alto",
+    "moveKeyDown": "Sposta il criterio in basso",
+    "removeKey": "Rimuovi il criterio",
+    "columnLabel": "Etichetta della colonna",
+    "addTieBreakerOption": "+ Aggiungi criterio di spareggio…",
+    "addKeyOption": "+ Aggiungi criterio di classifica…",
+    "ties": "Se tutti i criteri sono uguali",
+    "tiesShared": "rango condiviso",
+    "tiesName": "ordinare per nome della squadra",
+    "resultsThatAre": "Risultati che sono…",
+    "policyName": {
+      "missing": "mancanti",
+      "disqualified": "squalificati",
+      "absent": "assenti"
+    },
+    "policy": {
+      "zero": "contano come 0",
+      "exclude": "ignorare il turno",
+      "unranked": "non classificare la squadra"
+    },
+    "precision": "Decimali (0–4)",
+    "timeResolution": "Risoluzione del tempo (ms)"
+  },
+  "game": {
+    "description": "Registri il risultato. Sono possibili più tentativi per turno.",
+    "confirmDelete": "Eliminare il tentativo {attempt}?",
+    "newAttempt": "Nuovo tentativo ({attempt})",
+    "notPlayed": "Pianificata (non giocata)",
+    "seconds": "Tempo (secondi)",
+    "secondsHint": "Lasci vuoto se il tempo non è misurato.",
+    "secondsPlaceholder": "p. es. {example}",
+    "useSheet": "Valutare con il regolamento versione {version}",
+    "deleteAttempt": "Elimina il tentativo",
+    "save": "Salva il risultato"
+  },
+  "config": {
+    "json": "Configurazione della classifica (JSON)",
+    "empty": "Ancora nessuna configurazione della classifica.",
+    "invalidJson": "JSON non valido: {error}",
+    "valid": "La configurazione è valida."
+  },
+  "table": {
+    "byName": "per nome",
+    "by": "per {key}",
+    "decided": "Deciso",
+    "shared": "Rango condiviso",
+    "missingResults": "Mancano alcuni risultati di turno",
+    "explain": "Spiega {team}"
+  },
+  "matrix": {
+    "resultsOf": "Risultati di {team} in {round}",
+    "enter": "Inserisci",
+    "empty": "Nessuna squadra approvata."
+  },
+  "rounds": {
+    "notSet": "Non impostato",
+    "gone": "Il turno in modifica non esiste più.",
+    "confirmDelete": "Eliminare {round}? Anche tutti i risultati registrati in questo turno saranno eliminati.",
+    "key": "Codice",
+    "game": "Gioco",
+    "phases": "Fasi",
+    "phaseSummary": "Prove {testing} min · Valutazione {scoring} min · Totale {total} min",
+    "empty": "Ancora nessun turno.",
+    "keyHint": "Usato nella configurazione della classifica, p. es. R1.",
+    "name": "Nome del turno",
+    "gameHint": "Il foglio di punteggio usato dai giudici in questo turno.",
+    "day": "Giorno di gara",
+    "dayHint": "I giudici filtrano le loro manche per giorno.",
+    "testing": "Manutenzione / prove (minuti)",
+    "scoring": "Fase di valutazione (minuti)",
+    "total": "Durata totale del turno: {minutes} minuti.",
+    "save": "Salva il turno",
+    "add": "Aggiungi turno"
+  },
+  "export": {
+    "title": "classifica {category}",
+    "shared": "Condiviso",
+    "roundPoints": "{round} punti",
+    "roundTime": "{round} tempo (s)",
+    "roundStatus": "{round} stato",
+    "provisional": "Provvisorio",
+    "decidedBy": "Deciso da"
+  },
+  "report": {
+    "noSnapshot": "Questa istantanea non esiste o appartiene a un’altra categoria.",
+    "notConfigured": "La classifica di questa categoria non è configurata.",
+    "back": "Indietro",
+    "print": "Stampa / salva come PDF",
+    "printHint": "Scelga «Salva come PDF» come stampante per ottenere un file.",
+    "provisional": "Provvisoria: nessuna manche aperta. | Provvisoria: una manche non ha ancora un risultato definitivo. | Provvisoria: {count} manche non hanno ancora un risultato definitivo.",
+    "missingNote": "Mancano alcuni risultati di turno di questa squadra.",
+    "snapshotOf": "Istantanea del {date} · impronta",
+    "generated": "Generato il {date} da Judge26."
+  },
+  "view": {
+    "configSaved": "Configurazione della classifica salvata.",
+    "snapshotPublished": "Istantanea della classifica pubblicata.",
+    "title": "Turni e classifica: {category}",
+    "backToPlanner": "Torna al pianificatore",
+    "backToEvent": "Torna all’evento",
+    "backToLibrary": "Torna alla biblioteca",
+    "results": "Risultati",
+    "configuration": "Configurazione",
+    "snapshots": "Istantanee",
+    "configureFirst": "Configuri la classifica per vedere i risultati.",
+    "livePublic": "La classifica in diretta è pubblica",
+    "unsavedPreview": "Anteprima con modifiche alla configurazione non salvate.",
+    "provisional": "Provvisoria: {open} manche su {total} non hanno ancora un risultato definitivo.",
+    "ignored": "Nessun risultato ignorato: | Un risultato ignorato: | {count} risultati ignorati:",
+    "snapshotPlaceholder": "p. es. Classifica ufficiale giorno 1",
+    "snapshotTitle": "Titolo dell’istantanea",
+    "publishSnapshot": "Pubblica l’istantanea",
+    "saveFirst": "Salvi prima la configurazione.",
+    "addRoundsFirst": "Aggiunga prima dei turni.",
+    "generate": "Genera dai turni",
+    "example": "Carica un esempio",
+    "saveConfig": "Salva la configurazione",
+    "unknownRounds": "La configurazione fa riferimento a turni che non esistono ancora: {rounds}. I loro risultati contano come mancanti.",
+    "noSnapshots": "Ancora nessuna istantanea pubblicata.",
+    "snapshot": "Istantanea",
+    "selectSnapshot": "Scelga un’istantanea",
+    "officialPublic": "ufficiale (pubblica)",
+    "fingerprints": "Impronta {result} · configurazione {config}"
+  },
+  "resultStatus": {
+    "missing": "mancante",
+    "absent": "assente",
+    "disqualified": "squalificato"
+  }
+}

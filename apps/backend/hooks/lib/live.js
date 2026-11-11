@@ -95,7 +95,9 @@ function revision(app, eventId) {
 function publicEventRecord(app, eventId) {
   const event = findById(app, 'events', eventId)
   if (!event || PUBLIC_EVENT_STATUSES.indexOf(event.getString('status')) < 0) {
-    throw new NotFoundError('The event was not found.')
+    throw new NotFoundError('The event was not found.', {
+      _error: new ValidationError('event_not_found', 'The event was not found.'),
+    })
   }
   return event
 }
@@ -264,7 +266,9 @@ function eventPayload(app, eventId) {
 function rankingPayload(app, categoryId) {
   const category = findById(app, 'categories', categoryId)
   if (!category || !category.getString('event')) {
-    throw new NotFoundError('The category was not found.')
+    throw new NotFoundError('The category was not found.', {
+      _error: new ValidationError('category_not_found', 'The category was not found.'),
+    })
   }
   const eventId = category.getString('event')
   publicEventRecord(app, eventId)

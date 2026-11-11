@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted, ref, watch } from 'vue'
 import { RefreshCwIcon, RotateCcwIcon } from '@lucide/vue'
 import { Badge } from '@/components/ui/badge'
@@ -41,7 +42,7 @@ const retry = useSubmit(
     }
     return updated
   },
-  { success: 'Message queued again.' },
+  { success: () => t('communication.outbox.requeued') },
 )
 
 const variant = (s: MailStatus) =>
@@ -54,26 +55,33 @@ watch(status, load)
 <template>
   <div class="flex flex-col gap-3">
     <div class="flex flex-wrap items-center gap-2">
-      <NativeSelect v-model="status" aria-label="Filter by status" class="w-40">
-        <NativeSelectOption value="">All messages</NativeSelectOption>
-        <NativeSelectOption value="failed">Failed</NativeSelectOption>
-        <NativeSelectOption value="pending">Queued</NativeSelectOption>
-        <NativeSelectOption value="sent">Sent</NativeSelectOption>
+      <NativeSelect v-model="status" :aria-label="t('teams.filter.status')" class="w-40">
+        <NativeSelectOption value="">{{ t('communication.outbox.all') }}</NativeSelectOption>
+        <NativeSelectOption
+          v-for="value in ['failed', 'pending', 'sent'] as const"
+          :key="value"
+          :value="value"
+          >{{ STATUS_LABELS[value] }}</NativeSelectOption
+        >
       </NativeSelect>
       <Button variant="outline" size="sm" :disabled="loading" @click="load">
-        <RefreshCwIcon /> Refresh
+        <RefreshCwIcon /> {{ t('common.refresh') }}
       </Button>
-      <span v-if="data" class="text-sm text-muted-foreground">{{ data.totalItems }} messages</span>
+      <span v-if="data" class="text-sm text-muted-foreground">{{
+        t('communication.outbox.count', data.totalItems)
+      }}</span>
     </div>
     <ErrorAlert :error="error ?? retry.error.value" />
     <Table data-testid="outbox">
       <TableHeader>
         <TableRow>
-          <TableHead>Created</TableHead>
-          <TableHead>Recipient</TableHead>
-          <TableHead>Subject</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead class="w-0"><span class="sr-only">Actions</span></TableHead>
+          <TableHead>{{ t('communication.outbox.created') }}</TableHead>
+          <TableHead>{{ t('communication.outbox.recipient') }}</TableHead>
+          <TableHead>{{ t('communication.subject') }}</TableHead>
+          <TableHead>{{ t('common.status') }}</TableHead>
+          <TableHead class="w-0"
+            ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
+          >
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -90,11 +98,14 @@ watch(status, load)
             <Badge :variant="variant(m.status)">{{ STATUS_LABELS[m.status] }}</Badge>
             <span class="block text-xs text-muted-foreground">
               <template v-if="m.status === 'sent'">{{ formatDateTime(m.sent_at) }}</template>
-              <template v-else-if="m.attempts > 0"
-                >{{ m.attempts }} attempt{{ m.attempts === 1 ? '' : 's' }}</template
-              >
+              <template v-else-if="m.attempts > 0">{{
+                t('communication.outbox.attempts', m.attempts)
+              }}</template>
               <template v-if="m.status === 'pending' && m.attempts > 0">
-                · next {{ formatDateTime(m.next_attempt_at) }}</template
+                ·
+                {{
+                  t('communication.outbox.next', { date: formatDateTime(m.next_attempt_at) })
+                }}</template
               >
             </span>
             <span v-if="m.last_error" class="block text-xs text-destructive">{{
@@ -109,11 +120,13 @@ watch(status, load)
               :disabled="retry.pending.value"
               @click="retry.run(m)"
             >
-              <RotateCcwIcon /> Retry
+              <RotateCcwIcon /> {{ t('common.retry') }}
             </Button>
           </TableCell>
         </TableRow>
-        <TableEmpty v-if="!loading && !data?.items.length" :colspan="5">No messages.</TableEmpty>
+        <TableEmpty v-if="!loading && !data?.items.length" :colspan="5">{{
+          t('communication.outbox.empty')
+        }}</TableEmpty>
       </TableBody>
     </Table>
   </div>

@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import type {
   PublicCategory,
   PublicDay,
@@ -93,7 +94,7 @@ export function currentDay(
 }
 
 export function dayLabel(day: PublicDay | undefined): string {
-  if (!day) return 'No day'
+  if (!day) return t('judging.noDay')
   if (day.label) return day.label
   return day.date
 }

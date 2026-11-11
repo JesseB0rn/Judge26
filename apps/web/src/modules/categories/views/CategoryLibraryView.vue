@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { CopyIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -27,11 +28,11 @@ const copySource = ref<CategoryRecord>()
 
 const remove = useSubmit(
   async (c: CategoryRecord) => {
-    if (!confirm(`Delete template ${c.code}? Copies are not affected.`)) return
+    if (!confirm(t('categories.library.confirmDelete', { code: c.code }))) return
     await deleteCategory(c.id)
     await load()
   },
-  { success: 'Template deleted.' },
+  { success: () => t('categories.library.deleted') },
 )
 
 function edit(c?: CategoryRecord) {
@@ -50,20 +51,25 @@ onMounted(load)
 
 <template>
   <PageHeader
-    title="Category library"
-    description="Reusable category templates. Events receive independent copies."
+    :title="t('system.dashboard.library')"
+    :description="t('categories.library.description')"
   >
     <template #actions>
-      <Button @click="edit()"><PlusIcon /> New template</Button>
+      <Button @click="edit()"><PlusIcon /> {{ t('categories.form.newTemplate') }}</Button>
     </template>
   </PageHeader>
   <ErrorAlert :error="error ?? remove.error.value ?? events.error.value" />
-  <CategoryTable :categories="templates" :loading="loading" empty="No templates yet." show-ranking>
+  <CategoryTable
+    :categories="templates"
+    :loading="loading"
+    :empty="t('categories.library.empty')"
+    show-ranking
+  >
     <template #actions="{ category }">
       <Button
         variant="ghost"
         size="icon-sm"
-        :aria-label="`Copy ${category.code} to event`"
+        :aria-label="t('categories.library.copyToEventOf', { code: category.code })"
         @click="copyToEvent(category)"
       >
         <CopyIcon />
@@ -71,7 +77,7 @@ onMounted(load)
       <Button
         variant="ghost"
         size="icon-sm"
-        :aria-label="`Edit ${category.code}`"
+        :aria-label="t('common.editItem', { item: category.code })"
         @click="edit(category)"
       >
         <PencilIcon />
@@ -79,7 +85,7 @@ onMounted(load)
       <Button
         variant="ghost"
         size="icon-sm"
-        :aria-label="`Delete ${category.code}`"
+        :aria-label="t('common.deleteItem', { item: category.code })"
         @click="remove.run(category)"
       >
         <Trash2Icon />
@@ -89,7 +95,7 @@ onMounted(load)
   <CategoryFormDialog v-model:open="formOpen" :category="editing" event-id="" @saved="load" />
   <CopyCategoryDialog
     v-model:open="copyOpen"
-    title="Copy template to event"
+    :title="t('categories.library.copyToEvent')"
     :source="copySource"
     :targets="targets"
   />

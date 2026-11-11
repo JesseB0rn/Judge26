@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -65,14 +66,12 @@ watch(open, (isOpen) => {
     <DialogContent>
       <DialogHeader>
         <DialogTitle>{{ title }}</DialogTitle>
-        <DialogDescription>
-          The copy is independent: later changes to the original do not affect it.
-        </DialogDescription>
+        <DialogDescription>{{ t('categories.copy.description') }}</DialogDescription>
       </DialogHeader>
       <form id="copy-category-form" class="flex flex-col gap-4" @submit.prevent="run()">
         <ErrorAlert :error="error" />
         <FieldGroup>
-          <FormField v-if="!source" v-slot="{ id }" label="Template" name="source">
+          <FormField v-if="!source" v-slot="{ id }" :label="t('categories.template')" name="source">
             <NativeSelect :id="id" v-model="sourceId" class="w-full" required>
               <NativeSelectOption v-for="s in sources" :key="s.id" :value="s.id">
                 {{ s.code }} – {{ s.name }}
@@ -82,32 +81,36 @@ watch(open, (isOpen) => {
           <FormField
             v-if="target === undefined"
             v-slot="{ id }"
-            label="Copy to"
+            :label="t('categories.copy.target')"
             name="event"
             :errors="fieldErrors"
           >
             <NativeSelect :id="id" v-model="targetId" class="w-full" required>
-              <NativeSelectOption v-for="t in targets" :key="t.id" :value="t.id">{{
-                t.label
+              <NativeSelectOption v-for="option in targets" :key="option.id" :value="option.id">{{
+                option.label
               }}</NativeSelectOption>
             </NativeSelect>
           </FormField>
           <FormField
             v-slot="{ id }"
-            label="Code"
+            :label="t('categories.code')"
             name="code"
             :errors="fieldErrors"
-            :description="`Leave empty to keep ${selectedSource?.code ?? 'the original code'}.`"
+            :description="
+              selectedSource
+                ? t('categories.copy.keepCode', { code: selectedSource.code })
+                : t('categories.copy.keepOriginalCode')
+            "
           >
             <Input :id="id" v-model="code" pattern="[A-Za-z0-9_\-]+" />
           </FormField>
         </FieldGroup>
       </form>
       <DialogFooter>
-        <Button variant="outline" @click="open = false">Cancel</Button>
-        <Button type="submit" form="copy-category-form" :disabled="pending || !selectedSource"
-          >Copy</Button
-        >
+        <Button variant="outline" @click="open = false">{{ t('common.cancel') }}</Button>
+        <Button type="submit" form="copy-category-form" :disabled="pending || !selectedSource">{{
+          t('categories.copy.submit')
+        }}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

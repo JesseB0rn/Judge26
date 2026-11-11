@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { Textarea } from '@/components/ui/textarea'
 import { parseRankingConfig } from '../lib'
@@ -12,19 +13,21 @@ const parsed = computed(() => parseRankingConfig(text.value))
   <div class="flex flex-col gap-2">
     <Textarea
       v-model="text"
-      aria-label="Ranking configuration (JSON)"
+      :aria-label="t('rankings.config.json')"
       class="min-h-96 font-mono text-xs"
       spellcheck="false"
       :readonly="readonly"
     />
-    <p v-if="!text.trim()" class="text-sm text-muted-foreground">No ranking configuration yet.</p>
+    <p v-if="!text.trim()" class="text-sm text-muted-foreground">
+      {{ t('rankings.config.empty') }}
+    </p>
     <p
       v-else-if="parsed.syntaxError"
       class="text-sm text-destructive"
       role="alert"
       data-testid="config-issues"
     >
-      Invalid JSON: {{ parsed.syntaxError }}
+      {{ t('rankings.config.invalidJson', { error: parsed.syntaxError }) }}
     </p>
     <ul
       v-else-if="parsed.issues.length"
@@ -38,7 +41,7 @@ const parsed = computed(() => parseRankingConfig(text.value))
       </li>
     </ul>
     <p v-else class="text-sm text-muted-foreground" data-testid="config-valid">
-      The configuration is valid.
+      {{ t('rankings.config.valid') }}
     </p>
   </div>
 </template>

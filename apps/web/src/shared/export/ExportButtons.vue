@@ -2,6 +2,7 @@
 import { DownloadIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
+import { t } from '@/i18n'
 import { downloadTables, type ExportFormat } from './download'
 import type { ExportTable } from './table'
 
@@ -15,18 +16,18 @@ function download(format: ExportFormat) {
   try {
     downloadTables(props.title, format, props.tables())
   } catch (e) {
-    toast.error(`Export failed: ${(e as Error).message}`)
+    toast.error(t('export.failed', { message: (e as Error).message }))
   }
 }
 </script>
 
 <template>
-  <div class="flex gap-1" role="group" :aria-label="`Export ${title}`">
+  <div class="flex gap-1" role="group" :aria-label="t('export.label', { title })">
     <Button variant="outline" size="sm" :disabled="disabled" @click="download('csv')">
       <DownloadIcon /> CSV
     </Button>
     <Button variant="outline" size="sm" :disabled="disabled" @click="download('xlsx')">
-      <DownloadIcon /> Excel
+      <DownloadIcon /> {{ t('export.excel') }}
     </Button>
   </div>
 </template>

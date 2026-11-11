@@ -1,0 +1,13 @@
+{
+  "kind": {
+    "network": "The server could not be reached. Check your connection and try again.",
+    "validation": "Some values are invalid.",
+    "unauthorized": "Please sign in to continue.",
+    "forbidden": "You do not have permission to perform this action.",
+    "not_found": "The requested resource was not found.",
+    "conflict": "The data was changed by someone else. Reload and try again.",
+    "server": "The server encountered an error. Please try again later.",
+    "cancelled": "The request was cancelled.",
+    "unknown": "An unexpected error occurred."
+  }
+}

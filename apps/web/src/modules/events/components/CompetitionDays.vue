@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -50,7 +51,7 @@ const saveWindow = useSubmit(
       await load()
     }
   },
-  { success: 'Hours saved.' },
+  { success: () => t('events.days.hoursSaved') },
 )
 
 onMounted(load)
@@ -58,7 +59,9 @@ onMounted(load)
 
 <template>
   <Card>
-    <CardHeader><CardTitle>Competition days</CardTitle></CardHeader>
+    <CardHeader
+      ><CardTitle>{{ t('events.days.title') }}</CardTitle></CardHeader
+    >
     <CardContent class="flex flex-col gap-4">
       <ErrorAlert :error="loadError ?? remove.error.value ?? saveWindow.error.value" />
       <ul v-if="days?.length" class="divide-y" data-testid="competition-days">
@@ -78,7 +81,7 @@ onMounted(load)
                 step="300"
                 class="h-8 w-28"
                 :model-value="day.starts_at || DEFAULT_START"
-                :aria-label="`Start of ${day.date}`"
+                :aria-label="t('events.days.startOf', { day: day.date })"
                 @change="
                   saveWindow.run(day, 'starts_at', ($event.target as HTMLInputElement).value)
                 "
@@ -89,13 +92,13 @@ onMounted(load)
                 step="300"
                 class="h-8 w-28"
                 :model-value="day.ends_at || DEFAULT_END"
-                :aria-label="`End of ${day.date}`"
+                :aria-label="t('events.days.endOf', { day: day.date })"
                 @change="saveWindow.run(day, 'ends_at', ($event.target as HTMLInputElement).value)"
               />
               <Button
                 variant="ghost"
                 size="icon-sm"
-                :aria-label="`Remove ${day.date}`"
+                :aria-label="t('common.removeItem', { item: day.date })"
                 @click="remove.run(day.id)"
               >
                 <Trash2Icon />
@@ -107,29 +110,46 @@ onMounted(load)
           </span>
         </li>
       </ul>
-      <p v-else class="text-sm text-muted-foreground">No competition days yet.</p>
+      <p v-else class="text-sm text-muted-foreground">{{ t('events.days.empty') }}</p>
       <form v-if="editable" class="flex flex-col gap-3" @submit.prevent="add.run()">
         <ErrorAlert :error="add.error.value" />
         <div class="grid gap-3 sm:grid-cols-2">
-          <FormField v-slot="{ id }" label="Date" name="date" :errors="add.fieldErrors.value">
+          <FormField
+            v-slot="{ id }"
+            :label="t('common.date')"
+            name="date"
+            :errors="add.fieldErrors.value"
+          >
             <Input :id="id" v-model="date" type="date" required />
-          </FormField>
-          <FormField v-slot="{ id }" label="Label" name="label" :errors="add.fieldErrors.value">
-            <Input :id="id" v-model="label" placeholder="e.g. Day 1" />
           </FormField>
           <FormField
             v-slot="{ id }"
-            label="Starts"
+            :label="t('common.label')"
+            name="label"
+            :errors="add.fieldErrors.value"
+          >
+            <Input :id="id" v-model="label" :placeholder="t('events.days.labelPlaceholder')" />
+          </FormField>
+          <FormField
+            v-slot="{ id }"
+            :label="t('common.starts')"
             name="starts_at"
             :errors="add.fieldErrors.value"
           >
             <Input :id="id" v-model="startsAt" type="time" step="300" required />
           </FormField>
-          <FormField v-slot="{ id }" label="Ends" name="ends_at" :errors="add.fieldErrors.value">
+          <FormField
+            v-slot="{ id }"
+            :label="t('common.ends')"
+            name="ends_at"
+            :errors="add.fieldErrors.value"
+          >
             <Input :id="id" v-model="endsAt" type="time" step="300" required />
           </FormField>
         </div>
-        <Button type="submit" class="self-start" :disabled="add.pending.value">Add day</Button>
+        <Button type="submit" class="self-start" :disabled="add.pending.value">{{
+          t('events.days.add')
+        }}</Button>
       </form>
     </CardContent>
   </Card>

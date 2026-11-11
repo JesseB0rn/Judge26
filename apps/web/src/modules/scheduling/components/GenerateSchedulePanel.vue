@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { WandSparklesIcon } from '@lucide/vue'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
 import { generateSchedule, type GenerationOutcome, type ScheduleIssue } from '../api'
-import { reasonLabel } from '../lib'
+import { issueMessage, reasonLabel } from '../lib'
 
 const props = defineProps<{
   eventId: string
@@ -20,7 +21,7 @@ const emit = defineEmits<{ changed: [] }>()
 
 const outcome = ref<GenerationOutcome>()
 const issueLabel = (issue: ScheduleIssue) =>
-  `${props.labels[issue.gameId] ?? issue.gameId}: ${issue.message}`
+  `${props.labels[issue.gameId] ?? issue.gameId}: ${issueMessage(issue)}`
 
 const run = useSubmit(async (dryRun: boolean) => {
   outcome.value = await generateSchedule(props.eventId, dryRun)
@@ -33,29 +34,38 @@ const summary = computed(() => {
   if (!o) return null
   if (o.status === 'complete') {
     const created = o.created_games ?? 0
+    const count = o.placements.length
     const createdSummary = created
-      ? ` ${created} missing game${created === 1 ? '' : 's'} ${o.dry_run ? 'would be created.' : 'created.'}`
+      ? ' ' +
+        (o.dry_run
+          ? t('scheduling.generate.wouldCreate', created)
+          : t('scheduling.generate.created', created))
       : ''
     return o.dry_run
-      ? `Preview: ${o.placements.length} game assignments are ready.${createdSummary} Nothing was saved.`
-      : `Schedule saved: ${o.placements.length} game assignments updated.${createdSummary}`
+      ? t('scheduling.generate.preview', { count }) +
+          createdSummary +
+          ' ' +
+          t('scheduling.generate.nothingSaved')
+      : t('scheduling.generate.saved', { count }) + createdSummary
   }
-  return o.message
+  return o.status === 'infeasible' ? t('scheduling.generate.infeasible') : o.message
 })
 </script>
 
 <template>
   <Card>
-    <CardHeader><CardTitle>Schedule check and generation</CardTitle></CardHeader>
+    <CardHeader
+      ><CardTitle>{{ t('scheduling.generate.title') }}</CardTitle></CardHeader
+    >
     <CardContent class="flex flex-col gap-4">
       <ErrorAlert :error="run.error.value" />
 
       <section class="flex flex-col gap-2" data-testid="schedule-issues">
         <p v-if="!issues.length" class="text-sm text-muted-foreground">
-          No conflicts in the current schedule.
+          {{ t('scheduling.generate.noConflicts') }}
         </p>
         <Alert v-else variant="destructive">
-          <AlertTitle>{{ issues.length }} conflict(s) in the current schedule</AlertTitle>
+          <AlertTitle>{{ t('scheduling.generate.conflicts', issues.length) }}</AlertTitle>
           <AlertDescription>
             <ul class="list-disc pl-5">
               <li v-for="(issue, i) in issues" :key="i">{{ issueLabel(issue) }}</li>
@@ -66,16 +76,14 @@ const summary = computed(() => {
 
       <section v-if="editable" class="flex flex-col gap-3">
         <p class="text-sm text-muted-foreground">
-          Generation creates missing games for approved teams and assigns each game to a compatible
-          table with a judge. Team sequence is separate for each round and table. Nothing changes
-          unless all games can be assigned.
+          {{ t('scheduling.generate.explanation') }}
         </p>
         <div class="flex gap-2">
           <Button variant="outline" :disabled="run.pending.value" @click="run.run(true)">
-            Preview
+            {{ t('scheduling.generate.previewButton') }}
           </Button>
           <Button :disabled="run.pending.value" @click="run.run(false)">
-            <WandSparklesIcon /> Generate schedule
+            <WandSparklesIcon /> {{ t('scheduling.generate.generate') }}
           </Button>
         </div>
 
@@ -85,7 +93,7 @@ const summary = computed(() => {
       </section>
 
       <p v-else class="text-sm text-muted-foreground" data-testid="schedule-permission">
-        Only event managers and admins can create games or generate schedules.
+        {{ t('scheduling.generate.permission') }}
       </p>
 
       <section v-if="editable">

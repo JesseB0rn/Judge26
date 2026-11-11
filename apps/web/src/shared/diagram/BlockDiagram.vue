@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { MaximizeIcon, MinusIcon, PlusIcon } from '@lucide/vue'
 import {
@@ -236,7 +237,7 @@ function nodeLabel(n: DiagramNode) {
       class="block h-[640px] w-full touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       tabindex="0"
       role="application"
-      aria-label="Block diagram"
+      :aria-label="t('diagram.label')"
       aria-roledescription="block diagram"
       @pointerdown="onBackgroundDown"
       @pointermove="onMove"
@@ -404,7 +405,7 @@ function nodeLabel(n: DiagramNode) {
                 { 'bd-port-hover': hoverPort === `${n.id}/enable` },
               ]"
             >
-              <title>Enable: wire a criterion here to make this block conditional</title>
+              <title>{{ t('diagram.enable') }}</title>
             </path>
           </g>
           <!-- Output terminal -->
@@ -419,7 +420,7 @@ function nodeLabel(n: DiagramNode) {
               :data-output="n.id"
               @pointerdown="onOutputDown($event, n)"
             >
-              <title>Output: drag to a terminal to wire</title>
+              <title>{{ t('diagram.output') }}</title>
             </path>
             <!-- Probe -->
             <g v-if="n.probe" transform="translate(16,-30)" :data-probe="n.id">
@@ -440,7 +441,7 @@ function nodeLabel(n: DiagramNode) {
       <button
         type="button"
         class="rounded-md border bg-background p-1.5 shadow-sm hover:bg-muted"
-        aria-label="Zoom in"
+        :aria-label="t('diagram.zoomIn')"
         @click="zoomAt(1.2)"
       >
         <PlusIcon class="size-4" />
@@ -448,7 +449,7 @@ function nodeLabel(n: DiagramNode) {
       <button
         type="button"
         class="rounded-md border bg-background p-1.5 shadow-sm hover:bg-muted"
-        aria-label="Zoom out"
+        :aria-label="t('diagram.zoomOut')"
         @click="zoomAt(1 / 1.2)"
       >
         <MinusIcon class="size-4" />
@@ -456,7 +457,7 @@ function nodeLabel(n: DiagramNode) {
       <button
         type="button"
         class="rounded-md border bg-background p-1.5 shadow-sm hover:bg-muted"
-        aria-label="Fit diagram"
+        :aria-label="t('diagram.fit')"
         @click="fit"
       >
         <MaximizeIcon class="size-4" />

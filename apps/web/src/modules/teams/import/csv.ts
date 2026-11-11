@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import Papa from 'papaparse'
 import type { CategoryRecord, TeamMember, TeamStatus } from '@/shared/types/records'
 import { COMPLETE_STATUSES, validateMembers } from '../lib'
@@ -67,10 +68,12 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
   const columns = parsed.meta.fields ?? []
   const fileErrors: string[] = []
   const missing = REQUIRED_COLUMNS.filter((c) => !columns.includes(c))
-  if (missing.length) fileErrors.push(`Missing required column(s): ${missing.join(', ')}.`)
-  if (parsed.data.length === 0) fileErrors.push('The file contains no data rows.')
+  if (missing.length) {
+    fileErrors.push(t('teams.import.missingColumns', { columns: missing.join(', ') }))
+  }
+  if (parsed.data.length === 0) fileErrors.push(t('teams.import.noRows'))
   if (parsed.data.length > MAX_ROWS) {
-    fileErrors.push(`At most ${MAX_ROWS} rows can be imported at once.`)
+    fileErrors.push(t('teams.import.tooManyRows', { max: MAX_ROWS }))
   }
   if (fileErrors.length) return { fileErrors, rows: [] }
 
@@ -90,7 +93,7 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
   const structural = new Map<number, string[]>()
   for (const err of parsed.errors) {
     if (err.row === undefined) continue
-    structural.set(err.row, [...(structural.get(err.row) ?? []), err.message])
+    structural.set(err.row, [...(structural.get(err.row) ?? []), t('teams.import.malformedRow')])
   }
 
   const rows = parsed.data.map((record, index): ImportRow => {
@@ -99,17 +102,19 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
     const get = (column: string) => record[column] ?? ''
     const name = get('team_name')
 
-    if (!name) errors.push('Team name is required.')
-    else if (name.length > 100) errors.push('Team name must be at most 100 characters.')
+    if (!name) errors.push(t('teams.import.nameRequired'))
+    else if (name.length > 100) errors.push(t('teams.import.nameTooLong', { max: 100 }))
 
     const code = get('category_code')
     const category = byCode.get(code.toLowerCase())
-    if (!code) errors.push('Category code is required.')
-    else if (!category) errors.push(`Unknown category code "${code}".`)
+    if (!code) errors.push(t('teams.import.categoryRequired'))
+    else if (!category) errors.push(t('teams.import.unknownCategory', { code }))
 
     const coachEmail = get('coach_email')
-    if (!coachEmail) errors.push('Coach email is required.')
-    else if (!EMAIL.test(coachEmail)) errors.push(`Invalid coach email "${coachEmail}".`)
+    if (!coachEmail) errors.push(t('teams.import.coachEmailRequired'))
+    else if (!EMAIL.test(coachEmail)) {
+      errors.push(t('teams.import.invalidCoachEmail', { email: coachEmail }))
+    }
 
     const members: TeamMember[] = []
     for (const n of memberNumbers) {
@@ -128,9 +133,9 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
     if (category && name) {
       const key = name.toLowerCase()
       const inFile = seen.get(category.id) ?? new Set()
-      if (inFile.has(key)) errors.push(`Duplicate team name "${name}" in this file.`)
+      if (inFile.has(key)) errors.push(t('teams.import.duplicateInFile', { name }))
       else if (context.existingNames.get(category.id)?.has(key)) {
-        errors.push(`A team named "${name}" already exists in ${category.code}.`)
+        errors.push(t('teams.import.alreadyExists', { name, code: category.code }))
       }
       inFile.add(key)
       seen.set(category.id, inFile)

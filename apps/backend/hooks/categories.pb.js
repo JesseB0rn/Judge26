@@ -13,12 +13,17 @@ routerAdd(
   (e) => {
     const access = require(`${__hooks}/lib/access.js`)
     const auth = e.auth
-    if (!access.isVerifiedUser(auth)) throw new ForbiddenError('Please verify your email address.')
+    if (!access.isVerifiedUser(auth))
+      throw new ForbiddenError('Please verify your email address.', {
+        _error: new ValidationError('not_verified', 'Please verify your email address.'),
+      })
 
     const source = e.app.findRecordById('categories', e.request.pathValue('id'))
     const sourceRule = source.collection().viewRule
     if (!auth.isSuperuser() && !e.app.canAccessRecord(source, e.requestInfo(), sourceRule)) {
-      throw new NotFoundError('Category not found.')
+      throw new NotFoundError('Category not found.', {
+        _error: new ValidationError('category_not_found', 'Category not found.'),
+      })
     }
 
     const body = e.requestInfo().body
@@ -26,11 +31,16 @@ routerAdd(
     const allowed = targetEvent
       ? access.canManageEvent(e.app, auth, targetEvent)
       : access.isAdmin(e.app, auth)
-    if (!allowed) throw new ForbiddenError('You cannot create categories here.')
+    if (!allowed)
+      throw new ForbiddenError('You cannot create categories here.', {
+        _error: new ValidationError('categories_not_allowed', 'You cannot create categories here.'),
+      })
     if (targetEvent) {
       const event = e.app.findRecordById('events', targetEvent)
       if (event.getString('status') === 'archived') {
-        throw new BadRequestError('Archived events cannot be changed.')
+        throw new BadRequestError('Archived events cannot be changed.', {
+          _error: new ValidationError('event_archived', 'Archived events cannot be changed.'),
+        })
       }
     }
 

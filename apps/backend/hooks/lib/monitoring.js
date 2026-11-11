@@ -68,16 +68,34 @@ function scalar(db, sql, params) {
 }
 
 // ---------------------------------------------------------------------------
-// Checks. Each returns { status: 'ok' | 'warn' | 'down', detail }.
+// Checks. Each returns { status: 'ok' | 'warn' | 'down', detail, messages }: `detail` is English
+// (alert emails, logs), `messages` the same as codes with parameters, which the admin page shows
+// in the user's language (web: administration.monitoring.detail.<code>).
 // ---------------------------------------------------------------------------
+
+/** One part of a check's result: an English text and its message code. */
+function part(code, params, text) {
+  return { code, params: params || {}, text }
+}
+
+function checkResult(status, ...parts) {
+  return {
+    status,
+    detail: parts.map((p) => p.text).join('; '),
+    messages: parts.map((p) => ({ code: p.code, params: p.params })),
+  }
+}
+
+const errorText = (err) => String(err).slice(0, 300)
 
 function checkDatabase(app) {
   try {
     scalar(app.db(), 'SELECT COUNT(*) AS n FROM _collections')
     scalar(app.auxDB(), 'SELECT 1 AS n')
-    return { status: 'ok', detail: 'Reachable' }
+    return checkResult('ok', part('database_ok', {}, 'Reachable'))
   } catch (err) {
-    return { status: 'down', detail: `Not reachable: ${String(err).slice(0, 300)}` }
+    const error = errorText(err)
+    return checkResult('down', part('database_down', { error }, `Not reachable: ${error}`))
   }
 }
 
@@ -92,7 +110,10 @@ const CLIENT_ERROR = '(level >= 8 AND message = {:client})'
 
 function checkErrors(app, now) {
   if (app.settings().logs.maxDays <= 0) {
-    return { status: 'warn', detail: 'Logs are disabled (Settings → Logs), errors are not kept.' }
+    return checkResult(
+      'warn',
+      part('logs_disabled', {}, 'Logs are disabled (Settings → Logs), errors are not kept.'),
+    )
   }
   const minutes = envInt('MONITORING_ERROR_WINDOW_MINUTES', 60)
   const params = { since: pbDate(now - minutes * 60000), client: CLIENT_ERROR_MESSAGE }
@@ -104,11 +125,23 @@ function checkErrors(app, now) {
     )
   const server = count(SERVER_ERROR)
   const browser = count(CLIENT_ERROR)
-  if (!server && !browser) return { status: 'ok', detail: `None in the last ${minutes} minutes` }
+  if (!server && !browser) {
+    return checkResult(
+      'ok',
+      part('errors_none', { minutes }, `None in the last ${minutes} minutes`),
+    )
+  }
   const parts = []
   if (server) parts.push(plural(server, 'server error'))
   if (browser) parts.push(plural(browser, 'browser error'))
-  return { status: 'warn', detail: `${parts.join(' and ')} in the last ${minutes} minutes` }
+  return checkResult(
+    'warn',
+    part(
+      'errors_some',
+      { server, browser, minutes },
+      `${parts.join(' and ')} in the last ${minutes} minutes`,
+    ),
+  )
 }
 
 function checkMail(app, now) {
@@ -116,24 +149,45 @@ function checkMail(app, now) {
   const capture = !production() && !settings.smtp.enabled
   const problems = []
   if (!settings.smtp.enabled && !capture) {
-    problems.push('SMTP is not configured, emails cannot be delivered')
+    problems.push(part('smtp_missing', {}, 'SMTP is not configured, emails cannot be delivered'))
   }
   const failed = scalar(
     app.db(),
     "SELECT COUNT(*) AS n FROM mail_outbox WHERE status = 'failed' AND updated >= {:since}",
     { since: pbDate(now - MAIL_FAILED_WINDOW_MS) },
   )
-  if (failed) problems.push(`${plural(failed, 'email')} failed in the last 24 hours`)
+  if (failed) {
+    problems.push(
+      part(
+        'mail_failed',
+        { count: failed },
+        `${plural(failed, 'email')} failed in the last 24 hours`,
+      ),
+    )
+  }
   const stuck = scalar(
     app.db(),
     "SELECT COUNT(*) AS n FROM mail_outbox WHERE status = 'pending' AND next_attempt_at < {:before}",
     { before: pbDate(now - MAIL_STUCK_MS) },
   )
-  if (stuck) problems.push(`${plural(stuck, 'email')} overdue, the delivery job may not be running`)
-  if (problems.length) return { status: 'warn', detail: problems.join('; ') }
+  if (stuck) {
+    problems.push(
+      part(
+        'mail_stuck',
+        { count: stuck },
+        `${plural(stuck, 'email')} overdue, the delivery job may not be running`,
+      ),
+    )
+  }
+  if (problems.length) return checkResult('warn', ...problems)
   const pending = scalar(app.db(), "SELECT COUNT(*) AS n FROM mail_outbox WHERE status = 'pending'")
-  const queued = pending ? `, ${plural(pending, 'email')} queued` : ''
-  return { status: 'ok', detail: (capture ? 'Captured (no SMTP)' : 'Delivering') + queued }
+  const mode = capture
+    ? part('mail_captured', {}, 'Captured (no SMTP)')
+    : part('mail_delivering', {}, 'Delivering')
+  if (!pending) return checkResult('ok', mode)
+  const queued = checkResult('ok', mode, part('mail_queued', { count: pending }, ''))
+  queued.detail = `${mode.text}, ${plural(pending, 'email')} queued`
+  return queued
 }
 
 /** Newest backup's modification time (ms), or 0 if there is none. */
@@ -155,24 +209,45 @@ function checkBackups(app, now) {
   const cron = app.settings().backups.cron
   if (!cron) {
     return production()
-      ? { status: 'warn', detail: 'Automatic backups are disabled (BACKUP_CRON)' }
-      : { status: 'ok', detail: 'Automatic backups are disabled (not production)' }
+      ? checkResult('warn', part('backups_off', {}, 'Automatic backups are disabled (BACKUP_CRON)'))
+      : checkResult(
+          'ok',
+          part('backups_off_dev', {}, 'Automatic backups are disabled (not production)'),
+        )
   }
   const maxAge = envInt('MONITORING_BACKUP_MAX_AGE_HOURS', 26) * 3600000
   let latest
   try {
     latest = latestBackup(app)
   } catch (err) {
-    return { status: 'warn', detail: `Backups cannot be listed: ${String(err).slice(0, 300)}` }
+    const error = errorText(err)
+    return checkResult(
+      'warn',
+      part('backups_unlisted', { error }, `Backups cannot be listed: ${error}`),
+    )
   }
   if (!latest) {
     return now - startedAt(app) > maxAge
-      ? { status: 'warn', detail: `No backup exists (schedule “${cron}”)` }
-      : { status: 'ok', detail: `No backup yet (schedule “${cron}”)` }
+      ? checkResult(
+          'warn',
+          part('backups_missing', { cron }, `No backup exists (schedule “${cron}”)`),
+        )
+      : checkResult('ok', part('backups_none_yet', { cron }, `No backup yet (schedule “${cron}”)`))
   }
+  const hours = Math.round((now - latest) / 3600000)
   return now - latest > maxAge
-    ? { status: 'warn', detail: `Latest backup is stale: ${hoursAgo(now - latest)}` }
-    : { status: 'ok', detail: `Latest backup ${hoursAgo(now - latest)} (schedule “${cron}”)` }
+    ? checkResult(
+        'warn',
+        part('backups_stale', { hours }, `Latest backup is stale: ${hoursAgo(now - latest)}`),
+      )
+    : checkResult(
+        'ok',
+        part(
+          'backups_latest',
+          { hours, cron },
+          `Latest backup ${hoursAgo(now - latest)} (schedule “${cron}”)`,
+        ),
+      )
 }
 
 const CHECKS = {
@@ -191,9 +266,16 @@ function evaluate(app) {
       result = CHECKS[id](app, now)
     } catch (err) {
       // A check that cannot run is itself a problem (e.g. a broken table).
-      result = { status: 'warn', detail: `Check failed: ${String(err).slice(0, 300)}` }
+      const error = errorText(err)
+      result = checkResult('warn', part('check_failed', { error }, `Check failed: ${error}`))
     }
-    return { id, label: CHECK_LABELS[id], status: result.status, detail: result.detail }
+    return {
+      id,
+      label: CHECK_LABELS[id],
+      status: result.status,
+      detail: result.detail,
+      messages: result.messages,
+    }
   })
   let status = 'ok'
   if (checks.some((c) => c.status === 'down')) status = 'down'

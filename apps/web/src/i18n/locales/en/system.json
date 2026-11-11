@@ -1,0 +1,40 @@
+{
+  "backToStart": "Back to start",
+  "forbidden": {
+    "title": "Access denied",
+    "text": "You do not have permission to view this page."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you are looking for does not exist."
+  },
+  "status": {
+    "title": "{app} status",
+    "tagline": "World Robot Olympiad competition management.",
+    "online": "online",
+    "offline": "offline",
+    "checking": "checking…",
+    "environment": "Environment:",
+    "version": "Version",
+    "healthLabel": "Health",
+    "health": {
+      "ok": "all checks OK",
+      "degraded": "needs attention",
+      "down": "down"
+    },
+    "contacting": "Contacting server…",
+    "backend": "Server"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "welcomeName": "Welcome, {name}",
+    "roles": "Your roles",
+    "judging": "Score the games on your table.",
+    "review": "Approve or return the score sheets judges submitted.",
+    "events": "Browse competitions and register teams.",
+    "teams": "Your team registrations and their status.",
+    "library": "Category library",
+    "libraryDescription": "Reusable category templates.",
+    "users": "Accounts and administrator roles."
+  }
+}

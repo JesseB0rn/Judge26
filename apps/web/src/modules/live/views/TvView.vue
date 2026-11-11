@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatTime } from '@/shared/format'
+import { t } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { MaximizeIcon } from '@lucide/vue'
@@ -203,9 +205,9 @@ const title = computed(() => {
     const name = slideRanking.value?.category?.name ?? ''
     return s.pages > 1 ? `${name} · ${s.page + 1}/${s.pages}` : name
   }
-  if (s.kind === 'tables') return `At the tables · ${dayLabel(dayInfo.value)}`
-  if (s.kind === 'timetable') return `Timetable · ${dayLabel(dayInfo.value)}`
-  return `Progress · ${dayLabel(dayInfo.value)}`
+  if (s.kind === 'tables') return `${t('live.schedule.atTables')} · ${dayLabel(dayInfo.value)}`
+  if (s.kind === 'timetable') return `${t('live.tabs.timetable')} · ${dayLabel(dayInfo.value)}`
+  return `${t('live.progress.title')} · ${dayLabel(dayInfo.value)}`
 })
 </script>
 
@@ -236,14 +238,14 @@ const title = computed(() => {
       >
         {{
           slideRanking.picked.source === 'official'
-            ? 'Official'
+            ? t('live.ranking.official')
             : slideRanking.provisional
-              ? 'Live · provisional'
-              : 'Live'
+              ? `${t('live.ranking.live')} · ${t('live.provisional')}`
+              : t('live.ranking.live')
         }}
       </span>
       <span class="text-[clamp(1.25rem,3.5vh,3rem)] font-semibold tabular-nums">
-        {{ clock.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) }}
+        {{ formatTime(clock) }}
       </span>
     </header>
 
@@ -252,7 +254,7 @@ const title = computed(() => {
         {{ event.error.value.message }}
       </p>
       <p v-else-if="event.data.value && !slides.length" class="text-3xl text-slate-400">
-        No results have been published yet.
+        {{ t('live.tv.nothingPublished') }}
       </p>
 
       <template v-else-if="slide?.kind === 'ranking' && slideRanking">
@@ -293,9 +295,9 @@ const title = computed(() => {
         >
           <h2 class="text-[0.8em] font-semibold text-slate-400">{{ q.table.name }}</h2>
           <p v-if="q.current" class="mt-2 text-[1.3em] font-bold">{{ q.current.team.name }}</p>
-          <p v-else class="mt-2 text-slate-500">Done for today</p>
+          <p v-else class="mt-2 text-slate-500">{{ t('live.tv.doneForToday') }}</p>
           <p v-for="g in q.next" :key="g.id" class="mt-1 text-[0.85em] text-slate-300">
-            <span class="text-slate-500">Next</span> {{ g.team.name }}
+            <span class="text-slate-500">{{ t('live.schedule.next') }}</span> {{ g.team.name }}
           </p>
         </section>
       </div>
@@ -307,9 +309,9 @@ const title = computed(() => {
         <div v-for="row in progressRows" :key="row.category.id" data-testid="tv-progress">
           <div class="mb-2 flex justify-between">
             <span class="font-semibold">{{ row.category.name }}</span>
-            <span class="text-slate-300 tabular-nums"
-              >{{ row.progress.done }} / {{ row.progress.total }} games</span
-            >
+            <span class="text-slate-300 tabular-nums">{{
+              t('live.tv.games', { done: row.progress.done, total: row.progress.total })
+            }}</span>
           </div>
           <div class="flex h-[0.8em] overflow-hidden rounded-full bg-slate-800">
             <div
@@ -322,7 +324,7 @@ const title = computed(() => {
             />
           </div>
         </div>
-        <p v-if="!progressRows.length" class="text-slate-400">No games on this day.</p>
+        <p v-if="!progressRows.length" class="text-slate-400">{{ t('live.tv.noGames') }}</p>
       </div>
     </main>
 
@@ -346,7 +348,7 @@ const title = computed(() => {
         class="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-800"
         @click="enterFullscreen"
       >
-        <MaximizeIcon class="size-4" /> Full screen
+        <MaximizeIcon class="size-4" /> {{ t('live.tv.fullscreen') }}
       </button>
     </footer>
   </div>

@@ -1,0 +1,78 @@
+{
+  "tvMode": "Modalità TV",
+  "provisional": "provvisorio",
+  "allDays": "Tutti i giorni",
+  "state": {
+    "upcoming": "In arrivo",
+    "scoring": "In corso",
+    "in_review": "In verifica",
+    "done": "Conclusa"
+  },
+  "indicator": {
+    "offline": "Offline",
+    "offlineAt": "Offline · dati delle {time}",
+    "connecting": "Connessione…",
+    "live": "In diretta",
+    "liveAt": "In diretta · aggiornato alle {time}"
+  },
+  "progress": {
+    "title": "Avanzamento",
+    "labelOf": "Avanzamento {label}",
+    "done": "{done} manche su {total} concluse",
+    "inReview": "{count} in verifica",
+    "remaining": "{count} rimanenti"
+  },
+  "publication": {
+    "updated": "Pubblicazione aggiornata.",
+    "officialTitle": "Classifica ufficiale",
+    "published": "Classifica ufficiale pubblicata.",
+    "description": "Scelga cosa vede il pubblico nelle pagine in diretta e sugli schermi TV. La classifica ufficiale è un’istantanea e non cambia dopo correzioni successive; la classifica in diretta segue ogni punteggio definitivo ed è contrassegnata come provvisoria.",
+    "publicPage": "Pagina pubblica",
+    "draft": "Questo evento è una bozza: le sue pagine pubbliche sono visibili solo dopo la pubblicazione.",
+    "livePublic": "Classifica in diretta pubblica",
+    "official": "Classifica ufficiale",
+    "showLive": "Mostra pubblicamente la classifica in diretta di {category}",
+    "public": "Pubblica",
+    "hidden": "Nascosta",
+    "configureFirst": "Configuri prima la classifica.",
+    "officialOf": "Classifica ufficiale di {category}",
+    "notPublished": "Non pubblicata",
+    "publishedAt": "Pubblicata il {date}",
+    "publishNow": "Pubblica la classifica attuale"
+  },
+  "ranking": {
+    "notPublished": "I risultati di questa categoria non sono ancora stati pubblicati.",
+    "official": "Ufficiale",
+    "live": "In diretta",
+    "officialPublished": "ufficiale, pubblicata il {date}",
+    "liveTitle": "Classifica in diretta",
+    "liveHint": "dai punteggi definitivi, non ufficiale",
+    "provisional": "Provvisoria: {open} manche su {total} non sono ancora definitive. Alle squadre contrassegnate «provvisorio» mancano risultati di turno."
+  },
+  "schedule": {
+    "atTables": "Ai tavoli",
+    "toPlay": "ancora {count}",
+    "now": "Ora",
+    "next": "Poi",
+    "empty": "Nessuna manche pianificata per questa selezione.",
+    "notPlaced": "Non assegnata"
+  },
+  "tv": {
+    "rank": "Rango",
+    "noTeams": "Nessuna squadra da classificare.",
+    "nothingPublished": "Non è ancora stato pubblicato alcun risultato.",
+    "doneForToday": "Finito per oggi",
+    "games": "{done} / {total} manche",
+    "noGames": "Nessuna manche in questo giorno.",
+    "fullscreen": "Schermo intero"
+  },
+  "tabs": {
+    "rankings": "Classifiche",
+    "timetable": "Programma orario"
+  },
+  "events": {
+    "description": "Classifiche, programmi e avanzamento delle competizioni.",
+    "empty": "Nessuna competizione è ancora pubblica.",
+    "finished": "concluso"
+  }
+}
