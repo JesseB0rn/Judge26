@@ -45,6 +45,7 @@ All settings come from `.env` (template: `.env.example`).
 | `PB_ENCRYPTION_KEY`                           | 32 characters; encrypts stored SMTP/S3 secrets. Set once, never change |
 | `SMTP_*`, `MAIL_SENDER_*`                     | Email delivery (M7-01)                                                 |
 | `BACKUP_CRON`, `BACKUP_MAX_KEEP`              | Automatic backups ([runbook](backup-and-restore.md))                   |
+| `MONITORING_*`                                | Alert emails and thresholds ([monitoring runbook](monitoring.md))      |
 | `DOMAIN`, `ACME_EMAIL`                        | HTTPS with Caddy                                                       |
 | `JUDGE26_IMAGE`, `APP_VERSION`, `GIT_COMMIT`  | Image to run and the version it reports (`/api/app/info`, status page) |
 | `JUDGE26_PORT`, `TZ`                          | Published port (without Caddy), time zone (backup schedule, logs)      |
@@ -77,13 +78,14 @@ schedule. The version is also shown on the app's **Status** page.
 
 ## Operations
 
-| Task    | Command                                             |
-| ------- | --------------------------------------------------- |
-| Logs    | `docker compose logs -f app` (rotated, 5×10 MB)     |
-| Restart | `docker compose restart app`                        |
-| Status  | `docker compose ps` (health), `pnpm smoke <url>`    |
-| Shell   | `docker compose exec app sh`                        |
-| Backups | [backup and restore runbook](backup-and-restore.md) |
+| Task    | Command                                                      |
+| ------- | ------------------------------------------------------------ |
+| Logs    | `docker compose logs -f app` (rotated, 5×10 MB)              |
+| Restart | `docker compose restart app`                                 |
+| Status  | `docker compose ps` (health), `pnpm smoke <url>`             |
+| Health  | _Admin → System health_, [monitoring runbook](monitoring.md) |
+| Shell   | `docker compose exec app sh`                                 |
+| Backups | [backup and restore runbook](backup-and-restore.md)          |
 
 The container runs PocketBase as the unprivileged user `judge26` (uid 10001). On start, data
 created by older images (which ran as root) is handed over to that user automatically.

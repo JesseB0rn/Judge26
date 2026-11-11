@@ -35,6 +35,10 @@ services:
       # Automatic backups (docs/operations/backup-and-restore.md); "off" disables them.
       BACKUP_CRON: '${BACKUP_CRON:-30 3 * * *}'
       BACKUP_MAX_KEEP: ${BACKUP_MAX_KEEP:-14}
+      # Monitoring (docs/operations/monitoring.md): who is emailed when a check fails.
+      MONITORING_ALERT_EMAIL: ${MONITORING_ALERT_EMAIL:-}
+      MONITORING_ERROR_WINDOW_MINUTES: ${MONITORING_ERROR_WINDOW_MINUTES:-60}
+      MONITORING_BACKUP_MAX_AGE_HOURS: ${MONITORING_BACKUP_MAX_AGE_HOURS:-26}
       TZ: ${TZ:-Europe/Zurich}
     volumes:
       - pb_data:/pb/pb_data

@@ -1448,6 +1448,11 @@ WRO event.
                                                   is reproducible
   -----------------------------------------------------------------------
 
+**Status notes:** M7-12 (load testing with k6) is **deferred**: it is
+not part of the first production release and does not block the M7 exit
+criteria until it is scheduled again. M7-13 is specified in
+`docs/specifications/M7-monitoring.md`.
+
 ### Tests
 
   -----------------------------------------------------------------------
@@ -1487,7 +1492,7 @@ WRO event.
   -----------------------------------------------------------------------
 
 **Exit criteria:** Production deployment, backup restoration, security
-and operational tests all pass.
+and operational tests all pass. Load testing (M7-12) is deferred.
 
 ------------------------------------------------------------------------
 

@@ -80,7 +80,8 @@ docs/         Architecture, API notes, specifications and test plans
   [M7 communication](docs/specifications/M7-communication.md),
   [M7 exports](docs/specifications/M7-exports.md),
   [M7 audit, backups and security](docs/specifications/M7-audit-backup-security.md),
-  [M7 deployment](docs/specifications/M7-deployment.md)
+  [M7 deployment](docs/specifications/M7-deployment.md),
+  [M7 monitoring](docs/specifications/M7-monitoring.md)
 - Test plans: [M0 foundation](docs/test-plans/M0-foundation.md),
   [M1 identity and events](docs/test-plans/M1-identity-events.md),
   [M2 scoring engine](docs/test-plans/M2-scoring-engine.md),
@@ -91,9 +92,11 @@ docs/         Architecture, API notes, specifications and test plans
   [M7 communication](docs/test-plans/M7-communication.md),
   [M7 exports](docs/test-plans/M7-exports.md),
   [M7 audit, backups and security](docs/test-plans/M7-audit-backup-security.md),
-  [M7 deployment](docs/test-plans/M7-deployment.md)
+  [M7 deployment](docs/test-plans/M7-deployment.md),
+  [M7 monitoring](docs/test-plans/M7-monitoring.md)
 - Operations: [deployment](docs/operations/deployment.md),
-  [backup and restore](docs/operations/backup-and-restore.md)
+  [backup and restore](docs/operations/backup-and-restore.md),
+  [monitoring](docs/operations/monitoring.md)
 - [Architecture decision records](docs/architecture/decisions/)
 
 ## Production
@@ -108,4 +111,5 @@ pnpm smoke http://localhost:8090                                        # verify
 A single image in which PocketBase serves the API and the built SPA, with data in the `pb_data`
 volume. Tagged releases are published to `ghcr.io/jesseb0rn/judge26`. See the
 [deployment runbook](docs/operations/deployment.md) and the
-[backup and restore runbook](docs/operations/backup-and-restore.md).
+[backup and restore runbook](docs/operations/backup-and-restore.md); for alerts and uptime
+monitoring, the [monitoring runbook](docs/operations/monitoring.md).

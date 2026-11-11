@@ -66,7 +66,7 @@ ENV PB_ENV=production \
     GIT_COMMIT=${GIT_COMMIT}
 VOLUME /pb/pb_data
 EXPOSE 8090
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD wget -qO- http://127.0.0.1:8090/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD wget -qO- http://127.0.0.1:8090/api/app/health || exit 1
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # --encryptionEnv: SMTP and S3 secrets in the settings are encrypted with PB_ENCRYPTION_KEY
 # (32 characters) when it is set. Never change the key of an existing installation.

@@ -63,3 +63,40 @@ export function listAuditLog(query: AuditQuery = {}) {
     .collection<AuditLogRecord>('audit_log')
     .getList(query.page ?? 1, 50, { filter, sort: '-created,-id' })
 }
+
+export type CheckStatus = 'ok' | 'warn' | 'down'
+export type HealthStatus = 'ok' | 'degraded' | 'down'
+
+export interface HealthCheck {
+  id: 'database' | 'errors' | 'mail' | 'backups'
+  label: string
+  status: CheckStatus
+  detail: string
+}
+
+export interface RecentError {
+  id: string
+  created: string
+  source: 'server' | 'browser'
+  message: string
+  detail: string
+  url: string
+  status: number | null
+}
+
+export interface Monitoring {
+  status: HealthStatus
+  checked_at: string
+  started_at: string
+  version: string
+  commit: string
+  /** Whether MONITORING_ALERT_EMAIL is set. */
+  alerts: boolean
+  checks: HealthCheck[]
+  recent_errors: RecentError[]
+}
+
+/** Health checks and recent errors (M7-13, admins; apps/backend/hooks/monitoring.pb.js). */
+export function fetchMonitoring() {
+  return pb.send<Monitoring>('/api/app/monitoring', { requestKey: 'monitoring' })
+}
