@@ -91,6 +91,7 @@ export async function createApprovedTeam(
   categoryId: string,
   name: string,
   coachId = '',
+  coachEmail = 'coach@test.local',
 ) {
   const pb = await superuser()
   return pb.collection('teams').create({
@@ -98,7 +99,7 @@ export async function createApprovedTeam(
     category: categoryId,
     name,
     coach: coachId,
-    coach_email: 'coach@test.local',
+    coach_email: coachEmail,
     status: 'approved',
     members: [
       { first_name: 'Ada', last_name: 'L', birth_year: 2013 },
@@ -243,4 +244,21 @@ export async function createColumn(
   return pb
     .collection('schedule_columns')
     .create({ event: eventId, name, position: 0, public: true, ...data })
+}
+
+/** Emails captured by the test backend for an address (apps/backend/hooks/mail.pb.js). */
+export async function mailsTo(email: string): Promise<{ subject: string; html: string }[]> {
+  const res = await fetch(`${API_URL}/api/dev/mails?to=${encodeURIComponent(email)}`)
+  return (await res.json()) as { subject: string; html: string }[]
+}
+
+/** Runs the outbox delivery job now instead of waiting for its schedule (M7-01). */
+export async function processOutbox() {
+  const res = await fetch(`${API_URL}/api/dev/mail-outbox/process`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) throw new Error(`Outbox processing failed: ${res.status} ${await res.text()}`)
+  return (await res.json()) as { sent: number; pending: number; failed: number }
 }

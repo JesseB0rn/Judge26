@@ -54,6 +54,12 @@ Without SMTP in development and test, emails are **not sent**. They are printed 
 console (`[dev mail] link: …`) and available at `GET /api/dev/mails?to=<email>`. Tests use
 this to follow verification and reset links.
 
+Application notifications (registration and schedule emails, M7) are queued in the `mail_outbox`
+collection and delivered by a job every minute, with retries; see
+[M7 communication](specifications/M7-communication.md). In development and test,
+`POST /api/dev/mail-outbox/process` runs the job immediately and `POST /api/dev/mail-failures`
+simulates provider failures.
+
 ### Engines in hooks
 
 `packages/scoring-engine` and `packages/ranking-engine` are bundled into

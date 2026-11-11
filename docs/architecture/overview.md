@@ -47,7 +47,9 @@ score sheet preview) and `rankings` (rounds, results, ranking configuration, liv
 snapshots), `scheduling` (tables and per-table game order) and `judging` (judge dashboard, score
 sheets with stopwatch and offline drafts, review and corrections; see
 [M5 judging](../specifications/M5-judging.md)) and `live` (public results, schedule, progress and TV
-mode; result publication; see [M6 live competition](../specifications/M6-live.md)).
+mode; result publication; see [M6 live competition](../specifications/M6-live.md)) and
+`communication` (email templates, delivery log, schedule notifications; see
+[M7 communication](../specifications/M7-communication.md)).
 
 Permissions are specified in [M1 permissions](../specifications/M1-permissions.md).
 
@@ -68,6 +70,12 @@ Public displays and staff ranking pages subscribe (PocketBase realtime, server-s
 event's `live_revisions` record, which hooks increase after every committed change, and reload
 through the public endpoints. A light poll of the same record covers missed messages. See
 [ADR 0007](decisions/0007-live-results-and-publication.md).
+
+## Email
+
+Notifications are queued in an outbox in the same transaction as the change that caused them and
+delivered right after commit or by a job every minute, with retries. See
+[ADR 0008](decisions/0008-transactional-email-outbox.md).
 
 ## Error model
 
