@@ -24,11 +24,11 @@ Per category, event managers (and admins) decide what the public sees:
 
 ## Public pages (no sign-in)
 
-| Route              | Content                                                                                 |
-| ------------------ | --------------------------------------------------------------------------------------- |
-| `/live`            | Public events                                                                           |
-| `/live/{event}`    | Tabs **Rankings**, **Schedule**, **Progress**; category (M6-06) and day (M6-07) filters |
-| `/live/{event}/tv` | TV mode (M6-05)                                                                         |
+| Route              | Content                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `/live`            | Public events                                                                                          |
+| `/live/{event}`    | Tabs **Rankings**, **Schedule**, **Timetable**, **Progress**; category (M6-06) and day (M6-07) filters |
+| `/live/{event}/tv` | TV mode (M6-05)                                                                                        |
 
 - **Rankings**: the official ranking if published, else the live one; a toggle when both exist. Live
   rankings show progress and a _provisional_ notice while games are not final; teams missing round
@@ -36,6 +36,8 @@ Per category, event managers (and admins) decide what the public sees:
 - **Schedule** (M6-04): _At the tables_ (now and next per table) and every round in playing order
   with table, sequence, team and state. States: _Upcoming_, _Playing_ (a draft sheet exists),
   _In review_ (submitted), _Done_ (finalized). Results are never shown here.
+- **Timetable** (M4-14-26): the schedule planner's grid, read-only, with all days next to one another,
+  scrolled to the current day; round phases and public blocks only (payload `planner`).
 - **Progress** (M6-08): done / in review / remaining games, overall and per category, per day.
 - The selection is kept in the URL (`tab`, `category`, `day`, `source`), so a refresh or a shared
   link shows the same view (M6-T09).
@@ -45,20 +47,21 @@ Per category, event managers (and admins) decide what the public sees:
 Full-screen layout without the application shell: no navigation, sign-in or administration controls,
 even for signed-in staff (M6-T07); only a _Full screen_ button that hides itself in full screen.
 It rotates through every page of every published ranking (rows per page follow the screen height),
-the tables (now/next) and the progress. URL options:
+the tables (now/next), the timetable of the day (if it has placed phases or public blocks, M4-14)
+and the progress. URL options:
 
-| Option     | Values                                  | Default             |
-| ---------- | --------------------------------------- | ------------------- |
-| `view`     | `auto`, `ranking`, `tables`, `progress` | `auto` (all)        |
-| `category` | comma-separated category ids            | all published       |
-| `day`      | competition day id                      | current day         |
-| `source`   | `official`, `live`                      | official if present |
-| `rotate`   | seconds per slide, 5–300                | 15                  |
+| Option     | Values                                               | Default             |
+| ---------- | ---------------------------------------------------- | ------------------- |
+| `view`     | `auto`, `ranking`, `tables`, `timetable`, `progress` | `auto` (all)        |
+| `category` | comma-separated category ids                         | all published       |
+| `day`      | competition day id                                   | current day         |
+| `source`   | `official`, `live`                                   | official if present |
+| `rotate`   | seconds per slide, 5–300                             | 15                  |
 
 ## Live updates (M6-01, exit criterion)
 
 - Hooks increase the event's `live_revisions.revision` after every **committed** change to events,
-  categories, teams, tables, days, rounds, games, snapshots, and to score sheets (creation and status
+  categories, teams, tables, days, rounds, round phases, schedule blocks, games, snapshots, and to score sheets (creation and status
   changes; draft autosaves do not count). Hooks run after the transaction, so a client never reloads
   before the change is visible.
 - Public pages, TV mode and the staff ranking page subscribe to that record (realtime) and reload.

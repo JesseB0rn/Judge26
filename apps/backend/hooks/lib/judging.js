@@ -545,6 +545,8 @@ function summary(app, game, cache) {
       key: round.getString('key'),
       name: round.getString('name'),
       position: round.getInt('position'),
+      // Start of the scoring run from the schedule planner, or "" (M4-14-30).
+      starts_at: require(`${__hooks}/lib/planner.js`).scoringStart(app, round.id),
     },
     category: {
       id: category.id,

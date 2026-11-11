@@ -17,6 +17,9 @@ export interface PublicDay {
   /** YYYY-MM-DD */
   date: string
   label: string
+  /** Hours of the day (HH:MM, M4-14-01). */
+  starts_at?: string
+  ends_at?: string
 }
 
 export interface PublicEventInfo {
@@ -72,6 +75,8 @@ export interface PublicEvent {
   tables: { id: string; name: string }[]
   rounds: PublicRound[]
   games: PublicGame[]
+  /** Timetable: round phases and public blocks (M4-14-26). */
+  planner?: import('@/modules/planner/types').PlannerData
 }
 
 export interface PublishedRanking {

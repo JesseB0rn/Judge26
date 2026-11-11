@@ -77,7 +77,13 @@ onMounted(() => {
 onBeforeUnmount(() => window.removeEventListener('online', load))
 
 const context = (row: Assignment) =>
-  [row.category.code, row.round.name, row.table?.name, `#${row.sequence}`]
+  [
+    row.category.code,
+    row.round.name,
+    row.round.starts_at ? `from ${row.round.starts_at}` : '',
+    row.table?.name,
+    `#${row.sequence}`,
+  ]
     .filter(Boolean)
     .join(' · ')
 </script>

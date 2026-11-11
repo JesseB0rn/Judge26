@@ -129,6 +129,26 @@ describe('live lib', () => {
     expect(tvSlides({ view: 'auto', rankings: [], rowsPerPage: 10, hasTables: false })).toEqual([
       { kind: 'progress' },
     ])
+
+    // The day's timetable (M4-14-26) comes after the tables when it has anything placed.
+    expect(
+      tvSlides({
+        view: 'auto',
+        rankings: [],
+        rowsPerPage: 10,
+        hasTables: true,
+        hasTimetable: true,
+      }),
+    ).toEqual([{ kind: 'tables' }, { kind: 'timetable' }, { kind: 'progress' }])
+    expect(
+      tvSlides({
+        view: 'timetable',
+        rankings,
+        rowsPerPage: 10,
+        hasTables: true,
+        hasTimetable: true,
+      }),
+    ).toEqual([{ kind: 'timetable' }])
   })
 
   it('paginates and parses TV options', () => {
@@ -136,6 +156,7 @@ describe('live lib', () => {
     expect(pageCount(21, 10)).toBe(3)
     expect(pageOf([1, 2, 3, 4, 5], 1, 2)).toEqual([3, 4])
     expect(parseTvView('tables')).toBe('tables')
+    expect(parseTvView('timetable')).toBe('timetable')
     expect(parseTvView('admin')).toBe('auto')
     expect(parseRotate('30')).toBe(30)
     expect(parseRotate('1')).toBe(5)

@@ -35,10 +35,17 @@ function eventOf(app, collection, record) {
     case 'teams':
     case 'tables':
     case 'competition_days':
+    case 'schedule_blocks':
+    case 'schedule_columns':
       return record.getString('event')
     case 'rounds':
     case 'ranking_snapshots': {
       const category = findById(app, 'categories', record.getString('category'))
+      return category ? category.getString('event') : ''
+    }
+    case 'round_phases': {
+      const round = findById(app, 'rounds', record.getString('round'))
+      const category = round ? findById(app, 'categories', round.getString('category')) : null
       return category ? category.getString('event') : ''
     }
     case 'games': {
@@ -107,7 +114,12 @@ function serializeEvent(event) {
 function serializeDays(app, eventId) {
   return app
     .findRecordsByFilter('competition_days', 'event = {:e}', 'date', 0, 0, { e: eventId })
-    .map((d) => ({ id: d.id, date: d.getString('date'), label: d.getString('label') }))
+    .map((d) => ({
+      id: d.id,
+      date: d.getString('date'),
+      label: d.getString('label'),
+      ...require(`${__hooks}/lib/planner.js`).dayWindow(d),
+    }))
 }
 
 function hasRanking(category) {
@@ -240,6 +252,8 @@ function eventPayload(app, eventId) {
       day: r.getString('day'),
     })),
     games,
+    // Timetable (M4-14-26): round phases and public blocks only.
+    planner: require(`${__hooks}/lib/planner.js`).payload(app, eventId, false),
   }
 }
 

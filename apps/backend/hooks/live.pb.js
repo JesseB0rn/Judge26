@@ -17,6 +17,9 @@ const LIVE_COLLECTIONS = [
   'rounds',
   'games',
   'ranking_snapshots',
+  'round_phases',
+  'schedule_blocks',
+  'schedule_columns',
 ]
 
 onRecordAfterCreateSuccess(

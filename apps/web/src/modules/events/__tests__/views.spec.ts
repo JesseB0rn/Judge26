@@ -127,7 +127,10 @@ describe('event views', () => {
     await fill('input[placeholder="e.g. Day 1"]', 'Day 1')
     await wrapper.find('form').trigger('submit')
     await flushPromises()
-    expect(mocked.createDay).toHaveBeenCalledWith('event1', '2026-06-13', 'Day 1')
+    expect(mocked.createDay).toHaveBeenCalledWith('event1', '2026-06-13', 'Day 1', {
+      starts_at: '08:00',
+      ends_at: '18:00',
+    })
     expect(wrapper.get('[data-testid=competition-days]').text()).toContain('Day 1')
 
     mocked.deleteDay.mockResolvedValue(true)

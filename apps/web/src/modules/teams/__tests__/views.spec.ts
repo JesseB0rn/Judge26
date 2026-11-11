@@ -298,15 +298,19 @@ describe('team views', () => {
   it('MyTeamsView shows the scheduled games of the coach’s teams', async () => {
     mocked.listOwnTeams.mockResolvedValue([])
     mocked.listOwnScheduledGames.mockResolvedValue([
-      makeGame({
-        table: 'table1',
-        sequence: 1,
+      {
+        ...makeGame({ table: 'table1', sequence: 1 }),
         expand: {
           team: makeTeam(),
-          round: makeRound('R1'),
+          // Scoring start and day from the schedule planner (M4-14-30).
+          round: {
+            ...makeRound('R1'),
+            starts_at: '09:30',
+            day: { id: 'd1', date: '2026-06-13', label: 'Day 1' },
+          },
           table: makeTable({ name: 'Table 3' }),
         },
-      }),
+      },
     ])
     const { wrapper } = await mountView(MyTeamsView, { session: { user: makeUser() } })
     expect(mocked.listOwnScheduledGames).toHaveBeenCalledWith('user1')
@@ -314,5 +318,7 @@ describe('team views', () => {
     expect(text).toContain('Robo Rangers')
     expect(text).toContain('Round 1')
     expect(text).toContain('Table 3')
+    // Start time from the schedule planner (M4-14-30).
+    expect(wrapper.get('[data-testid=my-schedule-when]').text()).toBe('Day 1 · from 09:30')
   })
 })

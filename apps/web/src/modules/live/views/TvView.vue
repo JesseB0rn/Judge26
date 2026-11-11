@@ -22,12 +22,14 @@ import { useLiveResource } from '../useLiveResource'
 import { useLiveUpdates } from '../useLiveUpdates'
 import LiveIndicator from '../components/LiveIndicator.vue'
 import TvRanking from '../components/TvRanking.vue'
+import PlannerBoard from '@/modules/planner/components/PlannerBoard.vue'
+import { axisRange, gridColumns, isPlaced, placedRanges } from '@/modules/planner/lib'
 
 /**
  * TV mode (M6-05): a full-screen display without any navigation or administration controls
  * (M6-T07). Rotates through the published rankings (page by page), the tables and the progress.
  *
- * URL options: `view` (auto | ranking | tables | progress), `category` (comma-separated ids),
+ * URL options: `view` (auto | ranking | tables | timetable | progress), `category` (comma-separated ids),
  * `day`, `source` (official | live), `rotate` (seconds).
  */
 const props = defineProps<{ id: string }>()
@@ -101,8 +103,33 @@ const slides = computed(() =>
       .filter((r): r is { category: string; rows: number } => r !== null),
     rowsPerPage: rowsPerPage.value,
     hasTables: !!event.data.value?.tables.length,
+    hasTimetable: timetableDays.value.length > 0 && hasTimetableItems.value,
   }),
 )
+
+// Timetable of the shown day only (M4-14-26), scaled to the screen height.
+const planner = computed(() => event.data.value?.planner)
+const timetableDays = computed(() => planner.value?.days.filter((d) => d.id === day.value) ?? [])
+// `category` limits the categories; custom columns are always shown (M4-14-33).
+const timetableColumns = computed(() =>
+  planner.value
+    ? gridColumns(planner.value).filter(
+        (c) => c.custom || !onlyCategories.value.length || onlyCategories.value.includes(c.id),
+      )
+    : [],
+)
+const hasTimetableItems = computed(() =>
+  [...(planner.value?.phases ?? []), ...(planner.value?.blocks ?? [])].some(
+    (item) => item.day === day.value && isPlaced(item),
+  ),
+)
+const timetableScale = computed(() => {
+  const p = planner.value
+  if (!p) return 1
+  const days = timetableDays.value
+  const axis = axisRange(days, placedRanges({ days, phases: p.phases, blocks: p.blocks }))
+  return Math.max(0.6, (height.value - 240) / Math.max(60, axis.end - axis.start))
+})
 const index = ref(0)
 const slide = computed(() => slides.value[index.value % Math.max(1, slides.value.length)])
 watch(slides, (list) => {
@@ -177,6 +204,7 @@ const title = computed(() => {
     return s.pages > 1 ? `${name} · ${s.page + 1}/${s.pages}` : name
   }
   if (s.kind === 'tables') return `At the tables · ${dayLabel(dayInfo.value)}`
+  if (s.kind === 'timetable') return `Timetable · ${dayLabel(dayInfo.value)}`
   return `Progress · ${dayLabel(dayInfo.value)}`
 })
 </script>
@@ -235,6 +263,20 @@ const title = computed(() => {
           :per-page="rowsPerPage"
         />
       </template>
+
+      <div
+        v-else-if="slide?.kind === 'timetable' && planner"
+        class="dark h-full overflow-hidden text-foreground"
+        data-testid="tv-timetable"
+      >
+        <PlannerBoard
+          :data="planner"
+          :days="timetableDays"
+          :columns="timetableColumns"
+          :scale="timetableScale"
+          :contained="false"
+        />
+      </div>
 
       <div
         v-else-if="slide?.kind === 'tables'"

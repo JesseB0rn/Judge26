@@ -73,7 +73,12 @@ routerAdd(
     ) {
       throw new ForbiddenError('Only event staff can view schedule validation.')
     }
-    return e.json(200, { issues: schedule.validateEvent(e.app, eventId) })
+    const planner = require(`${__hooks}/lib/planner.js`)
+    return e.json(200, {
+      issues: schedule.validateEvent(e.app, eventId),
+      // Timing warnings of the schedule planner (M4-14-20 – M4-14-24).
+      planner_issues: planner.eventIssues(e.app, eventId),
+    })
   },
   $apis.requireAuth('users', '_superusers'),
 )
@@ -127,6 +132,16 @@ routerAdd(
       throw new ForbiddenError('Users can only view their own schedule.')
     }
 
+    const planner = require(`${__hooks}/lib/planner.js`)
+    const dayInfo = (id) => {
+      if (!id) return null
+      try {
+        const day = e.app.findRecordById('competition_days', id)
+        return { id: day.id, date: day.getString('date'), label: day.getString('label') }
+      } catch (_) {
+        return null
+      }
+    }
     const scheduledGames = []
     const teams = e.app.findRecordsByFilter('teams', 'coach = {:coach}', 'created', 0, 0, {
       coach: userId,
@@ -155,6 +170,9 @@ routerAdd(
               id: round.id,
               name: round.getString('name'),
               position: round.getInt('position'),
+              // Scoring start from the schedule planner (M4-14-30).
+              starts_at: planner.scoringStart(e.app, round.id),
+              day: dayInfo(round.getString('day')),
             },
             table: { id: table.id, name: table.getString('name') },
           },

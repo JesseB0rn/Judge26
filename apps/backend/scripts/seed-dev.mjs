@@ -259,6 +259,104 @@ await upsert('teams', pb.filter('name = "Robo Rangers"'), {
   ],
 })
 
+// Schedule planner (M4-14): phases of the RM-J rounds placed on the days, and custom blocks.
+const placements = {
+  R1: [0, '09:00', '09:40'],
+  R2: [0, '13:30', '14:10'],
+  R3: [1, '09:00', '09:40'],
+}
+for (const [key, [dayIndex, maintenanceAt, scoringAt]] of Object.entries(placements)) {
+  if (!roundId[key] || !days[dayIndex]) continue
+  const phases = await pb
+    .collection('round_phases')
+    .getFullList({ filter: pb.filter('round = {:r}', { r: roundId[key] }) })
+  for (const phase of phases) {
+    if (phase.starts_at) continue
+    const at = phase.phase === 'maintenance' ? maintenanceAt : scoringAt
+    await pb.collection('round_phases').update(phase.id, {
+      day: days[dayIndex].id,
+      starts_at: at,
+      expected_updated: phase.updated,
+    })
+  }
+}
+// Custom columns next to the categories (M4-14-33).
+const coachesColumn = await upsert(
+  'schedule_columns',
+  pb.filter('event = {:e} && name = "Coaches"', { e: event.id }),
+  { event: event.id, name: 'Coaches', position: 0, public: true },
+)
+if (days[0]) {
+  await upsert(
+    'schedule_blocks',
+    pb.filter('event = {:e} && title = "Coach briefing"', { e: event.id }),
+    {
+      event: event.id,
+      day: days[0].id,
+      starts_at: '08:30',
+      duration_minutes: 30,
+      title: 'Coach briefing',
+      place: 'Room 1',
+      color: 'orange',
+      responsibility: 'Event manager',
+      columns: [coachesColumn.id],
+      public: true,
+    },
+  )
+}
+for (const [dayIndex, block] of [
+  [
+    0,
+    {
+      starts_at: '08:00',
+      duration_minutes: 45,
+      title: 'Registration',
+      place: 'Entrance',
+      color: 'blue',
+      responsibility: 'Volunteers',
+    },
+  ],
+  [
+    0,
+    {
+      starts_at: '12:00',
+      duration_minutes: 60,
+      title: 'Lunch',
+      place: 'Cafeteria',
+      color: 'green',
+    },
+  ],
+  [
+    0,
+    {
+      starts_at: '08:15',
+      duration_minutes: 30,
+      title: 'Judges briefing',
+      place: 'Room 2',
+      color: 'violet',
+      responsibility: 'Head judge',
+      public: false,
+    },
+  ],
+  [
+    1,
+    {
+      starts_at: '14:00',
+      duration_minutes: 60,
+      title: 'Award ceremony',
+      place: 'Main hall',
+      color: 'amber',
+    },
+  ],
+]) {
+  if (!days[dayIndex]) continue
+  await upsert(
+    'schedule_blocks',
+    pb.filter('event = {:e} && title = {:t}', { e: event.id, t: block.title }),
+    { public: true, ...block, event: event.id, day: days[dayIndex].id },
+  )
+}
+
 console.log(`Seeded ${url}. All demo accounts use the password "${PASSWORD}":`)
 for (const u of [admin, manager, headJudge, judge, coach])
   console.log(`  ${u.email.padEnd(26)} ${u.name}`)

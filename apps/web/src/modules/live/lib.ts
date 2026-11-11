@@ -208,11 +208,12 @@ export function isProvisional(ranking: PublicRanking, source: RankingSource): bo
 // TV mode (M6-05)
 // ---------------------------------------------------------------------------
 
-export type TvView = 'auto' | 'ranking' | 'tables' | 'progress'
+export type TvView = 'auto' | 'ranking' | 'tables' | 'timetable' | 'progress'
 
 export type TvSlide =
   | { kind: 'ranking'; category: string; page: number; pages: number }
   | { kind: 'tables' }
+  | { kind: 'timetable' }
   | { kind: 'progress' }
 
 export function pageCount(items: number, perPage: number): number {
@@ -234,6 +235,8 @@ export function tvSlides(options: {
   rankings: { category: string; rows: number }[]
   rowsPerPage: number
   hasTables: boolean
+  /** The shown day has a timetable (placed phases or public blocks, M4-14-26). */
+  hasTimetable?: boolean
 }): TvSlide[] {
   const slides: TvSlide[] = []
   const show = (kind: TvView) => options.view === 'auto' || options.view === kind
@@ -245,12 +248,15 @@ export function tvSlides(options: {
     }
   }
   if (show('tables') && options.hasTables) slides.push({ kind: 'tables' })
+  if (show('timetable') && options.hasTimetable) slides.push({ kind: 'timetable' })
   if (show('progress')) slides.push({ kind: 'progress' })
   return slides
 }
 
 export function parseTvView(value: unknown): TvView {
-  return value === 'ranking' || value === 'tables' || value === 'progress' ? value : 'auto'
+  return value === 'ranking' || value === 'tables' || value === 'timetable' || value === 'progress'
+    ? value
+    : 'auto'
 }
 
 /** Rotation interval in seconds from the URL (5–300, default 15). */

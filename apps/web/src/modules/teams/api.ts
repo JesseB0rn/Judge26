@@ -35,7 +35,11 @@ export function listOwnTeams(userId: string) {
 export type OwnScheduledGame = Pick<GameRecord, 'id' | 'team' | 'round' | 'table' | 'sequence'> & {
   expand?: {
     team?: Pick<TeamRecord, 'id' | 'name'>
-    round?: Pick<RoundRecord, 'id' | 'name' | 'position'>
+    round?: Pick<RoundRecord, 'id' | 'name' | 'position'> & {
+      /** Scoring start (HH:MM) from the schedule planner, or "" (M4-14-30). */
+      starts_at?: string
+      day?: { id: string; date: string; label: string } | null
+    }
     table?: Pick<TableRecord, 'id' | 'name'>
   }
 }
