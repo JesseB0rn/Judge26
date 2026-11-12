@@ -123,4 +123,77 @@ describe('M1 events and competition days', () => {
     )
     await expectDenied(manager.pb.collection('categories').update(category.id, { name: 'Renamed' }))
   })
+
+  // Regression: deleting an event cascades through teams (required category relation) and
+  // finalized games (whose ruleset and table disappear in the same transaction).
+  it('admins delete a fully used event, including its teams, tables and finalized scores', async () => {
+    const admin = await fx.admin()
+    const { event, category, manager, team, notify } = await fx.scheduledTeam()
+    const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
+    const headJudge = await fx.user({ roles: [{ role: 'head_judge', event: event.id }] })
+    const day = await manager.pb
+      .collection('competition_days')
+      .create({ event: event.id, date: '2026-06-13', label: 'Saturday' })
+    const round = await manager.pb.collection('rounds').create({
+      category: category.id,
+      key: 'R2',
+      name: 'Round 2',
+      position: 2,
+      testing_minutes: 0,
+      scoring_minutes: 10,
+      day: day.id,
+    })
+    const draft = await manager.pb.collection('rulesets').create({
+      category: category.id,
+      status: 'draft',
+      definition: {
+        schemaVersion: 1,
+        precision: 0,
+        root: {
+          id: 'total',
+          label: 'Total',
+          type: 'group',
+          aggregate: 'sum',
+          children: [{ id: 'flag', label: 'Flag', type: 'boolean', points: 10, required: true }],
+        },
+      },
+    })
+    await manager.pb.collection('rulesets').update(draft.id, { status: 'published' })
+    const table = await manager.pb
+      .collection('tables')
+      .create({ event: event.id, name: 'B', active: true, position: 2, judges: [judge.id] })
+    const game = await manager.pb.collection('games').create({
+      round: round.id,
+      team: team.id,
+      status: 'scheduled',
+      table: table.id,
+      sequence: 1,
+    })
+    await judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
+      method: 'POST',
+      body: { outcome: 'completed', values: { flag: true }, time_ms: 1000 },
+    })
+    await headJudge.pb.send(`/api/games/${game.id}/sheet/approve`, { method: 'POST', body: {} })
+    expect((await fx.su.collection('games').getOne(game.id)).status).toBe('completed')
+    expect((await notify()).queued).toBe(1)
+    await fx.su.collection('events').update(event.id, { status: 'archived' })
+
+    await admin.pb.collection('events').delete(event.id)
+
+    await expectDenied(fx.su.collection('events').getOne(event.id))
+    const byEvent = `event = "${event.id}"`
+    for (const name of ['categories', 'teams', 'tables', 'competition_days', 'role_assignments']) {
+      expect(await fx.su.collection(name).getFullList({ filter: byEvent }), name).toHaveLength(0)
+    }
+    const byCategory = `category = "${category.id}"`
+    for (const name of ['rounds', 'rulesets', 'game_rules']) {
+      expect(await fx.su.collection(name).getFullList({ filter: byCategory }), name).toHaveLength(0)
+    }
+    expect(
+      await fx.su.collection('games').getFullList({ filter: `team = "${team.id}"` }),
+    ).toHaveLength(0)
+    expect(
+      await fx.su.collection('score_sheets').getFullList({ filter: `game = "${game.id}"` }),
+    ).toHaveLength(0)
+  })
 })
