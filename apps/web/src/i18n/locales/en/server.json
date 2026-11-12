@@ -155,5 +155,13 @@
   "invalid_round": "Choose a round of the team’s category.",
   "table_has_teams": "Teams of another category are on this table.",
   "table_has_results": "Teams of another category already played on this table.",
-  "too_many_judges": "The table has no free judge slot."
+  "too_many_judges": "The table has no free judge slot.",
+  "template_not_json": "This file is not valid JSON.",
+  "template_format": "This file is not a Judge26 event template.",
+  "template_too_new": "This template was made with a newer version of Judge26 (format {version}); this installation reads format {supported}.",
+  "template_invalid": "The template is not valid at “{path}”.",
+  "template_not_found": "The template was not found.",
+  "templates_admin_only": "Only admins can manage event templates.",
+  "template_not_allowed": "Only event managers and admins can export this event.",
+  "setup_not_allowed": "Only event managers and admins can set up this event."
 }

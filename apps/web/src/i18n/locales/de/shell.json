@@ -15,7 +15,8 @@
     "emails": "E-Mails",
     "audit": "Protokoll",
     "monitoring": "Systemzustand",
-    "mailbox": "Postfach (Dev)"
+    "mailbox": "Postfach (Dev)",
+    "templates": "Anlassvorlagen"
   },
   "viewAs": {
     "open": "Ansicht als",

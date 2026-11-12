@@ -1,0 +1,104 @@
+{
+  "library": {
+    "title": "Anlassvorlagen",
+    "description": "Wiederverwendbare Anlass-Einrichtungen: Tage, Kategorien mit Bewertungsregeln, Runden, Tische und Planerblöcke. Teams, Schiedsrichter/innen und Resultate gehören nie zu einer Vorlage.",
+    "upload": "Vorlage hochladen",
+    "uploadHint": "Eine Vorlagendatei (.json), heruntergeladen aus dieser oder einer anderen Judge26-Installation.",
+    "uploaded": "Vorlage hochgeladen.",
+    "empty": "Noch keine Vorlagen. Einen Anlass als Vorlage speichern oder eine Vorlagendatei hochladen.",
+    "contents": "Inhalt",
+    "origin": "Herkunft",
+    "fromUpload": "Hochgeladene Datei",
+    "days": "keine Tage | 1 Tag | {count} Tage",
+    "tables": "keine Tische | 1 Tisch | {count} Tische",
+    "newEvent": "Neuer Anlass",
+    "newEventFrom": "Neuer Anlass aus {name}",
+    "download": "{name} herunterladen",
+    "edit": "{name} bearbeiten",
+    "delete": "{name} löschen",
+    "confirmDelete": "Die Vorlage «{name}» löschen? Daraus erstellte Anlässe bleiben unverändert.",
+    "deleted": "Vorlage gelöscht.",
+    "editTitle": "Vorlage bearbeiten",
+    "saved": "Vorlage gespeichert."
+  },
+  "save": {
+    "button": "Als Vorlage speichern",
+    "title": "Als Vorlage speichern",
+    "description": "Die Vorlage enthält das Tagesmuster, die Kategorien mit ihren aktiven Bewertungsregeln, Runden, Tische, Planerspalten und -blöcke. Teams, Schiedsrichter/innen, Läufe und Punkte sind nie enthalten.",
+    "download": "Datei herunterladen",
+    "toLibrary": "In Bibliothek speichern",
+    "saved": "In der Vorlagenbibliothek gespeichert.",
+    "managerHint": "Nur Admins führen Vorlagen in der Bibliothek. Die Datei herunterladen und einem Admin geben oder in einer anderen Installation hochladen."
+  },
+  "create": {
+    "button": "Aus Vorlage",
+    "title": "Neuer Anlass aus Vorlage",
+    "description": "Alle Daten verschieben sich so, dass der erste Tag der Vorlage auf den gewählten Tag fällt. Der neue Anlass ändert sich nicht, wenn die Vorlage geändert wird.",
+    "template": "Vorlage",
+    "chooseTemplate": "Vorlage wählen",
+    "firstDay": "Erster Tag",
+    "season": "Saison",
+    "seasonHint": "Leer: das Jahr des ersten Tags.",
+    "venueHint": "Leer: der Ort der Vorlage.",
+    "submit": "Anlass erstellen",
+    "created": "Anlass aus der Vorlage erstellt.",
+    "noTemplates": "Es gibt noch keine Vorlagen. Zuerst einen Anlass als Vorlage speichern oder eine Vorlagendatei hochladen."
+  },
+  "setup": {
+    "title": "Einrichtung",
+    "description": "Was dieser Anlass noch braucht, von den Tagen bis zum veröffentlichten Zeitplan. Die Schritte gehen in beliebiger Reihenfolge, sobald die Daten existieren, auf denen sie aufbauen.",
+    "progress": "{done} von {total} Schritten erledigt",
+    "complete": "Die Einrichtung ist abgeschlossen.",
+    "open": "Öffnen",
+    "doneLabel": "erledigt",
+    "todoLabel": "offen",
+    "openPlanner": "Planer",
+    "needs": "Braucht zuerst: {steps}.",
+    "steps": {
+      "days": {
+        "title": "Wettkampftage",
+        "todo": "Die Tage des Anlasses und ihre Zeiten erfassen.",
+        "done": "keine Tage | 1 Tag | {count} Tage"
+      },
+      "categories": {
+        "title": "Kategorien und Bewertungsregeln",
+        "todo": "Kategorien erfassen und für jedes ihrer Spiele Bewertungsregeln veröffentlichen.",
+        "missing": "Ohne veröffentlichte Bewertungsregeln: {codes}",
+        "done": "keine Kategorien | 1 Kategorie | {count} Kategorien"
+      },
+      "rounds": {
+        "title": "Runden",
+        "todo": "Die Runden jeder Kategorie erfassen.",
+        "missing": "Ohne Runden: {codes}",
+        "done": "keine Runden | 1 Runde | {count} Runden"
+      },
+      "tables": {
+        "title": "Tische",
+        "todo": "Auf der Zuteilungstafel Tische für jede Kategorie anlegen.",
+        "missing": "Ohne aktiven Tisch: {codes}",
+        "done": "keine aktiven Tische | 1 aktiver Tisch | {count} aktive Tische"
+      },
+      "teams": {
+        "title": "Teams",
+        "todo": "Die Teams aus einer CSV-Datei importieren.",
+        "done": "keine Teams | 1 Team | {count} Teams"
+      },
+      "judges": {
+        "title": "Schiedsrichter/innen",
+        "todo": "Schiedsrichter/innen einladen und Tischen zuteilen.",
+        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in",
+        "done": "keine Schiedsrichter/innen | 1 Schiedsrichter/in | {count} Schiedsrichter/innen"
+      },
+      "schedule": {
+        "title": "Zeitplan",
+        "todo": "Jedes Team einem Tisch zuteilen und jede Runde im Planer zeitlich festlegen.",
+        "progress": "{placed} von {expected} Läufen zugeteilt · {timed} von {rounds} Runden terminiert"
+      },
+      "publish": {
+        "title": "Veröffentlichen",
+        "todo": "Den Anlass veröffentlichen, sobald der Zeitplan steht.",
+        "done": "Veröffentlicht"
+      }
+    }
+  }
+}

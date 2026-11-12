@@ -33,6 +33,29 @@ export interface EventRecord extends BaseRecord {
   registration_closes_at: string
 }
 
+/** Contents of a template file (apps/backend/hooks/lib/templates.js). Only what the app shows is typed. */
+export interface EventTemplateFile {
+  format: string
+  version: number
+  name: string
+  description: string
+  days?: { offset: number; label: string }[]
+  categories?: { code: string; name: string }[]
+  tables?: { name: string }[]
+  [key: string]: unknown
+}
+
+/** An event template in the library (M8-24); `data` is the template file. */
+export interface EventTemplateRecord extends BaseRecord {
+  name: string
+  description: string
+  data: EventTemplateFile
+  format_version: number
+  /** The exported event ("Name (season)") or "upload". */
+  origin: string
+  created_by: string
+}
+
 export interface RoleAssignmentRecord extends BaseRecord {
   user: string
   role: Role

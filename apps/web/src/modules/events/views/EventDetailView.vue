@@ -7,6 +7,7 @@ import {
   ArchiveRestoreIcon,
   CalendarRangeIcon,
   ClipboardListIcon,
+  LibraryIcon,
   PencilIcon,
   RadioIcon,
   SendIcon,
@@ -23,6 +24,8 @@ import EventStaffTab from '@/modules/administration/components/EventStaffTab.vue
 import EventMessagesTab from '@/modules/communication/components/EventMessagesTab.vue'
 import AuditLogTable from '@/modules/administration/components/AuditLogTable.vue'
 import PublicationPanel from '@/modules/live/components/PublicationPanel.vue'
+import EventSetupChecklist from '@/modules/templates/components/EventSetupChecklist.vue'
+import SaveTemplateDialog from '@/modules/templates/components/SaveTemplateDialog.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
@@ -38,6 +41,7 @@ const props = defineProps<{ id: string }>()
 const session = useSessionStore()
 const { data: event, loading, error, load } = useLoader(() => getEvent(props.id))
 const editing = ref(false)
+const savingTemplate = ref(false)
 // The open tab lives in the URL: a refresh or "back" returns to the same panel.
 const { tab } = useQueryRefs({ tab: 'overview' })
 
@@ -50,6 +54,7 @@ const canReview = computed(
 const visibleTab = computed(() => {
   const allowed: Record<string, boolean> = {
     overview: true,
+    setup: canManage.value,
     categories: true,
     teams: isStaff.value,
     schedule: isStaff.value,
@@ -97,6 +102,9 @@ watch(() => props.id, load)
           <Button v-if="event.status === 'draft'" @click="setStatus.run('published')">
             <SendIcon /> {{ t('events.detail.publish') }}
           </Button>
+          <Button variant="outline" @click="savingTemplate = true">
+            <LibraryIcon /> {{ t('templates.save.button') }}
+          </Button>
           <Button v-if="!archived" variant="outline" @click="setStatus.run('archived')">
             <ArchiveIcon /> {{ t('events.detail.archive') }}
           </Button>
@@ -131,6 +139,7 @@ watch(() => props.id, load)
     <Tabs :model-value="visibleTab" @update:model-value="tab = String($event)">
       <TabsList>
         <TabsTrigger value="overview">{{ t('events.tabs.overview') }}</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="setup">{{ t('templates.setup.title') }}</TabsTrigger>
         <TabsTrigger value="categories">{{ t('events.tabs.categories') }}</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="schedule">{{
@@ -164,6 +173,10 @@ watch(() => props.id, load)
         <CompetitionDays :event-id="event.id" :editable="canManage && !archived" />
       </TabsContent>
 
+      <TabsContent v-if="canManage" value="setup">
+        <EventSetupChecklist :event="event" />
+      </TabsContent>
+
       <TabsContent value="categories">
         <EventCategoriesTab :event="event" :editable="canManage && !archived" />
       </TabsContent>
@@ -194,5 +207,6 @@ watch(() => props.id, load)
     </Tabs>
 
     <EventFormDialog v-model:open="editing" :event="event" @saved="onSaved" />
+    <SaveTemplateDialog v-if="canManage" v-model:open="savingTemplate" :event="event" />
   </template>
 </template>

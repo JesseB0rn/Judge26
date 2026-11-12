@@ -11,6 +11,7 @@ import { judgingRoutes } from '@/modules/judging/routes'
 import { liveRoutes } from '@/modules/live/routes'
 import { systemRoutes } from '@/modules/system/routes'
 import { teamRoutes } from '@/modules/teams/routes'
+import { templateRoutes } from '@/modules/templates/routes'
 import { useSessionStore } from '@/shared/auth/session'
 import { resolveAccess } from './guards'
 
@@ -25,6 +26,7 @@ export const routes = [
   ...teamRoutes,
   ...administrationRoutes,
   ...communicationRoutes,
+  ...templateRoutes,
   // Contains the catch-all route and must stay last.
   ...systemRoutes,
 ]

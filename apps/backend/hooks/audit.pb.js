@@ -25,6 +25,7 @@ onRecordCreateRequest(
   'games',
   'ranking_snapshots',
   'mail_templates',
+  'event_templates',
 )
 
 onRecordUpdateRequest(
@@ -49,6 +50,7 @@ onRecordUpdateRequest(
   'games',
   'ranking_snapshots',
   'mail_templates',
+  'event_templates',
 )
 
 onRecordDeleteRequest(
@@ -73,6 +75,7 @@ onRecordDeleteRequest(
   'games',
   'ranking_snapshots',
   'mail_templates',
+  'event_templates',
 )
 
 // Backups: created by a superuser (API/dashboard) or by the automatic schedule (M7-09).
