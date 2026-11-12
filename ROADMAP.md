@@ -1515,7 +1515,7 @@ and give managers one direct board for table, team and judge assignment.
 -   [x] **M8-B** Judge onboarding by CSV invitation, with a development
     email outbox (M8-06 to M8-12)
 -   [x] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
--   [ ] **M8-D** Event setup flow and event templates (M8-19 to M8-24)
+-   [x] **M8-D** Event setup flow and event templates (M8-19 to M8-24)
 -   [x] **M8-E** Kanban board for tables, teams and judges (M8-25 to
     M8-33)
 
@@ -1661,6 +1661,9 @@ specific person, that person's account read-only; the hotkey is Alt+Shift+V and 
   ------------------------------------------------------------------------------
 
 ### M8-D --- Event setup flow and templates
+
+**Status:** M8-19 to M8-24 implemented (see `docs/specifications/M8-event-setup.md`). Open
+question 4 is settled: rulesets are copied into the template, not referenced by version.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria
@@ -1841,7 +1844,7 @@ Layout:
     and a toggle for one round (M8-E).*
 4.  **Templates:** Should rulesets in a template be referenced by
     version or copied, when the template is used on another
-    installation?
+    installation? *Settled: copied (M8-D).*
 
 **Exit criteria:** All P1 requirements and M8 tests pass. A tester can
 set up an event from a template, import teams and invite judges by CSV,

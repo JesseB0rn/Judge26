@@ -99,6 +99,12 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/events/{id}/board/judges', access: 'auth' },
   { method: 'POST', path: '/api/events/{id}/board/tables', access: 'auth' },
   { method: 'POST', path: '/api/events/{id}/board/tables/{table}/category', access: 'auth' },
+  // M8-D: setup checklist and event templates.
+  { method: 'GET', path: '/api/events/{id}/setup', access: 'auth' },
+  { method: 'GET', path: '/api/events/{id}/template', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/template', access: 'auth' },
+  { method: 'POST', path: '/api/event-templates', access: 'auth' },
+  { method: 'POST', path: '/api/event-templates/{id}/events', access: 'auth' },
   // M8-C: admin view as (admins start; the switched token reads and ends its session).
   { method: 'POST', path: '/api/view-as', access: 'auth' },
   { method: 'GET', path: '/api/view-as', access: 'auth' },

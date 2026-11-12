@@ -32,6 +32,9 @@ test.describe('M1 event administration', () => {
     await dialog.getByLabel('Status').selectOption('published')
     await dialog.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('heading', { name: eventName })).toBeVisible()
+    // A new event opens its setup checklist (M8-20); the days are on the overview.
+    await expect(page.getByTestId('setup-checklist')).toBeVisible()
+    await page.getByRole('tab', { name: 'Overview' }).click()
 
     // Two competition days (M1-07, M1-T06).
     for (const [date, label] of [

@@ -8,7 +8,7 @@ vi.mock('../api')
 const mocked = vi.mocked(api)
 vi.mock('@/modules/board/api', async (original) => ({
   ...(await original<typeof import('@/modules/board/api')>()),
-  loadBoard: vi.fn(async () => ({
+  loadBoard: vi.fn<typeof import('@/modules/board/api').loadBoard>(async () => ({
     categories: [],
     rounds: [],
     tables: [],
@@ -16,7 +16,7 @@ vi.mock('@/modules/board/api', async (original) => ({
     games: [],
     judges: [],
   })),
-  subscribeBoard: vi.fn(async () => () => {}),
+  subscribeBoard: vi.fn<typeof import('@/modules/board/api').subscribeBoard>(async () => () => {}),
 }))
 
 const round = makeRound('R1', 1)

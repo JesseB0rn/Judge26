@@ -15,7 +15,8 @@
     "emails": "E-mail",
     "audit": "Registro delle modifiche",
     "monitoring": "Stato del sistema",
-    "mailbox": "Casella (dev)"
+    "mailbox": "Casella (dev)",
+    "templates": "Modelli di evento"
   },
   "viewAs": {
     "open": "Vedi come",

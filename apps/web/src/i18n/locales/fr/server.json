@@ -155,5 +155,13 @@
   "invalid_round": "Choisissez une manche de la catégorie de l’équipe.",
   "table_has_teams": "Des équipes d’une autre catégorie sont sur cette table.",
   "table_has_results": "Des équipes d’une autre catégorie ont déjà joué sur cette table.",
-  "too_many_judges": "La table n’a plus de place pour un juge."
+  "too_many_judges": "La table n’a plus de place pour un juge.",
+  "template_not_json": "Ce fichier n’est pas un JSON valide.",
+  "template_format": "Ce fichier n’est pas un modèle d’événement Judge26.",
+  "template_too_new": "Ce modèle a été créé avec une version plus récente de Judge26 (format {version}) ; cette installation lit le format {supported}.",
+  "template_invalid": "Le modèle n’est pas valide à l’endroit « {path} ».",
+  "template_not_found": "Le modèle est introuvable.",
+  "templates_admin_only": "Seuls les admins peuvent gérer les modèles d’événement.",
+  "template_not_allowed": "Seuls les responsables de l’événement et les admins peuvent exporter cet événement.",
+  "setup_not_allowed": "Seuls les responsables de l’événement et les admins peuvent configurer cet événement."
 }

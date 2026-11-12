@@ -28,6 +28,19 @@ export function useQueryRefs<T extends Record<string, string>>(defaults: T) {
     },
   )
 
+  // And back: links to another tab of the same page (and the browser's back button) change only
+  // the query, so the view state follows it.
+  watch(
+    () => route.query,
+    (query) => {
+      for (const key of Object.keys(defaults) as (keyof T)[]) {
+        const value = query[key as string]
+        const next = (typeof value === 'string' ? value : defaults[key]) as T[keyof T]
+        if (state[key] !== next) state[key] = next
+      }
+    },
+  )
+
   return toRefs(state)
 }
 

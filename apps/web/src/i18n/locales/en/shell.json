@@ -15,7 +15,8 @@
     "emails": "Emails",
     "audit": "Audit log",
     "monitoring": "System health",
-    "mailbox": "Mailbox (dev)"
+    "mailbox": "Mailbox (dev)",
+    "templates": "Event templates"
   },
   "viewAs": {
     "open": "View as",

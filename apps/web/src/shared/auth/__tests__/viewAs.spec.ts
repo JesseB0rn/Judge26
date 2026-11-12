@@ -134,7 +134,7 @@ describe('admin view as (M8-C)', () => {
   it('M8-13: admins get the switch button and the hotkey opens the dialog; others do not', async () => {
     send.mockImplementation((async () => []) as never)
     vi.spyOn(pb, 'collection').mockImplementation((() => ({
-      getFullList: vi.fn(async () => []),
+      getFullList: vi.fn<() => Promise<unknown[]>>(async () => []),
     })) as unknown as typeof pb.collection)
     const { wrapper } = await mountView(AppShell, { session: { roles: [makeRole('admin')] } })
     mounted.push(wrapper)

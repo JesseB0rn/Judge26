@@ -3,6 +3,7 @@ import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import {
   AlertTriangleIcon,
+  CheckIcon,
   EllipsisVerticalIcon,
   GripVerticalIcon,
   LockIcon,
@@ -317,8 +318,12 @@ function nextOf(groupIndex: number, tableIndex: number) {
                   v-for="n in [1, 2, 3, 4]"
                   :key="n"
                   @select="emit('setSlots', group.category.id, n)"
-                  >{{ n }}{{ n === group.category.judges_per_table ? ' ✓' : '' }}</DropdownMenuItem
-                >
+                  >{{ n }}
+                  <CheckIcon
+                    v-if="n === group.category.judges_per_table"
+                    class="ml-auto"
+                    aria-hidden="true"
+                /></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

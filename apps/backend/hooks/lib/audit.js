@@ -24,6 +24,7 @@ const AUDITED = [
   'games',
   'ranking_snapshots',
   'mail_templates',
+  'event_templates',
 ]
 
 /** Never stored. */
@@ -220,6 +221,7 @@ const SINGULAR = {
   games: 'game result',
   ranking_snapshots: 'ranking snapshot',
   mail_templates: 'email template',
+  event_templates: 'event template',
 }
 
 function describe(action, collection, record, changes) {

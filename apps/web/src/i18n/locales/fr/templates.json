@@ -1,0 +1,104 @@
+{
+  "library": {
+    "title": "Modèles d’événement",
+    "description": "Configurations d’événement réutilisables : jours, catégories avec règles de score, manches, tables et blocs du planificateur. Les équipes, juges et résultats ne font jamais partie d’un modèle.",
+    "upload": "Importer un modèle",
+    "uploadHint": "Un fichier de modèle (.json) téléchargé depuis cette installation de Judge26 ou une autre.",
+    "uploaded": "Modèle importé.",
+    "empty": "Aucun modèle pour l’instant. Enregistrez un événement comme modèle ou importez un fichier de modèle.",
+    "contents": "Contenu",
+    "origin": "Provenance",
+    "fromUpload": "Fichier importé",
+    "days": "aucun jour | 1 jour | {count} jours",
+    "tables": "aucune table | 1 table | {count} tables",
+    "newEvent": "Nouvel événement",
+    "newEventFrom": "Nouvel événement à partir de {name}",
+    "download": "Télécharger {name}",
+    "edit": "Modifier {name}",
+    "delete": "Supprimer {name}",
+    "confirmDelete": "Supprimer le modèle « {name} » ? Les événements créés à partir de celui-ci ne sont pas modifiés.",
+    "deleted": "Modèle supprimé.",
+    "editTitle": "Modifier le modèle",
+    "saved": "Modèle enregistré."
+  },
+  "save": {
+    "button": "Enregistrer comme modèle",
+    "title": "Enregistrer comme modèle",
+    "description": "Le modèle reprend le schéma des jours, les catégories avec leurs règles de score actives, les manches, les tables, les colonnes et les blocs du planificateur. Les équipes, juges, passages et points n’y figurent jamais.",
+    "download": "Télécharger le fichier",
+    "toLibrary": "Enregistrer dans la bibliothèque",
+    "saved": "Enregistré dans la bibliothèque de modèles.",
+    "managerHint": "Seuls les admins gèrent les modèles de la bibliothèque. Téléchargez le fichier et transmettez-le à un admin, ou importez-le sur une autre installation."
+  },
+  "create": {
+    "button": "À partir d’un modèle",
+    "title": "Nouvel événement à partir d’un modèle",
+    "description": "Toutes les dates sont décalées pour que le premier jour du modèle tombe sur le jour choisi. Le nouvel événement ne change pas si le modèle est modifié.",
+    "template": "Modèle",
+    "chooseTemplate": "Choisir un modèle",
+    "firstDay": "Premier jour",
+    "season": "Saison",
+    "seasonHint": "Vide : l’année du premier jour.",
+    "venueHint": "Vide : le lieu du modèle.",
+    "submit": "Créer l’événement",
+    "created": "Événement créé à partir du modèle.",
+    "noTemplates": "Il n’y a pas encore de modèle. Enregistrez d’abord un événement comme modèle ou importez un fichier de modèle."
+  },
+  "setup": {
+    "title": "Configuration",
+    "description": "Ce qu’il manque encore à cet événement, des jours jusqu’à l’horaire publié. Les étapes peuvent se faire dans n’importe quel ordre dès que les données dont elles dépendent existent.",
+    "progress": "{done} étapes sur {total} terminées",
+    "complete": "La configuration est terminée.",
+    "open": "Ouvrir",
+    "doneLabel": "terminé",
+    "todoLabel": "à faire",
+    "openPlanner": "Planificateur",
+    "needs": "Nécessite d’abord : {steps}.",
+    "steps": {
+      "days": {
+        "title": "Jours de compétition",
+        "todo": "Ajoutez les jours de l’événement et leurs horaires.",
+        "done": "aucun jour | 1 jour | {count} jours"
+      },
+      "categories": {
+        "title": "Catégories et règles de score",
+        "todo": "Ajoutez les catégories et publiez des règles de score pour chacun de leurs jeux.",
+        "missing": "Sans règles de score publiées : {codes}",
+        "done": "aucune catégorie | 1 catégorie | {count} catégories"
+      },
+      "rounds": {
+        "title": "Manches",
+        "todo": "Ajoutez les manches de chaque catégorie.",
+        "missing": "Sans manches : {codes}",
+        "done": "aucune manche | 1 manche | {count} manches"
+      },
+      "tables": {
+        "title": "Tables",
+        "todo": "Créez des tables pour chaque catégorie sur le tableau d’attribution.",
+        "missing": "Sans table active : {codes}",
+        "done": "aucune table active | 1 table active | {count} tables actives"
+      },
+      "teams": {
+        "title": "Équipes",
+        "todo": "Importez les équipes depuis un fichier CSV.",
+        "done": "aucune équipe | 1 équipe | {count} équipes"
+      },
+      "judges": {
+        "title": "Juges",
+        "todo": "Invitez les juges et attribuez-les aux tables.",
+        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge",
+        "done": "aucun juge | 1 juge | {count} juges"
+      },
+      "schedule": {
+        "title": "Horaire",
+        "todo": "Placez chaque équipe sur une table et fixez l’heure de chaque manche dans le planificateur.",
+        "progress": "{placed} passages placés sur {expected} · {timed} manches planifiées sur {rounds}"
+      },
+      "publish": {
+        "title": "Publier",
+        "todo": "Publiez l’événement dès que l’horaire est prêt.",
+        "done": "Publié"
+      }
+    }
+  }
+}
