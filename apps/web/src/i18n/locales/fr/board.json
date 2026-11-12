@@ -1,9 +1,6 @@
 {
-  "title": "Tableau · {event}",
   "description": "Créez les tables et attribuez juges et équipes. Faites glisser les cartes ou utilisez leur menu.",
-  "backToEvent": "Retour à l’événement",
   "reload": "Recharger",
-  "managersOnly": "Seuls les responsables de l’événement et les admins peuvent utiliser le tableau.",
   "scope": "Modifier",
   "allRounds": "Toutes les manches",
   "roundOnly": "Manche {n} seulement",
@@ -44,5 +41,8 @@
   "takeOff": "Retirer de la table",
   "noCategories": "L’événement n’a pas encore de catégories.",
   "wrongCategory": "Seulement les tables de la catégorie de l’équipe",
-  "cannotDrop": "Impossible ici"
+  "cannotDrop": "Impossible ici",
+  "heading": "Tables, juges et équipes",
+  "delete": "Supprimer",
+  "confirmDelete": "Supprimer la table {table} ?"
 }

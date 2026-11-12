@@ -9,23 +9,6 @@ export function listTables(eventId: string) {
     .getFullList({ filter: byEvent(eventId), sort: 'position,name', expand: 'judges' })
 }
 
-export interface TableInput {
-  name: string
-  active: boolean
-  categories: string[]
-  judges: string[]
-}
-
-export function saveTable(eventId: string, id: string | undefined, data: TableInput) {
-  return id
-    ? pb.collection<TableRecord>('tables').update(id, data)
-    : pb.collection<TableRecord>('tables').create({ ...data, event: eventId })
-}
-
-export function deleteTable(id: string) {
-  return pb.collection('tables').delete(id)
-}
-
 export function listEventCategories(eventId: string) {
   return pb
     .collection<CategoryRecord>('categories')
@@ -57,15 +40,6 @@ export function saveGameAssignment(game: GameRecord, data: GameAssignmentInput) 
     ...data,
     expected_updated: game.updated,
   })
-}
-
-export interface EventJudge {
-  id: string
-  name: string
-}
-
-export function listEventJudges(eventId: string) {
-  return pb.send<EventJudge[]>(`/api/events/${eventId}/judges`, { method: 'GET' })
 }
 
 export interface ScheduleIssue {

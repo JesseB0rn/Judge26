@@ -32,11 +32,12 @@ test.describe('Tables and scheduling', () => {
     await page.getByRole('tab', { name: 'Schedule' }).click()
     await expect(page.getByTestId('schedule-summary')).toHaveText('0 assigned · 0 unassigned')
 
-    // A table has fixed judges (M8-E: several).
-    await page.getByLabel('Table name').fill('Table A')
-    await page.getByTestId('table-judges').getByLabel(judge.name).check()
-    await page.getByRole('button', { name: 'Add table' }).click()
-    await expect(page.getByTestId('tables')).toContainText('Table A')
+    // Tables and their judges are set up on the board (M8-E).
+    await page.getByRole('button', { name: 'Add a table to RoboMission Junior' }).click()
+    await expect(page.locator('[data-column="Table 1"]')).toBeVisible()
+    await page.getByRole('button', { name: `Actions for judge ${judge.name}` }).click()
+    await page.getByRole('menuitem', { name: 'Table 1', exact: true }).click()
+    await expect(page.getByTestId('judges-Table 1')).toContainText(judge.name)
 
     // Preview does not create games; generation creates the missing team/round games.
     await page.getByRole('button', { name: 'Preview' }).click()

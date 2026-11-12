@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
-import { ArrowLeftIcon, RefreshCwIcon } from '@lucide/vue'
+import { RefreshCwIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Skeleton } from '@/components/ui/skeleton'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
-import PageHeader from '@/shared/components/PageHeader.vue'
-import { pb } from '@/shared/api/pocketbase'
 import { toAppError, type AppError } from '@/shared/api/errors'
-import { useSessionStore } from '@/shared/auth/session'
-import type { EventRecord } from '@/shared/types/records'
-import AssignmentBoard from '../components/AssignmentBoard.vue'
+import AssignmentBoard from './AssignmentBoard.vue'
 import {
   createTable,
+  deleteTable,
   isConflict,
   loadBoard,
   moveJudge,
@@ -30,12 +26,12 @@ import {
 import { categoryRounds, expectedForMove, roundCount, type Scope } from '../lib'
 
 /**
- * Assignment board of an event (M8-E): managers create tables and assign teams and judges.
- * Other open boards update live; a write based on an outdated board reloads it (M8-32).
+ * Assignment board of an event (M8-E), in the event's Schedule tab: managers create tables and
+ * assign teams and judges. Other open boards update live; a write based on an outdated board
+ * reloads it (M8-32). Emits `changed` after every write, so the rest of the tab can reload.
  */
-const props = defineProps<{ id: string }>()
-const session = useSessionStore()
-const event = ref<EventRecord>()
+const props = defineProps<{ eventId: string; editable: boolean }>()
+const emit = defineEmits<{ changed: [] }>()
 const board = ref<Board>()
 const loadError = ref<AppError>()
 const actionError = ref<AppError>()
@@ -45,13 +41,11 @@ const scope = computed<Scope>(() =>
   scopeValue.value === 'all' ? 'all' : Number.parseInt(scopeValue.value, 10),
 )
 
-const canManage = computed(() => session.canManageEvent(props.id))
-const editable = computed(() => canManage.value && event.value?.status !== 'archived')
 const rounds = computed(() => (board.value ? roundCount(board.value) : 0))
 
 async function reload() {
   try {
-    board.value = await loadBoard(props.id)
+    board.value = await loadBoard(props.eventId)
     loadError.value = undefined
   } catch (e) {
     loadError.value = toAppError(e)
@@ -65,6 +59,7 @@ async function write(action: () => Promise<Board>) {
   actionError.value = undefined
   try {
     board.value = await action()
+    emit('changed')
   } catch (e) {
     if (isConflict(e)) {
       toast.warning(t('board.changedMeanwhile'))
@@ -80,7 +75,7 @@ function onMoveTeam(team: string, table: string, index: number) {
   const category = current.teams.find((x) => x.id === team)?.category ?? ''
   const round = scope.value === 'all' ? undefined : categoryRounds(current, category)[scope.value]
   void write(() =>
-    moveTeam(props.id, {
+    moveTeam(props.eventId, {
       team,
       table,
       index,
@@ -95,7 +90,7 @@ function onMoveJudge(judge: string, from: string, to: string) {
   const expected = Object.fromEntries(
     current.tables.filter((x) => x.id === from || x.id === to).map((x) => [x.id, x.updated]),
   )
-  void write(() => moveJudge(props.id, { judge, from, to, expected }))
+  void write(() => moveJudge(props.eventId, { judge, from, to, expected }))
 }
 
 /** Moves tables into a category, after confirming when teams of the old one are on them. */
@@ -117,14 +112,14 @@ function onMoveTables(tables: BoardTable[], category: string) {
     let result = current
     for (const table of tables) {
       const fresh = result.tables.find((x) => x.id === table.id) ?? table
-      result = await setTableCategory(props.id, fresh, category, affected > 0)
+      result = await setTableCategory(props.eventId, fresh, category, affected > 0)
     }
     return result
   })
 }
 
 function onAddTable(category: string) {
-  void write(() => createTable(props.id, category))
+  void write(() => createTable(props.eventId, category))
 }
 
 function onRenameTable(table: BoardTable) {
@@ -132,21 +127,29 @@ function onRenameTable(table: BoardTable) {
   if (!name || name === table.name) return
   void write(async () => {
     await updateTable(table, { name })
-    return loadBoard(props.id)
+    return loadBoard(props.eventId)
   })
 }
 
 function onToggleTable(table: BoardTable) {
   void write(async () => {
     await updateTable(table, { active: !table.active })
-    return loadBoard(props.id)
+    return loadBoard(props.eventId)
+  })
+}
+
+function onDeleteTable(table: BoardTable) {
+  if (!confirm(t('board.confirmDelete', { table: table.name }))) return
+  void write(async () => {
+    await deleteTable(table)
+    return loadBoard(props.eventId)
   })
 }
 
 function onSetSlots(category: string, slots: number) {
   void write(async () => {
     await setJudgesPerTable(category, slots)
-    return loadBoard(props.id)
+    return loadBoard(props.eventId)
   })
 }
 
@@ -161,77 +164,58 @@ function onRemoteChange() {
 }
 
 onMounted(async () => {
-  if (!canManage.value) return
-  try {
-    event.value = await pb.collection('events').getOne<EventRecord>(props.id)
-  } catch (e) {
-    loadError.value = toAppError(e)
-    return
-  }
   await reload()
   try {
-    unsubscribe = await subscribeBoard(props.id, onRemoteChange)
+    unsubscribe = await subscribeBoard(props.eventId, onRemoteChange)
   } catch {
     // Without realtime the board still works; it reloads after each write.
   }
 })
+watch(() => props.eventId, reload)
 onBeforeUnmount(() => {
   clearTimeout(timer)
   unsubscribe?.()
 })
+
+defineExpose({ reload })
 </script>
 
 <template>
-  <div>
-    <PageHeader
-      :title="t('board.title', { event: event?.name ?? '' })"
-      :description="t('board.description')"
-    >
-      <template #actions>
-        <Button as-child variant="outline">
-          <RouterLink :to="{ name: 'event', params: { id } }"
-            ><ArrowLeftIcon /> {{ t('board.backToEvent') }}</RouterLink
-          >
-        </Button>
-        <Button variant="outline" :disabled="busy" @click="reload()">
-          <RefreshCwIcon /> {{ t('board.reload') }}
-        </Button>
-      </template>
-    </PageHeader>
-
-    <ErrorAlert :error="loadError" />
-    <template v-if="!canManage && !loadError">
-      <p class="text-muted-foreground">{{ t('board.managersOnly') }}</p>
-    </template>
-    <template v-else-if="board">
-      <div class="mb-4 flex flex-wrap items-center gap-3">
-        <label class="flex items-center gap-2 text-sm">
-          {{ t('board.scope') }}
-          <NativeSelect v-model="scopeValue" data-testid="board-scope">
-            <NativeSelectOption value="all">{{ t('board.allRounds') }}</NativeSelectOption>
-            <NativeSelectOption v-for="n in rounds" :key="n" :value="String(n - 1)">{{
-              t('board.roundOnly', { n })
-            }}</NativeSelectOption>
-          </NativeSelect>
-        </label>
-        <span class="text-sm text-muted-foreground">{{
-          scope === 'all' ? t('board.allRoundsHint') : t('board.roundOnlyHint')
-        }}</span>
-      </div>
-      <ErrorAlert :error="actionError" />
-      <AssignmentBoard
-        :board="board"
-        :scope="scope"
-        :editable="editable && !busy"
-        @move-team="onMoveTeam"
-        @move-judge="onMoveJudge"
-        @move-tables="onMoveTables"
-        @add-table="onAddTable"
-        @rename-table="onRenameTable"
-        @toggle-table="onToggleTable"
-        @set-slots="onSetSlots"
-      />
-    </template>
+  <section class="flex flex-col gap-3" data-testid="event-board">
+    <div class="flex flex-wrap items-center gap-3">
+      <h2 class="text-lg font-semibold">{{ t('board.heading') }}</h2>
+      <label v-if="board" class="flex items-center gap-2 text-sm">
+        {{ t('board.scope') }}
+        <NativeSelect v-model="scopeValue" data-testid="board-scope">
+          <NativeSelectOption value="all">{{ t('board.allRounds') }}</NativeSelectOption>
+          <NativeSelectOption v-for="n in rounds" :key="n" :value="String(n - 1)">{{
+            t('board.roundOnly', { n })
+          }}</NativeSelectOption>
+        </NativeSelect>
+      </label>
+      <span v-if="board" class="text-sm text-muted-foreground">{{
+        scope === 'all' ? t('board.allRoundsHint') : t('board.roundOnlyHint')
+      }}</span>
+      <Button variant="outline" size="sm" class="ml-auto" :disabled="busy" @click="reload()">
+        <RefreshCwIcon /> {{ t('board.reload') }}
+      </Button>
+    </div>
+    <p class="text-sm text-muted-foreground">{{ t('board.description') }}</p>
+    <ErrorAlert :error="loadError ?? actionError" />
+    <AssignmentBoard
+      v-if="board"
+      :board="board"
+      :scope="scope"
+      :editable="editable && !busy"
+      @move-team="onMoveTeam"
+      @move-judge="onMoveJudge"
+      @move-tables="onMoveTables"
+      @add-table="onAddTable"
+      @rename-table="onRenameTable"
+      @toggle-table="onToggleTable"
+      @delete-table="onDeleteTable"
+      @set-slots="onSetSlots"
+    />
     <Skeleton v-else-if="!loadError" class="h-64 w-full" />
-  </div>
+  </section>
 </template>

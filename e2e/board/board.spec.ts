@@ -45,7 +45,7 @@ test.describe('M8-E assignment board', () => {
   }
 
   async function openBoard(page: Page, eventId: string) {
-    await page.goto(`/events/${eventId}/board`)
+    await page.goto(`/events/${eventId}?tab=schedule`)
     await expect(page.getByTestId('assignment-board')).toBeVisible()
   }
 
@@ -130,5 +130,32 @@ test.describe('M8-E assignment board', () => {
     await expect(one.getByTestId('teams-A')).toContainText('Alpha')
     // Live update (M8-32): the other board shows the move without a reload.
     await expect(two.getByTestId('teams-A')).toContainText('Alpha')
+  })
+
+  test('M8-26: tables are added and deleted from the board; old board links open the tab', async ({
+    page,
+  }) => {
+    const ctx = await setup()
+    await login(page, ctx.manager.email, ctx.manager.password)
+    await page.goto(`/events/${ctx.event.id}/board`)
+    await expect(page).toHaveURL(/tab=schedule/)
+    await expect(page.getByTestId('assignment-board')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Add a table to RoboMission Junior' }).click()
+    await expect(page.locator('[data-column="Table 4"]')).toBeVisible()
+    page.once('dialog', (dialog) => dialog.accept())
+    await page.getByRole('button', { name: 'Actions for table Table 4' }).click()
+    await page.getByRole('menuitem', { name: 'Delete' }).click()
+    await expect(page.locator('[data-column="Table 4"]')).toHaveCount(0)
+
+    // A table with teams cannot be deleted.
+    await drag(
+      page,
+      page.getByTestId('team-tray').locator('[data-team=Alpha]'),
+      page.getByTestId('teams-A'),
+    )
+    await expect(page.getByTestId('teams-A')).toContainText('Alpha')
+    await page.getByRole('button', { name: 'Actions for table A' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeDisabled()
   })
 })

@@ -62,21 +62,6 @@
     "empty": "No games yet. Generate the schedule after creating rounds, approved teams, and tables."
   },
   "tables": {
-    "title": "Tables",
-    "allCategories": "all categories",
-    "noJudge": "No judge",
-    "deactivated": "deactivated",
-    "empty": "No tables yet.",
-    "name": "Table name",
-    "active": "Active",
-    "judges": "Judges",
-    "categories": "Categories (none selected = all categories)",
-    "save": "Save table",
-    "add": "Add table"
-  },
-  "board": {
-    "title": "Assignment board",
-    "description": "Create tables and drag judges and teams onto them, for all rounds at once.",
-    "open": "Go to board"
+    "deactivated": "deactivated"
   }
 }

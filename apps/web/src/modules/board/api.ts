@@ -105,6 +105,11 @@ export function updateTable(table: BoardTable, data: { name?: string; active?: b
   return pb.collection('tables').update(table.id, { ...data, expected_updated: table.updated })
 }
 
+/** Deletes a table; the server refuses while games are placed on it (M4-11). */
+export function deleteTable(table: BoardTable) {
+  return pb.collection('tables').delete(table.id)
+}
+
 export function setJudgesPerTable(categoryId: string, judges: number) {
   return pb.collection('categories').update(categoryId, { judges_per_table: judges })
 }

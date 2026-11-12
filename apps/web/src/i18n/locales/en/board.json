@@ -1,9 +1,6 @@
 {
-  "title": "Board · {event}",
   "description": "Create tables and assign judges and teams. Drag cards, or use their menus.",
-  "backToEvent": "Back to the event",
   "reload": "Reload",
-  "managersOnly": "Only event managers and admins can use the board.",
   "scope": "Edit",
   "allRounds": "All rounds",
   "roundOnly": "Round {n} only",
@@ -44,5 +41,8 @@
   "takeOff": "Take off the table",
   "noCategories": "The event has no categories yet.",
   "wrongCategory": "Only tables of the team’s category",
-  "cannotDrop": "Cannot drop here"
+  "cannotDrop": "Cannot drop here",
+  "heading": "Tables, judges and teams",
+  "delete": "Delete",
+  "confirmDelete": "Delete table {table}?"
 }

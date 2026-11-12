@@ -1,9 +1,6 @@
 {
-  "title": "Board · {event}",
   "description": "Tische anlegen und Schiedsrichter/innen und Teams zuteilen. Karten ziehen oder über ihr Menü verschieben.",
-  "backToEvent": "Zurück zum Anlass",
   "reload": "Neu laden",
-  "managersOnly": "Nur die Anlassleitung und Admins können das Board verwenden.",
   "scope": "Bearbeiten",
   "allRounds": "Alle Runden",
   "roundOnly": "Nur Runde {n}",
@@ -44,5 +41,8 @@
   "takeOff": "Vom Tisch nehmen",
   "noCategories": "Der Anlass hat noch keine Kategorien.",
   "wrongCategory": "Nur Tische der Kategorie des Teams",
-  "cannotDrop": "Hier nicht möglich"
+  "cannotDrop": "Hier nicht möglich",
+  "heading": "Tische, Schiedsrichter/innen und Teams",
+  "delete": "Löschen",
+  "confirmDelete": "Tisch {table} löschen?"
 }

@@ -62,21 +62,6 @@
     "empty": "Aucune manche pour l’instant. Générez l’horaire une fois les tours, les équipes acceptées et les tables créés."
   },
   "tables": {
-    "title": "Tables",
-    "allCategories": "toutes les catégories",
-    "noJudge": "Aucun juge",
-    "deactivated": "désactivée",
-    "empty": "Aucune table pour l’instant.",
-    "name": "Nom de la table",
-    "active": "Active",
-    "judges": "Juges",
-    "categories": "Catégories (aucune choisie = toutes les catégories)",
-    "save": "Enregistrer la table",
-    "add": "Ajouter une table"
-  },
-  "board": {
-    "title": "Tableau d’attribution",
-    "description": "Créez les tables et faites-y glisser juges et équipes, pour toutes les manches à la fois.",
-    "open": "Ouvrir le tableau"
+    "deactivated": "désactivée"
   }
 }

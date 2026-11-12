@@ -51,6 +51,7 @@ const emit = defineEmits<{
   addTable: [category: string]
   renameTable: [table: BoardTable]
   toggleTable: [table: BoardTable]
+  deleteTable: [table: BoardTable]
   setSlots: [category: string, slots: number]
 }>()
 
@@ -357,6 +358,12 @@ function nextOf(groupIndex: number, tableIndex: number) {
                   <DropdownMenuItem @select="emit('toggleTable', table)">{{
                     table.active ? t('board.deactivate') : t('board.activate')
                   }}</DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    :disabled="board.games.some((g) => g.table === table.id)"
+                    @select="emit('deleteTable', table)"
+                    >{{ t('board.delete') }}</DropdownMenuItem
+                  >
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>{{ t('board.moveToCategory') }}</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>

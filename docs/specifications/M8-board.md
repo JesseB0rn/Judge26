@@ -1,8 +1,9 @@
 # M8-E – Assignment board
 
-Refines roadmap requirements M8-25 – M8-33. The board (`/events/{id}/board`, **Board** on the
-event page) is where event managers create tables and assign judges and teams to them. The planner
-(M4-14) stays responsible for time.
+Refines roadmap requirements M8-25 – M8-33. The board is the top of the event's **Schedule** tab
+(for event managers and admins; `/events/{id}/board` redirects there). It is where tables are
+created and judges and teams are assigned. Below it, the generator fills gaps and the game list
+shows every attempt with its table and sequence; the planner (M4-14) stays responsible for time.
 
 ## Layout (M8-25, M8-30)
 
@@ -15,7 +16,7 @@ event page) is where event managers create tables and assign judges and teams to
 - Beside the board, **trays** list the teams without a table (filterable by category) and the
   judges without a table.
 - A **+** at the end of each group, or the divider's menu, adds a table (M8-26); a table's menu
-  renames, deactivates or moves it to another category.
+  renames, deactivates, deletes (only while no games are on it) or moves it to another category.
 
 ## Rounds (M8-31)
 

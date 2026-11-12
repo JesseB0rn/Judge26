@@ -1,9 +1,6 @@
 {
-  "title": "Tabellone · {event}",
   "description": "Crei i tavoli e assegni giudici e squadre. Trascini le schede o usi il loro menu.",
-  "backToEvent": "Torna all’evento",
   "reload": "Ricarica",
-  "managersOnly": "Solo i responsabili dell’evento e gli admin possono usare il tabellone.",
   "scope": "Modifica",
   "allRounds": "Tutti i turni",
   "roundOnly": "Solo turno {n}",
@@ -44,5 +41,8 @@
   "takeOff": "Togli dal tavolo",
   "noCategories": "L’evento non ha ancora categorie.",
   "wrongCategory": "Solo tavoli della categoria della squadra",
-  "cannotDrop": "Non possibile qui"
+  "cannotDrop": "Non possibile qui",
+  "heading": "Tavoli, giudici e squadre",
+  "delete": "Elimina",
+  "confirmDelete": "Eliminare il tavolo {table}?"
 }

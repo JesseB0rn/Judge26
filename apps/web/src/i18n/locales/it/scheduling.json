@@ -62,21 +62,6 @@
     "empty": "Ancora nessuna manche. Generi il programma dopo aver creato turni, squadre approvate e tavoli."
   },
   "tables": {
-    "title": "Tavoli",
-    "allCategories": "tutte le categorie",
-    "noJudge": "Nessun giudice",
-    "deactivated": "disattivato",
-    "empty": "Ancora nessun tavolo.",
-    "name": "Nome del tavolo",
-    "active": "Attivo",
-    "judges": "Giudici",
-    "categories": "Categorie (nessuna scelta = tutte le categorie)",
-    "save": "Salva il tavolo",
-    "add": "Aggiungi tavolo"
-  },
-  "board": {
-    "title": "Tabellone delle assegnazioni",
-    "description": "Crei i tavoli e vi trascini giudici e squadre, per tutti i turni in una volta.",
-    "open": "Vai al tabellone"
+    "deactivated": "disattivato"
   }
 }

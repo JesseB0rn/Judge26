@@ -6,7 +6,6 @@ import {
   ArchiveIcon,
   ArchiveRestoreIcon,
   CalendarRangeIcon,
-  LayoutGridIcon,
   ClipboardListIcon,
   PencilIcon,
   RadioIcon,
@@ -108,11 +107,6 @@ watch(() => props.id, load)
         <Button v-if="canReview && !archived" as-child variant="outline">
           <RouterLink :to="{ name: 'review', query: { event: event.id } }">
             <ClipboardListIcon /> {{ t('events.detail.reviewScores') }}
-          </RouterLink>
-        </Button>
-        <Button v-if="canManage" as-child variant="outline">
-          <RouterLink :to="{ name: 'event-board', params: { id: event.id } }">
-            <LayoutGridIcon /> {{ t('events.detail.board') }}
           </RouterLink>
         </Button>
         <Button v-if="isStaff || event.status !== 'draft'" as-child variant="outline">
