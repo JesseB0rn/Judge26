@@ -2,7 +2,7 @@
 import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { PlusIcon } from '@lucide/vue'
+import { LibraryIcon, PlusIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -20,15 +20,18 @@ import { useLoader } from '@/shared/composables/useSubmit'
 import type { EventRecord } from '@/shared/types/records'
 import { listEvents } from '../api'
 import EventFormDialog from '../components/EventFormDialog.vue'
+import NewEventFromTemplateDialog from '@/modules/templates/components/NewEventFromTemplateDialog.vue'
 import EventStatusBadge from '../components/EventStatusBadge.vue'
 
 const session = useSessionStore()
 const router = useRouter()
 const { data: events, loading, error, load } = useLoader(listEvents)
 const creating = ref(false)
+const fromTemplate = ref(false)
 
 function onCreated(event: EventRecord) {
-  router.push({ name: 'event', params: { id: event.id } })
+  // A new event opens its setup checklist (M8-20).
+  router.push({ name: 'event', params: { id: event.id }, query: { tab: 'setup' } })
 }
 
 onMounted(load)
@@ -37,9 +40,12 @@ onMounted(load)
 <template>
   <PageHeader :title="t('shell.nav.events')" :description="t('events.list.description')">
     <template #actions>
-      <Button v-if="session.isAdmin" @click="creating = true"
-        ><PlusIcon /> {{ t('events.form.newTitle') }}</Button
-      >
+      <template v-if="session.isAdmin">
+        <Button variant="outline" @click="fromTemplate = true"
+          ><LibraryIcon /> {{ t('templates.create.button') }}</Button
+        >
+        <Button @click="creating = true"><PlusIcon /> {{ t('events.form.newTitle') }}</Button>
+      </template>
     </template>
   </PageHeader>
   <ErrorAlert :error="error" />
@@ -69,4 +75,9 @@ onMounted(load)
     </TableBody>
   </Table>
   <EventFormDialog v-model:open="creating" @saved="onCreated" />
+  <NewEventFromTemplateDialog
+    v-if="session.isAdmin"
+    v-model:open="fromTemplate"
+    @created="onCreated"
+  />
 </template>

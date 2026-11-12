@@ -15,7 +15,8 @@
     "emails": "E-mails",
     "audit": "Journal d’audit",
     "monitoring": "État du système",
-    "mailbox": "Boîte aux lettres (dev)"
+    "mailbox": "Boîte aux lettres (dev)",
+    "templates": "Modèles d’événement"
   },
   "viewAs": {
     "open": "Voir en tant que",

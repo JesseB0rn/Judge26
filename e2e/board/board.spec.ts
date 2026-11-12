@@ -107,7 +107,7 @@ test.describe('M8-E assignment board', () => {
     const order = await page
       .locator('[data-testid=category-divider], [data-column]')
       .evaluateAll((els) =>
-        els.map((el) => (el as HTMLElement).dataset.divider ?? (el as HTMLElement).dataset.column),
+        els.map((el) => el.getAttribute('data-divider') ?? el.getAttribute('data-column')),
       )
     expect(order).toEqual(['RM-J', 'A', 'RM-Z', 'B', 'Z'])
   })

@@ -155,5 +155,13 @@
   "invalid_round": "Wählen Sie eine Runde der Kategorie des Teams.",
   "table_has_teams": "Auf diesem Tisch sind Teams einer anderen Kategorie.",
   "table_has_results": "Auf diesem Tisch haben bereits Teams einer anderen Kategorie gespielt.",
-  "too_many_judges": "Der Tisch hat keinen freien Platz für Schiedsrichter/innen."
+  "too_many_judges": "Der Tisch hat keinen freien Platz für Schiedsrichter/innen.",
+  "template_not_json": "Diese Datei ist kein gültiges JSON.",
+  "template_format": "Diese Datei ist keine Judge26-Anlassvorlage.",
+  "template_too_new": "Diese Vorlage stammt aus einer neueren Judge26-Version (Format {version}); diese Installation liest Format {supported}.",
+  "template_invalid": "Die Vorlage ist an der Stelle «{path}» ungültig.",
+  "template_not_found": "Die Vorlage wurde nicht gefunden.",
+  "templates_admin_only": "Nur Admins können Anlassvorlagen verwalten.",
+  "template_not_allowed": "Nur die Anlassleitung und Admins können diesen Anlass exportieren.",
+  "setup_not_allowed": "Nur die Anlassleitung und Admins können diesen Anlass einrichten."
 }

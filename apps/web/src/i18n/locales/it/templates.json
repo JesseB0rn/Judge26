@@ -1,0 +1,104 @@
+{
+  "library": {
+    "title": "Modelli di evento",
+    "description": "Configurazioni di evento riutilizzabili: giorni, categorie con regole di punteggio, manche, tavoli e blocchi del pianificatore. Squadre, giudici e risultati non fanno mai parte di un modello.",
+    "upload": "Carica modello",
+    "uploadHint": "Un file di modello (.json) scaricato da questa o da un’altra installazione di Judge26.",
+    "uploaded": "Modello caricato.",
+    "empty": "Ancora nessun modello. Salvi un evento come modello o carichi un file di modello.",
+    "contents": "Contenuto",
+    "origin": "Origine",
+    "fromUpload": "File caricato",
+    "days": "nessun giorno | 1 giorno | {count} giorni",
+    "tables": "nessun tavolo | 1 tavolo | {count} tavoli",
+    "newEvent": "Nuovo evento",
+    "newEventFrom": "Nuovo evento da {name}",
+    "download": "Scarica {name}",
+    "edit": "Modifica {name}",
+    "delete": "Elimina {name}",
+    "confirmDelete": "Eliminare il modello «{name}»? Gli eventi creati da questo modello non cambiano.",
+    "deleted": "Modello eliminato.",
+    "editTitle": "Modifica modello",
+    "saved": "Modello salvato."
+  },
+  "save": {
+    "button": "Salva come modello",
+    "title": "Salva come modello",
+    "description": "Il modello contiene lo schema dei giorni, le categorie con le loro regole di punteggio attive, le manche, i tavoli, le colonne e i blocchi del pianificatore. Squadre, giudici, prove e punti non sono mai inclusi.",
+    "download": "Scarica file",
+    "toLibrary": "Salva nella biblioteca",
+    "saved": "Salvato nella biblioteca dei modelli.",
+    "managerHint": "Solo gli admin gestiscono i modelli nella biblioteca. Scarichi il file e lo consegni a un admin, oppure lo carichi su un’altra installazione."
+  },
+  "create": {
+    "button": "Da modello",
+    "title": "Nuovo evento da modello",
+    "description": "Tutte le date si spostano in modo che il primo giorno del modello cada nel giorno scelto. Il nuovo evento non cambia se il modello viene modificato.",
+    "template": "Modello",
+    "chooseTemplate": "Scelga un modello",
+    "firstDay": "Primo giorno",
+    "season": "Stagione",
+    "seasonHint": "Vuoto: l’anno del primo giorno.",
+    "venueHint": "Vuoto: il luogo del modello.",
+    "submit": "Crea evento",
+    "created": "Evento creato dal modello.",
+    "noTemplates": "Non ci sono ancora modelli. Salvi prima un evento come modello o carichi un file di modello."
+  },
+  "setup": {
+    "title": "Configurazione",
+    "description": "Ciò che manca ancora a questo evento, dai giorni fino al programma pubblicato. I passi si possono fare in qualsiasi ordine non appena esistono i dati su cui si basano.",
+    "progress": "{done} di {total} passi completati",
+    "complete": "La configurazione è completa.",
+    "open": "Apri",
+    "doneLabel": "fatto",
+    "todoLabel": "da fare",
+    "openPlanner": "Pianificatore",
+    "needs": "Richiede prima: {steps}.",
+    "steps": {
+      "days": {
+        "title": "Giorni di gara",
+        "todo": "Aggiunga i giorni dell’evento e i loro orari.",
+        "done": "nessun giorno | 1 giorno | {count} giorni"
+      },
+      "categories": {
+        "title": "Categorie e regole di punteggio",
+        "todo": "Aggiunga le categorie e pubblichi le regole di punteggio per ciascuno dei loro giochi.",
+        "missing": "Senza regole di punteggio pubblicate: {codes}",
+        "done": "nessuna categoria | 1 categoria | {count} categorie"
+      },
+      "rounds": {
+        "title": "Manche",
+        "todo": "Aggiunga le manche di ogni categoria.",
+        "missing": "Senza manche: {codes}",
+        "done": "nessuna manche | 1 manche | {count} manche"
+      },
+      "tables": {
+        "title": "Tavoli",
+        "todo": "Crei i tavoli per ogni categoria sulla tavola delle assegnazioni.",
+        "missing": "Senza tavolo attivo: {codes}",
+        "done": "nessun tavolo attivo | 1 tavolo attivo | {count} tavoli attivi"
+      },
+      "teams": {
+        "title": "Squadre",
+        "todo": "Importi le squadre da un file CSV.",
+        "done": "nessuna squadra | 1 squadra | {count} squadre"
+      },
+      "judges": {
+        "title": "Giudici",
+        "todo": "Inviti i giudici e li assegni ai tavoli.",
+        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice",
+        "done": "nessun giudice | 1 giudice | {count} giudici"
+      },
+      "schedule": {
+        "title": "Programma",
+        "todo": "Assegni ogni squadra a un tavolo e fissi l’orario di ogni manche nel pianificatore.",
+        "progress": "{placed} di {expected} prove assegnate · {timed} di {rounds} manche con orario"
+      },
+      "publish": {
+        "title": "Pubblica",
+        "todo": "Pubblichi l’evento quando il programma è pronto.",
+        "done": "Pubblicato"
+      }
+    }
+  }
+}

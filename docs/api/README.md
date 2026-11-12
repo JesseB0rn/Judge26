@@ -53,6 +53,9 @@ All errors use PocketBase's format:
 | GET/POST | `/api/invitations/lookup`, `…/accept`     | public                 | Inspect / accept an invitation link (M8-10)                                                         |
 | GET      | `/api/events/{id}/board`                  | event managers         | Assignment board data ([M8 spec](../specifications/M8-board.md#api))                                |
 | POST     | `/api/events/{id}/board/…`                | event managers         | Move teams, judges and tables on the board; create tables (M8-E)                                    |
+| GET      | `/api/events/{id}/setup`                  | event managers         | Setup checklist ([M8 spec](../specifications/M8-event-setup.md#api))                                |
+| GET/POST | `/api/events/{id}/template`               | event managers/admins  | Download the event as a template / save it to the library (M8-21)                                   |
+| POST     | `/api/event-templates[/{id}/events]`      | admins                 | Upload a template file / create an event from a template (M8-22, M8-23)                             |
 | POST     | `/api/view-as`                            | admins                 | View the app as a role of an event ([M8 spec](../specifications/M8-view-as.md#api))                 |
 | GET/POST | `/api/view-as`, `/api/view-as/end`        | the switched token     | The current view session / end it (M8-15)                                                           |
 

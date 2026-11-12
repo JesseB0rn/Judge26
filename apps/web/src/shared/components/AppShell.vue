@@ -64,6 +64,7 @@ const browse = computed(() => {
 const admin = computed(() =>
   session.isAuthenticated && session.isVerified && session.isAdmin
     ? [
+        { to: '/admin/templates', label: t('shell.nav.templates') },
         { to: '/admin/categories', label: t('shell.nav.categories') },
         { to: '/admin/users', label: t('shell.nav.users') },
         { to: '/admin/emails', label: t('shell.nav.emails') },

@@ -155,5 +155,13 @@
   "invalid_round": "Scelga un turno della categoria della squadra.",
   "table_has_teams": "Su questo tavolo ci sono squadre di un’altra categoria.",
   "table_has_results": "Squadre di un’altra categoria hanno già giocato su questo tavolo.",
-  "too_many_judges": "Il tavolo non ha più posti per giudici."
+  "too_many_judges": "Il tavolo non ha più posti per giudici.",
+  "template_not_json": "Questo file non è un JSON valido.",
+  "template_format": "Questo file non è un modello di evento Judge26.",
+  "template_too_new": "Questo modello è stato creato con una versione più recente di Judge26 (formato {version}); questa installazione legge il formato {supported}.",
+  "template_invalid": "Il modello non è valido nel punto «{path}».",
+  "template_not_found": "Il modello non è stato trovato.",
+  "templates_admin_only": "Solo gli admin possono gestire i modelli di evento.",
+  "template_not_allowed": "Solo i responsabili dell’evento e gli admin possono esportare questo evento.",
+  "setup_not_allowed": "Solo i responsabili dell’evento e gli admin possono configurare questo evento."
 }

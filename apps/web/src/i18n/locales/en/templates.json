@@ -1,0 +1,104 @@
+{
+  "library": {
+    "title": "Event templates",
+    "description": "Reusable event setups: days, categories with rulesets, rounds, tables and planner blocks. Teams, judges and results are never part of a template.",
+    "upload": "Upload template",
+    "uploadHint": "A template file (.json) downloaded from this or another Judge26 installation.",
+    "uploaded": "Template uploaded.",
+    "empty": "No templates yet. Save an event as a template, or upload a template file.",
+    "contents": "Contents",
+    "origin": "From",
+    "fromUpload": "Uploaded file",
+    "days": "no days | 1 day | {count} days",
+    "tables": "no tables | 1 table | {count} tables",
+    "newEvent": "New event",
+    "newEventFrom": "New event from {name}",
+    "download": "Download {name}",
+    "edit": "Edit {name}",
+    "delete": "Delete {name}",
+    "confirmDelete": "Delete the template “{name}”? Events created from it are not affected.",
+    "deleted": "Template deleted.",
+    "editTitle": "Edit template",
+    "saved": "Template saved."
+  },
+  "save": {
+    "button": "Save as template",
+    "title": "Save as template",
+    "description": "The template keeps the days pattern, categories with their active rulesets, rounds, tables, planner columns and blocks. Teams, judges, games and scores are never included.",
+    "download": "Download file",
+    "toLibrary": "Save to library",
+    "saved": "Saved to the template library.",
+    "managerHint": "Only admins keep templates in the library. Download the file and give it to an admin, or upload it on another installation."
+  },
+  "create": {
+    "button": "From template",
+    "title": "New event from template",
+    "description": "All dates move so the template’s first day falls on the day you choose. The new event does not change when the template changes.",
+    "template": "Template",
+    "chooseTemplate": "Choose a template",
+    "firstDay": "First day",
+    "season": "Season",
+    "seasonHint": "Empty: the year of the first day.",
+    "venueHint": "Empty: the venue of the template.",
+    "submit": "Create event",
+    "created": "Event created from the template.",
+    "noTemplates": "There are no templates yet. Save an event as a template or upload a template file first."
+  },
+  "setup": {
+    "title": "Setup",
+    "description": "What this event still needs, from the days to a published schedule. Steps can be done in any order once the data they build on exists.",
+    "progress": "{done} of {total} steps done",
+    "complete": "The setup is complete.",
+    "open": "Open",
+    "doneLabel": "done",
+    "todoLabel": "to do",
+    "openPlanner": "Planner",
+    "needs": "Needs {steps} first.",
+    "steps": {
+      "days": {
+        "title": "Competition days",
+        "todo": "Add the days of the event and their hours.",
+        "done": "no days | 1 day | {count} days"
+      },
+      "categories": {
+        "title": "Categories and rulesets",
+        "todo": "Add the categories and publish a ruleset for each of their games.",
+        "missing": "Without a published ruleset: {codes}",
+        "done": "no categories | 1 category | {count} categories"
+      },
+      "rounds": {
+        "title": "Rounds",
+        "todo": "Add the rounds of each category.",
+        "missing": "Without rounds: {codes}",
+        "done": "no rounds | 1 round | {count} rounds"
+      },
+      "tables": {
+        "title": "Tables",
+        "todo": "Create tables for each category on the assignment board.",
+        "missing": "Without an active table: {codes}",
+        "done": "no active tables | 1 active table | {count} active tables"
+      },
+      "teams": {
+        "title": "Teams",
+        "todo": "Import the teams from a CSV file.",
+        "done": "no teams | 1 team | {count} teams"
+      },
+      "judges": {
+        "title": "Judges",
+        "todo": "Invite the judges and assign them to tables.",
+        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge",
+        "done": "no judges | 1 judge | {count} judges"
+      },
+      "schedule": {
+        "title": "Schedule",
+        "todo": "Place every team on a table and time every round in the planner.",
+        "progress": "{placed} of {expected} games placed · {timed} of {rounds} rounds timed"
+      },
+      "publish": {
+        "title": "Publish",
+        "todo": "Publish the event once the schedule is ready.",
+        "done": "Published"
+      }
+    }
+  }
+}
