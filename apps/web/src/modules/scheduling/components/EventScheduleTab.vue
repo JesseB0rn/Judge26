@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, onMounted, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import { ArrowRightIcon, LayoutGridIcon } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
 import { listEventDays } from '@/modules/rankings/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import ExportButtons from '@/shared/export/ExportButtons.vue'
@@ -64,6 +67,21 @@ watch(() => props.event.id, reload)
 
 <template>
   <div class="flex flex-col gap-4">
+    <!-- The board is the main place to assign tables, judges and teams (M8-E). -->
+    <div
+      v-if="canManage"
+      class="flex flex-col gap-4 rounded-lg border bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div>
+        <h2 class="font-semibold">{{ t('scheduling.board.title') }}</h2>
+        <p class="text-sm text-muted-foreground">{{ t('scheduling.board.description') }}</p>
+      </div>
+      <Button as-child size="lg" class="h-12 shrink-0 px-6 text-base" data-testid="open-board">
+        <RouterLink :to="{ name: 'event-board', params: { id: event.id } }">
+          <LayoutGridIcon /> {{ t('scheduling.board.open') }} <ArrowRightIcon />
+        </RouterLink>
+      </Button>
+    </div>
     <div class="flex flex-wrap items-center justify-end gap-2">
       <span class="text-sm text-muted-foreground">{{ t('scheduling.export.label') }}</span>
       <ExportButtons

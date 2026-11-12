@@ -73,5 +73,10 @@
     "categories": "Categorie (nessuna scelta = tutte le categorie)",
     "save": "Salva il tavolo",
     "add": "Aggiungi tavolo"
+  },
+  "board": {
+    "title": "Tabellone delle assegnazioni",
+    "description": "Crei i tavoli e vi trascini giudici e squadre, per tutti i turni in una volta.",
+    "open": "Vai al tabellone"
   }
 }

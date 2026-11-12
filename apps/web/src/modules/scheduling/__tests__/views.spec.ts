@@ -122,4 +122,11 @@ describe('EventScheduleTab', () => {
       '2 missing games created.',
     )
   })
+
+  it('M8-E: managers get a big link to the assignment board', async () => {
+    const { wrapper } = await mountTab()
+    const link = wrapper.get('[data-testid=open-board]')
+    expect(link.text()).toContain('Go to board')
+    expect(link.attributes('href')).toContain('event-board')
+  })
 })

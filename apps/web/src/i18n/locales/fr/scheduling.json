@@ -73,5 +73,10 @@
     "categories": "Catégories (aucune choisie = toutes les catégories)",
     "save": "Enregistrer la table",
     "add": "Ajouter une table"
+  },
+  "board": {
+    "title": "Tableau d’attribution",
+    "description": "Créez les tables et faites-y glisser juges et équipes, pour toutes les manches à la fois.",
+    "open": "Ouvrir le tableau"
   }
 }

@@ -73,5 +73,10 @@
     "categories": "Kategorien (keine gewählt = alle Kategorien)",
     "save": "Tisch speichern",
     "add": "Tisch hinzufügen"
+  },
+  "board": {
+    "title": "Zuteilungs-Board",
+    "description": "Tische anlegen und Schiedsrichter/innen und Teams darauf ziehen, für alle Runden auf einmal.",
+    "open": "Zum Board"
   }
 }
