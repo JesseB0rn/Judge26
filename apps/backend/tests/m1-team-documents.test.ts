@@ -198,7 +198,7 @@ describe('M5-15 robot check in the judge schedule', () => {
     })
     const table = await manager.pb
       .collection('tables')
-      .create({ event: event.id, name: 'Table A', active: true, judge: judge.id })
+      .create({ event: event.id, name: 'Table A', active: true, judges: [judge.id] })
     const team = await fx.team(event.id, category.id, { status: 'approved' })
     await manager.pb
       .collection('games')

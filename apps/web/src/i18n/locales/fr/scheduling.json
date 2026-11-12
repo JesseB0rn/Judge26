@@ -69,8 +69,7 @@
     "empty": "Aucune table pour l’instant.",
     "name": "Nom de la table",
     "active": "Active",
-    "judge": "Juge attribué",
-    "selectJudge": "Choisir un juge",
+    "judges": "Juges",
     "categories": "Catégories (aucune choisie = toutes les catégories)",
     "save": "Enregistrer la table",
     "add": "Ajouter une table"

@@ -1,17 +1,19 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// M5: each table has one event judge; game order is stored per round and table.
+// M5, M8-E: a table has up to `judges_per_table` event judges (of its category, default 2);
+// game order is stored per round and table.
 onRecordValidate((e) => {
-  const judgeId = e.record.getString('judge')
-  if (judgeId) {
-    const { fieldError } = require(`${__hooks}/lib/errors.js`)
-    const access = require(`${__hooks}/lib/access.js`)
-    const eventId = e.record.getString('event')
-    if (!access.hasEventRole(e.app, { id: judgeId }, eventId, ['judge', 'head_judge'])) {
-      fieldError('judge', 'invalid_judge', 'The assigned judge must be staff of this event.')
-    }
-  }
+  require(`${__hooks}/lib/schedule.js`).checkTableJudges(e.app, e.record)
   e.next()
+}, 'tables')
+
+// M8-32: judge and category changes from the board state the version they were based on.
+onRecordUpdateRequest((e) => {
+  require(`${__hooks}/lib/concurrency.js`).versionedUpdate(
+    e,
+    (body) => 'expected_updated' in body,
+    'The table was changed by someone else. Reload and try again.',
+  )
 }, 'tables')
 
 // A table that still hosts scheduled games cannot be deactivated or deleted (M4-11).

@@ -108,7 +108,7 @@ describe('access rules', () => {
           event: event.id,
           name: 'T1',
           active: true,
-          judge: key === 'A' ? tableJudge.id : key === 'B' ? otherJudge.id : '',
+          judges: key === 'A' ? [tableJudge.id] : key === 'B' ? [otherJudge.id] : [],
         }),
       )
       const team = add(

@@ -69,8 +69,7 @@
     "empty": "No tables yet.",
     "name": "Table name",
     "active": "Active",
-    "judge": "Assigned judge",
-    "selectJudge": "Select a judge",
+    "judges": "Judges",
     "categories": "Categories (none selected = all categories)",
     "save": "Save table",
     "add": "Add table"

@@ -237,7 +237,7 @@ export function makeTable(overrides: Partial<TableRecord> = {}): TableRecord {
     position: 0,
     active: true,
     categories: [],
-    judge: '',
+    judges: [],
     ...overrides,
   }
 }

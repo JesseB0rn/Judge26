@@ -6,14 +6,14 @@ const byEvent = (eventId: string) => pb.filter('event = {:event}', { event: even
 export function listTables(eventId: string) {
   return pb
     .collection<TableRecord>('tables')
-    .getFullList({ filter: byEvent(eventId), sort: 'position,name', expand: 'judge' })
+    .getFullList({ filter: byEvent(eventId), sort: 'position,name', expand: 'judges' })
 }
 
 export interface TableInput {
   name: string
   active: boolean
   categories: string[]
-  judge: string
+  judges: string[]
 }
 
 export function saveTable(eventId: string, id: string | undefined, data: TableInput) {

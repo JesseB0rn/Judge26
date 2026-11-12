@@ -240,7 +240,7 @@ describe('M4-14 schedule planner', () => {
       event: ctx.event.id,
       name: 'T1',
       active: true,
-      judge: ctx.judge.id,
+      judges: [ctx.judge.id],
     })
     const team = await fx.team(ctx.event.id, ctx.category.id, { status: 'approved' })
     const game = await ctx.manager.pb.collection('games').create({
@@ -294,7 +294,7 @@ describe('M4-14 schedule planner', () => {
       event: ctx.event.id,
       name: 'Shared',
       active: true,
-      judge: ctx.judge.id,
+      judges: [ctx.judge.id],
     })
     const r2 = await createRound(ctx.manager, other.id, 'X1', 0, 60)
     for (const [round, category] of [
@@ -326,7 +326,7 @@ describe('M4-14 schedule planner', () => {
       tables.push(
         await ctx.manager.pb
           .collection('tables')
-          .create({ event: ctx.event.id, name, active: true, judge: ctx.judge.id }),
+          .create({ event: ctx.event.id, name, active: true, judges: [ctx.judge.id] }),
       )
     }
     const r2 = await createRound(ctx.manager, other.id, 'X1', 0, 60)

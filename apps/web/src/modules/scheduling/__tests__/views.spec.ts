@@ -26,7 +26,7 @@ const waiting = makeGame({
 beforeEach(() => {
   vi.resetAllMocks()
   mocked.listTables.mockResolvedValue([
-    makeTable({ id: 't1', name: 'Table 1', expand: { judge: { name: 'Grace' } as never } }),
+    makeTable({ id: 't1', name: 'Table 1', expand: { judges: [{ name: 'Grace' } as never] } }),
   ])
   mocked.listEventCategories.mockResolvedValue([])
   mocked.listEventJudges.mockResolvedValue([])

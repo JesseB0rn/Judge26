@@ -43,7 +43,7 @@ function placementIssues(app, game, round) {
         message: 'The table is not available for this category.',
       })
     }
-    if (!table.getString('judge')) {
+    if (!table.getStringSlice('judges').length) {
       issues.push({
         field: 'table',
         code: 'missing_table_judge',
@@ -85,8 +85,14 @@ function exists(app, collection, filter, params) {
   return app.findRecordsByFilter(collection, filter, '', 1, 0, params).length > 0
 }
 
+// A table without judges is reported by the validation (M4-13) but does not block placing teams:
+// on the board (M8-E) teams and judges are assigned in any order.
+const WARNINGS_ONLY = ['missing_table_judge']
+
 function checkPlacement(app, game, round) {
-  const issues = placementIssues(app, game, round)
+  const issues = placementIssues(app, game, round).filter(
+    (issue) => WARNINGS_ONLY.indexOf(issue.code) === -1,
+  )
   if (issues.length) {
     const { fieldError } = require(`${__hooks}/lib/errors.js`)
     fieldError(issues[0].field, issues[0].code, issues[0].message)
@@ -102,7 +108,7 @@ function eligibleTables(tables, categoryId) {
     .filter(
       (table) =>
         table.getBool('active') &&
-        table.getString('judge') &&
+        table.getStringSlice('judges').length > 0 &&
         (!table.getStringSlice('categories').length ||
           table.getStringSlice('categories').includes(categoryId)),
     )
@@ -215,7 +221,8 @@ function generate(app, eventId, dryRun) {
           reasons: [
             !tables.some((table) => table.getBool('active'))
               ? 'no_active_table'
-              : categoryTables.length && categoryTables.every((table) => !table.getString('judge'))
+              : categoryTables.length &&
+                  categoryTables.every((table) => !table.getStringSlice('judges').length)
                 ? 'missing_table_judge'
                 : 'no_compatible_table',
           ],
@@ -289,6 +296,39 @@ function generate(app, eventId, dryRun) {
   return { status: 'complete', placements, created_games: createdGames }
 }
 
+const DEFAULT_JUDGES_PER_TABLE = 2
+const MAX_JUDGES_PER_TABLE = 10
+
+/** Judge slots of a table: its category's setting when it has exactly one category (M8-E). */
+function judgeSlots(app, table) {
+  const categories = table.getStringSlice('categories')
+  if (categories.length !== 1) return MAX_JUDGES_PER_TABLE
+  try {
+    const category = app.findRecordById('categories', categories[0])
+    return category.getInt('judges_per_table') || DEFAULT_JUDGES_PER_TABLE
+  } catch (_) {
+    return DEFAULT_JUDGES_PER_TABLE
+  }
+}
+
+/** Judges of a table must be judges or head judges of the event, within the slots. */
+function checkTableJudges(app, table) {
+  const { fieldError } = require(`${__hooks}/lib/errors.js`)
+  const access = require(`${__hooks}/lib/access.js`)
+  const judges = table.getStringSlice('judges')
+  const eventId = table.getString('event')
+  for (const judgeId of judges) {
+    if (!access.hasEventRole(app, { id: judgeId }, eventId, ['judge', 'head_judge'])) {
+      fieldError('judges', 'invalid_judge', 'The assigned judges must be judges of this event.')
+    }
+  }
+  const original = table.original()
+  const grew = !original || judges.length > original.getStringSlice('judges').length
+  if (grew && judges.length > judgeSlots(app, table)) {
+    fieldError('judges', 'too_many_judges', 'The table has no free judge slot.')
+  }
+}
+
 function hasScheduledGames(app, tableId) {
   return exists(app, 'games', 'table = {:table}', { table: tableId })
 }
@@ -322,6 +362,9 @@ function validateEvent(app, eventId) {
 }
 
 module.exports = {
+  DEFAULT_JUDGES_PER_TABLE,
+  judgeSlots,
+  checkTableJudges,
   checkPlacement,
   generate,
   hasScheduledGames,

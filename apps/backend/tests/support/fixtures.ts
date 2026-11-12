@@ -103,7 +103,7 @@ export class Fixtures {
     })
     const table = await manager.pb
       .collection('tables')
-      .create({ event: event.id, name: 'A', active: true, position: 1, judge: judge.id })
+      .create({ event: event.id, name: 'A', active: true, position: 1, judges: [judge.id] })
     const team = await this.team(event.id, category.id, {
       coach_email: `${unique('contact')}@test.local`,
       status: 'approved',

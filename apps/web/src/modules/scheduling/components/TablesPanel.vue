@@ -5,7 +5,6 @@ import { PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
@@ -23,7 +22,7 @@ const props = defineProps<{
 const emit = defineEmits<{ changed: [] }>()
 
 const editingId = ref<string>()
-const form = ref({ name: '', active: true, categories: [] as string[], judge: '' })
+const form = ref({ name: '', active: true, categories: [] as string[], judges: [] as string[] })
 
 function startEdit(table?: TableRecord) {
   editingId.value = table?.id
@@ -32,9 +31,9 @@ function startEdit(table?: TableRecord) {
         name: table.name,
         active: table.active,
         categories: [...table.categories],
-        judge: table.judge,
+        judges: [...table.judges],
       }
-    : { name: '', active: true, categories: [], judge: '' }
+    : { name: '', active: true, categories: [], judges: [] }
   save.reset()
 }
 
@@ -49,11 +48,16 @@ const remove = useSubmit(async (table: TableRecord) => {
   emit('changed')
 })
 
-function toggleCategory(id: string, checked: boolean) {
-  const set = new Set(form.value.categories)
+function toggle(list: 'categories' | 'judges', id: string, checked: boolean) {
+  const set = new Set(form.value[list])
   if (checked) set.add(id)
   else set.delete(id)
-  form.value.categories = [...set]
+  form.value[list] = [...set]
+}
+
+function judgeNames(table: TableRecord): string {
+  const names = (table.expand?.judges ?? []).map((judge) => judge.name)
+  return names.length ? names.join(', ') : t('scheduling.tables.noJudge')
 }
 
 function categoryNames(table: TableRecord): string {
@@ -77,7 +81,7 @@ function categoryNames(table: TableRecord): string {
             <span class="font-medium">{{ table.name }}</span>
             <span class="text-muted-foreground"> · {{ categoryNames(table) }}</span>
             <span class="text-muted-foreground">
-              · {{ table.expand?.judge?.name ?? t('scheduling.tables.noJudge') }}</span
+              · {{ judgeNames(table) }}</span
             >
             <span v-if="!table.active" class="ml-2 text-xs text-destructive">{{
               t('scheduling.tables.deactivated')
@@ -120,28 +124,27 @@ function categoryNames(table: TableRecord): string {
             <input v-model="form.active" type="checkbox" /> {{ t('scheduling.tables.active') }}
           </label>
         </div>
-        <FormField
-          v-slot="{ id }"
-          :label="t('scheduling.tables.judge')"
-          name="judge"
-          :errors="save.fieldErrors.value"
-        >
-          <NativeSelect :id="id" v-model="form.judge" class="w-full" required>
-            <NativeSelectOption value="">{{
-              t('scheduling.tables.selectJudge')
-            }}</NativeSelectOption>
-            <NativeSelectOption v-for="judge in judges" :key="judge.id" :value="judge.id">
-              {{ judge.name }}
-            </NativeSelectOption>
-          </NativeSelect>
-        </FormField>
+        <fieldset class="flex flex-col gap-1 text-sm" data-testid="table-judges">
+          <legend class="text-muted-foreground">{{ t('scheduling.tables.judges') }}</legend>
+          <label v-for="judge in judges" :key="judge.id" class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              :checked="form.judges.includes(judge.id)"
+              @change="toggle('judges', judge.id, ($event.target as HTMLInputElement).checked)"
+            />
+            {{ judge.name }}
+          </label>
+          <span v-if="save.fieldErrors.value.judges" class="text-destructive">{{
+            save.fieldErrors.value.judges
+          }}</span>
+        </fieldset>
         <fieldset class="flex flex-col gap-1 text-sm">
           <legend class="text-muted-foreground">{{ t('scheduling.tables.categories') }}</legend>
           <label v-for="category in categories" :key="category.id" class="flex items-center gap-2">
             <input
               type="checkbox"
               :checked="form.categories.includes(category.id)"
-              @change="toggleCategory(category.id, ($event.target as HTMLInputElement).checked)"
+              @change="toggle('categories', category.id, ($event.target as HTMLInputElement).checked)"
             />
             {{ category.name }}
           </label>

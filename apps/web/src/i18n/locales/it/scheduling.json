@@ -69,8 +69,7 @@
     "empty": "Ancora nessun tavolo.",
     "name": "Nome del tavolo",
     "active": "Attivo",
-    "judge": "Giudice assegnato",
-    "selectJudge": "Scelga un giudice",
+    "judges": "Giudici",
     "categories": "Categorie (nessuna scelta = tutte le categorie)",
     "save": "Salva il tavolo",
     "add": "Aggiungi tavolo"

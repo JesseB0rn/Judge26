@@ -311,7 +311,7 @@ describe('M7 communication', () => {
       const table = async (name: string, position: number) =>
         manager.pb
           .collection('tables')
-          .create({ event: event.id, name, active: true, position, judge: judge.id })
+          .create({ event: event.id, name, active: true, position, judges: [judge.id] })
       const tableA = await table('A', 1)
       const tableB = await table('B', 2)
       const teams: RecordModel[] = []

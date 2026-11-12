@@ -153,7 +153,9 @@ export async function createDay(eventId: string, date: string, label = '') {
 /** Creates an active table with a fixed judge (M4). */
 export async function createTable(eventId: string, name: string, judgeId: string) {
   const pb = await superuser()
-  return pb.collection('tables').create({ event: eventId, name, active: true, judge: judgeId })
+  return pb
+    .collection('tables')
+    .create({ event: eventId, name, active: true, judges: judgeId ? [judgeId] : [] })
 }
 
 /** Creates a game placed on a table at the given sequence (M4). */
