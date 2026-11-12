@@ -38,7 +38,15 @@
     "assign": "Assign role",
     "userEmail": "User email",
     "userEmailHint": "The user must already have an account.",
-    "submit": "Assign"
+    "submit": "Assign",
+    "status": {
+      "active": "Active",
+      "invited": "Invited",
+      "expired": "Invitation expired",
+      "revoked": "Revoked"
+    },
+    "validUntil": "Link valid until {date}",
+    "confirmRemove": "Remove {name} from this event?"
   },
   "users": {
     "description": "Accounts and their roles. Event roles are assigned on each event's Staff tab.",
@@ -107,6 +115,40 @@
       "backups_stale": "Latest backup is stale: {hours} hours ago",
       "backups_latest": "Latest backup {hours} hours ago (schedule “{cron}”)",
       "check_failed": "Check failed: {error}"
+    }
+  },
+  "invite": {
+    "title": "Invite staff",
+    "description": "People without an account get an email to choose a password; people with an account are added and told by email.",
+    "submit": "Invite",
+    "importButton": "Import CSV",
+    "importTitle": "Invite staff to {event}",
+    "importDescription": "A CSV with the columns name, email and optionally role (judge or head_judge). Nothing is saved until you confirm.",
+    "file": "CSV file",
+    "example": "Download example file",
+    "summary": "{invite} to invite, {add} to add, {skipped} skipped.",
+    "importSubmit": "Invite nobody | Invite one person | Invite {count} people",
+    "result": "{invited} invited, {added} added, {already} already on the staff.",
+    "resent": "Invitation sent again.",
+    "revoked": "Invitation revoked.",
+    "resend": "Send the invitation to {name} again",
+    "revoke": "Revoke the invitation of {name}",
+    "missingColumns": "Missing required column(s): {columns}.",
+    "noRows": "The file contains no data rows.",
+    "tooManyRows": "At most {max} people can be invited at once.",
+    "rowStatus": {
+      "invite": "New: invitation",
+      "add": "Existing account",
+      "already": "Already on the staff",
+      "duplicate": "Duplicate, merged",
+      "invalid": "Invalid"
+    },
+    "errors": {
+      "name_required": "Name is required.",
+      "name_too_long": "Name is too long.",
+      "email_required": "Email is required.",
+      "invalid_email": "Invalid email address.",
+      "invalid_role": "This role cannot be invited."
     }
   }
 }

@@ -129,6 +129,19 @@
     },
     "active": {
       "table_in_use": "Des manches sont encore planifiées sur cette table."
+    },
+    "password": {
+      "too_short": "Le mot de passe doit comporter au moins 8 caractères."
+    },
+    "passwordConfirm": {
+      "mismatch": "Les mots de passe ne correspondent pas."
     }
-  }
+  },
+  "invitation_invalid": "Ce lien d’invitation n’est pas valable.",
+  "invitation_expired": "Cette invitation a expiré.",
+  "invitation_revoked": "Cette invitation a été révoquée.",
+  "invitation_accepted": "Cette invitation a déjà été acceptée.",
+  "invitation_not_found": "L’invitation est introuvable.",
+  "staff_not_found": "La personne est introuvable.",
+  "invalid_rows": "Il n’y a personne à inviter."
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { devMailboxEnabled } from '@/modules/communication/devMailbox'
 import { computed } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { LogOutIcon } from '@lucide/vue'
@@ -44,6 +45,7 @@ const admin = computed(() =>
         { to: '/admin/emails', label: t('shell.nav.emails') },
         { to: '/admin/audit', label: t('shell.nav.audit') },
         { to: '/admin/monitoring', label: t('shell.nav.monitoring') },
+        ...(devMailboxEnabled ? [{ to: '/dev/mailbox', label: t('shell.nav.mailbox') }] : []),
       ]
     : [],
 )

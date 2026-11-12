@@ -16,6 +16,9 @@ const MESSAGES = {
     check: 'robot check {day}',
     noGames: 'No games are currently scheduled for this team.',
     contact: 'team',
+    role_judge: 'judge',
+    role_head_judge: 'head judge',
+    role_event_manager: 'event manager',
   },
   de: {
     attempt: '{round} (Versuch {attempt})',
@@ -25,6 +28,9 @@ const MESSAGES = {
     check: 'Roboterkontrolle {day}',
     noGames: 'Für dieses Team sind zurzeit keine Läufe geplant.',
     contact: 'Team',
+    role_judge: 'Schiedsrichter/in',
+    role_head_judge: 'Oberschiedsrichter/in',
+    role_event_manager: 'Anlassleitung',
   },
   fr: {
     attempt: '{round} (essai {attempt})',
@@ -34,6 +40,9 @@ const MESSAGES = {
     check: 'contrôle du robot {day}',
     noGames: 'Aucune manche n’est actuellement planifiée pour cette équipe.',
     contact: 'équipe',
+    role_judge: 'juge',
+    role_head_judge: 'juge principal·e',
+    role_event_manager: 'responsable de l’événement',
   },
   it: {
     attempt: '{round} (tentativo {attempt})',
@@ -43,6 +52,9 @@ const MESSAGES = {
     check: 'controllo del robot {day}',
     noGames: 'Al momento non è pianificata nessuna manche per questa squadra.',
     contact: 'squadra',
+    role_judge: 'giudice',
+    role_head_judge: 'giudice capo',
+    role_event_manager: 'responsabile dell’evento',
   },
 }
 

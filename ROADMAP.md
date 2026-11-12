@@ -1512,7 +1512,7 @@ and give managers one direct board for table, team and judge assignment.
 
 -   [x] **M8-A** Remove the coach role from the product (M8-01 to M8-04; M8-05 is P3, not
     scheduled)
--   [ ] **M8-B** Judge onboarding by CSV invitation, with a development
+-   [x] **M8-B** Judge onboarding by CSV invitation, with a development
     email outbox (M8-06 to M8-12)
 -   [ ] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
 -   [ ] **M8-D** Event setup flow and event templates (M8-19 to M8-24)
@@ -1572,6 +1572,10 @@ M4-14-28, M4-14-30 and the M4-14 access table no longer apply; public
 read access is unchanged.
 
 ### M8-B --- Judge invitations
+
+**Status:** Implemented (see `docs/specifications/M8-invitations.md`). Event managers invite
+judges and head judges from the event's Staff tab; admins also event managers. Links are valid
+for 14 days and single-use.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria

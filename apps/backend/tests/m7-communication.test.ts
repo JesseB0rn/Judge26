@@ -80,12 +80,14 @@ describe('M7 communication', () => {
       expect([...new Set(list.map((t) => t.key))].sort()).toEqual([
         'auth_password_reset',
         'auth_verification',
+        'event_access',
+        'invitation',
         'registration_approved',
         'registration_rejected',
         'registration_submitted',
         'schedule_changed',
       ])
-      expect(list).toHaveLength(6 * 4)
+      expect(list).toHaveLength(8 * 4)
       // Registration emails are retired with the coach role (M8-A).
       expect(list.filter((t) => !t.enabled).map((t) => t.key)).toEqual(
         expect.arrayContaining(['registration_submitted']),

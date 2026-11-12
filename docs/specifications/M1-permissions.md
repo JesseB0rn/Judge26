@@ -39,6 +39,7 @@ mirrors them for usability.
 | `categories` (event)    | same as event                                      | manager, event not archived | manager, event not archived                          | manager, event not archived |
 | `categories` (template) | admins and users with any `event_manager` role     | admin                       | admin                                                | admin                       |
 | `teams`                 | staff of the event, admin                          | manager                     | manager                                              | admin                       |
+| `invitations`           | admins and the event's managers (no token)         | – (routes only, M8-B)       | – (routes only)                                      | –                           |
 | `team_documents`        | staff of the event, admin; files need a file token | manager, event not archived | manager, event not archived; team and uploader fixed | manager, event not archived |
 
 Until M8-A, coaches could also create and edit their own registrations while registration was
@@ -46,11 +47,12 @@ open (`registration_opens_at` / `registration_closes_at`, still in the schema bu
 
 ## Custom endpoints
 
-| Endpoint                              | Who                             | Purpose                                   |
-| ------------------------------------- | ------------------------------- | ----------------------------------------- |
-| `POST /api/categories/{id}/copy`      | admin; manager (into own event) | Independent copy of a category (M1-09)    |
-| `POST /api/role-assignments/by-email` | admin                           | Assign a role to the user with that email |
-| `GET /api/admin/users?q=`             | admin                           | Search users by name or email             |
+| Endpoint                                  | Who                                                    | Purpose                                                                      |
+| ----------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `POST /api/categories/{id}/copy`          | admin; manager (into own event)                        | Independent copy of a category (M1-09)                                       |
+| `POST /api/role-assignments/by-email`     | admin                                                  | Assign a role to the user with that email                                    |
+| `/api/events/{id}/staff`, `…/invitations` | manager (judges, head judges); admin (all event roles) | Invite and manage the event's staff ([M8-invitations.md](M8-invitations.md)) |
+| `GET /api/admin/users?q=`                 | admin                                                  | Search users by name or email                                                |
 
 These endpoints re-check permissions in `apps/backend/hooks/lib/access.js`.
 

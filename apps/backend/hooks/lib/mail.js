@@ -45,6 +45,17 @@ const TEMPLATE_VARIABLES = {
     'message',
     'schedule_url',
   ],
+  // Judge invitations (M8-B, hooks/lib/invitations.js).
+  invitation: [
+    'name',
+    'event_name',
+    'role_name',
+    'inviter_name',
+    'action_url',
+    'expires_on',
+    'app_name',
+  ],
+  event_access: ['name', 'event_name', 'role_name', 'inviter_name', 'action_url', 'app_name'],
   // Account emails sent by PocketBase (hooks/mail.pb.js renders them in the user's language).
   auth_verification: ['name', 'action_url', 'app_name'],
   auth_password_reset: ['name', 'action_url', 'app_name'],
@@ -473,6 +484,7 @@ function localizeAccountEmail(e, key, path) {
 }
 
 module.exports = {
+  appUrl,
   localizeAccountEmail,
   BACKOFF_MINUTES,
   MAX_ATTEMPTS,

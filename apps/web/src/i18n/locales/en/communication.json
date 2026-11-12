@@ -73,5 +73,12 @@
     "description": "Emails sent to team contacts and users, in each recipient's language, and the delivery log.",
     "templates": "Templates",
     "off": "off"
+  },
+  "mailbox": {
+    "title": "Mailbox",
+    "description": "Development and test only: every email the server would have sent. Links open in a new tab.",
+    "refresh": "Refresh",
+    "empty": "No emails yet.",
+    "to": "To {to}"
   }
 }

@@ -38,7 +38,15 @@
     "assign": "Assegna un ruolo",
     "userEmail": "E-mail dell’utente",
     "userEmailHint": "La persona deve avere già un account.",
-    "submit": "Assegna"
+    "submit": "Assegna",
+    "status": {
+      "active": "Attivo",
+      "invited": "Invitato",
+      "expired": "Invito scaduto",
+      "revoked": "Revocato"
+    },
+    "validUntil": "Link valido fino al {date}",
+    "confirmRemove": "Rimuovere {name} da questo evento?"
   },
   "users": {
     "description": "Gli account e i loro ruoli. I ruoli degli eventi si assegnano nella scheda «Staff» di ogni evento.",
@@ -107,6 +115,40 @@
       "backups_stale": "L’ultimo backup è troppo vecchio: {hours} ore fa",
       "backups_latest": "Ultimo backup {hours} ore fa (pianificazione «{cron}»)",
       "check_failed": "Controllo non riuscito: {error}"
+    }
+  },
+  "invite": {
+    "title": "Invitare persone",
+    "description": "Chi non ha un account riceve un’e-mail per scegliere una password; chi ha già un account viene aggiunto e informato via e-mail.",
+    "submit": "Invita",
+    "importButton": "Importa CSV",
+    "importTitle": "Invitare persone a {event}",
+    "importDescription": "Un CSV con le colonne name, email e facoltativamente role (judge o head_judge). Nulla viene salvato prima della sua conferma.",
+    "file": "File CSV",
+    "example": "Scarica il file di esempio",
+    "summary": "{invite} da invitare, {add} da aggiungere, {skipped} saltate.",
+    "importSubmit": "Non invitare nessuno | Invita una persona | Invita {count} persone",
+    "result": "{invited} invitate, {added} aggiunte, {already} già presenti.",
+    "resent": "Invito inviato di nuovo.",
+    "revoked": "Invito revocato.",
+    "resend": "Invia di nuovo l’invito a {name}",
+    "revoke": "Revoca l’invito di {name}",
+    "missingColumns": "Colonna/e obbligatoria/e mancante/i: {columns}.",
+    "noRows": "Il file non contiene righe di dati.",
+    "tooManyRows": "Si possono invitare al massimo {max} persone alla volta.",
+    "rowStatus": {
+      "invite": "Nuovo: invito",
+      "add": "Account esistente",
+      "already": "Già presente",
+      "duplicate": "Doppione, unito",
+      "invalid": "Non valido"
+    },
+    "errors": {
+      "name_required": "Il nome è obbligatorio.",
+      "name_too_long": "Il nome è troppo lungo.",
+      "email_required": "L’e-mail è obbligatoria.",
+      "invalid_email": "Indirizzo e-mail non valido.",
+      "invalid_role": "Questo ruolo non può essere invitato."
     }
   }
 }

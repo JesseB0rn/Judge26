@@ -73,5 +73,12 @@
     "description": "E-Mails an Team-Kontakte und Benutzer, jeweils in der Sprache der Empfänger, und das Versandprotokoll.",
     "templates": "Vorlagen",
     "off": "aus"
+  },
+  "mailbox": {
+    "title": "Postfach",
+    "description": "Nur in Entwicklung und Test: alle E-Mails, die der Server gesendet hätte. Links öffnen sich in einem neuen Tab.",
+    "refresh": "Aktualisieren",
+    "empty": "Noch keine E-Mails.",
+    "to": "An {to}"
   }
 }

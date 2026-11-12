@@ -14,6 +14,7 @@
     "users": "Utenti",
     "emails": "E-mail",
     "audit": "Registro delle modifiche",
-    "monitoring": "Stato del sistema"
+    "monitoring": "Stato del sistema",
+    "mailbox": "Casella (dev)"
   }
 }

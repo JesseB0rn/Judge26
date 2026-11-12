@@ -73,5 +73,12 @@
     "description": "Les e-mails envoyés aux contacts des équipes et aux utilisateurs, dans la langue de chaque destinataire, et le journal d’envoi.",
     "templates": "Modèles",
     "off": "désactivé"
+  },
+  "mailbox": {
+    "title": "Boîte aux lettres",
+    "description": "Développement et test uniquement : tous les e-mails que le serveur aurait envoyés. Les liens s’ouvrent dans un nouvel onglet.",
+    "refresh": "Actualiser",
+    "empty": "Aucun e-mail pour l’instant.",
+    "to": "À {to}"
   }
 }

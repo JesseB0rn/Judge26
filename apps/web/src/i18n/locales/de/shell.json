@@ -14,6 +14,7 @@
     "users": "Benutzer",
     "emails": "E-Mails",
     "audit": "Protokoll",
-    "monitoring": "Systemzustand"
+    "monitoring": "Systemzustand",
+    "mailbox": "Postfach (Dev)"
   }
 }

@@ -84,6 +84,15 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/events/{id}/schedule/generate', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/schedule/validation', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/judges', access: 'auth' },
+  // Invitations (M8-B): managed by event managers; the link holder looks up and accepts.
+  { method: 'GET', path: '/api/events/{id}/staff', access: 'auth' },
+  { method: 'DELETE', path: '/api/events/{id}/staff/{assignment}', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/invitations/preview', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/invitations', access: 'auth' },
+  { method: 'POST', path: '/api/invitations/{id}/resend', access: 'auth' },
+  { method: 'POST', path: '/api/invitations/{id}/revoke', access: 'auth' },
+  { method: 'GET', path: '/api/invitations/lookup', access: 'public' },
+  { method: 'POST', path: '/api/invitations/accept', access: 'public' },
 ]
 
 // Required: flag (10), blocks (5 each); parking exactly one of full (15) / partial (5).
@@ -481,6 +490,18 @@ describe('M7 security', () => {
         ],
         ['GET', '/api/admin/users'],
         ['GET', '/api/mail/templates/variables'],
+        ['GET', `/api/events/${ctx.event.id}/staff`],
+        [
+          'POST',
+          `/api/events/${ctx.event.id}/invitations/preview`,
+          { rows: [{ name: 'x', email: 'x@test.local' }] },
+        ],
+        [
+          'POST',
+          `/api/events/${ctx.event.id}/invitations`,
+          { rows: [{ name: 'x', email: 'x@test.local' }] },
+        ],
+        ['DELETE', `/api/events/${ctx.event.id}/staff/${ctx.records.role_assignments}`],
       ]
       for (const [who, pb] of [
         ['judge', judge![1]],

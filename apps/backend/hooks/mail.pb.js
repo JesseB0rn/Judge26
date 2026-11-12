@@ -77,10 +77,12 @@ onMailerSend((e) => {
     html: message.html,
     sentAt: new Date().toISOString(),
   }
-  const store = e.app.store()
-  const mails = JSON.parse(store.get('dev_mails') || '[]')
-  mails.push(entry)
-  store.set('dev_mails', JSON.stringify(mails.slice(-200)))
+  // Atomic: mails sent at the same time must not overwrite each other (M8-11 mailbox).
+  e.app.store().setFunc('dev_mails', (old) => {
+    const mails = JSON.parse(old || '[]')
+    mails.push(entry)
+    return JSON.stringify(mails.slice(-200))
+  })
   if (env === 'development') {
     console.log(`[dev mail] to=${entry.to.join(',')} subject="${entry.subject}"`)
     const link = /href="([^"]+)"/.exec(entry.html)

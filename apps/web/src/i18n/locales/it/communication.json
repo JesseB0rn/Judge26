@@ -73,5 +73,12 @@
     "description": "Le e-mail inviate ai contatti delle squadre e agli utenti, nella lingua di ciascun destinatario, e il registro di invio.",
     "templates": "Modelli",
     "off": "disattivato"
+  },
+  "mailbox": {
+    "title": "Casella di posta",
+    "description": "Solo sviluppo e test: tutte le e-mail che il server avrebbe inviato. I link si aprono in una nuova scheda.",
+    "refresh": "Aggiorna",
+    "empty": "Ancora nessuna e-mail.",
+    "to": "A {to}"
   }
 }

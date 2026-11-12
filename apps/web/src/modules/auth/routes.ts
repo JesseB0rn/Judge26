@@ -26,6 +26,12 @@ export const authRoutes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/auth/invitation',
+    name: 'accept-invitation',
+    component: () => import('./views/AcceptInvitationView.vue'),
+    meta: { public: true },
+  },
+  {
     path: '/auth/reset-password',
     name: 'reset-password',
     component: () => import('./views/ResetPasswordView.vue'),

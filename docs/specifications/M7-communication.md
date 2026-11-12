@@ -66,6 +66,8 @@ its own variables (`400`, `unknown_variable`); `GET /api/mail/templates/variable
 | `registration_approved`  | Retired (M8-A); disabled and not listed    | as above, and `review_note`                                                                       |
 | `registration_rejected`  | Retired (M8-A); disabled and not listed    | as above, and `review_note` (the required reason)                                                 |
 | `schedule_changed`       | A manager notifies teams of their schedule | `contact_name`, `team_name`, `event_name`, `schedule`, `schedule_text`, `message`, `schedule_url` |
+| `invitation`             | Someone is invited to an event (M8-B)      | `name`, `event_name`, `role_name`, `inviter_name`, `action_url`, `expires_on`, `app_name`         |
+| `event_access`           | An existing account is added to an event   | `name`, `event_name`, `role_name`, `inviter_name`, `action_url`, `app_name`                       |
 | `auth_verification`      | A user asks to confirm their email address | `name`, `action_url`, `app_name`                                                                  |
 | `auth_password_reset`    | A user asks to reset their password        | `name`, `action_url`, `app_name`                                                                  |
 

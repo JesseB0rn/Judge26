@@ -51,7 +51,8 @@ variables (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_TLS
 (defaults: `http://127.0.0.1:5173` in development, `http://127.0.0.1:4173` in test).
 
 Without SMTP in development and test, emails are **not sent**. They are printed to the backend
-console (`[dev mail] link: …`) and available at `GET /api/dev/mails?to=<email>`. Tests use
+console (`[dev mail] link: …`), available at `GET /api/dev/mails?to=<email>` and shown on the
+admins' **Mailbox (dev)** page (`/dev/mailbox`, not in production builds; M8-11). Tests use
 this to follow verification and reset links.
 
 Application notifications (registration and schedule emails, M7) are queued in the `mail_outbox`

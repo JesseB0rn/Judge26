@@ -56,7 +56,7 @@ const visibleTab = computed(() => {
     publication: canManage.value,
     messages: canManage.value,
     activity: canManage.value,
-    staff: session.isAdmin,
+    staff: canManage.value,
   }
   return allowed[tab.value] ? tab.value : 'overview'
 })
@@ -139,7 +139,7 @@ watch(() => props.id, load)
         }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="messages">{{ t('events.tabs.messages') }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="activity">{{ t('events.tabs.activity') }}</TabsTrigger>
-        <TabsTrigger v-if="session.isAdmin" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="grid gap-4 md:grid-cols-2">
@@ -186,8 +186,8 @@ watch(() => props.id, load)
         <AuditLogTable :event-id="event.id" />
       </TabsContent>
 
-      <TabsContent v-if="session.isAdmin" value="staff">
-        <EventStaffTab :event="event" />
+      <TabsContent v-if="canManage" value="staff">
+        <EventStaffTab :event="event" :editable="!archived" />
       </TabsContent>
     </Tabs>
 

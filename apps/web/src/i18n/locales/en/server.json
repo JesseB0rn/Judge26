@@ -129,6 +129,19 @@
     },
     "active": {
       "table_in_use": "Games are still scheduled on this table."
+    },
+    "password": {
+      "too_short": "The password must have at least 8 characters."
+    },
+    "passwordConfirm": {
+      "mismatch": "The passwords do not match."
     }
-  }
+  },
+  "invitation_invalid": "This invitation link is not valid.",
+  "invitation_expired": "This invitation has expired.",
+  "invitation_revoked": "This invitation was revoked.",
+  "invitation_accepted": "This invitation was already accepted.",
+  "invitation_not_found": "The invitation was not found.",
+  "staff_not_found": "The staff member was not found.",
+  "invalid_rows": "There is nothing to invite."
 }
