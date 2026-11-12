@@ -1,6 +1,6 @@
 # M8-E – Assignment board
 
-Refines roadmap requirements M8-25 – M8-33. The board is the top of the event's **Schedule** tab
+Refines roadmap requirements M8-25 – M8-33. The board is the top of the event's **Assignments** tab
 (for event managers and admins; `/events/{id}/board` redirects there). It is where tables are
 created and judges and teams are assigned. Below it, the generator fills gaps and the game list
 shows every attempt with its table and sequence; the planner (M4-14) stays responsible for time.

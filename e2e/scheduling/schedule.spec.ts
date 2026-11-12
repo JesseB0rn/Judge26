@@ -29,7 +29,7 @@ test.describe('Tables and scheduling', () => {
 
     await login(page, manager.email, manager.password)
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('tab', { name: 'Schedule' }).click()
+    await page.getByRole('tab', { name: 'Assignments' }).click()
     await expect(page.getByTestId('schedule-summary')).toHaveText('0 assigned · 0 unassigned')
 
     // Tables and their judges are set up on the board (M8-E).
@@ -64,7 +64,7 @@ test.describe('Tables and scheduling', () => {
     const judge = await createUser({ roles: [{ role: 'judge', event: event.id }] })
     await login(page, judge.email, judge.password)
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('tab', { name: 'Schedule' }).click()
+    await page.getByRole('tab', { name: 'Assignments' }).click()
     await expect(page.getByTestId('schedule-summary')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Add table' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Generate schedule' })).toHaveCount(0)

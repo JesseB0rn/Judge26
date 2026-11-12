@@ -79,7 +79,7 @@ the coach role, M8-A.)
 
 ## Staff interface
 
-The event **Schedule** tab starts with the assignment board ([M8-board.md](M8-board.md)), where
+The event **Assignments** tab (formerly Schedule) starts with the assignment board ([M8-board.md](M8-board.md)), where
 managers create, rename, deactivate and delete tables and assign their judges, category and teams.
 Below it they preview or generate a schedule, review validation issues, and edit any game's
 table/sequence (including extra attempts) in the game list. Other staff see the game list.
