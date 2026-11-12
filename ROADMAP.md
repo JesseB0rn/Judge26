@@ -71,6 +71,11 @@ competition management
   M7                Production        Emails, exports,  P1
                     readiness         security, backups 
                                       and deployment    
+
+  M8                Prototype         Coach removal,    P1
+                    feedback          judge invites,    
+                                      role switch,      
+                                      templates, board  
   -----------------------------------------------------------------------
 
 Milestones are dependency-oriented, not fixed calendar commitments. A
@@ -1496,7 +1501,334 @@ and operational tests all pass. Load testing (M7-12) is deferred.
 
 ------------------------------------------------------------------------
 
-## 10. Cross-project quality requirements
+## 10. M8 --- Prototype feedback (P1 user tests)
+
+**Priority:** P1\
+**Objective:** Act on the findings of the first user tests with the p1
+prototype: simplify roles and onboarding, make event setup repeatable,
+and give managers one direct board for table, team and judge assignment.
+
+### Tracking
+
+-   [ ] **M8-A** Remove the coach role from the product (M8-01 to M8-05)
+-   [ ] **M8-B** Judge onboarding by CSV invitation, with a development
+    email outbox (M8-06 to M8-12)
+-   [ ] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
+-   [ ] **M8-D** Event setup flow and event templates (M8-19 to M8-24)
+-   [ ] **M8-E** Kanban board for tables, teams and judges (M8-25 to
+    M8-33)
+
+### M8-A --- Removal of the coach role
+
+Teams are created only by CSV import (M1-12). Coaches no longer have
+accounts. The `coach` role stays in the data model, dormant, so existing
+records and migrations remain valid; it is removed from everything users
+see. Pulling teams from an external registration system over an API is a
+later extension (M8-05).
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M8-01      No coach in the UI    P1    No page, menu, role picker, email
+                                         template, translation string or help
+                                         text mentions coaches. Admins cannot
+                                         grant the coach role.
+
+  M8-02      No self registration  P1    Team registration and submission pages
+                                         (M1-10) and the approval queue (M1-11)
+                                         are removed. Imported teams are active
+                                         right away.
+
+  M8-03      CSV is the team       P1    The team list leads with CSV import;
+             source                      teams can still be edited and deleted
+                                         one by one. Import reports invalid
+                                         rows as in M1-T10.
+
+  M8-04      Coach access paths    P1    Coach-only routes and views (My teams,
+             retired                     coach schedule view, coach access to
+                                         team documents) are removed. Rules that
+                                         grant coach access are removed or
+                                         disabled, and API tests confirm a
+                                         leftover coach account sees nothing
+                                         beyond public data.
+
+  M8-05      Team API import       P3    Teams are pulled from an external
+                                         source over an API, mapped to the CSV
+                                         import's fields and validation. Not
+                                         scheduled; the CSV import's field
+                                         mapping is kept reusable for it.
+  ------------------------------------------------------------------------------
+
+**Affected earlier requirements:** M1-10, M1-11 and tests M1-T08,
+M1-T09 and M1-T11 are retired. The coach parts of M1-13, M4-14-26,
+M4-14-28, M4-14-30 and the M4-14 access table no longer apply; public
+read access is unchanged.
+
+### M8-B --- Judge invitations
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M8-06      Judge CSV upload      P1    An event manager uploads a CSV with
+                                         name and email (optional: role judge
+                                         or head judge). A preview lists new,
+                                         existing and invalid rows before
+                                         anything is saved.
+
+  M8-07      Account and role      P1    Confirming creates an account for each
+                                         new email and grants the judge role for
+                                         this event. Existing users only get the
+                                         role; duplicate emails in the file are
+                                         merged.
+
+  M8-08      Invitation email      P1    Every new judge gets an invitation
+                                         email with a single-use, expiring link
+                                         to set a password. Existing users get a
+                                         "you were added to event X" email.
+
+  M8-09      Invitation status     P1    The judge list shows invited, accepted
+                                         and expired; managers can resend an
+                                         invitation or revoke it.
+
+  M8-10      Accept invitation     P1    Opening the link, setting a password
+                                         and logging in takes the judge
+                                         straight to their dashboard; the email
+                                         counts as verified (M1-02).
+
+  M8-11      Mock email outbox     P1    In development and test, emails are
+                                         not delivered but stored. An outbox
+                                         page (admins only, absent in
+                                         production builds) lists every sent
+                                         email with recipient, subject, time
+                                         and rendered body, and links in it
+                                         work.
+
+  M8-12      Outbox in tests       P2    E2E tests can read the outbox (API or
+                                         fixture) to follow invitation and
+                                         password reset links.
+  ------------------------------------------------------------------------------
+
+Production delivery uses the email service of M7-01; the outbox is a
+transport that replaces it, selected by configuration.
+
+### M8-C --- Admin "view as" role switch
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M8-13      Role switch           P1    An admin can view the app as an event
+                                         manager, head judge or judge of a
+                                         chosen event, from a button in the
+                                         header or a hotkey.
+
+  M8-14      Effective permissions P1    While switched, the API applies the
+                                         permissions of the chosen role, not the
+                                         admin's: what is hidden in the UI is
+                                         also denied by the API.
+
+  M8-15      Visible state         P1    A persistent banner shows the active
+                                         role and event with an exit button; the
+                                         same hotkey returns to admin.
+
+  M8-16      Optional persona      P2    The admin can view as a specific judge
+                                         to see exactly that judge's
+                                         assignments.
+
+  M8-17      Audit                 P1    Starting and ending a switch, and every
+                                         write made while switched, are recorded
+                                         in the audit log (M7-08) under the
+                                         admin's own account.
+
+  M8-18      Admins only           P1    Only admins can switch; the switch
+                                         cannot be used to gain rights the admin
+                                         does not already have.
+  ------------------------------------------------------------------------------
+
+### M8-D --- Event setup flow and templates
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M8-19      Setup user stories    P1    The admin and event manager stories for
+                                         setting up a new event are written down
+                                         (spec in docs/specifications), from
+                                         creating the event to a published
+                                         schedule, based on the user test notes.
+
+  M8-20      Guided setup          P1    A new event opens a setup checklist
+                                         (days, categories and rulesets, tables,
+                                         rounds, teams, judges, schedule) that
+                                         shows what is done and links to each
+                                         step. Steps can be done in any order
+                                         where the data allows it.
+
+  M8-21      Save as template      P1    An event can be saved as a template:
+                                         days pattern, categories with
+                                         rulesets, rounds, tables, planner
+                                         custom columns and blocks. Teams,
+                                         judges, games and scores are never
+                                         included.
+
+  M8-22      Template file         P1    A template downloads as a versioned
+                                         file (JSON) and can be uploaded again,
+                                         on the same or another installation.
+                                         Invalid or newer-version files are
+                                         rejected with a clear reason.
+
+  M8-23      New event from        P1    Creating an event from a template asks
+             template                    for name and first day; all dates shift
+                                         relative to it. The new event is
+                                         independent of the template.
+
+  M8-24      Template library      P2    Uploaded templates are kept in a list
+                                         admins can rename and delete.
+  ------------------------------------------------------------------------------
+
+### M8-E --- Kanban board for tables, teams and judges
+
+The board becomes the master view for creating tables and assigning
+teams and judges to them. It complements the multi-day planner (M4-14),
+which stays responsible for time.
+
+Layout:
+
+-   **Columns** are tables, grouped by category. Each group starts with
+    a category divider.
+-   **Judge rows** come first: two rows by default, up to the number of
+    judges configured per table.
+-   **Team rows** follow, in table order 1 (sequence), each consecutive round rotates by one slot. -> The board adjusts all rounds of all categories at once by default; a toggle allows editing one round only.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M8-25      Board view            P1    The board shows all tables of an event
+                                         as columns grouped by category, each
+                                         with its judges and its teams in
+                                         sequence order.
+
+  M8-26      Create tables         P1    A column can be added at the end of any
+                                         category group, renamed and
+                                         deactivated from the board (M4-01).
+
+  M8-27      Category dividers     P1    Dragging a category divider across
+                                         tables moves those tables into the
+                                         neighbouring category (M4-02). Moving a
+                                         table that already has teams of the
+                                         old category asks for confirmation.
+
+  M8-28      Move teams            P1    Teams can be dragged between tables and
+                                         reordered within one. Moving a team to
+                                         a table of another category is not
+                                         allowed.
+
+  M8-29      Move judges           P1    Judges can be dragged from an
+                                         unassigned tray onto a judge slot and
+                                         between tables; a judge assigned to
+                                         two tables at once produces a conflict
+                                         warning (M4-09).
+
+  M8-30      Unassigned trays      P1    Teams and judges without a table are
+                                         listed beside the board, filterable by
+                                         category.
+
+  M8-31      Round scope           P1    The board edits the assignments of all rounds
+                                         at once by default; a toggle allows
+                                         editing one round only.
+
+  M8-32      Concurrent edits      P1    Writes carry the loaded version as in
+                                         M4-14-19; stale writes reload the
+                                         board, and other open boards update
+                                         live.
+
+  M8-33      Accessible editing    P2    Every drag action is also possible by
+                                         keyboard and menu; dragging works with
+                                         touch on tablets.
+  ------------------------------------------------------------------------------
+
+### Tests
+
+  ------------------------------------------------------------------------------
+  Test ID    Scenario                         Expected result
+  ---------  -------------------------------  ----------------------------------
+  M8-T01     Search the UI and translations   No user-facing mention found
+             for "coach"
+
+  M8-T02     Leftover coach account calls     Only public data returned
+             team and document APIs
+
+  M8-T03     Import teams from CSV            Teams are active without approval
+
+  M8-T04     Upload a judge CSV with one      Preview shows 1 new, 1 existing,
+             new, one existing and one        1 invalid; confirm creates one
+             invalid row                      account and two roles
+
+  M8-T05     Follow the invitation link from  Password set; judge dashboard
+             the outbox                       shown
+
+  M8-T06     Open an expired or used          Rejected with a resend hint
+             invitation link
+
+  M8-T07     Open the outbox in a production  Route and API absent
+             build
+
+  M8-T08     Admin switches to judge with     Judge dashboard shown; banner
+             the hotkey                       visible
+
+  M8-T09     While switched to judge, call    Denied by the API
+             an event manager API
+
+  M8-T10     Write while switched             Audit entry under the admin with
+                                              the effective role
+
+  M8-T11     Non-admin tries to switch        Denied
+
+  M8-T12     Save an event as template and    Template has no teams, judges,
+             download it                      games or scores
+
+  M8-T13     Create an event from the         Same categories, rulesets, rounds,
+             uploaded template with a new     tables and blocks; dates shifted
+             start date
+
+  M8-T14     Upload a malformed or            Rejected with a reason
+             newer-version template
+
+  M8-T15     Drag a team to another table of  Assignment and sequence stored
+             the same category
+
+  M8-T16     Drag a team to a table of        Drop refused
+             another category
+
+  M8-T17     Drag a category divider over a   Table moves category after
+             table with teams                 confirmation
+
+  M8-T18     Assign one judge to two tables   Conflict warning shown
+             in the same round
+
+  M8-T19     Two managers move the same team  Second write gets 409; board
+                                              reloads
+  ------------------------------------------------------------------------------
+
+### Open questions
+
+1.  **Coach data:** Are existing coach accounts deleted, or kept dormant
+    until the API import (M8-05) defines who owns teams?
+2.  **Judges per table:** Is the maximum number of judge slots per table
+    set per event or per category?
+3.  **Board and rounds:** Do most events keep the same table
+    assignment for every round, so the board should edit all rounds at
+    once by default?
+4.  **Templates:** Should rulesets in a template be referenced by
+    version or copied, when the template is used on another
+    installation?
+
+**Exit criteria:** All P1 requirements and M8 tests pass. A tester can
+set up an event from a template, import teams and invite judges by CSV,
+assign everything on the board, and check each role's view through the
+admin role switch, with no mention of coaches.
+
+------------------------------------------------------------------------
+
+## 11. Cross-project quality requirements
 
 These requirements apply to every milestone.
 
@@ -1545,7 +1877,7 @@ The following properties must be continuously checked:
 
 ------------------------------------------------------------------------
 
-## 11. Definition of Done
+## 12. Definition of Done
 
 A task may only be marked complete when all applicable conditions are
 satisfied.
@@ -1566,7 +1898,7 @@ acceptance tests must also pass.
 
 ------------------------------------------------------------------------
 
-## 12. Project tracking model
+## 13. Project tracking model
 
 Track progress at three levels:
 
@@ -1616,7 +1948,7 @@ Track progress at three levels:
 
 ------------------------------------------------------------------------
 
-## 13. Suggested repository structure
+## 14. Suggested repository structure
 
 Keep business logic independent of the user interface.
 
@@ -1661,7 +1993,7 @@ wro-platform/
 
 ------------------------------------------------------------------------
 
-## 14. Recommended implementation order
+## 15. Recommended implementation order
 
 Do not begin by building the full dashboard or registration experience.
 First validate the three riskiest parts of the application with vertical
@@ -1697,7 +2029,7 @@ investment in the complete user interface.
 
 ------------------------------------------------------------------------
 
-## 15. Key architectural decisions to resolve
+## 16. Key architectural decisions to resolve
 
 The following questions should be settled before or during the relevant
 implementation milestone:
@@ -1706,7 +2038,8 @@ implementation milestone:
     one round, with the round selecting the best, worst or sum of those
     attempts?
 2.  **Team registration:** Can coaches register multiple teams under one
-    account?
+    account? *Superseded by M8-A: teams are imported, coaches have no
+    accounts.*
 3.  **Schedule generation:** Should the system support randomized
     assignments, balanced table distribution and predefined matchups?
 4.  **Score approval:** Must every score require head-judge approval, or
@@ -1720,7 +2053,7 @@ implementation milestone:
 Make these behaviours configurable where practical, while keeping the
 initial implementation straightforward.
 
-## 16. Primary implementation recommendation
+## 17. Primary implementation recommendation
 
 Build and thoroughly test the scoring and ranking engines before
 implementing the complete administration interface. They contain the
