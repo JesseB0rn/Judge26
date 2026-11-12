@@ -114,7 +114,7 @@ describe('M6 live competition and public interface', () => {
     ]
     const table = await fx.su
       .collection('tables')
-      .create({ event: event.id, name: 'Table A', active: true, judge: judge.id })
+      .create({ event: event.id, name: 'Table A', active: true, judges: [judge.id] })
     const rounds = []
     for (const [i, key] of ['R1', 'R2'].entries()) {
       rounds.push(

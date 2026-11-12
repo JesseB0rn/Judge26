@@ -1,33 +1,32 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import EventBoard from '@/modules/board/components/EventBoard.vue'
 import { listEventDays } from '@/modules/rankings/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import ExportButtons from '@/shared/export/ExportButtons.vue'
 import { useLoader } from '@/shared/composables/useSubmit'
 import type { EventRecord } from '@/shared/types/records'
-import {
-  listEventCategories,
-  listEventJudges,
-  listScheduleGames,
-  listScheduleIssues,
-  listTables,
-} from '../api'
+import { listEventCategories, listScheduleGames, listScheduleIssues, listTables } from '../api'
 import { gamesTable } from '../export'
 import GenerateSchedulePanel from './GenerateSchedulePanel.vue'
 import ScheduleGamesPanel from './ScheduleGamesPanel.vue'
-import TablesPanel from './TablesPanel.vue'
 
+/**
+ * The event's schedule (M4, M8-E): managers assign tables, judges and teams on the board; the
+ * generator fills gaps, and the game list shows every attempt with its table and sequence.
+ */
 const props = defineProps<{ event: EventRecord; canManage: boolean }>()
+const board = ref<InstanceType<typeof EventBoard>>()
+const editable = computed(() => props.canManage && props.event.status !== 'archived')
 
 const tables = useLoader(() => listTables(props.event.id))
 const games = useLoader(() => listScheduleGames(props.event.id))
-const judges = useLoader(() => listEventJudges(props.event.id))
 const categories = useLoader(() => listEventCategories(props.event.id))
 const issues = useLoader(() => listScheduleIssues(props.event.id))
 const days = useLoader(() => listEventDays(props.event.id))
 
-const all = [tables, games, judges, categories, issues, days]
+const all = [tables, games, categories, issues, days]
 const loading = computed(() => all.some((l) => l.loading.value))
 const firstError = computed(() => all.map((l) => l.error.value).find(Boolean) ?? null)
 let reloadRequested = false
@@ -58,12 +57,26 @@ function reload() {
   return reloadPromise
 }
 
+/** Generation places games: the board shows them too. */
+function onGenerated() {
+  void reload()
+  void board.value?.reload()
+}
+
 onMounted(reload)
 watch(() => props.event.id, reload)
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
+    <!-- First, so the loading state of the panels below never shifts it during a drag. -->
+    <EventBoard
+      v-if="canManage"
+      ref="board"
+      :event-id="event.id"
+      :editable="editable"
+      @changed="reload"
+    />
     <div class="flex flex-wrap items-center justify-end gap-2">
       <span class="text-sm text-muted-foreground">{{ t('scheduling.export.label') }}</span>
       <ExportButtons
@@ -80,22 +93,12 @@ watch(() => props.event.id, reload)
     <p v-if="loading && !games.data.value" class="text-sm text-muted-foreground">
       {{ t('common.loading') }}
     </p>
-    <div class="grid gap-4 lg:grid-cols-2">
-      <TablesPanel
-        :event-id="event.id"
-        :tables="tables.data.value ?? []"
-        :categories="categories.data.value ?? []"
-        :judges="judges.data.value ?? []"
-        :editable="canManage"
-        @changed="reload"
-      />
-    </div>
     <GenerateSchedulePanel
       :event-id="event.id"
       :issues="issues.data.value ?? []"
       :labels="labels"
       :editable="canManage"
-      @changed="reload"
+      @changed="onGenerated"
     />
     <ScheduleGamesPanel
       :games="games.data.value ?? []"

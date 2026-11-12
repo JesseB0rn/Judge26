@@ -6,6 +6,18 @@ import EventScheduleTab from '../components/EventScheduleTab.vue'
 
 vi.mock('../api')
 const mocked = vi.mocked(api)
+vi.mock('@/modules/board/api', async (original) => ({
+  ...(await original<typeof import('@/modules/board/api')>()),
+  loadBoard: vi.fn(async () => ({
+    categories: [],
+    rounds: [],
+    tables: [],
+    teams: [],
+    games: [],
+    judges: [],
+  })),
+  subscribeBoard: vi.fn(async () => () => {}),
+}))
 
 const round = makeRound('R1', 1)
 const placed = makeGame({
@@ -26,10 +38,9 @@ const waiting = makeGame({
 beforeEach(() => {
   vi.resetAllMocks()
   mocked.listTables.mockResolvedValue([
-    makeTable({ id: 't1', name: 'Table 1', expand: { judge: { name: 'Grace' } as never } }),
+    makeTable({ id: 't1', name: 'Table 1', expand: { judges: [{ name: 'Grace' } as never] } }),
   ])
   mocked.listEventCategories.mockResolvedValue([])
-  mocked.listEventJudges.mockResolvedValue([])
   mocked.listScheduleGames.mockResolvedValue([placed, waiting])
   mocked.listScheduleIssues.mockResolvedValue([])
 })
@@ -81,6 +92,8 @@ describe('EventScheduleTab', () => {
       'Only event managers and admins can create games or generate schedules.',
     )
     expect(wrapper.text()).not.toContain('Generate schedule')
+    // The board is for managers; judges see the game list.
+    expect(wrapper.find('[data-testid=event-board]').exists()).toBe(false)
   })
 
   it('preview shows why games do not fit, without saving', async () => {
@@ -121,5 +134,11 @@ describe('EventScheduleTab', () => {
     expect(wrapper.get('[data-testid=generation-summary]').text()).toContain(
       '2 missing games created.',
     )
+  })
+
+  it('M8-E: managers assign tables, judges and teams on the board in this tab', async () => {
+    const { wrapper } = await mountTab()
+    expect(wrapper.find('[data-testid=event-board]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid=assignment-board]').exists()).toBe(true)
   })
 })

@@ -186,9 +186,9 @@ export interface TableRecord extends BaseRecord {
   active: boolean
   /** Empty = accepts every category of the event. */
   categories: string[]
-  /** Fixed judge assigned to this table. */
-  judge: string
-  expand?: { judge?: UserRecord }
+  /** Judges of this table; each of them scores its games (M8-E). */
+  judges: string[]
+  expand?: { judges?: UserRecord[] }
 }
 
 export interface RankingSnapshotRecord extends BaseRecord {

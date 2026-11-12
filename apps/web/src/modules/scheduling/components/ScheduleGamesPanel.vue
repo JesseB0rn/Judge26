@@ -62,7 +62,12 @@ function edit(game: GameRecord) {
                 {{ game.expand?.team?.name ?? t('scheduling.unknownTeam') }}
               </td>
               <td class="py-2 pr-3">
-                {{ tables.find((table) => table.id === game.table)?.expand?.judge?.name ?? '–' }}
+                {{
+                  tables
+                    .find((table) => table.id === game.table)
+                    ?.expand?.judges?.map((judge) => judge.name)
+                    .join(', ') || '–'
+                }}
               </td>
               <td class="py-2 text-right">
                 <Button

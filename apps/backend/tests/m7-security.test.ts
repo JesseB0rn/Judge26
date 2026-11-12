@@ -93,6 +93,12 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/invitations/{id}/revoke', access: 'auth' },
   { method: 'GET', path: '/api/invitations/lookup', access: 'public' },
   { method: 'POST', path: '/api/invitations/accept', access: 'public' },
+  // M8-E: assignment board (event managers).
+  { method: 'GET', path: '/api/events/{id}/board', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/board/teams', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/board/judges', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/board/tables', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/board/tables/{table}/category', access: 'auth' },
   // M8-C: admin view as (admins start; the switched token reads and ends its session).
   { method: 'POST', path: '/api/view-as', access: 'auth' },
   { method: 'GET', path: '/api/view-as', access: 'auth' },
@@ -182,7 +188,7 @@ describe('M7 security', () => {
     const ruleset = await su.collection('rulesets').update(draft.id, { status: 'published' })
     const table = await su
       .collection('tables')
-      .create({ event: event.id, name: 'A', active: true, judge: judge.id })
+      .create({ event: event.id, name: 'A', active: true, judges: [judge.id] })
     const team = await su.collection('teams').create({
       event: event.id,
       category: category.id,

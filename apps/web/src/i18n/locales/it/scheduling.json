@@ -62,17 +62,6 @@
     "empty": "Ancora nessuna manche. Generi il programma dopo aver creato turni, squadre approvate e tavoli."
   },
   "tables": {
-    "title": "Tavoli",
-    "allCategories": "tutte le categorie",
-    "noJudge": "Nessun giudice",
-    "deactivated": "disattivato",
-    "empty": "Ancora nessun tavolo.",
-    "name": "Nome del tavolo",
-    "active": "Attivo",
-    "judge": "Giudice assegnato",
-    "selectJudge": "Scelga un giudice",
-    "categories": "Categorie (nessuna scelta = tutte le categorie)",
-    "save": "Salva il tavolo",
-    "add": "Aggiungi tavolo"
+    "deactivated": "disattivato"
   }
 }

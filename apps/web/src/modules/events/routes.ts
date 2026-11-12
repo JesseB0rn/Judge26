@@ -15,4 +15,9 @@ export const eventRoutes: RouteRecordRaw[] = [
     component: () => import('@/modules/planner/views/PlannerView.vue'),
     props: true,
   },
+  {
+    // The assignment board (M8-E) lives in the Schedule tab; keep earlier links working.
+    path: '/events/:id/board',
+    redirect: (to) => ({ name: 'event', params: { id: to.params.id }, query: { tab: 'schedule' } }),
+  },
 ]

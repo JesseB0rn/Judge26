@@ -49,7 +49,7 @@ describe('M5 round and table scheduling', () => {
         name,
         active: true,
         position: Object.keys(tables).length,
-        judge: options.assignJudge === false ? '' : judge.id,
+        judges: options.assignJudge === false ? [] : [judge.id],
       })
     }
     return { event, category, manager, judge, round, tables }
@@ -94,18 +94,18 @@ describe('M5 round and table scheduling', () => {
       name: 'Table A',
       active: true,
       categories: [ctx.category.id],
-      judge: ctx.judge.id,
+      judges: [ctx.judge.id],
     })
-    expect(created.judge).toBe(ctx.judge.id)
+    expect(created.judges).toEqual([ctx.judge.id])
     const outsider = await fx.user()
     await expectFieldError(
       ctx.manager.pb.collection('tables').create({
         event: ctx.event.id,
         name: 'Invalid Table',
         active: true,
-        judge: outsider.id,
+        judges: [outsider.id],
       }),
-      'judge',
+      'judges',
       'invalid_judge',
     )
     const another = await fx.category(ctx.event.id, { code: 'OTHER' })

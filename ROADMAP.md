@@ -1516,7 +1516,7 @@ and give managers one direct board for table, team and judge assignment.
     email outbox (M8-06 to M8-12)
 -   [x] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
 -   [ ] **M8-D** Event setup flow and event templates (M8-19 to M8-24)
--   [ ] **M8-E** Kanban board for tables, teams and judges (M8-25 to
+-   [x] **M8-E** Kanban board for tables, teams and judges (M8-25 to
     M8-33)
 
 ### M8-A --- Removal of the coach role
@@ -1702,6 +1702,11 @@ specific person, that person's account read-only; the hotkey is Alt+Shift+V and 
 
 ### M8-E --- Kanban board for tables, teams and judges
 
+**Status:** M8-25 to M8-33 implemented (see `docs/specifications/M8-board.md`). Decisions: the
+number of judge slots is set **per category** (default 2) and every judge of a table scores its
+games; the board gives each table **one category** (others appear as unsorted); started games stay
+locked in place.
+
 The board becomes the master view for creating tables and assigning
 teams and judges to them. It complements the multi-day planner (M4-14),
 which stays responsible for time.
@@ -1829,10 +1834,11 @@ Layout:
 1.  **Coach data:** Are existing coach accounts deleted, or kept dormant
     until the API import (M8-05) defines who owns teams?
 2.  **Judges per table:** Is the maximum number of judge slots per table
-    set per event or per category?
+    set per event or per category? *Settled: per category (M8-E).*
 3.  **Board and rounds:** Do most events keep the same table
     assignment for every round, so the board should edit all rounds at
-    once by default?
+    once by default? *Settled: yes, with a one-slot rotation per round
+    and a toggle for one round (M8-E).*
 4.  **Templates:** Should rulesets in a template be referenced by
     version or copied, when the template is used on another
     installation?

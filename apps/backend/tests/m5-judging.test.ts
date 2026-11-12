@@ -115,10 +115,10 @@ describe('M5 judge interface and scoring workflow', () => {
       .update(draft.id, { status: 'published' })
     const table = await manager.pb
       .collection('tables')
-      .create({ event: event.id, name: 'Table A', active: true, judge: judge.id })
+      .create({ event: event.id, name: 'Table A', active: true, judges: [judge.id] })
     await manager.pb
       .collection('tables')
-      .create({ event: event.id, name: 'Table B', active: true, judge: otherJudge.id })
+      .create({ event: event.id, name: 'Table B', active: true, judges: [otherJudge.id] })
     const team = await fx.team(event.id, category.id, { status: 'approved', name: 'Robo Rangers' })
     const game = await manager.pb.collection('games').create({
       round: round.id,
