@@ -99,6 +99,27 @@ describe('M1 categories and templates', () => {
     expect(templateNow.name).toBe('Future Innovators')
   })
 
+  it('copying a template keeps the round durations', async () => {
+    const admin = await fx.admin()
+    const event = await fx.event()
+    const template = await fx.category('', { code: 'DUR-TPL' })
+    await admin.pb.collection('rounds').create({
+      category: template.id,
+      key: 'r1',
+      name: 'Round 1',
+      position: 1,
+      testing_minutes: 30,
+      scoring_minutes: 25,
+    })
+
+    const copied = await copy(admin.pb, template.id, { event: event.id, code: 'DUR' })
+    const rounds = await admin.pb
+      .collection('rounds')
+      .getFullList({ filter: `category = "${copied.id}"` })
+    expect(rounds).toHaveLength(1)
+    expect(rounds[0]).toMatchObject({ key: 'r1', testing_minutes: 30, scoring_minutes: 25 })
+  })
+
   it('event categories can be saved back to the template library by admins', async () => {
     const admin = await fx.admin()
     const event = await fx.event()

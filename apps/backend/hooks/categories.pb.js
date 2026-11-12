@@ -109,6 +109,10 @@ routerAdd(
           round.set('name', r.getString('name'))
           round.set('position', r.getInt('position'))
           round.set('game_rule', ruleIds[r.getString('game_rule')] || '')
+          // Durations are part of the round's structure; the scoring day is not (days belong
+          // to one event). Saving creates the matching phases (hooks/planner.pb.js).
+          round.set('testing_minutes', r.getInt('testing_minutes'))
+          round.set('scoring_minutes', r.getInt('scoring_minutes'))
           txApp.save(round)
         })
     })
