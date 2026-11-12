@@ -23,6 +23,10 @@ curl -fsSL https://raw.githubusercontent.com/JesseB0rn/Judge26/main/scripts/inst
 
 - Without `DOMAIN` the app is served over plain HTTP on `JUDGE26_PORT` (8090); in a terminal the
   installer asks for the domain and the superuser email instead.
+- Put the variables **after** `sudo` as above: `sudo` drops variables set before `curl`, and without
+  a domain the installer uses plain HTTP. The mode follows `DOMAIN` in `/opt/judge26/.env` on
+  every run (it prints `Mode: …`); to switch an existing installation to HTTPS, run the installer
+  again with `DOMAIN=…` (or `DOMAIN=` back to HTTP).
 - It installs into `/opt/judge26` (`JUDGE26_DIR`) and the latest release (`JUDGE26_VERSION=0.1.0`
   to pin one). `COMPOSE_FILE` in its `.env` selects the compose files, so `docker compose …` in
   that directory needs no `-f` options.

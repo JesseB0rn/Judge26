@@ -8,6 +8,9 @@
 # or asked for when a terminal is available:
 #
 #   DOMAIN             DNS name of this host: HTTPS with Caddy. Empty: plain HTTP on JUDGE26_PORT.
+#                      Also on a later run: switches an installation to (or, with DOMAIN=, from)
+#                      HTTPS. Put it after sudo (`| sudo DOMAIN=… sh`): sudo drops variables set
+#                      before curl.
 #   ACME_EMAIL         Contact address for the Let's Encrypt certificates (optional).
 #   SUPERUSER_EMAIL    Superuser for the dashboard (/_/). Its password is generated.
 #   JUDGE26_VERSION    Release to install, e.g. 1.0.0. Default: the latest release.
@@ -135,6 +138,28 @@ backup_before_upgrade() { # backup_before_upgrade <name>
   fi
 }
 
+# The mode follows DOMAIN in .env on every run, so the compose files always match it: HTTPS with
+# Caddy when a domain is set, plain HTTP otherwise.
+configure_mode() { # configure_mode <domain given on this run: 1 or empty>
+  if [ -n "$1" ]; then
+    set_env DOMAIN "$DOMAIN"
+    [ -z "${ACME_EMAIL:-}" ] || set_env ACME_EMAIL "$ACME_EMAIL"
+    if [ -n "$DOMAIN" ]; then
+      set_env APP_URL "https://$DOMAIN"
+    else
+      set_env APP_URL "http://$(public_address):$(get_env JUDGE26_PORT)"
+    fi
+  fi
+  domain=$(get_env DOMAIN)
+  if [ -n "$domain" ]; then
+    set_env COMPOSE_FILE docker-compose.yml:docker-compose.caddy.yml
+    say "Mode: HTTPS with Caddy for $domain (DNS must point here, ports 80 and 443 open)"
+  else
+    set_env COMPOSE_FILE docker-compose.yml
+    say "Mode: plain HTTP on port $(get_env JUDGE26_PORT), no Caddy (no DOMAIN set)"
+  fi
+}
+
 public_address() {
   address=$(hostname -I 2>/dev/null | awk '{print $1}') || true
   echo "${address:-localhost}"
@@ -146,6 +171,7 @@ main() {
   has curl || has wget || die "curl or wget is required."
 
   dir=${JUDGE26_DIR:-/opt/judge26}
+  domain_given=${DOMAIN+1}
   version=${JUDGE26_VERSION:-}
   if [ -z "$version" ]; then
     version=$(latest_version)
@@ -161,7 +187,12 @@ main() {
 
   if [ "$fresh" = 1 ]; then
     say "Installing Judge26 $version in $dir"
+    if [ -z "$domain_given" ] && ! can_ask; then
+      warn "No DOMAIN given and no terminal to ask: installing with plain HTTP, without Caddy."
+      warn "For HTTPS run: curl -fsSL … | sudo DOMAIN=judge.example.org sh"
+    fi
     ask DOMAIN "Domain name for HTTPS (empty: plain HTTP on port ${JUDGE26_PORT:-8090})" ""
+    domain_given=1
     if [ -n "$DOMAIN" ]; then
       ask ACME_EMAIL "Email for Let's Encrypt (optional)" ""
     fi
@@ -181,22 +212,13 @@ main() {
     umask 077
     cp .env.example .env
     password=$(random 24)
-    port=${JUDGE26_PORT:-8090}
-    if [ -n "$DOMAIN" ]; then
-      app_url="https://$DOMAIN"
-      set_env COMPOSE_FILE docker-compose.yml:docker-compose.caddy.yml
-    else
-      app_url="http://$(public_address):$port"
-      set_env COMPOSE_FILE docker-compose.yml
-    fi
-    set_env APP_URL "$app_url"
-    set_env DOMAIN "$DOMAIN"
-    set_env ACME_EMAIL "${ACME_EMAIL:-}"
-    set_env JUDGE26_PORT "$port"
+    set_env JUDGE26_PORT "${JUDGE26_PORT:-8090}"
     set_env PB_SUPERUSER_EMAIL "$SUPERUSER_EMAIL"
     set_env PB_SUPERUSER_PASSWORD "$password"
     set_env PB_ENCRYPTION_KEY "$(random 32)"
   fi
+  [ -n "$(get_env JUDGE26_PORT)" ] || set_env JUDGE26_PORT 8090
+  configure_mode "$domain_given"
   set_env JUDGE26_IMAGE "$image"
   set_env APP_VERSION "$version"
   chmod 600 .env
