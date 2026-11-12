@@ -51,6 +51,8 @@ All errors use PocketBase's format:
 | POST     | `/api/events/{id}/invitations[/preview]`  | event managers         | Invite people by name and email, or preview it ([M8 spec](../specifications/M8-invitations.md#api)) |
 | POST     | `/api/invitations/{id}/resend\|revoke`    | event managers         | Send an invitation again / revoke it (M8-09)                                                        |
 | GET/POST | `/api/invitations/lookup`, `…/accept`     | public                 | Inspect / accept an invitation link (M8-10)                                                         |
+| POST     | `/api/view-as`                            | admins                 | View the app as a role of an event ([M8 spec](../specifications/M8-view-as.md#api))                 |
+| GET/POST | `/api/view-as`, `/api/view-as/end`        | the switched token     | The current view session / end it (M8-15)                                                           |
 
 ## Collections
 

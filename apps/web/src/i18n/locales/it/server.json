@@ -143,5 +143,11 @@
   "invitation_accepted": "Questo invito è già stato accettato.",
   "invitation_not_found": "L’invito non è stato trovato.",
   "staff_not_found": "La persona non è stata trovata.",
-  "invalid_rows": "Non c’è nessuno da invitare."
+  "invalid_rows": "Non c’è nessuno da invitare.",
+  "invalid_role": "Scelga un ruolo dell’evento.",
+  "person_not_found": "Questa persona non ha il ruolo nell’evento.",
+  "person_not_activated": "Questa persona non ha ancora attivato il suo account.",
+  "view_as_read_only": "La vista come persona è di sola lettura.",
+  "view_session_ended": "La vista è terminata.",
+  "no_view_session": "Nessuna vista attiva."
 }

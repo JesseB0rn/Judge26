@@ -17,7 +17,9 @@
       "games": "Risultati delle manche",
       "ranking_snapshots": "Classifiche salvate",
       "mail_templates": "Modelli di e-mail",
-      "mail_outbox": "E-mail"
+      "mail_outbox": "E-mail",
+      "invitations": "Inviti",
+      "view_sessions": "Vedi come"
     },
     "filterArea": "Filtra per ambito",
     "allAreas": "Tutti gli ambiti",
@@ -28,7 +30,8 @@
     "what": "Cosa",
     "detailsOf": "Dettagli di {entry}",
     "empty": "Nessuna voce.",
-    "description": "Azioni amministrative di tutti gli eventi: chi ha modificato cosa, quando e da dove. La cronologia dei fogli di punteggio è conservata con ogni manche."
+    "description": "Azioni amministrative di tutti gli eventi: chi ha modificato cosa, quando e da dove. La cronologia dei fogli di punteggio è conservata con ogni manche.",
+    "viewAs": "come {role}"
   },
   "staff": {
     "assigned": "Ruolo assegnato.",

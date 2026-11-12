@@ -244,4 +244,6 @@ export interface AuditLogRecord extends BaseRecord {
   summary: string
   changes: Record<string, unknown> | null
   ip: string
+  /** The role an admin was viewing as (M8-C), e.g. "judge · Swiss Final". */
+  view_as?: string
 }

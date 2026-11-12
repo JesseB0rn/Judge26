@@ -17,7 +17,9 @@
       "games": "Laufresultate",
       "ranking_snapshots": "Ranglisten-Stände",
       "mail_templates": "E-Mail-Vorlagen",
-      "mail_outbox": "E-Mails"
+      "mail_outbox": "E-Mails",
+      "invitations": "Einladungen",
+      "view_sessions": "Ansicht als"
     },
     "filterArea": "Nach Bereich filtern",
     "allAreas": "Alle Bereiche",
@@ -28,7 +30,8 @@
     "what": "Was",
     "detailsOf": "Details zu {entry}",
     "empty": "Keine Einträge.",
-    "description": "Administrative Aktionen in allen Anlässen: wer was wann und von wo geändert hat. Der Verlauf der Bewertungsbogen wird bei jedem Lauf geführt."
+    "description": "Administrative Aktionen in allen Anlässen: wer was wann und von wo geändert hat. Der Verlauf der Bewertungsbogen wird bei jedem Lauf geführt.",
+    "viewAs": "als {role}"
   },
   "staff": {
     "assigned": "Rolle zugewiesen.",

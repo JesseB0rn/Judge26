@@ -16,5 +16,22 @@
     "audit": "Protokoll",
     "monitoring": "Systemzustand",
     "mailbox": "Postfach (Dev)"
+  },
+  "viewAs": {
+    "open": "Ansicht als",
+    "title": "App ansehen als",
+    "description": "Die App mit den Berechtigungen einer Rolle in einem Anlass ansehen. Die API wendet diese Rolle an, nicht Ihre Admin-Rechte; Änderungen werden unter Ihrem Konto protokolliert.",
+    "event": "Anlass",
+    "role": "Rolle",
+    "person": "Person",
+    "personHint": "Optional. Die Ansicht als bestimmte Person ist schreibgeschützt.",
+    "anyone": "Beliebige Person mit der Rolle",
+    "submit": "Wechseln",
+    "banner": "Ansicht als {role} von {event}",
+    "bannerPerson": "Ansicht als {name} ({role}, {event})",
+    "readOnly": "Schreibgeschützt",
+    "until": "bis {date}",
+    "exit": "Zurück zu Admin",
+    "hotkey": "Alt+Umschalt+V"
   }
 }

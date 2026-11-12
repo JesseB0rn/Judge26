@@ -16,5 +16,22 @@
     "audit": "Registro delle modifiche",
     "monitoring": "Stato del sistema",
     "mailbox": "Casella (dev)"
+  },
+  "viewAs": {
+    "open": "Vedi come",
+    "title": "Vedi l’app come",
+    "description": "Vedere l’app con i permessi di un ruolo in un evento. L’API applica questo ruolo, non i suoi diritti di amministrazione; le modifiche sono registrate sul suo account.",
+    "event": "Evento",
+    "role": "Ruolo",
+    "person": "Persona",
+    "personHint": "Facoltativo. La vista come persona specifica è di sola lettura.",
+    "anyone": "Chiunque abbia il ruolo",
+    "submit": "Cambia",
+    "banner": "Vista come {role} di {event}",
+    "bannerPerson": "Vista come {name} ({role}, {event})",
+    "readOnly": "Sola lettura",
+    "until": "fino al {date}",
+    "exit": "Torna all’amministrazione",
+    "hotkey": "Alt+Maiusc+V"
   }
 }

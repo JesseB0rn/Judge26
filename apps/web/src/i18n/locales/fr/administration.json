@@ -17,7 +17,9 @@
       "games": "Résultats des manches",
       "ranking_snapshots": "Classements figés",
       "mail_templates": "Modèles d’e-mail",
-      "mail_outbox": "E-mails"
+      "mail_outbox": "E-mails",
+      "invitations": "Invitations",
+      "view_sessions": "Vue en tant que"
     },
     "filterArea": "Filtrer par domaine",
     "allAreas": "Tous les domaines",
@@ -28,7 +30,8 @@
     "what": "Quoi",
     "detailsOf": "Détails de {entry}",
     "empty": "Aucune entrée.",
-    "description": "Actions administratives de tous les événements : qui a modifié quoi, quand et d’où. L’historique des feuilles de score est conservé avec chaque manche."
+    "description": "Actions administratives de tous les événements : qui a modifié quoi, quand et d’où. L’historique des feuilles de score est conservé avec chaque manche.",
+    "viewAs": "en tant que {role}"
   },
   "staff": {
     "assigned": "Rôle attribué.",

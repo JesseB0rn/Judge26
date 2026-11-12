@@ -143,5 +143,11 @@
   "invitation_accepted": "Cette invitation a déjà été acceptée.",
   "invitation_not_found": "L’invitation est introuvable.",
   "staff_not_found": "La personne est introuvable.",
-  "invalid_rows": "Il n’y a personne à inviter."
+  "invalid_rows": "Il n’y a personne à inviter.",
+  "invalid_role": "Choisissez un rôle de l’événement.",
+  "person_not_found": "Cette personne n’a pas ce rôle dans l’événement.",
+  "person_not_activated": "Cette personne n’a pas encore activé son compte.",
+  "view_as_read_only": "La vue en tant que personne est en lecture seule.",
+  "view_session_ended": "La vue est terminée.",
+  "no_view_session": "Aucune vue active."
 }

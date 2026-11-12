@@ -14,8 +14,9 @@ import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
+import { roleHome } from '@/shared/auth/viewAs'
 import { useSubmit } from '@/shared/composables/useSubmit'
-import { ROLE_LABELS, type Role } from '@/shared/types/records'
+import { ROLE_LABELS } from '@/shared/types/records'
 import AuthCard from '../components/AuthCard.vue'
 
 /**
@@ -31,18 +32,11 @@ const loadError = ref<AppError>()
 const password = ref('')
 const passwordConfirm = ref('')
 
-/** Where each role starts (as on the dashboard's role chips). */
-function home(role: Role, event: string) {
-  if (role === 'judge') return { name: 'judging' }
-  if (role === 'head_judge') return { name: 'review', query: { event } }
-  return { name: 'event', params: { id: event } }
-}
-
 const { run, pending, error, fieldErrors } = useSubmit(async () => {
   const accepted = await acceptInvitation(token, password.value, passwordConfirm.value)
   session.logout()
   await session.login(accepted.email, password.value)
-  await router.replace(home(accepted.role, accepted.event))
+  await router.replace(roleHome(accepted.role, accepted.event))
 })
 
 onMounted(async () => {

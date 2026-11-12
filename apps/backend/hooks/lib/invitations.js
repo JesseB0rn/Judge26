@@ -56,7 +56,8 @@ function normalizeRows(rows, allowedRoles) {
       if (!name) errors.push('name_required')
       else if (name.length > 200) errors.push('name_too_long')
       if (!email) errors.push('email_required')
-      else if (!EMAIL.test(email)) errors.push('invalid_email')
+      // preview.invalid: stand-in accounts of admins (M8-C).
+      else if (!EMAIL.test(email) || /@preview\.invalid$/.test(email)) errors.push('invalid_email')
       if (allowedRoles.indexOf(role) === -1) errors.push('invalid_role')
       const entry = { line, name, email, role, errors, status: errors.length ? 'invalid' : '' }
       if (!errors.length) {
@@ -335,7 +336,9 @@ function staff(app, eventId) {
     }
   }
   const members = app
-    .findRecordsByFilter('role_assignments', 'event = {:e}', 'role', 0, 0, { e: eventId })
+    .findRecordsByFilter('role_assignments', 'event = {:e} && user.preview_of = ""', 'role', 0, 0, {
+      e: eventId,
+    })
     .map((assignment) => {
       const user = userInfo(assignment.getString('user'))
       const invitation = describe(invitations[user.id])

@@ -7,6 +7,8 @@ Refines roadmap tasks M7-08 – M7-11. Operations are described in the
 
 Every administrative change is recorded in `audit_log`: who (account, or `superuser <email>`, or
 `system`), when, from which IP, what (collection, record, event) and which fields changed.
+Changes an admin makes while viewing the app as a role are recorded under the admin, with the
+role in `view_as` ([M8-view-as.md](M8-view-as.md#audit-m8-17)).
 
 - **Record API changes** of these collections are logged by request hooks (`hooks/audit.pb.js`):
   events, competition days, categories, teams, team documents, role assignments, games (game

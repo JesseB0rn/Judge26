@@ -17,7 +17,9 @@
       "games": "Game results",
       "ranking_snapshots": "Ranking snapshots",
       "mail_templates": "Email templates",
-      "mail_outbox": "Emails"
+      "mail_outbox": "Emails",
+      "invitations": "Invitations",
+      "view_sessions": "View as"
     },
     "filterArea": "Filter by area",
     "allAreas": "All areas",
@@ -28,7 +30,8 @@
     "what": "What",
     "detailsOf": "Details of {entry}",
     "empty": "No entries.",
-    "description": "Administrative actions on every event: who changed what, when and from where. Score sheet history is kept with each game."
+    "description": "Administrative actions on every event: who changed what, when and from where. Score sheet history is kept with each game.",
+    "viewAs": "as {role}"
   },
   "staff": {
     "assigned": "Role assigned.",

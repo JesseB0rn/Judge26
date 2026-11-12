@@ -143,5 +143,11 @@
   "invitation_accepted": "Diese Einladung wurde bereits angenommen.",
   "invitation_not_found": "Die Einladung wurde nicht gefunden.",
   "staff_not_found": "Die Person wurde nicht gefunden.",
-  "invalid_rows": "Es gibt niemanden einzuladen."
+  "invalid_rows": "Es gibt niemanden einzuladen.",
+  "invalid_role": "Wählen Sie eine Rolle des Anlasses.",
+  "person_not_found": "Diese Person hat die Rolle im Anlass nicht.",
+  "person_not_activated": "Diese Person hat ihr Konto noch nicht aktiviert.",
+  "view_as_read_only": "Die Ansicht als Person ist schreibgeschützt.",
+  "view_session_ended": "Die Ansicht ist beendet.",
+  "no_view_session": "Keine aktive Ansicht."
 }

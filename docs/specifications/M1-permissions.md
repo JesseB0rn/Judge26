@@ -53,6 +53,7 @@ open (`registration_opens_at` / `registration_closes_at`, still in the schema bu
 | `POST /api/role-assignments/by-email`     | admin                                                  | Assign a role to the user with that email                                    |
 | `/api/events/{id}/staff`, `…/invitations` | manager (judges, head judges); admin (all event roles) | Invite and manage the event's staff ([M8-invitations.md](M8-invitations.md)) |
 | `GET /api/admin/users?q=`                 | admin                                                  | Search users by name or email                                                |
+| `/api/view-as`                            | admin                                                  | View the app as a role of an event ([M8-view-as.md](M8-view-as.md))          |
 
 These endpoints re-check permissions in `apps/backend/hooks/lib/access.js`.
 

@@ -1514,7 +1514,7 @@ and give managers one direct board for table, team and judge assignment.
     scheduled)
 -   [x] **M8-B** Judge onboarding by CSV invitation, with a development
     email outbox (M8-06 to M8-12)
--   [ ] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
+-   [x] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
 -   [ ] **M8-D** Event setup flow and event templates (M8-19 to M8-24)
 -   [ ] **M8-E** Kanban board for tables, teams and judges (M8-25 to
     M8-33)
@@ -1623,6 +1623,11 @@ Production delivery uses the email service of M7-01; the outbox is a
 transport that replaces it, selected by configuration.
 
 ### M8-C --- Admin "view as" role switch
+
+**Status:** M8-13 to M8-18 implemented (see `docs/specifications/M8-view-as.md`). The switch
+issues a real token for the admin's stand-in account (holding only the chosen role) or, for a
+specific person, that person's account read-only; the hotkey is Alt+Shift+V and sessions last
+4 hours.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria

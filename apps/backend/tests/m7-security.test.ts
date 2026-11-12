@@ -93,6 +93,10 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/invitations/{id}/revoke', access: 'auth' },
   { method: 'GET', path: '/api/invitations/lookup', access: 'public' },
   { method: 'POST', path: '/api/invitations/accept', access: 'public' },
+  // M8-C: admin view as (admins start; the switched token reads and ends its session).
+  { method: 'POST', path: '/api/view-as', access: 'auth' },
+  { method: 'GET', path: '/api/view-as', access: 'auth' },
+  { method: 'POST', path: '/api/view-as/end', access: 'auth' },
 ]
 
 // Required: flag (10), blocks (5 each); parking exactly one of full (15) / partial (5).
@@ -319,7 +323,7 @@ describe('M7 security', () => {
         )
         .map((c) => c.name)
         .sort()
-      expect(closed).toEqual(['app_settings', 'schedule_notices'])
+      expect(closed).toEqual(['app_settings', 'schedule_notices', 'view_sessions'])
     })
 
     it('M7-T09: outsiders can neither read nor change the records of an event', async () => {
