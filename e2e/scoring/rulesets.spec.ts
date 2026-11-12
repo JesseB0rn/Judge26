@@ -96,10 +96,10 @@ test.describe('M2 scoring rulesets', () => {
     await expect(page.getByTestId('ruleset-history')).toContainText('published (active)')
   })
 
-  test('coaches can read the scoring rules but not change them', async ({ page }) => {
+  test('users without a role can read the scoring rules but not change them', async ({ page }) => {
     const { event, category } = await createEvent()
-    const coach = await createUser()
-    await login(page, coach.email, coach.password)
+    const user = await createUser()
+    await login(page, user.email, user.password)
     await page.goto(`/categories/${category.id}/scoring`)
     await expect(page.getByRole('heading', { name: 'Scoring: RoboMission Junior' })).toBeVisible()
     await expect(page.getByRole('button', { name: /Create first draft|New draft/ })).toHaveCount(0)

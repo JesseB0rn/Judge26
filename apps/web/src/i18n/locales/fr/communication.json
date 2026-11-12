@@ -29,7 +29,7 @@
   },
   "outbox": {
     "title": "Journal d’envoi",
-    "eventDescription": "E-mails de cet événement. Les e-mails d’inscription partent immédiatement, ceux d’horaire dans la minute ; les envois en échec sont relancés automatiquement jusqu’à cinq fois.",
+    "eventDescription": "E-mails de cet événement. Les e-mails d’horaire partent dans la minute ; les envois en échec sont relancés automatiquement jusqu’à cinq fois.",
     "requeued": "Message remis en file d’attente.",
     "all": "Tous les messages",
     "count": "aucun message | un message | {count} messages",
@@ -54,7 +54,7 @@
   "notify": {
     "queued": "Personne à notifier. | Un e-mail mis en file d’attente. | {count} e-mails mis en file d’attente.",
     "title": "Notifications d’horaire",
-    "description": "Les coachs des équipes acceptées reçoivent les manches de leur équipe (tour, heure, table et position). Une équipe est concernée lorsque son horaire a changé depuis le dernier e-mail.",
+    "description": "Les contacts des équipes actives reçoivent les manches de leur équipe (tour, heure, table et position). Une équipe est concernée lorsque son horaire a changé depuis le dernier e-mail. Les équipes sans e-mail de contact n’en reçoivent pas.",
     "affected": "{count} concernée(s)",
     "ofApproved": "sur {count} équipes acceptées",
     "message": "Message (facultatif)",
@@ -66,11 +66,19 @@
     "noGames": "Aucune manche",
     "changed": "Modifié",
     "never": "Jamais",
-    "empty": "Aucune équipe acceptée pour l’instant."
+    "empty": "Aucune équipe acceptée pour l’instant.",
+    "noContact": "Pas d’e-mail de contact"
   },
   "emails": {
-    "description": "Les e-mails envoyés aux coachs et aux utilisateurs, dans la langue de chaque destinataire, et le journal d’envoi.",
+    "description": "Les e-mails envoyés aux contacts des équipes et aux utilisateurs, dans la langue de chaque destinataire, et le journal d’envoi.",
     "templates": "Modèles",
     "off": "désactivé"
+  },
+  "mailbox": {
+    "title": "Boîte aux lettres",
+    "description": "Développement et test uniquement : tous les e-mails que le serveur aurait envoyés. Les liens s’ouvrent dans un nouvel onglet.",
+    "refresh": "Actualiser",
+    "empty": "Aucun e-mail pour l’instant.",
+    "to": "À {to}"
   }
 }

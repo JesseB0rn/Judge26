@@ -7,19 +7,14 @@ import {
   fill,
   makeCategory,
   makeEvent,
-  makeGame,
   makeRole,
-  makeRound,
-  makeTable,
   makeTeam,
-  makeUser,
   mountView,
 } from '@/test/utils'
 import * as api from '../api'
 import * as eventsApi from '@/modules/events/api'
 import * as categoriesApi from '@/modules/categories/api'
 import EventTeamsTab from '../components/EventTeamsTab.vue'
-import MyTeamsView from '../views/MyTeamsView.vue'
 import TeamFormView from '../views/TeamFormView.vue'
 
 vi.mock('../api')
@@ -47,6 +42,19 @@ vi.mock('@/shared/export/download', async (original) => ({
 const mocked = vi.mocked(api)
 
 const manager = { roles: [makeRole('event_manager', 'event1')] }
+const judge = { roles: [makeRole('judge', 'event1')] }
+
+/** Fills two valid members into the members editor. */
+async function addTwoMembers(wrapper: Awaited<ReturnType<typeof mountView>>['wrapper']) {
+  await click(buttonByText('Add member'))
+  await click(buttonByText('Add member'))
+  for (const [i, row] of wrapper.findAll('[data-testid=member-row]').entries()) {
+    const [first, last, year] = row.findAll('input')
+    await first!.setValue(`First${i}`)
+    await last!.setValue(`Last${i}`)
+    await year!.setValue('2013')
+  }
+}
 
 describe('team views', () => {
   beforeEach(() => {
@@ -54,7 +62,7 @@ describe('team views', () => {
     vi.mocked(eventsApi.getEvent).mockResolvedValue(makeEvent())
     vi.mocked(categoriesApi.listEventCategories).mockResolvedValue([makeCategory()])
     mocked.listEventTeams.mockResolvedValue([
-      makeTeam({ status: 'submitted', expand: { category: makeCategory() } }),
+      makeTeam({ status: 'withdrawn', expand: { category: makeCategory() } }),
       makeTeam({
         id: 't2',
         name: 'Bot Builders',
@@ -65,66 +73,84 @@ describe('team views', () => {
   })
   afterEach(() => document.body.replaceChildren())
 
-  describe('TeamFormView (coach)', () => {
-    it('M1-10 / M1-T08: registers and submits a new team', async () => {
+  describe('TeamFormView', () => {
+    it('M8-03: managers create active teams with an optional contact', async () => {
       mocked.createTeam.mockResolvedValue(makeTeam({ id: 'new' }))
-      mocked.getTeam.mockResolvedValue(makeTeam({ id: 'new', status: 'submitted' }))
-      const { wrapper, router } = await mountView(TeamFormView, { props: { eventId: 'event1' } })
-
-      expect((document.querySelector('input[type=email]') as HTMLInputElement).value).toBe(
-        'coach@example.com',
-      )
+      mocked.getTeam.mockResolvedValue(makeTeam({ id: 'new' }))
+      const { wrapper, router } = await mountView(TeamFormView, {
+        props: { eventId: 'event1' },
+        session: manager,
+      })
+      expect(wrapper.text()).toContain('New team')
+      const email = document.querySelector<HTMLInputElement>('input[type=email]')!
+      expect([email.value, email.required]).toEqual(['', false])
       await fill('input[maxlength="100"]', 'Robo Rangers')
-      await click(buttonByText('Add member'))
-      await click(buttonByText('Add member'))
-      const rows = wrapper.findAll('[data-testid=member-row]')
-      for (const [i, row] of rows.entries()) {
-        const [first, last, year] = row.findAll('input')
-        await first!.setValue(`First${i}`)
-        await last!.setValue(`Last${i}`)
-        await year!.setValue('2013')
-      }
-      await wrapper.find('form').trigger('submit')
-      await flushPromises()
+      await addTwoMembers(wrapper)
+      await click(buttonByText('Save'))
 
       expect(mocked.createTeam).toHaveBeenCalledWith(
         'event1',
-        'user1',
         expect.objectContaining({
           name: 'Robo Rangers',
           category: 'cat1',
-          coach_email: 'coach@example.com',
+          coach_email: '',
           members: [
             { first_name: 'First0', last_name: 'Last0', birth_year: 2013 },
             { first_name: 'First1', last_name: 'Last1', birth_year: 2013 },
           ],
         }),
-        'submitted',
       )
       expect(router.currentRoute.value.name).toBe('team')
     })
 
-    it('validates the team before submission', async () => {
-      await mountView(TeamFormView, { props: { eventId: 'event1' } })
+    it('validates active teams against the category', async () => {
+      await mountView(TeamFormView, { props: { eventId: 'event1' }, session: manager })
       await fill('input[maxlength="100"]', 'Too small')
-      await click(buttonByText('Submit registration'))
+      await click(buttonByText('Save'))
       expect(document.querySelector('[data-testid=client-errors]')?.textContent).toContain(
         'requires at least 2 members',
       )
       expect(mocked.createTeam).not.toHaveBeenCalled()
     })
 
-    it('saves incomplete drafts', async () => {
-      mocked.getTeam.mockResolvedValue(makeTeam({ members: [] }))
-      mocked.updateTeam.mockResolvedValue(makeTeam({ members: [] }))
-      await mountView(TeamFormView, { props: { id: 'team1' } })
-      await click(buttonByText('Add member'))
-      await click(document.querySelector<HTMLElement>('button[aria-label="Remove member 1"]')!)
-      await click(buttonByText('Save draft'))
+    it('edits a team without changing its status', async () => {
+      mocked.getTeam.mockResolvedValue(makeTeam())
+      mocked.updateTeam.mockResolvedValue(makeTeam())
+      await mountView(TeamFormView, { props: { id: 'team1' }, session: manager })
+      await click(buttonByText('Save'))
       expect(mocked.updateTeam).toHaveBeenCalledWith(
         'team1',
-        expect.objectContaining({ status: 'draft', members: [] }),
+        expect.not.objectContaining({ status: expect.anything() }),
       )
+    })
+
+    it('withdraws an active team, even when it is incomplete', async () => {
+      mocked.getTeam.mockResolvedValue(makeTeam({ members: [] }))
+      mocked.updateTeam.mockResolvedValue(makeTeam({ status: 'withdrawn', members: [] }))
+      await mountView(TeamFormView, { props: { id: 'team1' }, session: manager })
+      await click(document.querySelector<HTMLElement>('[data-testid=withdraw]')!)
+      expect(mocked.updateTeam).toHaveBeenCalledWith(
+        'team1',
+        expect.objectContaining({ status: 'withdrawn' }),
+      )
+    })
+
+    it('reactivates a withdrawn or earlier registered team', async () => {
+      for (const status of ['withdrawn', 'submitted'] as const) {
+        mocked.getTeam.mockResolvedValue(makeTeam({ status }))
+        mocked.updateTeam.mockResolvedValue(makeTeam())
+        const { wrapper } = await mountView(TeamFormView, {
+          props: { id: 'team1' },
+          session: manager,
+        })
+        expect(wrapper.find('[data-testid=inactive]').exists()).toBe(true)
+        await click(document.querySelector<HTMLElement>('[data-testid=activate]')!)
+        expect(mocked.updateTeam).toHaveBeenLastCalledWith(
+          'team1',
+          expect.objectContaining({ status: 'approved' }),
+        )
+        document.body.replaceChildren()
+      }
     })
 
     it('shows server-side validation errors', async () => {
@@ -138,79 +164,67 @@ describe('team views', () => {
           },
         }),
       )
-      const { wrapper } = await mountView(TeamFormView, { props: { id: 'team1' } })
+      const { wrapper } = await mountView(TeamFormView, {
+        props: { id: 'team1' },
+        session: manager,
+      })
       await wrapper.find('form').trigger('submit')
       await flushPromises()
       expect(wrapper.text()).toContain('Member 1 is 6 in 2026.')
     })
 
-    it('M1-T09: shows the rejection reason and allows resubmission', async () => {
-      mocked.getTeam.mockResolvedValue(
-        makeTeam({ status: 'rejected', review_note: 'Missing school' }),
-      )
-      const { wrapper } = await mountView(TeamFormView, { props: { id: 'team1' } })
-      expect(wrapper.get('[data-testid=review-note]').text()).toContain('Missing school')
-      expect(wrapper.text()).toContain('Submit registration')
-    })
-
-    it('locks submitted registrations', async () => {
-      mocked.getTeam.mockResolvedValue(makeTeam({ status: 'submitted' }))
-      const { wrapper } = await mountView(TeamFormView, { props: { id: 'team1' } })
-      expect(wrapper.text()).toContain('awaiting review')
+    it('is read-only for other event staff', async () => {
+      mocked.getTeam.mockResolvedValue(makeTeam())
+      const { wrapper } = await mountView(TeamFormView, { props: { id: 'team1' }, session: judge })
+      expect(wrapper.get('[data-testid=read-only]').text()).toContain('Only event managers')
       expect(wrapper.find('fieldset').attributes('disabled')).toBeDefined()
-      expect(wrapper.text()).not.toContain('Submit registration')
+      expect(wrapper.find('[data-testid=withdraw]').exists()).toBe(false)
     })
 
-    it('deletes drafts', async () => {
+    it('only admins delete teams', async () => {
       vi.spyOn(window, 'confirm').mockReturnValue(true)
       mocked.getTeam.mockResolvedValue(makeTeam())
       mocked.deleteTeam.mockResolvedValue(true)
-      const { router } = await mountView(TeamFormView, { props: { id: 'team1' } })
-      await click(buttonByText('Delete draft'))
-      expect(mocked.deleteTeam).toHaveBeenCalledWith('team1')
-      expect(router.currentRoute.value.name).toBe('my-teams')
-    })
-  })
-
-  describe('TeamFormView (staff)', () => {
-    it('M1-11: managers edit any registration and register on behalf of coaches', async () => {
-      mocked.getTeam.mockResolvedValue(makeTeam({ status: 'submitted', coach: 'someone-else' }))
-      mocked.updateTeam.mockResolvedValue(makeTeam())
       await mountView(TeamFormView, { props: { id: 'team1' }, session: manager })
-      await click(buttonByText('Save'))
-      expect(mocked.updateTeam).toHaveBeenCalledWith(
-        'team1',
-        expect.not.objectContaining({ status: expect.anything() }),
-      )
-    })
+      expect(() => buttonByText('Delete team')).toThrow('No button')
+      document.body.replaceChildren()
 
-    it('creates staff registrations without a coach account', async () => {
-      mocked.createTeam.mockResolvedValue(makeTeam({ id: 'new' }))
-      mocked.getTeam.mockResolvedValue(makeTeam({ id: 'new' }))
-      await mountView(TeamFormView, { props: { eventId: 'event1' }, session: manager })
-      await fill('input[maxlength="100"]', 'Staff Team')
-      await click(buttonByText('Save'))
-      expect(mocked.createTeam).toHaveBeenCalledWith('event1', '', expect.anything(), 'draft')
+      const { router } = await mountView(TeamFormView, {
+        props: { id: 'team1' },
+        session: { roles: [makeRole('admin')] },
+      })
+      await click(buttonByText('Delete team'))
+      expect(mocked.deleteTeam).toHaveBeenCalledWith('team1')
+      expect(router.currentRoute.value).toMatchObject({
+        name: 'event',
+        query: { tab: 'teams' },
+      })
     })
   })
 
   describe('EventTeamsTab', () => {
-    it('lists teams and filters by status', async () => {
+    it('lists teams and filters by status (active / withdrawn)', async () => {
       const { wrapper } = await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: true, canManage: true },
+        props: { event: makeEvent(), canManage: true },
         session: manager,
       })
       expect(wrapper.findAll('[data-team]')).toHaveLength(2)
-      await wrapper.get('select[aria-label="Filter by status"]').setValue('approved')
+      const select = wrapper.get('select[aria-label="Filter by status"]')
+      expect(select.findAll('option').map((o) => o.text())).toEqual([
+        'All statuses',
+        'Active',
+        'Withdrawn',
+      ])
+      await select.setValue('approved')
       expect(wrapper.findAll('[data-team]').map((r) => r.attributes('data-team'))).toEqual([
         'Bot Builders',
       ])
     })
 
-    it('M7-05: staff export the filtered teams with their members', async () => {
+    it('M7-05: exports the filtered teams with their members', async () => {
       const { downloadTables } = await import('@/shared/export/download')
       const { wrapper } = await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: true, canManage: true },
+        props: { event: makeEvent(), canManage: true },
         session: manager,
       })
       await wrapper.get('select[aria-label="Filter by status"]').setValue('approved')
@@ -221,18 +235,11 @@ describe('team views', () => {
       expect(tables[0]!.rows.map((r) => r[0])).toEqual(
         wrapper.findAll('[data-team]').map((r) => r.attributes('data-team')),
       )
-      document.body.replaceChildren()
-
-      // Coaches (not staff) see only their own teams and get no export.
-      await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: false, canManage: false },
-      })
-      expect(() => buttonByText('CSV')).toThrow('No button')
     })
 
     it('M1-13: shows how many documents each team has', async () => {
       const { wrapper } = await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: true, canManage: true },
+        props: { event: makeEvent(), canManage: true },
         session: manager,
       })
       const count = (name: string) =>
@@ -241,49 +248,36 @@ describe('team views', () => {
       expect(count('Robo Rangers')).toBe('0')
     })
 
-    it('M1-11: approves submitted registrations', async () => {
-      mocked.updateTeam.mockResolvedValue(makeTeam())
-      await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: true, canManage: true },
+    it('M8-01: shows the contact, never a coach', async () => {
+      const { wrapper } = await mountView(EventTeamsTab, {
+        props: { event: makeEvent(), canManage: true },
         session: manager,
       })
-      await click(buttonByText('Approve'))
-      expect(mocked.updateTeam).toHaveBeenCalledWith('team1', { status: 'approved' })
+      expect(wrapper.text()).toContain('Contact')
+      expect(wrapper.text().toLowerCase()).not.toContain('coach')
     })
 
-    it('M1-T09: rejects registrations with a reason', async () => {
-      mocked.updateTeam.mockResolvedValue(makeTeam({ status: 'rejected' }))
-      const { wrapper } = await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: true, canManage: true },
-        session: manager,
-      })
-      await click(buttonByText('Reject', wrapper.get('[data-team="Robo Rangers"]').element))
-      await fill('[role=dialog] textarea', 'Incomplete documents')
-      await click(buttonByText('Reject', document.querySelector('[role=dialog]')!))
-      expect(mocked.updateTeam).toHaveBeenCalledWith('team1', {
-        status: 'rejected',
-        review_note: 'Incomplete documents',
-      })
+    it('offers adding and importing teams only to managers', async () => {
+      await mountView(EventTeamsTab, { props: { event: makeEvent(), canManage: true } })
+      expect(buttonByText('Import CSV')).toBeTruthy()
+      expect(document.body.textContent).toContain('Add team')
+      document.body.replaceChildren()
+
+      await mountView(EventTeamsTab, { props: { event: makeEvent(), canManage: false } })
+      expect(() => buttonByText('Import CSV')).toThrow('No button')
+      expect(document.body.textContent).not.toContain('Add team')
     })
 
-    it('hides review actions without permission', async () => {
-      const { wrapper } = await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: false, canManage: false },
-      })
-      expect(wrapper.findAll('button').map((b) => b.text())).toEqual([])
-      expect(wrapper.text()).toContain('You see the teams you registered.')
-    })
-
-    it('M1-12 / M1-T10: imports valid CSV rows and reports invalid ones', async () => {
+    it('M1-12 / M8-03: imports valid CSV rows as active teams and reports invalid ones', async () => {
       mocked.importTeams.mockResolvedValue([])
       const { wrapper } = await mountView(EventTeamsTab, {
-        props: { event: makeEvent(), staff: true, canManage: true },
+        props: { event: makeEvent(), canManage: true },
         session: manager,
       })
       await click(buttonByText('Import CSV'))
       const csv = [
-        'team_name,category_code,coach_email,member1_first_name,member1_last_name,member1_birth_year,member2_first_name,member2_last_name,member2_birth_year',
-        'New Team,RM-J,a@example.com,Ada,L,2013,Alan,T,2013',
+        'team_name,category_code,contact_email,member1_first_name,member1_last_name,member1_birth_year,member2_first_name,member2_last_name,member2_birth_year',
+        'New Team,RM-J,,Ada,L,2013,Alan,T,2013',
         'Robo Rangers,RM-J,a@example.com,Ada,L,2013,Alan,T,2013',
         'Bad,XX,a@example.com,,,,,,',
       ].join('\n')
@@ -298,80 +292,13 @@ describe('team views', () => {
       const errors = document.querySelector('[data-testid=import-errors]')!.textContent
       expect(errors).toContain('already exists')
       expect(errors).toContain('Unknown category code "XX"')
+      expect(document.querySelector('[role=dialog] select')).toBeNull()
 
       await click(buttonByText('Import one team'))
-      expect(mocked.importTeams).toHaveBeenCalledWith(
-        'event1',
-        [expect.objectContaining({ name: 'New Team', category: 'cat1' })],
-        'submitted',
-      )
+      expect(mocked.importTeams).toHaveBeenCalledWith('event1', [
+        expect.objectContaining({ name: 'New Team', category: 'cat1', coach_email: '' }),
+      ])
       expect(wrapper.emitted()).toBeDefined()
     })
-  })
-
-  it('MyTeamsView lists the coach’s teams', async () => {
-    mocked.listOwnTeams.mockResolvedValue([
-      makeTeam({ expand: { event: makeEvent(), category: makeCategory() } }),
-    ])
-    const { wrapper } = await mountView(MyTeamsView, { session: { user: makeUser() } })
-    expect(mocked.listOwnTeams).toHaveBeenCalledWith('user1')
-    expect(wrapper.get('[data-testid=my-teams]').text()).toContain('Robo Rangers')
-    expect(wrapper.text()).toContain('WRO Final')
-    expect(wrapper.get('[data-testid=my-schedule]').text()).toContain('No games')
-  })
-
-  it('MyTeamsView lets coaches submit editable registrations', async () => {
-    mocked.listOwnTeams.mockResolvedValue([
-      makeTeam({ expand: { event: makeEvent(), category: makeCategory() } }),
-      makeTeam({
-        id: 'rejected',
-        name: 'Rejected Team',
-        status: 'rejected',
-        expand: { event: makeEvent(), category: makeCategory() },
-      }),
-      makeTeam({
-        id: 'archived',
-        name: 'Archived Event Team',
-        expand: { event: makeEvent({ status: 'archived' }), category: makeCategory() },
-      }),
-    ])
-    mocked.updateTeam.mockResolvedValue(makeTeam({ status: 'submitted' }))
-    const { wrapper } = await mountView(MyTeamsView, { session: { user: makeUser() } })
-
-    expect(buttonByText('Submit', wrapper.element)).toBeDefined()
-    expect(buttonByText('Resubmit', wrapper.element)).toBeDefined()
-    expect(wrapper.find('[data-team="Archived Event Team"]').find('button').exists()).toBe(false)
-
-    await click(buttonByText('Submit', wrapper.element))
-    await click(buttonByText('Resubmit', wrapper.element))
-    expect(mocked.updateTeam).toHaveBeenNthCalledWith(1, 'team1', { status: 'submitted' })
-    expect(mocked.updateTeam).toHaveBeenNthCalledWith(2, 'rejected', { status: 'submitted' })
-  })
-
-  it('MyTeamsView shows the scheduled games of the coach’s teams', async () => {
-    mocked.listOwnTeams.mockResolvedValue([])
-    mocked.listOwnScheduledGames.mockResolvedValue([
-      {
-        ...makeGame({ table: 'table1', sequence: 1 }),
-        expand: {
-          team: makeTeam(),
-          // Scoring start and day from the schedule planner (M4-14-30).
-          round: {
-            ...makeRound('R1'),
-            starts_at: '09:30',
-            day: { id: 'd1', date: '2026-06-13', label: 'Day 1' },
-          },
-          table: makeTable({ name: 'Table 3' }),
-        },
-      },
-    ])
-    const { wrapper } = await mountView(MyTeamsView, { session: { user: makeUser() } })
-    expect(mocked.listOwnScheduledGames).toHaveBeenCalledWith('user1')
-    const text = wrapper.get('[data-testid=my-schedule]').text()
-    expect(text).toContain('Robo Rangers')
-    expect(text).toContain('Round 1')
-    expect(text).toContain('Table 3')
-    // Start time from the schedule planner (M4-14-30).
-    expect(wrapper.get('[data-testid=my-schedule-when]').text()).toBe('Day 1 · from 09:30')
   })
 })

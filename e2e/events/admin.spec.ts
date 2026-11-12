@@ -56,12 +56,17 @@ test.describe('M1 event administration', () => {
     await dialog.getByRole('button', { name: 'Copy' }).click()
     await expect(page.getByRole('cell', { name: 'FI', exact: true })).toBeVisible()
 
-    // Staff (M1-05).
+    // Staff (M1-05, M8-B): an existing account is added to the event right away.
     await page.getByRole('tab', { name: 'Staff' }).click()
-    await page.getByLabel('User email').fill(judge.email)
-    await page.getByLabel('Role').selectOption('judge')
-    await page.getByRole('button', { name: 'Assign' }).click()
+    const invite = page.getByTestId('invite-form')
+    await invite.getByLabel('Name').fill('Jo Judge')
+    await invite.getByLabel('Email').fill(judge.email)
+    await invite.getByLabel('Role').selectOption('judge')
+    await invite.getByRole('button', { name: 'Invite' }).click()
     await expect(page.getByTestId('event-staff')).toContainText('Jo Judge')
+    await expect(
+      page.locator(`[data-staff="${judge.email.toLowerCase()}"]`).getByTestId('staff-status'),
+    ).toHaveText('Active')
 
     // Users page: search by email and grant the admin role.
     await page.goto('/admin/users')

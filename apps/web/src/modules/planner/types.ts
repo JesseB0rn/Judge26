@@ -34,7 +34,7 @@ export interface PlannerCategory {
   code: string
 }
 
-/** A custom column next to the categories, e.g. visitors or coaches (M4-14-33). */
+/** A custom column next to the categories, e.g. visitors or judges (M4-14-33). */
 export interface PlannerColumn {
   id: string
   name: string
@@ -112,8 +112,6 @@ export interface PlannerData {
   /** Staff view (internal blocks and issues included). */
   internal?: boolean
   can_edit?: boolean
-  /** Categories of the signed-in coach's teams. */
-  my_categories?: string[]
 }
 
 /** Where a block is (or is dropped). */

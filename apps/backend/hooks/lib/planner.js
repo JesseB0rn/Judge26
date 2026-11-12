@@ -470,7 +470,7 @@ function payload(app, eventId, internal) {
   }
 }
 
-/** Start time ("HH:MM" or "") of a round's scoring run, shown to judges and coaches (M4-14-30). */
+/** Start time ("HH:MM" or "") of a round's scoring run, shown to judges (M4-14-30). */
 function scoringStart(app, roundId) {
   const phase = findPhase(app, roundId, 'scoring')
   return phase && phase.getString('day') ? phase.getString('starts_at') : ''

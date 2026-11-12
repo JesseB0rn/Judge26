@@ -29,7 +29,7 @@
   },
   "outbox": {
     "title": "Registro di invio",
-    "eventDescription": "E-mail di questo evento. Le e-mail di iscrizione vengono inviate subito, quelle del programma entro un minuto; gli invii non riusciti vengono ripetuti automaticamente fino a cinque volte.",
+    "eventDescription": "E-mail di questo evento. Le e-mail del programma vengono inviate entro un minuto; gli invii non riusciti vengono ripetuti automaticamente fino a cinque volte.",
     "requeued": "Messaggio rimesso in coda.",
     "all": "Tutti i messaggi",
     "count": "nessun messaggio | un messaggio | {count} messaggi",
@@ -54,7 +54,7 @@
   "notify": {
     "queued": "Nessuno da avvisare. | Un’e-mail messa in coda. | {count} e-mail messe in coda.",
     "title": "Notifiche del programma",
-    "description": "I coach delle squadre approvate ricevono le manche della propria squadra (turno, ora, tavolo e posizione). Una squadra è interessata quando il suo programma è cambiato dall’ultima e-mail.",
+    "description": "I contatti delle squadre attive ricevono le manche della propria squadra (turno, ora, tavolo e posizione). Una squadra è interessata quando il suo programma è cambiato dall’ultima e-mail. Le squadre senza e-mail di contatto non ricevono e-mail.",
     "affected": "{count} interessata/e",
     "ofApproved": "su {count} squadre approvate",
     "message": "Messaggio (facoltativo)",
@@ -66,11 +66,19 @@
     "noGames": "Nessuna manche",
     "changed": "Modificato",
     "never": "Mai",
-    "empty": "Ancora nessuna squadra approvata."
+    "empty": "Ancora nessuna squadra approvata.",
+    "noContact": "Nessuna e-mail di contatto"
   },
   "emails": {
-    "description": "Le e-mail inviate a coach e utenti, nella lingua di ciascun destinatario, e il registro di invio.",
+    "description": "Le e-mail inviate ai contatti delle squadre e agli utenti, nella lingua di ciascun destinatario, e il registro di invio.",
     "templates": "Modelli",
     "off": "disattivato"
+  },
+  "mailbox": {
+    "title": "Casella di posta",
+    "description": "Solo sviluppo e test: tutte le e-mail che il server avrebbe inviato. I link si aprono in una nuova scheda.",
+    "refresh": "Aggiorna",
+    "empty": "Ancora nessuna e-mail.",
+    "to": "A {to}"
   }
 }

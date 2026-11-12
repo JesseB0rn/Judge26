@@ -7,6 +7,8 @@ Refines roadmap tasks M7-08 – M7-11. Operations are described in the
 
 Every administrative change is recorded in `audit_log`: who (account, or `superuser <email>`, or
 `system`), when, from which IP, what (collection, record, event) and which fields changed.
+Changes an admin makes while viewing the app as a role are recorded under the admin, with the
+role in `view_as` ([M8-view-as.md](M8-view-as.md#audit-m8-17)).
 
 - **Record API changes** of these collections are logged by request hooks (`hooks/audit.pb.js`):
   events, competition days, categories, teams, team documents, role assignments, games (game
@@ -53,7 +55,7 @@ server:
   top-level `||`. The few deliberate exceptions (registration, own account, the public change
   counter) are listed in the test; any new public rule fails it. `app_settings` and
   `schedule_notices` are closed completely.
-- **Outsiders** (guest, unverified account, verified account without roles, coach / judge / head
+- **Outsiders** (guest, unverified account, verified account without roles, former coach / judge / head
   judge / manager of another event) can neither read, list, update nor delete any record of an
   event, for every event-scoped collection; in a published event they see the event but no
   teams, games, scores, documents, emails, audit entries or roles (M7-T09).

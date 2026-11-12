@@ -7,4 +7,16 @@ export const communicationRoutes: RouteRecordRaw[] = [
     component: () => import('./views/EmailsView.vue'),
     meta: { requiresAdmin: true },
   },
+  // M8-11: captured emails, development and test builds only. The literal check lets the
+  // production build drop the page entirely.
+  ...(import.meta.env.VITE_APP_ENV !== 'production'
+    ? [
+        {
+          path: '/dev/mailbox',
+          name: 'dev-mailbox',
+          component: () => import('./views/DevMailboxView.vue'),
+          meta: { requiresAdmin: true },
+        },
+      ]
+    : []),
 ]

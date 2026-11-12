@@ -454,10 +454,9 @@ describe('M4-14 schedule planner', () => {
     expect((await planner(ctx.manager, ctx.event.id)).issues).toEqual([])
   })
 
-  it('M4-14-T18/T19: coaches and judges cannot edit; internal blocks stay internal', async () => {
+  it('M4-14-T18/T19: visitors and judges cannot edit; internal blocks stay internal', async () => {
     const ctx = await setup()
-    const coach = await fx.user()
-    await fx.team(ctx.event.id, ctx.category.id, { status: 'approved', coach: coach.id })
+    const visitor = await fx.user()
     for (const [title, isPublic] of [
       ['Lunch', true],
       ['Judges briefing', false],
@@ -479,21 +478,20 @@ describe('M4-14 schedule planner', () => {
       false,
       2,
     ])
-    const coachView = await planner(coach, ctx.event.id)
-    expect([coachView.internal, coachView.can_edit]).toEqual([false, false])
-    expect(coachView.blocks.map((b) => b.title)).toEqual(['Lunch'])
-    expect(coachView.issues).toEqual([])
-    expect(coachView.my_categories).toEqual([ctx.category.id])
+    const visitorView = await planner(visitor, ctx.event.id)
+    expect([visitorView.internal, visitorView.can_edit]).toEqual([false, false])
+    expect(visitorView.blocks.map((b) => b.title)).toEqual(['Lunch'])
+    expect(visitorView.issues).toEqual([])
     const managerView = await planner(ctx.manager, ctx.event.id)
     expect(managerView.can_edit).toBe(true)
 
     // Collection rules agree with the endpoint.
-    const coachBlocks = await coach.pb
+    const visitorBlocks = await visitor.pb
       .collection('schedule_blocks')
       .getFullList({ filter: `event = "${ctx.event.id}"` })
-    expect(coachBlocks.map((b) => b.title)).toEqual(['Lunch'])
+    expect(visitorBlocks.map((b) => b.title)).toEqual(['Lunch'])
 
-    for (const user of [coach, ctx.judge]) {
+    for (const user of [visitor, ctx.judge]) {
       await expectDenied(
         user.pb
           .collection('round_phases')
@@ -571,19 +569,19 @@ describe('M4-14 schedule planner', () => {
     it('M4-14-T28: blocks can be placed in custom columns next to the categories', async () => {
       const ctx = await setup()
       const visitors = await column(ctx, 'Visitors', { position: 1 })
-      const coaches = await column(ctx, 'Coaches', { position: 0 })
+      const judges = await column(ctx, 'Judges', { position: 0 })
       const block = await ctx.manager.pb.collection('schedule_blocks').create({
         event: ctx.event.id,
         day: ctx.day1.id,
         starts_at: '10:00',
         duration_minutes: 60,
-        title: 'Coaches meeting',
-        columns: [coaches.id],
+        title: 'Judges meeting',
+        columns: [judges.id],
       })
-      expect(block.columns).toEqual([coaches.id])
+      expect(block.columns).toEqual([judges.id])
       const data = await planner(ctx.manager, ctx.event.id)
-      expect(data.columns.map((c) => c.name)).toEqual(['Coaches', 'Visitors'])
-      expect(data.blocks[0]!.columns).toEqual([coaches.id])
+      expect(data.columns.map((c) => c.name)).toEqual(['Judges', 'Visitors'])
+      expect(data.blocks[0]!.columns).toEqual([judges.id])
       expect(visitors.public).toBe(true)
 
       // Columns of other events are rejected, and names are unique per event.
@@ -615,7 +613,7 @@ describe('M4-14 schedule planner', () => {
       await ctx.manager.pb.collection('schedule_blocks').delete(block.id)
       await ctx.manager.pb.collection('schedule_columns').delete(visitors.id)
       // Deleting the event removes its columns and blocks.
-      await column(ctx, 'Coaches')
+      await column(ctx, 'Judges')
       await fx.su.collection('events').delete(ctx.event.id)
     })
 
@@ -623,21 +621,22 @@ describe('M4-14 schedule planner', () => {
       const ctx = await setup()
       await column(ctx, 'Visitors')
       await column(ctx, 'Judges', { public: false })
-      const coach = await fx.user()
-      await fx.team(ctx.event.id, ctx.category.id, { status: 'approved', coach: coach.id })
+      const visitor = await fx.user()
       expect((await planner(ctx.judge, ctx.event.id)).columns.map((c) => c.name)).toEqual([
         'Judges',
         'Visitors',
       ])
-      expect((await planner(coach, ctx.event.id)).columns.map((c) => c.name)).toEqual(['Visitors'])
+      expect((await planner(visitor, ctx.event.id)).columns.map((c) => c.name)).toEqual([
+        'Visitors',
+      ])
       const res = await fetch(`${server.url}/api/public/events/${ctx.event.id}`)
       const body = (await res.json()) as { planner: PlannerPayload }
       expect(body.planner.columns.map((c) => c.name)).toEqual(['Visitors'])
-      const coachList = await coach.pb
+      const visitorList = await visitor.pb
         .collection('schedule_columns')
         .getFullList({ filter: `event = "${ctx.event.id}"` })
-      expect(coachList.map((c) => c.name)).toEqual(['Visitors'])
-      for (const user of [coach, ctx.judge]) {
+      expect(visitorList.map((c) => c.name)).toEqual(['Visitors'])
+      for (const user of [visitor, ctx.judge]) {
         await expectDenied(
           user.pb.collection('schedule_columns').create({ event: ctx.event.id, name: 'Nope' }),
         )

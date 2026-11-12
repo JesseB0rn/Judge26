@@ -4,10 +4,10 @@ import { login, logout } from '../support/pages'
 
 test.describe('M1 account lifecycle', () => {
   test('M1-01/02/03: register, verify email, sign out and sign in', async ({ page }) => {
-    const email = `${unique('coach')}@test.local`
+    const email = `${unique('user')}@test.local`
 
     await page.goto('/register')
-    await page.getByLabel('Full name').fill('Grace Coach')
+    await page.getByLabel('Full name').fill('Grace Hopper')
     await page.getByLabel('Email').fill(email)
     await page.getByLabel('Password').fill(PASSWORD)
     await page.getByRole('button', { name: 'Create account' }).click()
@@ -22,11 +22,11 @@ test.describe('M1 account lifecycle', () => {
     await page.goto(link.replace(/^https?:\/\/[^/]+/, ''))
     await expect(page.getByTestId('verification-success')).toBeVisible()
     await page.getByRole('link', { name: 'Continue' }).click()
-    await expect(page.getByRole('heading', { name: 'Welcome, Grace Coach' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Welcome, Grace Hopper' })).toBeVisible()
 
     await logout(page)
     await login(page, email, PASSWORD)
-    await expect(page.getByTestId('current-user')).toHaveText('Grace Coach')
+    await expect(page.getByTestId('current-user')).toHaveText('Grace Hopper')
   })
 
   test('M1-T02: duplicate registration is rejected', async ({ page }) => {

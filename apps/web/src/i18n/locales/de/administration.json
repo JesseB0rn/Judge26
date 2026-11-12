@@ -17,7 +17,9 @@
       "games": "Laufresultate",
       "ranking_snapshots": "Ranglisten-Stände",
       "mail_templates": "E-Mail-Vorlagen",
-      "mail_outbox": "E-Mails"
+      "mail_outbox": "E-Mails",
+      "invitations": "Einladungen",
+      "view_sessions": "Ansicht als"
     },
     "filterArea": "Nach Bereich filtern",
     "allAreas": "Alle Bereiche",
@@ -28,7 +30,8 @@
     "what": "Was",
     "detailsOf": "Details zu {entry}",
     "empty": "Keine Einträge.",
-    "description": "Administrative Aktionen in allen Anlässen: wer was wann und von wo geändert hat. Der Verlauf der Bewertungsbogen wird bei jedem Lauf geführt."
+    "description": "Administrative Aktionen in allen Anlässen: wer was wann und von wo geändert hat. Der Verlauf der Bewertungsbogen wird bei jedem Lauf geführt.",
+    "viewAs": "als {role}"
   },
   "staff": {
     "assigned": "Rolle zugewiesen.",
@@ -38,7 +41,15 @@
     "assign": "Rolle zuweisen",
     "userEmail": "E-Mail des Benutzers",
     "userEmailHint": "Die Person muss bereits ein Konto haben.",
-    "submit": "Zuweisen"
+    "submit": "Zuweisen",
+    "status": {
+      "active": "Aktiv",
+      "invited": "Eingeladen",
+      "expired": "Einladung abgelaufen",
+      "revoked": "Zurückgezogen"
+    },
+    "validUntil": "Link gültig bis {date}",
+    "confirmRemove": "{name} aus diesem Anlass entfernen?"
   },
   "users": {
     "description": "Konten und ihre Rollen. Rollen für Anlässe werden im Reiter «Personal» des jeweiligen Anlasses vergeben.",
@@ -107,6 +118,40 @@
       "backups_stale": "Letztes Backup ist veraltet: vor {hours} Stunden",
       "backups_latest": "Letztes Backup vor {hours} Stunden (Zeitplan «{cron}»)",
       "check_failed": "Prüfung fehlgeschlagen: {error}"
+    }
+  },
+  "invite": {
+    "title": "Personen einladen",
+    "description": "Personen ohne Konto erhalten eine E-Mail, um ein Passwort zu wählen; Personen mit Konto werden hinzugefügt und per E-Mail informiert.",
+    "submit": "Einladen",
+    "importButton": "CSV importieren",
+    "importTitle": "Personen zu {event} einladen",
+    "importDescription": "Eine CSV-Datei mit den Spalten name, email und optional role (judge oder head_judge). Gespeichert wird erst, wenn Sie bestätigen.",
+    "file": "CSV-Datei",
+    "example": "Beispieldatei herunterladen",
+    "summary": "{invite} einzuladen, {add} hinzuzufügen, {skipped} übersprungen.",
+    "importSubmit": "Niemanden einladen | Eine Person einladen | {count} Personen einladen",
+    "result": "{invited} eingeladen, {added} hinzugefügt, {already} bereits dabei.",
+    "resent": "Einladung erneut gesendet.",
+    "revoked": "Einladung zurückgezogen.",
+    "resend": "Einladung an {name} erneut senden",
+    "revoke": "Einladung von {name} zurückziehen",
+    "missingColumns": "Fehlende Spalte(n): {columns}.",
+    "noRows": "Die Datei enthält keine Datenzeilen.",
+    "tooManyRows": "Es können höchstens {max} Personen auf einmal eingeladen werden.",
+    "rowStatus": {
+      "invite": "Neu: Einladung",
+      "add": "Bestehendes Konto",
+      "already": "Bereits dabei",
+      "duplicate": "Doppelt, zusammengeführt",
+      "invalid": "Ungültig"
+    },
+    "errors": {
+      "name_required": "Name fehlt.",
+      "name_too_long": "Name ist zu lang.",
+      "email_required": "E-Mail fehlt.",
+      "invalid_email": "Ungültige E-Mail-Adresse.",
+      "invalid_role": "Diese Rolle kann nicht eingeladen werden."
     }
   }
 }

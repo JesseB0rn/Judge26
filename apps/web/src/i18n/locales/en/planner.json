@@ -29,7 +29,7 @@
   "columns": {
     "confirmDelete": "Delete the column “{column}”?",
     "title": "Custom columns",
-    "description": "Columns next to the categories, e.g. visitors or coaches. Custom blocks can be placed in them on every day.",
+    "description": "Columns next to the categories, e.g. visitors or judges. Custom blocks can be placed in them on every day.",
     "nameOf": "Name of {column}",
     "left": "Move {column} left",
     "right": "Move {column} right",
@@ -62,7 +62,7 @@
     "responsibilityPlaceholder": "e.g. Head judge",
     "columnsHint": "None selected: the block covers all columns.",
     "color": "Color",
-    "publicHint": "Public — shown to coaches and on the public pages",
+    "publicHint": "Public — shown on the public pages",
     "delete": "Delete",
     "duplicateHint": "Creates a copy with the values above, e.g. on another day",
     "duplicate": "Duplicate"

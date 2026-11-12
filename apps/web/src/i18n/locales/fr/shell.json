@@ -8,13 +8,30 @@
     "judging": "Arbitrage",
     "review": "Contrôle",
     "events": "Événements",
-    "myTeams": "Mes équipes",
     "live": "Résultats en direct",
     "admin": "Admin",
     "categories": "Catégories",
     "users": "Utilisateurs",
     "emails": "E-mails",
     "audit": "Journal d’audit",
-    "monitoring": "État du système"
+    "monitoring": "État du système",
+    "mailbox": "Boîte aux lettres (dev)"
+  },
+  "viewAs": {
+    "open": "Voir en tant que",
+    "title": "Voir l’application en tant que",
+    "description": "Voir l’application avec les droits d’un rôle dans un événement. L’API applique ce rôle, pas vos droits d’administration ; les modifications sont enregistrées sous votre compte.",
+    "event": "Événement",
+    "role": "Rôle",
+    "person": "Personne",
+    "personHint": "Facultatif. La vue en tant que personne précise est en lecture seule.",
+    "anyone": "Toute personne ayant ce rôle",
+    "submit": "Changer",
+    "banner": "Vue en tant que {role} de {event}",
+    "bannerPerson": "Vue en tant que {name} ({role}, {event})",
+    "readOnly": "Lecture seule",
+    "until": "jusqu’au {date}",
+    "exit": "Retour à l’administration",
+    "hotkey": "Alt+Maj+V"
   }
 }

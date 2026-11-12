@@ -83,8 +83,8 @@
   "invalid_ruleset": "Verwenden Sie ein veröffentlichtes Regelwerk dieser Kategorie.",
   "invalid_scope": "Wählen Sie, wer benachrichtigt werden soll.",
   "category_full": "Die Kategorie ist voll.",
-  "invalid_status": "Dieser Status ist für eine neue Anmeldung nicht möglich.",
-  "invalid_transition": "Die Anmeldung kann nicht in diesen Status wechseln.",
+  "invalid_status": "Dieser Status ist für ein neues Team nicht möglich.",
+  "invalid_transition": "Das Team kann nicht in diesen Status wechseln.",
   "invalid_team": "Das Team ist nicht in der Kategorie dieser Runde angemeldet.",
   "team_not_approved": "Nur genehmigte Teams können Läufe spielen.",
   "invalid_game_rule": "Wählen Sie ein Spiel dieser Kategorie.",
@@ -129,6 +129,25 @@
     },
     "active": {
       "table_in_use": "An diesem Tisch sind noch Läufe geplant."
+    },
+    "password": {
+      "too_short": "Das Passwort muss mindestens 8 Zeichen lang sein."
+    },
+    "passwordConfirm": {
+      "mismatch": "Die Passwörter stimmen nicht überein."
     }
-  }
+  },
+  "invitation_invalid": "Dieser Einladungslink ist nicht gültig.",
+  "invitation_expired": "Diese Einladung ist abgelaufen.",
+  "invitation_revoked": "Diese Einladung wurde zurückgezogen.",
+  "invitation_accepted": "Diese Einladung wurde bereits angenommen.",
+  "invitation_not_found": "Die Einladung wurde nicht gefunden.",
+  "staff_not_found": "Die Person wurde nicht gefunden.",
+  "invalid_rows": "Es gibt niemanden einzuladen.",
+  "invalid_role": "Wählen Sie eine Rolle des Anlasses.",
+  "person_not_found": "Diese Person hat die Rolle im Anlass nicht.",
+  "person_not_activated": "Diese Person hat ihr Konto noch nicht aktiviert.",
+  "view_as_read_only": "Die Ansicht als Person ist schreibgeschützt.",
+  "view_session_ended": "Die Ansicht ist beendet.",
+  "no_view_session": "Keine aktive Ansicht."
 }

@@ -27,7 +27,7 @@ test.describe('M1 permissions in the UI', () => {
   })
 
   test('anonymous users are sent to the login page', async ({ page }) => {
-    await page.goto('/teams')
-    await expect(page).toHaveURL(/\/login\?redirect=(%2F|\/)teams/)
+    await page.goto('/events')
+    await expect(page).toHaveURL(/\/login\?redirect=(%2F|\/)events/)
   })
 })

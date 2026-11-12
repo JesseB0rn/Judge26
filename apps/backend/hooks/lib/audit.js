@@ -149,10 +149,25 @@ function values(record) {
   return result
 }
 
-function actorOf(auth) {
-  if (!auth) return { actor: '', label: 'system' }
-  if (auth.isSuperuser()) return { actor: '', label: `superuser ${auth.email()}` }
-  return { actor: auth.id, label: auth.email() }
+/**
+ * Who acted. Changes made while an admin views the app as a role (M8-C) are made with the
+ * admin's stand-in account; they are recorded under the admin, with the role in `view_as`.
+ */
+function actorOf(app, auth) {
+  if (!auth) return { actor: '', label: 'system', viewAs: '' }
+  if (auth.isSuperuser()) return { actor: '', label: `superuser ${auth.email()}`, viewAs: '' }
+  const adminId = auth.getString('preview_of')
+  if (adminId) {
+    const viewAs = require(`${__hooks}/lib/view_as.js`)
+    const session = viewAs.activeSessionOfStandIn(app, auth.id)
+    const admin = findById(app, 'users', adminId)
+    return {
+      actor: adminId,
+      label: admin ? admin.email() : auth.email(),
+      viewAs: session ? viewAs.label(app, session) : 'preview',
+    }
+  }
+  return { actor: auth.id, label: auth.email(), viewAs: '' }
 }
 
 function requestIp(e) {
@@ -170,9 +185,10 @@ function requestIp(e) {
 function log(app, entry) {
   try {
     const record = new Record(app.findCollectionByNameOrId('audit_log'))
-    const who = actorOf(entry.auth)
+    const who = actorOf(app, entry.auth)
     record.set('actor', who.actor)
     record.set('actor_label', who.label)
+    record.set('view_as', entry.viewAs || who.viewAs)
     record.set('action', entry.action)
     record.set('collection', entry.collection || '')
     record.set('record', entry.record || '')

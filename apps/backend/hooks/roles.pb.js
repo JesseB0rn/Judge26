@@ -61,11 +61,13 @@ routerAdd(
     const query = e.request.url.query()
     const q = (query.get('q') || '').trim()
     const limit = Math.min(Math.max(parseInt(query.get('limit') || '50', 10) || 50, 1), 200)
-    const filter = q ? 'name ~ {:q} || email ~ {:q}' : ''
+    // Stand-in accounts of admins viewing as a role (M8-C) are not people.
+    const filter = q ? 'preview_of = "" && (name ~ {:q} || email ~ {:q})' : 'preview_of = ""'
     const records = e.app.findRecordsByFilter('users', filter, 'name,email', limit, 0, { q })
+    const people = $dbx.hashExp({ preview_of: '' })
     const total = e.app.countRecords(
       'users',
-      q ? $dbx.or($dbx.like('name', q), $dbx.like('email', q)) : $dbx.exp('1=1'),
+      q ? $dbx.and(people, $dbx.or($dbx.like('name', q), $dbx.like('email', q))) : people,
     )
     return e.json(200, {
       total,

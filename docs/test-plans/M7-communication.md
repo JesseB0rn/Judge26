@@ -21,7 +21,7 @@
 | ------- | ------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | M7-T01  | Submit registration             | Confirmation email delivered              | Integration (mail content, link, outbox `sent`)                                                |
 | M7-T02  | Reset password                  | Reset email delivered                     | Integration (here and M1-T05 in `m1-identity.test.ts`)                                         |
-| M7-T03  | Change schedule                 | Affected participants notified            | Integration (only the moved team), Unit (card), E2E (manager notifies coach)                   |
+| M7-T03  | Change schedule                 | Affected participants notified            | Integration (only the moved team), Unit (card), E2E (manager notifies the team contact)        |
 | M7-T12  | Simulate email provider failure | Failure recorded and retry policy applied | Integration (error, 1-minute backoff, sent on retry; failed after 5; manual retry), Unit (log) |
 
 ## Not covered yet

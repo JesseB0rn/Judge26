@@ -3,18 +3,15 @@
   "category": "Kategorie",
   "organization": "Organisation",
   "country": "Land",
-  "coach": "Coach",
-  "coachEmail": "E-Mail Coach",
   "members": "Mitglieder",
   "firstName": "Vorname",
   "lastName": "Nachname",
   "birthYear": "Jahrgang",
   "empty": "Keine Teams.",
-  "ownOnly": "Sie sehen die Teams, die Sie angemeldet haben.",
   "status": {
     "draft": "Entwurf",
     "submitted": "Eingereicht",
-    "approved": "Genehmigt",
+    "approved": "Aktiv",
     "rejected": "Abgelehnt",
     "withdrawn": "Zurückgezogen"
   },
@@ -36,11 +33,6 @@
   },
   "review": {
     "approve": "Genehmigen",
-    "approved": "Anmeldung genehmigt.",
-    "reject": "Ablehnen",
-    "rejected": "Anmeldung abgelehnt.",
-    "rejectTitle": "{team} ablehnen",
-    "rejectDescription": "Der Coach sieht die Begründung und kann die Anmeldung korrigieren und erneut einreichen.",
     "reason": "Begründung"
   },
   "documents": {
@@ -49,7 +41,7 @@
     "tooLarge": "Die Datei ist grösser als {max} MB.",
     "uploaded": "Dokument hochgeladen.",
     "deleted": "Dokument gelöscht.",
-    "visibility": "Sichtbar für den Coach des Teams sowie Schiedsrichter/innen, Oberschiedsrichter/innen und Anlassleitung.",
+    "visibility": "Sichtbar für Schiedsrichter/innen, Oberschiedsrichter/innen und Anlassleitung.",
     "empty": "Noch keine Dokumente.",
     "file": "Datei (PDF, Bild, Office, max. {max} MB)",
     "upload": "Hochladen"
@@ -66,9 +58,8 @@
   "import": {
     "button": "CSV importieren",
     "title": "Teams aus CSV importieren",
-    "description": "Ungültige Zeilen werden gemeldet und übersprungen. Gültige Zeilen werden gemeinsam importiert – lehnt der Server eine davon ab, wird nichts importiert.",
+    "description": "Importierte Teams sind sofort aktiv. Ungültige Zeilen werden gemeldet und übersprungen. Gültige Zeilen werden gemeinsam importiert – lehnt der Server eine davon ab, wird nichts importiert.",
     "file": "CSV-Datei",
-    "initialStatus": "Anfangsstatus",
     "example": "Beispieldatei herunterladen",
     "summary": "{valid} gültige, {invalid} ungültige Zeile(n).",
     "line": "Zeile",
@@ -83,47 +74,40 @@
     "nameTooLong": "Der Teamname darf höchstens {max} Zeichen lang sein.",
     "categoryRequired": "Kategoriekürzel fehlt.",
     "unknownCategory": "Unbekanntes Kategoriekürzel «{code}».",
-    "coachEmailRequired": "E-Mail des Coachs fehlt.",
-    "invalidCoachEmail": "Ungültige E-Mail des Coachs «{email}».",
     "duplicateInFile": "Teamname «{name}» kommt in dieser Datei mehrfach vor.",
-    "alreadyExists": "In {code} gibt es bereits ein Team namens «{name}»."
+    "alreadyExists": "In {code} gibt es bereits ein Team namens «{name}».",
+    "invalidContactEmail": "Ungültige E-Mail des Kontakts «{email}»."
   },
   "export": {
     "title": "teams {event}",
     "teamsSheet": "Teams",
-    "submitted": "Eingereicht",
-    "reviewed": "Geprüft",
-    "reviewNote": "Prüfvermerk",
     "ageIn": "Alter {season}"
   },
   "mine": {
-    "description": "Teamanmeldungen, die Sie als Coach verwalten.",
-    "resubmit": "Erneut einreichen",
-    "submit": "Einreichen",
-    "empty": "Sie haben noch keine Teams angemeldet.",
-    "loadingSchedule": "Zeitplan wird geladen …",
     "round": "Runde",
     "when": "Wann",
     "table": "Tisch",
     "sequence": "Reihenfolge",
-    "from": "ab {time}",
-    "noGames": "Für Ihre Teams sind noch keine Läufe geplant."
+    "from": "ab {time}"
   },
   "form": {
-    "submitted": "Anmeldung eingereicht.",
-    "confirmDeleteDraft": "Entwurf {team} löschen?",
-    "rejectedTitle": "Anmeldung abgelehnt",
-    "rejectedText": "{note} – korrigieren Sie die Anmeldung und reichen Sie sie erneut ein.",
-    "awaitingReview": "Eingereicht am {date}; wird geprüft.",
-    "approvedAt": "Genehmigt am {date}.",
-    "locked": "Diese Anmeldung kann nicht mehr geändert werden.",
     "name": "Teamname",
     "organization": "Schule / Organisation",
-    "coachName": "Name des Coachs",
     "categoryLimits": "{category}: {min}–{max} Mitglieder.",
     "categoryLimitsAge": "{category}: {min}–{max} Mitglieder, Alter {minAge}–{maxAge} im Jahr {season}.",
+    "newTitle": "Neues Team",
+    "readOnly": "Nur die Anlassleitung kann Teams ändern.",
+    "archived": "Der Anlass ist archiviert; seine Teams können nicht mehr geändert werden.",
+    "inactiveTitle": "Team nicht aktiv",
+    "inactiveText": "Das Team wird weder eingeplant noch rangiert. Aktivieren Sie es, damit es wieder teilnimmt.",
+    "withdraw": "Team zurückziehen",
+    "activate": "Team aktivieren",
+    "delete": "Team löschen",
+    "confirmDelete": "{team} mit seinen Läufen und Dokumenten löschen?",
     "saveDraft": "Entwurf speichern",
-    "submit": "Anmeldung einreichen",
     "deleteDraft": "Entwurf löschen"
-  }
+  },
+  "contact": "Kontakt",
+  "contactEmail": "E-Mail Kontakt",
+  "add": "Team hinzufügen"
 }

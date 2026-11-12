@@ -77,10 +77,12 @@ onMailerSend((e) => {
     html: message.html,
     sentAt: new Date().toISOString(),
   }
-  const store = e.app.store()
-  const mails = JSON.parse(store.get('dev_mails') || '[]')
-  mails.push(entry)
-  store.set('dev_mails', JSON.stringify(mails.slice(-200)))
+  // Atomic: mails sent at the same time must not overwrite each other (M8-11 mailbox).
+  e.app.store().setFunc('dev_mails', (old) => {
+    const mails = JSON.parse(old || '[]')
+    mails.push(entry)
+    return JSON.stringify(mails.slice(-200))
+  })
   if (env === 'development') {
     console.log(`[dev mail] to=${entry.to.join(',')} subject="${entry.subject}"`)
     const link = /href="([^"]+)"/.exec(entry.html)
@@ -228,28 +230,11 @@ onRecordValidate((e) => {
 }, 'mail_templates')
 
 // ---------------------------------------------------------------------------
-// Registration notifications (M7-03)
-// ---------------------------------------------------------------------------
-
-// The coach is emailed when a registration is submitted, approved or rejected. Queued in the
-// same transaction as the status change; a failure to queue never blocks the registration.
-onRecordCreate((e) => {
-  e.next()
-  require(`${__hooks}/lib/mail.js`).onTeamSaved(e, '')
-}, 'teams')
-
-onRecordUpdate((e) => {
-  const from = e.record.original().getString('status')
-  e.next()
-  require(`${__hooks}/lib/mail.js`).onTeamSaved(e, from)
-}, 'teams')
-
-// ---------------------------------------------------------------------------
 // Schedule notifications (M7-04)
 // ---------------------------------------------------------------------------
 
-// GET /api/events/{id}/notifications/schedule -> every approved team's schedule and whether it
-// changed since the coach was last notified
+// GET /api/events/{id}/notifications/schedule -> every active team's schedule and whether it
+// changed since its contact was last notified
 routerAdd(
   'GET',
   '/api/events/{id}/notifications/schedule',

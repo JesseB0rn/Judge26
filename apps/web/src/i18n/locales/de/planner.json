@@ -29,7 +29,7 @@
   "columns": {
     "confirmDelete": "Die Spalte «{column}» löschen?",
     "title": "Eigene Spalten",
-    "description": "Spalten neben den Kategorien, z. B. Besucher oder Coaches. Eigene Blöcke können an jedem Tag darin platziert werden.",
+    "description": "Spalten neben den Kategorien, z. B. Besucher oder Schiedsrichter/innen. Eigene Blöcke können an jedem Tag darin platziert werden.",
     "nameOf": "Name von {column}",
     "left": "{column} nach links",
     "right": "{column} nach rechts",
@@ -62,7 +62,7 @@
     "responsibilityPlaceholder": "z. B. Oberschiedsrichter/in",
     "columnsHint": "Keine gewählt: Der Block deckt alle Spalten ab.",
     "color": "Farbe",
-    "publicHint": "Öffentlich – für Coaches und auf den öffentlichen Seiten sichtbar",
+    "publicHint": "Öffentlich – auf den öffentlichen Seiten sichtbar",
     "delete": "Löschen",
     "duplicateHint": "Erstellt eine Kopie mit den obigen Werten, z. B. an einem anderen Tag",
     "duplicate": "Duplizieren"

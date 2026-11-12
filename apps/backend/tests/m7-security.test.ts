@@ -84,7 +84,19 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/events/{id}/schedule/generate', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/schedule/validation', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/judges', access: 'auth' },
-  { method: 'GET', path: '/api/users/{id}/schedule', access: 'auth' },
+  // Invitations (M8-B): managed by event managers; the link holder looks up and accepts.
+  { method: 'GET', path: '/api/events/{id}/staff', access: 'auth' },
+  { method: 'DELETE', path: '/api/events/{id}/staff/{assignment}', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/invitations/preview', access: 'auth' },
+  { method: 'POST', path: '/api/events/{id}/invitations', access: 'auth' },
+  { method: 'POST', path: '/api/invitations/{id}/resend', access: 'auth' },
+  { method: 'POST', path: '/api/invitations/{id}/revoke', access: 'auth' },
+  { method: 'GET', path: '/api/invitations/lookup', access: 'public' },
+  { method: 'POST', path: '/api/invitations/accept', access: 'public' },
+  // M8-C: admin view as (admins start; the switched token reads and ends its session).
+  { method: 'POST', path: '/api/view-as', access: 'auth' },
+  { method: 'GET', path: '/api/view-as', access: 'auth' },
+  { method: 'POST', path: '/api/view-as/end', access: 'auth' },
 ]
 
 // Required: flag (10), blocks (5 each); parking exactly one of full (15) / partial (5).
@@ -150,7 +162,8 @@ describe('M7 security', () => {
     const category = await fx.category(event.id)
     const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
     const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
-    const coach = await fx.user()
+    // Linked to the team before the coach role was retired (M8-A); also the team's contact.
+    const formerCoach = await fx.user()
     const su = fx.su
     const day = await su
       .collection('competition_days')
@@ -174,8 +187,8 @@ describe('M7 security', () => {
       event: event.id,
       category: category.id,
       name: 'Secret Team',
-      coach: coach.id,
-      coach_email: coach.email,
+      coach: formerCoach.id,
+      coach_email: formerCoach.email,
       status: 'approved',
       members: validMembers(),
     })
@@ -185,6 +198,10 @@ describe('M7 security', () => {
       status: 'scheduled',
       table: table.id,
       sequence: 1,
+    })
+    await manager.pb.send(`/api/events/${event.id}/notifications/schedule`, {
+      method: 'POST',
+      body: {},
     })
     await judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
       method: 'POST',
@@ -244,7 +261,7 @@ describe('M7 security', () => {
       mail_outbox: mail.id,
       role_assignments: roleRecord.id,
     }
-    return { event, category, manager, judge, coach, team, game, round, records }
+    return { event, category, manager, judge, formerCoach, team, game, round, records }
   }
 
   /** Users with no business in the event (M7-T09). */
@@ -259,7 +276,7 @@ describe('M7 security', () => {
       ['guest', server.client()],
       ['unverified user', unverified],
       ['verified user without roles', (await fx.user()).pb],
-      ['coach of another event', otherCoach.pb],
+      ['former coach of another event', otherCoach.pb],
       [
         'judge of another event',
         (await fx.user({ roles: [{ role: 'judge', event: other.id }] })).pb,
@@ -306,7 +323,7 @@ describe('M7 security', () => {
         )
         .map((c) => c.name)
         .sort()
-      expect(closed).toEqual(['app_settings', 'schedule_notices'])
+      expect(closed).toEqual(['app_settings', 'schedule_notices', 'view_sessions'])
     })
 
     it('M7-T09: outsiders can neither read nor change the records of an event', async () => {
@@ -360,15 +377,23 @@ describe('M7 security', () => {
       }
     })
 
-    it('a coach sees the own team but not the scores or audit of it', async () => {
+    it('M8-T02: a former coach sees neither the team nor its games, scores or emails', async () => {
       const ctx = await populated('published')
-      const coach = ctx.coach.pb
-      expect((await coach.collection('teams').getOne(ctx.team.id)).name).toBe('Secret Team')
-      for (const collection of ['score_audit', 'audit_log', 'mail_outbox', 'role_assignments']) {
-        await expectDenied(coach.collection(collection).getOne(ctx.records[collection]!))
+      const pb = ctx.formerCoach.pb
+      for (const collection of [
+        'teams',
+        'games',
+        'team_documents',
+        'score_sheets',
+        'score_audit',
+        'audit_log',
+        'mail_outbox',
+        'role_assignments',
+      ]) {
+        await expectDenied(pb.collection(collection).getOne(ctx.records[collection]!))
       }
       await expectDenied(
-        coach.collection('teams').update(ctx.team.id, { status: 'withdrawn', name: 'x' }),
+        pb.collection('teams').update(ctx.team.id, { status: 'withdrawn', name: 'x' }),
       )
     })
 
@@ -461,7 +486,6 @@ describe('M7 security', () => {
         ['GET', `/api/events/${ctx.event.id}/planner`],
         ['POST', `/api/categories/${ctx.category.id}/ranking/snapshots`, { title: 'x' }],
         ['POST', `/api/categories/${ctx.category.id}/copy`, {}],
-        ['GET', `/api/users/${ctx.judge.id}/schedule`],
         ['POST', `/api/mail/outbox/${ctx.records.mail_outbox}/retry`, {}],
         [
           'POST',
@@ -470,6 +494,18 @@ describe('M7 security', () => {
         ],
         ['GET', '/api/admin/users'],
         ['GET', '/api/mail/templates/variables'],
+        ['GET', `/api/events/${ctx.event.id}/staff`],
+        [
+          'POST',
+          `/api/events/${ctx.event.id}/invitations/preview`,
+          { rows: [{ name: 'x', email: 'x@test.local' }] },
+        ],
+        [
+          'POST',
+          `/api/events/${ctx.event.id}/invitations`,
+          { rows: [{ name: 'x', email: 'x@test.local' }] },
+        ],
+        ['DELETE', `/api/events/${ctx.event.id}/staff/${ctx.records.role_assignments}`],
       ]
       for (const [who, pb] of [
         ['judge', judge![1]],

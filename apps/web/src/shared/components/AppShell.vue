@@ -1,16 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import { LogOutIcon } from '@lucide/vue'
+import { devMailboxEnabled } from '@/modules/communication/devMailbox'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { EyeIcon, LogOutIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useSessionStore } from '@/shared/auth/session'
 import { config } from '@/shared/config/env'
 import { t } from '@/i18n'
+import { isViewAsHotkey } from '@/shared/auth/viewAs'
 import LanguageSwitcher from './LanguageSwitcher.vue'
+import ViewAsBanner from './ViewAsBanner.vue'
+import ViewAsDialog from './ViewAsDialog.vue'
 
 const session = useSessionStore()
 const router = useRouter()
+const route = useRoute()
+
+// Admin "view as" (M8-13, M8-15): the header button or Alt+Shift+V opens the switch; while
+// switched, the same keys return to admin.
+const viewAsOpen = ref(false)
+const banner = ref<InstanceType<typeof ViewAsBanner>>()
+const currentEvent = computed(() =>
+  route.name === 'event' && typeof route.params.id === 'string' ? route.params.id : undefined,
+)
+function onKey(e: KeyboardEvent) {
+  if (!isViewAsHotkey(e)) return
+  if (session.viewAs) {
+    e.preventDefault()
+    void banner.value?.exit()
+  } else if (session.canViewAs) {
+    e.preventDefault()
+    viewAsOpen.value = true
+  }
+}
+onMounted(() => window.addEventListener('keydown', onKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 async function logout() {
   session.logout()
@@ -32,12 +57,7 @@ const work = computed(() => {
 const browse = computed(() => {
   const signedIn = session.isAuthenticated && session.isVerified
   return [
-    ...(signedIn
-      ? [
-          { to: '/events', label: t('shell.nav.events') },
-          { to: '/teams', label: t('shell.nav.myTeams') },
-        ]
-      : []),
+    ...(signedIn ? [{ to: '/events', label: t('shell.nav.events') }] : []),
     { to: '/live', label: t('shell.nav.live') },
   ]
 })
@@ -49,6 +69,7 @@ const admin = computed(() =>
         { to: '/admin/emails', label: t('shell.nav.emails') },
         { to: '/admin/audit', label: t('shell.nav.audit') },
         { to: '/admin/monitoring', label: t('shell.nav.monitoring') },
+        ...(devMailboxEnabled ? [{ to: '/dev/mailbox', label: t('shell.nav.mailbox') }] : []),
       ]
     : [],
 )
@@ -61,6 +82,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
 
 <template>
   <div class="flex min-h-svh flex-col">
+    <ViewAsBanner ref="banner" />
     <header class="border-b print:hidden">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 px-4 sm:flex-nowrap">
         <RouterLink to="/" class="flex h-14 items-center font-semibold">{{
@@ -113,6 +135,16 @@ const activeClass = '!bg-foreground !text-background font-medium'
             {{ config.environment }}
           </span>
           <template v-if="session.isAuthenticated">
+            <Button
+              v-if="session.canViewAs"
+              variant="ghost"
+              size="sm"
+              data-testid="view-as-open"
+              :title="t('shell.viewAs.hotkey')"
+              @click="viewAsOpen = true"
+              ><EyeIcon />
+              <span class="hidden md:inline">{{ t('shell.viewAs.open') }}</span></Button
+            >
             <span class="hidden text-sm text-muted-foreground lg:inline" data-testid="current-user">
               {{ session.user?.name || session.user?.email }}
             </span>
@@ -134,6 +166,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
     <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
       <slot />
     </main>
+    <ViewAsDialog v-if="session.canViewAs" v-model:open="viewAsOpen" :event-id="currentEvent" />
     <Toaster rich-colors />
   </div>
 </template>

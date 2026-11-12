@@ -7,13 +7,6 @@
     "published": "Published",
     "archived": "Archived"
   },
-  "registration": {
-    "archived": "Event archived",
-    "unpublished": "Not yet published",
-    "notYetOpen": "Registration not yet open",
-    "open": "Registration open",
-    "closed": "Registration closed"
-  },
   "days": {
     "title": "Competition days",
     "hoursSaved": "Hours saved.",
@@ -26,9 +19,7 @@
   "form": {
     "editTitle": "Edit event",
     "newTitle": "New event",
-    "description": "Competition days and categories are managed on the event page.",
-    "opens": "Registration opens",
-    "closes": "Registration closes"
+    "description": "Competition days and categories are managed on the event page."
   },
   "detail": {
     "updated": "Event updated.",
@@ -38,12 +29,8 @@
     "restore": "Restore",
     "reviewScores": "Review scores",
     "planner": "Planner",
-    "registerTeam": "Register a team",
     "archivedNotice": "This event is archived. Its records are read-only.",
-    "details": "Details",
-    "registration": "Registration:",
-    "opens": "Opens:",
-    "closes": "Closes:"
+    "details": "Details"
   },
   "tabs": {
     "overview": "Overview",
@@ -57,7 +44,6 @@
   },
   "list": {
     "description": "Competitions you can access.",
-    "registration": "Registration",
     "empty": "No events available."
   }
 }

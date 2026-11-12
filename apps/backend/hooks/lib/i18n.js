@@ -15,7 +15,10 @@ const MESSAGES = {
     noTable: 'table not assigned yet',
     check: 'robot check {day}',
     noGames: 'No games are currently scheduled for this team.',
-    coach: 'coach',
+    contact: 'team',
+    role_judge: 'judge',
+    role_head_judge: 'head judge',
+    role_event_manager: 'event manager',
   },
   de: {
     attempt: '{round} (Versuch {attempt})',
@@ -24,7 +27,10 @@ const MESSAGES = {
     noTable: 'Tisch noch nicht zugeteilt',
     check: 'Roboterkontrolle {day}',
     noGames: 'Für dieses Team sind zurzeit keine Läufe geplant.',
-    coach: 'Coach',
+    contact: 'Team',
+    role_judge: 'Schiedsrichter/in',
+    role_head_judge: 'Oberschiedsrichter/in',
+    role_event_manager: 'Anlassleitung',
   },
   fr: {
     attempt: '{round} (essai {attempt})',
@@ -33,7 +39,10 @@ const MESSAGES = {
     noTable: 'table pas encore attribuée',
     check: 'contrôle du robot {day}',
     noGames: 'Aucune manche n’est actuellement planifiée pour cette équipe.',
-    coach: 'coach',
+    contact: 'équipe',
+    role_judge: 'juge',
+    role_head_judge: 'juge principal·e',
+    role_event_manager: 'responsable de l’événement',
   },
   it: {
     attempt: '{round} (tentativo {attempt})',
@@ -42,7 +51,10 @@ const MESSAGES = {
     noTable: 'tavolo non ancora assegnato',
     check: 'controllo del robot {day}',
     noGames: 'Al momento non è pianificata nessuna manche per questa squadra.',
-    coach: 'coach',
+    contact: 'squadra',
+    role_judge: 'giudice',
+    role_head_judge: 'giudice capo',
+    role_event_manager: 'responsabile dell’evento',
   },
 }
 

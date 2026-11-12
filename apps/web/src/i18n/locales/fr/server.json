@@ -83,8 +83,8 @@
   "invalid_ruleset": "Utilisez un règlement publié de cette catégorie.",
   "invalid_scope": "Choisissez qui notifier.",
   "category_full": "La catégorie est complète.",
-  "invalid_status": "Ce statut n’est pas possible pour une nouvelle inscription.",
-  "invalid_transition": "L’inscription ne peut pas passer à ce statut.",
+  "invalid_status": "Ce statut n’est pas possible pour une nouvelle équipe.",
+  "invalid_transition": "L’équipe ne peut pas passer à ce statut.",
   "invalid_team": "L’équipe n’est pas inscrite dans la catégorie de ce tour.",
   "team_not_approved": "Seules les équipes acceptées peuvent jouer des manches.",
   "invalid_game_rule": "Choisissez un jeu de cette catégorie.",
@@ -129,6 +129,25 @@
     },
     "active": {
       "table_in_use": "Des manches sont encore planifiées sur cette table."
+    },
+    "password": {
+      "too_short": "Le mot de passe doit comporter au moins 8 caractères."
+    },
+    "passwordConfirm": {
+      "mismatch": "Les mots de passe ne correspondent pas."
     }
-  }
+  },
+  "invitation_invalid": "Ce lien d’invitation n’est pas valable.",
+  "invitation_expired": "Cette invitation a expiré.",
+  "invitation_revoked": "Cette invitation a été révoquée.",
+  "invitation_accepted": "Cette invitation a déjà été acceptée.",
+  "invitation_not_found": "L’invitation est introuvable.",
+  "staff_not_found": "La personne est introuvable.",
+  "invalid_rows": "Il n’y a personne à inviter.",
+  "invalid_role": "Choisissez un rôle de l’événement.",
+  "person_not_found": "Cette personne n’a pas ce rôle dans l’événement.",
+  "person_not_activated": "Cette personne n’a pas encore activé son compte.",
+  "view_as_read_only": "La vue en tant que personne est en lecture seule.",
+  "view_session_ended": "La vue est terminée.",
+  "no_view_session": "Aucune vue active."
 }

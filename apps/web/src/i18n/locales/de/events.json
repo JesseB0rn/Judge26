@@ -7,13 +7,6 @@
     "published": "Veröffentlicht",
     "archived": "Archiviert"
   },
-  "registration": {
-    "archived": "Anlass archiviert",
-    "unpublished": "Noch nicht veröffentlicht",
-    "notYetOpen": "Anmeldung noch nicht offen",
-    "open": "Anmeldung offen",
-    "closed": "Anmeldung geschlossen"
-  },
   "days": {
     "title": "Wettkampftage",
     "hoursSaved": "Zeiten gespeichert.",
@@ -26,9 +19,7 @@
   "form": {
     "editTitle": "Anlass bearbeiten",
     "newTitle": "Neuer Anlass",
-    "description": "Wettkampftage und Kategorien werden auf der Seite des Anlasses verwaltet.",
-    "opens": "Anmeldung ab",
-    "closes": "Anmeldeschluss"
+    "description": "Wettkampftage und Kategorien werden auf der Seite des Anlasses verwaltet."
   },
   "detail": {
     "updated": "Anlass aktualisiert.",
@@ -38,12 +29,8 @@
     "restore": "Wiederherstellen",
     "reviewScores": "Punkte prüfen",
     "planner": "Planer",
-    "registerTeam": "Team anmelden",
     "archivedNotice": "Dieser Anlass ist archiviert. Seine Daten können nur gelesen werden.",
-    "details": "Details",
-    "registration": "Anmeldung:",
-    "opens": "Ab:",
-    "closes": "Bis:"
+    "details": "Details"
   },
   "tabs": {
     "overview": "Übersicht",
@@ -57,7 +44,6 @@
   },
   "list": {
     "description": "Wettbewerbe, auf die Sie Zugriff haben.",
-    "registration": "Anmeldung",
     "empty": "Keine Anlässe verfügbar."
   }
 }

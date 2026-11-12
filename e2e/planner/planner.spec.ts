@@ -122,10 +122,10 @@ test.describe('Schedule planner', () => {
     await expect(page.getByRole('dialog').getByLabel('Title')).toHaveValue('Lunch')
   })
 
-  test('coaches see a read-only schedule with public blocks only', async ({ page }) => {
+  test('visitors see a read-only schedule with public blocks only', async ({ page }) => {
     const { event, category } = await createEvent()
-    const coach = await createUser()
-    await createApprovedTeam(event.id, category.id, `Team ${Date.now()}`, coach.id)
+    const visitor = await createUser()
+    await createApprovedTeam(event.id, category.id, `Team ${Date.now()}`)
     const day = await createDay(event.id, '2026-06-01', 'Day 1')
     const round = await createRound(category.id, 'R1', 30, 60)
     const phases = await getRoundPhases(round.id)
@@ -138,7 +138,7 @@ test.describe('Schedule planner', () => {
       public: false,
     })
 
-    await login(page, coach.email, coach.password)
+    await login(page, visitor.email, visitor.password)
     await page.goto(`/events/${event.id}/planner`)
     await expect(page.getByRole('heading', { name: 'Schedule', exact: true })).toBeVisible()
     await expect(page.getByTestId('planner-grid')).toContainText('Lunch')
@@ -155,14 +155,14 @@ test.describe('Schedule planner', () => {
   test('custom columns sit next to the categories and hold custom blocks', async ({ page }) => {
     const { event, category } = await createEvent()
     const manager = await createUser({ roles: [{ role: 'event_manager', event: event.id }] })
-    const coach = await createUser()
-    await createApprovedTeam(event.id, category.id, `Team ${Date.now()}`, coach.id)
+    const visitor = await createUser()
+    await createApprovedTeam(event.id, category.id, `Team ${Date.now()}`)
     const day = await createDay(event.id, '2026-06-01', 'Day 1')
     await createColumn(event.id, 'Judges', { public: false })
     await createBlock(event.id, {
       day: day.id,
       starts_at: '09:00',
-      title: 'Coach meeting',
+      title: 'Team meeting',
       categories: [category.id],
     })
 
@@ -195,8 +195,8 @@ test.describe('Schedule planner', () => {
     await expect(openHouse).toBeVisible()
     expect((await openHouse.boundingBox())!.x).toBeGreaterThan(box.x + 168 * 2)
 
-    // Drag the coach meeting from its category into the Visitors column.
-    const meeting = page.locator('[data-item^="block:"]', { hasText: 'Coach meeting' }).first()
+    // Drag the team meeting from its category into the Visitors column.
+    const meeting = page.locator('[data-item^="block:"]', { hasText: 'Team meeting' }).first()
     const start = await center(meeting)
     await drag(page, start, { x: start.x + 168 * 2, y: start.y })
     await expect.poll(async () => (await meeting.boundingBox())!.x).toBeGreaterThan(box.x + 168 * 2)
@@ -207,10 +207,10 @@ test.describe('Schedule planner', () => {
     await page.getByRole('button', { name: 'Delete Visitors' }).click()
     await expect(page.getByRole('dialog')).toContainText('Blocks are still placed in this column')
 
-    // Coaches see public columns only.
+    // Visitors see public columns only.
     await page.keyboard.press('Escape')
     await logout(page)
-    await login(page, coach.email, coach.password)
+    await login(page, visitor.email, visitor.password)
     await page.goto(`/events/${event.id}/planner`)
     await expect(page.locator(`section[data-day="${day.id}"] [data-column]`)).toHaveText([
       'RoboMission Junior',

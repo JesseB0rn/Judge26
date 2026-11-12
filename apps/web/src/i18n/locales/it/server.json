@@ -83,8 +83,8 @@
   "invalid_ruleset": "Usi un regolamento pubblicato di questa categoria.",
   "invalid_scope": "Scelga chi avvisare.",
   "category_full": "La categoria è al completo.",
-  "invalid_status": "Questo stato non è possibile per una nuova iscrizione.",
-  "invalid_transition": "L’iscrizione non può passare a questo stato.",
+  "invalid_status": "Questo stato non è possibile per una nuova squadra.",
+  "invalid_transition": "La squadra non può passare a questo stato.",
   "invalid_team": "La squadra non è iscritta nella categoria di questo turno.",
   "team_not_approved": "Solo le squadre approvate possono giocare manche.",
   "invalid_game_rule": "Scelga un gioco di questa categoria.",
@@ -129,6 +129,25 @@
     },
     "active": {
       "table_in_use": "Su questo tavolo sono ancora pianificate delle manche."
+    },
+    "password": {
+      "too_short": "La password deve avere almeno 8 caratteri."
+    },
+    "passwordConfirm": {
+      "mismatch": "Le password non coincidono."
     }
-  }
+  },
+  "invitation_invalid": "Questo link d’invito non è valido.",
+  "invitation_expired": "Questo invito è scaduto.",
+  "invitation_revoked": "Questo invito è stato revocato.",
+  "invitation_accepted": "Questo invito è già stato accettato.",
+  "invitation_not_found": "L’invito non è stato trovato.",
+  "staff_not_found": "La persona non è stata trovata.",
+  "invalid_rows": "Non c’è nessuno da invitare.",
+  "invalid_role": "Scelga un ruolo dell’evento.",
+  "person_not_found": "Questa persona non ha il ruolo nell’evento.",
+  "person_not_activated": "Questa persona non ha ancora attivato il suo account.",
+  "view_as_read_only": "La vista come persona è di sola lettura.",
+  "view_session_ended": "La vista è terminata.",
+  "no_view_session": "Nessuna vista attiva."
 }

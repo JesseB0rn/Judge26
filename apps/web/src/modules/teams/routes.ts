@@ -1,7 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 
 export const teamRoutes: RouteRecordRaw[] = [
-  { path: '/teams', name: 'my-teams', component: () => import('./views/MyTeamsView.vue') },
   {
     path: '/teams/:id',
     name: 'team',

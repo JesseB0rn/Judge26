@@ -17,7 +17,6 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
-import { formatDateTime } from '@/shared/format'
 import type {
   CategoryRecord,
   EventRecord,
@@ -26,12 +25,15 @@ import type {
   TeamStatus,
 } from '@/shared/types/records'
 import { createTeam, deleteTeam, getTeam, updateTeam, type TeamInput } from '../api'
-import { canCoachEdit, validateMembers } from '../lib'
+import { validateMembers } from '../lib'
 import MembersEditor from '../components/MembersEditor.vue'
 import TeamDocuments from '../components/TeamDocuments.vue'
 import TeamStatusBadge from '../components/TeamStatusBadge.vue'
 
-/** Create (`eventId`) or view/edit (`id`) a team registration. */
+/**
+ * Create (`eventId`) or view/edit (`id`) a team. Event managers edit, withdraw and reactivate
+ * teams; other event staff see them read-only (M8-A).
+ */
 const props = defineProps<{ id?: string; eventId?: string }>()
 const session = useSessionStore()
 const router = useRouter()
@@ -54,12 +56,10 @@ const form = reactive<TeamInput & { members: TeamMember[] }>({
 })
 
 const isManager = computed(() => !!event.value && session.canManageEvent(event.value.id))
-const isOwner = computed(() => !team.value || team.value.coach === session.user?.id)
-const editable = computed(() => {
-  if (!event.value) return false
-  if (isManager.value) return event.value.status !== 'archived'
-  return isOwner.value && canCoachEdit(team.value, event.value)
-})
+const editable = computed(
+  () => !!event.value && isManager.value && event.value.status !== 'archived',
+)
+const active = computed(() => !team.value || team.value.status === 'approved')
 const category = computed(() => categories.value.find((c) => c.id === form.category))
 
 async function load() {
@@ -79,8 +79,6 @@ async function load() {
       })
     } else if (props.eventId) {
       event.value = await getEvent(props.eventId)
-      form.coach_name = session.user?.name ?? ''
-      form.coach_email = session.user?.email ?? ''
     }
     if (event.value && team.value) {
       // An existing team already has its category; the list (slow: its access rule) only feeds
@@ -103,8 +101,9 @@ async function load() {
   }
 }
 
+/** Saves the form; `status` also activates or withdraws the team. */
 const save = useSubmit(async (status?: TeamStatus) => {
-  const complete = status === 'submitted' || status === 'approved'
+  const complete = (status ?? (active.value ? 'approved' : '')) === 'approved'
   clientErrors.value = validateMembers(form.members, {
     category: category.value,
     season: event.value?.season,
@@ -116,20 +115,16 @@ const save = useSubmit(async (status?: TeamStatus) => {
   if (team.value) {
     team.value = await updateTeam(team.value.id, status ? { ...data, status } : data)
   } else {
-    // Staff create registrations on behalf of coaches (linked by email).
-    const coach = isManager.value ? '' : session.user!.id
-    const created = await createTeam(event.value!.id, coach, data, status ?? 'draft')
+    const created = await createTeam(event.value!.id, data)
     await router.replace({ name: 'team', params: { id: created.id } })
     team.value = await getTeam(created.id)
   }
 })
 
 const remove = useSubmit(async () => {
-  if (!team.value || !confirm(t('teams.form.confirmDeleteDraft', { team: team.value.name }))) {
-    return
-  }
+  if (!team.value || !confirm(t('teams.form.confirmDelete', { team: team.value.name }))) return
   await deleteTeam(team.value.id)
-  await router.replace({ name: 'my-teams' })
+  await router.replace({ name: 'event', params: { id: team.value.event }, query: { tab: 'teams' } })
 })
 
 onMounted(load)
@@ -139,46 +134,30 @@ onMounted(load)
   <ErrorAlert :error="loadError" />
   <Skeleton v-if="loading" class="h-10 w-1/2" />
   <template v-else-if="event">
-    <PageHeader :title="team ? team.name : t('events.detail.registerTeam')">
+    <PageHeader :title="team ? team.name : t('teams.form.newTitle')">
       <template #actions>
         <TeamStatusBadge v-if="team" :status="team.status" class="self-center" />
         <Button as-child variant="outline">
-          <RouterLink :to="{ name: 'event', params: { id: event.id } }">{{
+          <RouterLink :to="{ name: 'event', params: { id: event.id }, query: { tab: 'teams' } }">{{
             event.name
           }}</RouterLink>
         </Button>
       </template>
     </PageHeader>
 
-    <Alert
-      v-if="team?.status === 'rejected'"
-      variant="destructive"
-      class="mb-4"
-      data-testid="review-note"
-    >
-      <AlertTitle>{{ t('teams.form.rejectedTitle') }}</AlertTitle>
+    <Alert v-if="!editable" class="mb-4" data-testid="read-only">
       <AlertDescription>{{
-        t('teams.form.rejectedText', { note: team.review_note })
+        event.status === 'archived' ? t('teams.form.archived') : t('teams.form.readOnly')
       }}</AlertDescription>
     </Alert>
-    <Alert v-else-if="team && !editable" class="mb-4">
-      <AlertDescription>
-        <template v-if="team.status === 'submitted'">{{
-          t('teams.form.awaitingReview', { date: formatDateTime(team.submitted_at) })
-        }}</template>
-        <template v-else-if="team.status === 'approved'">{{
-          t('teams.form.approvedAt', { date: formatDateTime(team.reviewed_at) })
-        }}</template>
-        <template v-else>{{ t('teams.form.locked') }}</template>
-      </AlertDescription>
+    <Alert v-else-if="team && !active" class="mb-4" data-testid="inactive">
+      <AlertTitle>{{ t('teams.form.inactiveTitle') }}</AlertTitle>
+      <AlertDescription>{{ t('teams.form.inactiveText') }}</AlertDescription>
     </Alert>
 
     <Card class="max-w-3xl">
       <CardContent>
-        <form
-          class="flex flex-col gap-6"
-          @submit.prevent="save.run(isManager ? undefined : 'submitted')"
-        >
+        <form class="flex flex-col gap-6" @submit.prevent="save.run()">
           <ErrorAlert :error="save.error.value ?? remove.error.value" />
           <Alert v-if="clientErrors.length" variant="destructive" data-testid="client-errors">
             <AlertDescription
@@ -228,7 +207,7 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  :label="t('teams.form.coachName')"
+                  :label="t('teams.contact')"
                   name="coach_name"
                   :errors="save.fieldErrors.value"
                 >
@@ -236,11 +215,11 @@ onMounted(load)
                 </FormField>
                 <FormField
                   v-slot="{ id }"
-                  :label="t('teams.coachEmail')"
+                  :label="t('teams.contactEmail')"
                   name="coach_email"
                   :errors="save.fieldErrors.value"
                 >
-                  <Input :id="id" v-model="form.coach_email" type="email" required />
+                  <Input :id="id" v-model="form.coach_email" type="email" />
                 </FormField>
               </div>
               <p v-if="category" class="text-sm text-muted-foreground">
@@ -277,29 +256,36 @@ onMounted(load)
           </fieldset>
 
           <div v-if="editable" class="flex flex-wrap gap-2">
-            <template v-if="isManager">
-              <Button type="submit" :disabled="save.pending.value">{{ t('common.save') }}</Button>
-            </template>
-            <template v-else>
+            <Button type="submit" :disabled="save.pending.value">{{ t('common.save') }}</Button>
+            <template v-if="team">
               <Button
+                v-if="active"
                 type="button"
                 variant="outline"
                 :disabled="save.pending.value"
-                @click="save.run('draft')"
+                data-testid="withdraw"
+                @click="save.run('withdrawn')"
               >
-                {{ t('teams.form.saveDraft') }}
+                {{ t('teams.form.withdraw') }}
               </Button>
-              <Button type="submit" :disabled="save.pending.value">{{
-                t('teams.form.submit')
-              }}</Button>
               <Button
-                v-if="team?.status === 'draft'"
+                v-else
+                type="button"
+                variant="outline"
+                :disabled="save.pending.value"
+                data-testid="activate"
+                @click="save.run('approved')"
+              >
+                {{ t('teams.form.activate') }}
+              </Button>
+              <Button
+                v-if="session.isAdmin"
                 type="button"
                 variant="ghost"
                 class="ml-auto"
                 @click="remove.run()"
               >
-                {{ t('teams.form.deleteDraft') }}
+                {{ t('teams.form.delete') }}
               </Button>
             </template>
           </div>

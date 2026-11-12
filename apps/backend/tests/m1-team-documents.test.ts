@@ -13,8 +13,7 @@ interface Ctx {
   manager: TestUser
   headJudge: TestUser
   judge: TestUser
-  coach: TestUser
-  otherCoach: TestUser
+  formerCoach: TestUser
   otherManager: TestUser
 }
 
@@ -49,11 +48,10 @@ describe('M1-13 team documents', () => {
     const headJudge = await fx.user({ roles: [{ role: 'head_judge', event: event.id }] })
     const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
     const otherManager = await fx.user({ roles: [{ role: 'event_manager', event: other.id }] })
-    const coach = await fx.user()
-    const otherCoach = await fx.user()
-    const team = await fx.team(event.id, category.id, { coach: coach.id, status: 'approved' })
-    await fx.team(event.id, category.id, { coach: otherCoach.id, status: 'approved' })
-    return { event, team, manager, headJudge, judge, coach, otherCoach, otherManager }
+    // Linked to the team before the coach role was retired (M8-A): no access any more.
+    const formerCoach = await fx.user()
+    const team = await fx.team(event.id, category.id, { coach: formerCoach.id, status: 'approved' })
+    return { event, team, manager, headJudge, judge, formerCoach, otherManager }
   }
 
   async function download(user: TestUser, doc: RecordModel) {
@@ -70,22 +68,22 @@ describe('M1-13 team documents', () => {
     expect(doc.uploaded_by).toBe(ctx.manager.id)
   })
 
-  it('M1-T13b: coaches, judges and other events’ managers cannot upload, change or delete', async () => {
+  it('M1-T13b: judges, outsiders and other events’ managers cannot upload, change or delete', async () => {
     const ctx = await setup()
-    for (const user of [ctx.coach, ctx.judge, ctx.headJudge, ctx.otherManager]) {
+    for (const user of [ctx.formerCoach, ctx.judge, ctx.headJudge, ctx.otherManager]) {
       await expectDenied(upload(user.pb, ctx.team.id))
     }
     const doc = await upload(ctx.manager.pb, ctx.team.id)
-    for (const user of [ctx.coach, ctx.judge, ctx.headJudge]) {
+    for (const user of [ctx.formerCoach, ctx.judge, ctx.headJudge]) {
       await expectDenied(user.pb.collection('team_documents').update(doc.id, { title: 'x' }))
       await expectDenied(user.pb.collection('team_documents').delete(doc.id))
     }
   })
 
-  it('M1-T13c: the coach and all event staff see the documents and download the file', async () => {
+  it('M1-T13c: all event staff see the documents and download the file', async () => {
     const ctx = await setup()
     const doc = await upload(ctx.manager.pb, ctx.team.id)
-    for (const user of [ctx.coach, ctx.judge, ctx.headJudge, ctx.manager]) {
+    for (const user of [ctx.judge, ctx.headJudge, ctx.manager]) {
       const list = await user.pb
         .collection('team_documents')
         .getFullList({ filter: `team = "${ctx.team.id}"` })
@@ -96,10 +94,10 @@ describe('M1-13 team documents', () => {
     }
   })
 
-  it('M1-T13d: other coaches and other events’ staff see neither records nor files', async () => {
+  it('M1-T13d / M8-T02: outsiders, formerly linked accounts and other events’ staff see neither records nor files', async () => {
     const ctx = await setup()
     const doc = await upload(ctx.manager.pb, ctx.team.id)
-    for (const user of [ctx.otherCoach, ctx.otherManager]) {
+    for (const user of [ctx.formerCoach, await fx.user(), ctx.otherManager]) {
       const list = await user.pb.collection('team_documents').getFullList()
       expect(list.map((d) => d.id)).not.toContain(doc.id)
       await expectDenied(user.pb.collection('team_documents').getOne(doc.id))
@@ -116,11 +114,13 @@ describe('M1-13 team documents', () => {
     data.append('team', ctx.team.id)
     data.append('title', 'Forged')
     data.append('file', pdf())
-    data.append('uploaded_by', ctx.coach.id)
+    data.append('uploaded_by', ctx.formerCoach.id)
     const doc = await ctx.manager.pb.collection('team_documents').create(data)
     expect(doc.uploaded_by).toBe(ctx.manager.id)
     await expectDenied(
-      ctx.manager.pb.collection('team_documents').update(doc.id, { uploaded_by: ctx.coach.id }),
+      ctx.manager.pb
+        .collection('team_documents')
+        .update(doc.id, { uploaded_by: ctx.formerCoach.id }),
     )
     const other = await fx.team(ctx.event.id, (ctx.team.category as string) ?? '', {
       status: 'approved',

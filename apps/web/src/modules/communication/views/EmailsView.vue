@@ -11,7 +11,7 @@ import { useQueryRefs } from '@/shared/composables/useQueryRefs'
 import type { MailTemplateRecord } from '@/shared/types/records'
 import { LOCALE_CODES, LOCALES, locale, t } from '@/i18n'
 import { listTemplates, templateVariables } from '../api'
-import { templateName } from '../lib'
+import { RETIRED_TEMPLATES, templateName } from '../lib'
 import OutboxTable from '../components/OutboxTable.vue'
 import TemplateEditor from '../components/TemplateEditor.vue'
 
@@ -26,6 +26,7 @@ const selectedLanguage = ref<string>(locale.value)
 const keys = computed(() => {
   const seen = new Map<string, MailTemplateRecord>()
   for (const template of data.value?.templates ?? []) {
+    if (RETIRED_TEMPLATES.includes(template.key)) continue
     if (!seen.has(template.key) || template.language === locale.value) {
       seen.set(template.key, template)
     }

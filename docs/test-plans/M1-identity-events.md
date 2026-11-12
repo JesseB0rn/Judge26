@@ -17,10 +17,10 @@ Traceability from roadmap tests and acceptance criteria to automated tests.
 | M1-T05  | Judge accesses another event        | `m1-permissions` › M1-T05           | E2E `permissions` › M1-T05                                            |
 | M1-T06  | Event with two days                 | `m1-events` › M1-T06                | E2E `events/admin`                                                    |
 | M1-T07  | Duplicate a category template       | `m1-categories` › M1-T07            | Unit `categories/views`; E2E `events/admin`                           |
-| M1-T08  | Submit team registration            | `m1-teams` › M1-T08                 | Unit `teams/views`; E2E `workflow` › coach registers…                 |
-| M1-T09  | Reject team registration            | `m1-teams` › M1-T09                 | Unit `teams/views`; E2E `workflow` › M1-T09                           |
+| M1-T08  | Submit team registration            | Retired (M8-A)                      | –                                                                     |
+| M1-T09  | Reject team registration            | Retired (M8-A)                      | –                                                                     |
 | M1-T10  | Import CSV with invalid rows        | `m1-import` › M1-T10 (atomic batch) | Unit `teams/csv` (row reports), `teams/views` (dialog)                |
-| M1-T11  | Coach accesses another coach's team | `m1-teams` › M1-T11                 | –                                                                     |
+| M1-T11  | Coach accesses another coach's team | Retired (M8-A); see M8-T02          | –                                                                     |
 | M1-T12  | Archive an event                    | `m1-events` › M1-T12                | Unit `events/views` › archives; E2E `events/admin`                    |
 
 ## Acceptance criteria
@@ -36,16 +36,16 @@ Traceability from roadmap tests and acceptance criteria to automated tests.
 | M1-07 | Multiple competition days                                 | `m1-events` › M1-T06, invalid/duplicate days; Unit `events/views`                        |
 | M1-08 | Categories created and assigned to events                 | `m1-categories` › M1-08; Unit `categories/views`                                         |
 | M1-09 | Copy category configurations                              | `m1-categories` › M1-T07, save as template, permissions                                  |
-| M1-10 | Coaches create and submit registrations                   | `m1-teams` › M1-10, M1-T08, registration window; E2E `workflow`                          |
-| M1-11 | Approve, reject and edit registrations                    | `m1-teams` › M1-11, M1-T09, workflow, max teams; E2E `workflow`                          |
+| M1-10 | Coaches create and submit registrations                   | Retired (M8-A): `m1-teams` › M8-02; E2E `workflow` › M8-01 / M8-02                       |
+| M1-11 | Approve, reject and edit registrations                    | Replaced by active/withdrawn (M8-A): `m1-teams` › workflow, max teams; E2E `workflow`    |
 | M1-12 | Import teams from CSV                                     | `m1-import`; Unit `teams/csv`, `teams/views`                                             |
 
 ## Exit criteria
 
 - _Users with different roles can access only their authorized event resources_ —
-  `m1-permissions`, `m1-teams` › M1-T11, `m1-events` › M1-T12, E2E `permissions`.
-- _The complete registration-to-approval workflow works_ — E2E `registration/workflow.spec.ts`
-  (coach registers and submits, admin approves, coach sees the result).
+  `m1-permissions`, `m1-teams` › M8-04, `access-rules`, `m1-events` › M1-T12, E2E `permissions`.
+- _The complete registration-to-approval workflow works_ — superseded by M8-A: managers add
+  and import active teams, E2E `registration/workflow.spec.ts`.
 
 ## Status
 

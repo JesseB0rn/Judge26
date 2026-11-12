@@ -19,10 +19,10 @@
 | M4-T09  | Schedule an archived event                           | Rejected                                                                           |
 
 These scenarios are covered by `apps/backend/tests/m4-scheduling.test.ts`. Frontend tests verify
-table/sequence editing, validation messages, generation feedback, and the coach's schedule display.
+table/sequence editing, validation messages and generation feedback.
 The E2E flow verifies a manager can configure a fixed table judge, preview without writing, generate
-missing games, edit a sequence, and let the coach view the round/table/sequence; judges remain
-read-only.
+missing games and edit a sequence; judges remain read-only. (The coach's schedule view was removed
+with the coach role, M8-A.)
 
 ## Round phases
 

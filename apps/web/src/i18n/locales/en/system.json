@@ -31,8 +31,7 @@
     "roles": "Your roles",
     "judging": "Score the games on your table.",
     "review": "Approve or return the score sheets judges submitted.",
-    "events": "Browse competitions and register teams.",
-    "teams": "Your team registrations and their status.",
+    "events": "Browse competitions and their teams.",
     "library": "Category library",
     "libraryDescription": "Reusable category templates.",
     "users": "Accounts and administrator roles."

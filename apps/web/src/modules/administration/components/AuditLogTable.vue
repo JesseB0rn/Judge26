@@ -42,6 +42,8 @@ const AREA_KEYS = [
   'ranking_snapshots',
   'mail_templates',
   'mail_outbox',
+  'invitations',
+  'view_sessions',
 ] as const
 const AREAS: Readonly<Record<string, string>> = translatedLabels(AREA_KEYS, (area) =>
   t(`administration.audit.areas.${area}`),
@@ -152,6 +154,12 @@ watchDebounced([area, search], () => load(), { debounce: 300 })
             <TableCell class="whitespace-nowrap">{{ formatDateTime(entry.created) }}</TableCell>
             <TableCell>
               {{ entry.actor_label }}
+              <span
+                v-if="entry.view_as"
+                class="block text-xs font-medium"
+                data-testid="audit-view-as"
+                >{{ t('administration.audit.viewAs', { role: entry.view_as }) }}</span
+              >
               <span v-if="entry.ip" class="block text-xs text-muted-foreground">{{
                 entry.ip
               }}</span>

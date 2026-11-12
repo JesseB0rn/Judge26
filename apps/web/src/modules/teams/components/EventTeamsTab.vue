@@ -3,7 +3,7 @@ import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { CheckIcon, PaperclipIcon, UploadIcon, XIcon } from '@lucide/vue'
+import { PaperclipIcon, PlusIcon, UploadIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import {
@@ -18,21 +18,17 @@ import {
 import { listEventCategories } from '@/modules/categories/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import ExportButtons from '@/shared/export/ExportButtons.vue'
-import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
-import type { EventRecord, TeamRecord, TeamStatus } from '@/shared/types/records'
-import { listEventTeams, updateTeam } from '../api'
+import { useLoader } from '@/shared/composables/useSubmit'
+import type { EventRecord, TeamStatus } from '@/shared/types/records'
+import { listEventTeams } from '../api'
 import { listEventTeamDocuments } from '../documents'
-import { TEAM_STATUS_LABELS } from '../lib'
+import { CURRENT_STATUSES, TEAM_STATUS_LABELS } from '../lib'
 import { membersTable, teamsTable } from '../export'
-import RejectDialog from './RejectDialog.vue'
 import TeamImportDialog from './TeamImportDialog.vue'
 import TeamStatusBadge from './TeamStatusBadge.vue'
 
-/**
- * Teams of an event. Staff see all teams (managers can review and import);
- * coaches see only their own teams (enforced by the API).
- */
-const props = defineProps<{ event: EventRecord; staff: boolean; canManage: boolean }>()
+/** Teams of an event, for its staff. Managers import teams from CSV or add them one by one. */
+const props = defineProps<{ event: EventRecord; canManage: boolean }>()
 
 const { data: teams, loading, error, load } = useLoader(() => listEventTeams(props.event.id))
 const categories = useLoader(() => listEventCategories(props.event.id))
@@ -46,9 +42,12 @@ const documentCounts = computed(() => {
 })
 const statusFilter = ref<TeamStatus | ''>('')
 const categoryFilter = ref('')
-const rejecting = ref<TeamRecord>()
-const rejectOpen = ref(false)
 const importOpen = ref(false)
+
+// Active and withdrawn, plus any older status that still occurs (teams registered before M8-A).
+const statuses = computed(() => [
+  ...new Set([...CURRENT_STATUSES, ...(teams.value ?? []).map((team) => team.status)]),
+])
 
 const filtered = computed(() =>
   (teams.value ?? []).filter(
@@ -64,19 +63,6 @@ const exportTables = () => [
   membersTable(filtered.value, categories.data.value ?? [], props.event.season),
 ]
 
-const approve = useSubmit(
-  async (team: TeamRecord) => {
-    await updateTeam(team.id, { status: 'approved' })
-    await load()
-  },
-  { success: () => t('teams.review.approved') },
-)
-
-function reject(team: TeamRecord) {
-  rejecting.value = team
-  rejectOpen.value = true
-}
-
 function onImported(count: number) {
   toast.success(t('teams.import.imported', count))
   load()
@@ -90,12 +76,8 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
     <div class="flex flex-wrap items-end gap-2">
       <NativeSelect v-model="statusFilter" :aria-label="t('teams.filter.status')">
         <NativeSelectOption value="">{{ t('teams.filter.allStatuses') }}</NativeSelectOption>
-        <NativeSelectOption
-          v-for="(label, value) in TEAM_STATUS_LABELS"
-          :key="value"
-          :value="value"
-        >
-          {{ label }}
+        <NativeSelectOption v-for="value in statuses" :key="value" :value="value">
+          {{ TEAM_STATUS_LABELS[value] }}
         </NativeSelectOption>
       </NativeSelect>
       <NativeSelect v-model="categoryFilter" :aria-label="t('teams.filter.category')">
@@ -105,19 +87,22 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
         </NativeSelectOption>
       </NativeSelect>
       <ExportButtons
-        v-if="staff"
         class="ml-auto"
         :title="t('teams.export.title', { event: event.name })"
         :tables="exportTables"
         :disabled="!filtered.length"
       />
-      <Button v-if="canManage" variant="outline" @click="importOpen = true">
-        <UploadIcon /> {{ t('teams.import.button') }}
-      </Button>
+      <template v-if="canManage">
+        <Button variant="outline" as-child>
+          <RouterLink :to="{ name: 'team-new', params: { eventId: event.id } }">
+            <PlusIcon /> {{ t('teams.add') }}
+          </RouterLink>
+        </Button>
+        <Button @click="importOpen = true"> <UploadIcon /> {{ t('teams.import.button') }} </Button>
+      </template>
     </div>
 
-    <ErrorAlert :error="error ?? approve.error.value" />
-    <p v-if="!staff" class="text-sm text-muted-foreground">{{ t('teams.ownOnly') }}</p>
+    <ErrorAlert :error="error" />
 
     <Table data-testid="event-teams">
       <TableHeader>
@@ -125,13 +110,10 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
           <TableHead>{{ t('teams.team') }}</TableHead>
           <TableHead>{{ t('teams.category') }}</TableHead>
           <TableHead class="hidden md:table-cell">{{ t('teams.organization') }}</TableHead>
-          <TableHead class="hidden lg:table-cell">{{ t('teams.coach') }}</TableHead>
+          <TableHead class="hidden lg:table-cell">{{ t('teams.contact') }}</TableHead>
           <TableHead>{{ t('teams.members') }}</TableHead>
           <TableHead class="hidden sm:table-cell">{{ t('teams.documents.title') }}</TableHead>
           <TableHead>{{ t('common.status') }}</TableHead>
-          <TableHead class="w-0"
-            ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
-          >
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -144,7 +126,7 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
           <TableCell class="font-mono">{{ team.expand?.category?.code }}</TableCell>
           <TableCell class="hidden md:table-cell">{{ team.organization || '–' }}</TableCell>
           <TableCell class="hidden lg:table-cell">{{
-            team.coach_name || team.coach_email
+            team.coach_name || team.coach_email || '–'
           }}</TableCell>
           <TableCell>{{ team.members?.length ?? 0 }}</TableCell>
           <TableCell
@@ -165,36 +147,13 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
             <span v-else class="text-muted-foreground">–</span>
           </TableCell>
           <TableCell><TeamStatusBadge :status="team.status" /></TableCell>
-          <TableCell class="text-right whitespace-nowrap">
-            <template
-              v-if="canManage && (team.status === 'submitted' || team.status === 'rejected')"
-            >
-              <Button
-                size="sm"
-                variant="outline"
-                :disabled="approve.pending.value"
-                @click="approve.run(team)"
-              >
-                <CheckIcon /> {{ t('teams.review.approve') }}
-              </Button>
-            </template>
-            <Button
-              v-if="canManage && (team.status === 'submitted' || team.status === 'approved')"
-              size="sm"
-              variant="ghost"
-              @click="reject(team)"
-            >
-              <XIcon /> {{ t('teams.review.reject') }}
-            </Button>
-          </TableCell>
         </TableRow>
-        <TableEmpty v-if="!loading && !filtered.length" :colspan="8">{{
+        <TableEmpty v-if="!loading && !filtered.length" :colspan="7">{{
           t('teams.empty')
         }}</TableEmpty>
       </TableBody>
     </Table>
 
-    <RejectDialog v-model:open="rejectOpen" :team="rejecting" @rejected="load" />
     <TeamImportDialog
       v-if="canManage"
       v-model:open="importOpen"

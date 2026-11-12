@@ -75,8 +75,8 @@ onRecordDeleteRequest((e) => {
 // --- Planner data ------------------------------------------------------------
 
 // GET /api/events/{id}/planner -> days, categories, rounds, phases, blocks (+ issues for staff)
-// Staff see internal blocks and issues; coaches and other users of a visible event see public
-// blocks only (M4-14-25).
+// Staff see internal blocks and issues; other users of a published event see public blocks only
+// (M4-14-25). Archived events are staff only.
 routerAdd(
   'GET',
   '/api/events/{id}/planner',
@@ -99,29 +99,16 @@ routerAdd(
     const staff =
       access.isAdmin(e.app, e.auth) ||
       access.hasEventRole(e.app, e.auth, eventId, ['event_manager', 'head_judge', 'judge'])
-    const ownTeams = e.auth.isSuperuser()
-      ? []
-      : e.app.findRecordsByFilter('teams', 'event = {:e} && coach = {:c}', '', 0, 0, {
-          e: eventId,
-          c: e.auth.id,
-        })
     const status = event.getString('status')
-    if (!staff && !(status === 'published' || (status === 'archived' && ownTeams.length))) {
+    if (!staff && status !== 'published') {
       throw new NotFoundError('The event was not found.', {
         _error: new ValidationError('event_not_found', 'The event was not found.'),
       })
-    }
-    const myCategories = []
-    for (const team of ownTeams) {
-      if (!myCategories.includes(team.getString('category'))) {
-        myCategories.push(team.getString('category'))
-      }
     }
     return e.json(200, {
       ...planner.payload(e.app, eventId, staff),
       internal: staff,
       can_edit: access.canManageEvent(e.app, e.auth, eventId) && status !== 'archived',
-      my_categories: myCategories,
     })
   },
   $apis.requireAuth('users', '_superusers'),

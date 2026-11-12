@@ -55,7 +55,6 @@ const admin = await user('admin@judge26.local', 'Ada Admin')
 const manager = await user('manager@judge26.local', 'Max Manager')
 const headJudge = await user('headjudge@judge26.local', 'Hana Head-Judge')
 const judge = await user('judge@judge26.local', 'Jo Judge')
-const coach = await user('coach@judge26.local', 'Cora Coach')
 
 const templates = []
 for (const [code, name, minAge, maxAge] of [
@@ -182,7 +181,7 @@ for (const [name, results] of [
     category: rmj.id,
     name,
     organization: 'Demo School',
-    coach_email: 'coach@judge26.local',
+    coach_email: 'contact@judge26.local',
     status: 'approved',
     members: [
       { first_name: 'Demo', last_name: 'One', birth_year: 2013 },
@@ -249,10 +248,9 @@ await upsert('teams', pb.filter('name = "Robo Rangers"'), {
   name: 'Robo Rangers',
   organization: 'Demo School',
   country: 'CH',
-  coach: coach.id,
-  coach_name: coach.name,
-  coach_email: coach.email,
-  status: 'submitted',
+  coach_name: 'Cora Contact',
+  coach_email: 'contact@judge26.local',
+  status: 'approved',
   members: [
     { first_name: 'Ada', last_name: 'Lovelace', birth_year: 2013 },
     { first_name: 'Alan', last_name: 'Turing', birth_year: 2012 },
@@ -281,25 +279,25 @@ for (const [key, [dayIndex, maintenanceAt, scoringAt]] of Object.entries(placeme
   }
 }
 // Custom columns next to the categories (M4-14-33).
-const coachesColumn = await upsert(
+const visitorsColumn = await upsert(
   'schedule_columns',
-  pb.filter('event = {:e} && name = "Coaches"', { e: event.id }),
-  { event: event.id, name: 'Coaches', position: 0, public: true },
+  pb.filter('event = {:e} && name = "Visitors"', { e: event.id }),
+  { event: event.id, name: 'Visitors', position: 0, public: true },
 )
 if (days[0]) {
   await upsert(
     'schedule_blocks',
-    pb.filter('event = {:e} && title = "Coach briefing"', { e: event.id }),
+    pb.filter('event = {:e} && title = "Team briefing"', { e: event.id }),
     {
       event: event.id,
       day: days[0].id,
       starts_at: '08:30',
       duration_minutes: 30,
-      title: 'Coach briefing',
+      title: 'Team briefing',
       place: 'Room 1',
       color: 'orange',
       responsibility: 'Event manager',
-      columns: [coachesColumn.id],
+      columns: [visitorsColumn.id],
       public: true,
     },
   )
@@ -358,7 +356,6 @@ for (const [dayIndex, block] of [
 }
 
 console.log(`Seeded ${url}. All demo accounts use the password "${PASSWORD}":`)
-for (const u of [admin, manager, headJudge, judge, coach])
-  console.log(`  ${u.email.padEnd(26)} ${u.name}`)
+for (const u of [admin, manager, headJudge, judge]) console.log(`  ${u.email.padEnd(26)} ${u.name}`)
 console.log(`Superuser dashboard: ${url}/_/  (${SUPERUSER.email} / ${SUPERUSER.password})`)
 console.log(`Public live results: http://127.0.0.1:5173/live/${event.id} (TV mode: …/tv)`)

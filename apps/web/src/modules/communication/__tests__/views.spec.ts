@@ -26,12 +26,12 @@ function template(overrides: Partial<MailTemplateRecord> = {}): MailTemplateReco
   return {
     ...base,
     id: 't1',
-    key: 'registration_submitted',
+    key: 'schedule_changed',
     language: 'en',
-    name: 'Registration received',
+    name: 'Schedule update',
     enabled: true,
     subject: 'Received: {{team_name}}',
-    body: '<p>Hello {{coach_name}}</p>',
+    body: '<p>Hello {{contact_name}}</p>',
     ...overrides,
   }
 }
@@ -40,8 +40,8 @@ function message(overrides: Partial<MailOutboxRecord> = {}): MailOutboxRecord {
   return {
     ...base,
     id: 'm1',
-    template: 'registration_submitted',
-    to: 'coach@example.com',
+    template: 'schedule_changed',
+    to: 'contact@example.com',
     subject: 'Received: Bots',
     html: '',
     status: 'failed',
@@ -56,7 +56,7 @@ function message(overrides: Partial<MailOutboxRecord> = {}): MailOutboxRecord {
   }
 }
 
-const VARIABLES = ['coach_name', 'team_name', 'category_name', 'event_name', 'team_url']
+const VARIABLES = ['contact_name', 'team_name', 'event_name', 'schedule', 'schedule_url']
 
 describe('communication views', () => {
   beforeEach(() => {
@@ -88,12 +88,12 @@ describe('communication views', () => {
         props: { template: template(), variables: VARIABLES },
       })
       expect(buttonByText('Save').disabled).toBe(true) // nothing changed
-      await fill('input[name=subject]', 'Thanks {{coach_name}}')
+      await fill('input[name=subject]', 'Thanks {{contact_name}}')
       await wrapper.get('input[name=enabled]').setValue(false)
       await click(buttonByText('Save'))
       expect(mocked.updateTemplate).toHaveBeenCalledWith('t1', {
-        subject: 'Thanks {{coach_name}}',
-        body: '<p>Hello {{coach_name}}</p>',
+        subject: 'Thanks {{contact_name}}',
+        body: '<p>Hello {{contact_name}}</p>',
         enabled: false,
       })
       expect(wrapper.emitted('saved')).toHaveLength(1)
@@ -112,9 +112,9 @@ describe('communication views', () => {
       const { wrapper } = await mountView(TemplateEditor, {
         props: { template: template({ body: 'Hi ' }), variables: VARIABLES },
       })
-      await click(buttonByText('{{team_url}}'))
+      await click(buttonByText('{{schedule_url}}'))
       expect((wrapper.get('textarea[name=body]').element as HTMLTextAreaElement).value).toContain(
-        '{{team_url}}',
+        '{{schedule_url}}',
       )
     })
 
@@ -139,29 +139,30 @@ describe('communication views', () => {
 
   it('the emails page lists templates and switches between them', async () => {
     mocked.listTemplates.mockResolvedValue([
-      template(),
       template({
-        id: 't2',
-        key: 'schedule_changed',
-        name: 'Schedule update',
+        id: 't0',
+        key: 'auth_verification',
+        name: 'Email verification',
         enabled: false,
-        subject: 'Schedule {{team_name}}',
+        subject: 'Verify {{name}}',
       }),
+      template(),
+      // Retired with the coach role (M8-A): not listed.
+      template({ id: 't9', key: 'registration_submitted', name: 'Registration received' }),
     ])
     mocked.templateVariables.mockResolvedValue({
-      registration_submitted: VARIABLES,
-      schedule_changed: ['team_name', 'schedule'],
+      auth_verification: ['name', 'action_url', 'app_name'],
+      schedule_changed: VARIABLES,
     })
     const { wrapper } = await mountView(EmailsView, {
       session: { roles: [makeRole('admin')] },
     })
+    expect(wrapper.findAll('nav button')).toHaveLength(2)
+    expect(wrapper.text()).not.toContain('Registration')
     expect(wrapper.text()).toContain('off')
-    expect((wrapper.get('input[name=subject]').element as HTMLInputElement).value).toBe(
-      'Received: {{team_name}}',
-    )
     await click(buttonByText('Schedule update'))
     expect((wrapper.get('input[name=subject]').element as HTMLInputElement).value).toBe(
-      'Schedule {{team_name}}',
+      'Received: {{team_name}}',
     )
     expect(buttonByText('{{schedule}}')).toBeTruthy()
   })
@@ -171,7 +172,7 @@ describe('communication views', () => {
       template(),
       template({ id: 't2', language: 'de', subject: 'Erhalten: {{team_name}}' }),
     ])
-    mocked.templateVariables.mockResolvedValue({ registration_submitted: VARIABLES })
+    mocked.templateVariables.mockResolvedValue({ schedule_changed: VARIABLES })
     const { wrapper } = await mountView(EmailsView, {
       session: { roles: [makeRole('admin')] },
     })
@@ -225,7 +226,7 @@ describe('communication views', () => {
       teams: [
         {
           team: { id: 'a', name: 'Team A', category: 'c1' },
-          coach_email: 'a@example.com',
+          contact_email: 'a@example.com',
           changed: true,
           notified_at: '',
           items: [
@@ -242,7 +243,7 @@ describe('communication views', () => {
         },
         {
           team: { id: 'b', name: 'Team B', category: 'c1' },
-          coach_email: 'b@example.com',
+          contact_email: '',
           changed: false,
           notified_at: '2026-06-01 07:00:00.000Z',
           items: [],
@@ -259,6 +260,7 @@ describe('communication views', () => {
       expect(wrapper.get('[data-testid=affected-count]').text()).toBe('1 affected')
       expect(wrapper.get('[data-changed=true]').text()).toContain('table B, position 1')
       expect(wrapper.get('[data-changed=false]').text()).toContain('No games')
+      expect(wrapper.get('[data-changed=false]').text()).toContain('No contact email')
 
       await fill('textarea', ' Table B replaces table A. ')
       await click(buttonByText('Notify affected teams'))

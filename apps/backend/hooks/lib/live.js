@@ -2,7 +2,7 @@
 
 // M6: live competition data for public displays. See docs/specifications/M6-live.md.
 //
-// Public endpoints never expose restricted records (coach contacts, members, score values of
+// Public endpoints never expose restricted records (team contacts, members, score values of
 // unpublished results). They return a purpose-built view: the schedule with a coarse game
 // state, and only the rankings a manager has published.
 

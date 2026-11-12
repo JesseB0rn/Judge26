@@ -8,7 +8,6 @@ import {
   CalendarRangeIcon,
   ClipboardListIcon,
   PencilIcon,
-  PlusIcon,
   RadioIcon,
   SendIcon,
 } from '@lucide/vue'
@@ -29,10 +28,8 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
 import { useQueryRefs } from '@/shared/composables/useQueryRefs'
-import { formatDateTime } from '@/shared/format'
 import type { EventRecord, EventStatus } from '@/shared/types/records'
 import { getEvent, updateEvent } from '../api'
-import { isRegistrationOpen, registrationSummary } from '../lib'
 import CompetitionDays from '../components/CompetitionDays.vue'
 import EventFormDialog from '../components/EventFormDialog.vue'
 import EventStatusBadge from '../components/EventStatusBadge.vue'
@@ -54,17 +51,16 @@ const visibleTab = computed(() => {
   const allowed: Record<string, boolean> = {
     overview: true,
     categories: true,
-    teams: true,
+    teams: isStaff.value,
     schedule: isStaff.value,
     publication: canManage.value,
     messages: canManage.value,
     activity: canManage.value,
-    staff: session.isAdmin,
+    staff: canManage.value,
   }
   return allowed[tab.value] ? tab.value : 'overview'
 })
 const archived = computed(() => event.value?.status === 'archived')
-const registrationOpen = computed(() => !!event.value && isRegistrationOpen(event.value))
 
 const setStatus = useSubmit(
   async (status: EventStatus) => {
@@ -124,11 +120,6 @@ watch(() => props.id, load)
             <RadioIcon /> {{ t('shell.nav.live') }}
           </RouterLink>
         </Button>
-        <Button v-if="registrationOpen" as-child>
-          <RouterLink :to="{ name: 'team-new', params: { eventId: event.id } }">
-            <PlusIcon /> {{ t('events.detail.registerTeam') }}
-          </RouterLink>
-        </Button>
       </template>
     </PageHeader>
 
@@ -141,14 +132,14 @@ watch(() => props.id, load)
       <TabsList>
         <TabsTrigger value="overview">{{ t('events.tabs.overview') }}</TabsTrigger>
         <TabsTrigger value="categories">{{ t('events.tabs.categories') }}</TabsTrigger>
-        <TabsTrigger value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
+        <TabsTrigger v-if="isStaff" value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="schedule">{{ t('events.tabs.schedule') }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="publication">{{
           t('events.tabs.publication')
         }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="messages">{{ t('events.tabs.messages') }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="activity">{{ t('events.tabs.activity') }}</TabsTrigger>
-        <TabsTrigger v-if="session.isAdmin" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
+        <TabsTrigger v-if="canManage" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="grid gap-4 md:grid-cols-2">
@@ -159,14 +150,12 @@ watch(() => props.id, load)
           <CardContent class="flex flex-col gap-2 text-sm">
             <p v-if="event.description" class="whitespace-pre-line">{{ event.description }}</p>
             <p>
-              <span class="text-muted-foreground">{{ t('events.detail.registration') }}</span>
-              {{ registrationSummary(event) }}
+              <span class="text-muted-foreground">{{ t('events.season') }}</span>
+              {{ event.season }}
             </p>
-            <p>
-              <span class="text-muted-foreground">{{ t('events.detail.opens') }}</span>
-              {{ formatDateTime(event.registration_opens_at) }} ·
-              <span class="text-muted-foreground">{{ t('events.detail.closes') }}</span>
-              {{ formatDateTime(event.registration_closes_at) }}
+            <p v-if="event.venue">
+              <span class="text-muted-foreground">{{ t('events.venue') }}</span>
+              {{ event.venue }}
             </p>
           </CardContent>
         </Card>
@@ -177,8 +166,8 @@ watch(() => props.id, load)
         <EventCategoriesTab :event="event" :editable="canManage && !archived" />
       </TabsContent>
 
-      <TabsContent value="teams">
-        <EventTeamsTab :event="event" :staff="isStaff" :can-manage="canManage && !archived" />
+      <TabsContent v-if="isStaff" value="teams">
+        <EventTeamsTab :event="event" :can-manage="canManage && !archived" />
       </TabsContent>
 
       <TabsContent v-if="isStaff" value="schedule">
@@ -197,8 +186,8 @@ watch(() => props.id, load)
         <AuditLogTable :event-id="event.id" />
       </TabsContent>
 
-      <TabsContent v-if="session.isAdmin" value="staff">
-        <EventStaffTab :event="event" />
+      <TabsContent v-if="canManage" value="staff">
+        <EventStaffTab :event="event" :editable="!archived" />
       </TabsContent>
     </Tabs>
 

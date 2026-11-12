@@ -17,7 +17,6 @@ import { Textarea } from '@/components/ui/textarea'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
-import { fromDateTimeLocal, toDateTimeLocal } from '@/shared/format'
 import type { EventRecord } from '@/shared/types/records'
 import { createEvent, updateEvent } from '../api'
 import { EVENT_STATUS_LABELS } from '../lib'
@@ -32,8 +31,6 @@ const form = reactive({
   venue: '',
   description: '',
   status: 'draft' as EventRecord['status'],
-  opens: '',
-  closes: '',
 })
 
 const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
@@ -43,8 +40,6 @@ const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
     venue: form.venue,
     description: form.description,
     status: form.status,
-    registration_opens_at: fromDateTimeLocal(form.opens),
-    registration_closes_at: fromDateTimeLocal(form.closes),
   }
   const saved = props.event ? await updateEvent(props.event.id, data) : await createEvent(data)
   emit('saved', saved)
@@ -61,8 +56,6 @@ watch(open, (isOpen) => {
     venue: e?.venue ?? '',
     description: e?.description ?? '',
     status: e?.status ?? 'draft',
-    opens: toDateTimeLocal(e?.registration_opens_at),
-    closes: toDateTimeLocal(e?.registration_closes_at),
   })
 })
 </script>
@@ -125,24 +118,6 @@ watch(open, (isOpen) => {
           >
             <Textarea :id="id" v-model="form.description" rows="3" />
           </FormField>
-          <div class="grid grid-cols-2 gap-4">
-            <FormField
-              v-slot="{ id }"
-              :label="t('events.form.opens')"
-              name="registration_opens_at"
-              :errors="fieldErrors"
-            >
-              <Input :id="id" v-model="form.opens" type="datetime-local" />
-            </FormField>
-            <FormField
-              v-slot="{ id }"
-              :label="t('events.form.closes')"
-              name="registration_closes_at"
-              :errors="fieldErrors"
-            >
-              <Input :id="id" v-model="form.closes" type="datetime-local" />
-            </FormField>
-          </div>
         </FieldGroup>
       </form>
       <DialogFooter>

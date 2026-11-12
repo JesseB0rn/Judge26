@@ -90,35 +90,25 @@ describe('M1 events and competition days', () => {
     )
   })
 
-  it('M1-T12: archived events stay readable for authorized users and become read-only', async () => {
+  it('M1-T12: archived events stay readable for event staff and become read-only', async () => {
     const event = await fx.event({ status: 'published' })
     const category = await fx.category(event.id)
-    const coach = await fx.user()
     const outsider = await fx.user()
     const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
     const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
-    const team = await coach.pb.collection('teams').create({
-      event: event.id,
-      category: category.id,
-      name: 'Archivists',
-      coach: coach.id,
-      coach_email: coach.email,
-      status: 'draft',
-      members: validMembers(),
-    })
+    const team = await fx.team(event.id, category.id, { name: 'Archivists', status: 'approved' })
     await fx.su.collection('competition_days').create({ event: event.id, date: '2026-06-13' })
 
     await fx.su.collection('events').update(event.id, { status: 'archived' })
 
-    // Historical records remain accessible to authorized users.
-    for (const user of [coach, judge, manager]) {
+    // Historical records remain accessible to the event's staff.
+    for (const user of [judge, manager]) {
       expect((await user.pb.collection('events').getOne(event.id)).status).toBe('archived')
     }
-    expect((await coach.pb.collection('teams').getOne(team.id)).name).toBe('Archivists')
     expect((await judge.pb.collection('teams').getOne(team.id)).name).toBe('Archivists')
-    expect((await coach.pb.collection('categories').getOne(category.id)).id).toBe(category.id)
+    expect((await judge.pb.collection('categories').getOne(category.id)).id).toBe(category.id)
     expect(
-      await coach.pb
+      await judge.pb
         .collection('competition_days')
         .getFullList({ filter: `event = "${event.id}"` }),
     ).toHaveLength(1)
@@ -126,8 +116,8 @@ describe('M1 events and competition days', () => {
     // Not visible to unrelated users.
     await expectDenied(outsider.pb.collection('events').getOne(event.id))
 
-    // Read-only for coaches and for structural changes.
-    await expectDenied(coach.pb.collection('teams').update(team.id, { name: 'Renamed' }))
+    // Read-only, also for structural changes by the manager.
+    await expectDenied(judge.pb.collection('teams').update(team.id, { name: 'Renamed' }))
     await expectDenied(
       manager.pb.collection('competition_days').create({ event: event.id, date: '2026-06-14' }),
     )

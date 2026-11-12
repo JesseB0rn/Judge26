@@ -1,29 +1,13 @@
 import { t, translatedLabels } from '@/i18n'
-import { isRegistrationOpen } from '@/modules/events/lib'
-import type {
-  CategoryRecord,
-  EventRecord,
-  TeamMember,
-  TeamRecord,
-  TeamStatus,
-} from '@/shared/types/records'
+import type { CategoryRecord, TeamMember, TeamStatus } from '@/shared/types/records'
 
 export const TEAM_STATUS_LABELS = translatedLabels<TeamStatus>(
   ['draft', 'submitted', 'approved', 'rejected', 'withdrawn'],
   (status) => t(`teams.status.${status}`),
 )
 
-/** Statuses that require a complete team (mirrors the backend). */
-export const COMPLETE_STATUSES: TeamStatus[] = ['submitted', 'approved']
-
-/** Coaches may edit drafts and rejected registrations while registration is open. */
-export function canCoachEdit(
-  team: Pick<TeamRecord, 'status'> | undefined,
-  event: Pick<EventRecord, 'status' | 'registration_opens_at' | 'registration_closes_at'>,
-): boolean {
-  if (!isRegistrationOpen(event)) return false
-  return !team || team.status === 'draft' || team.status === 'rejected'
-}
+/** Teams are active or withdrawn (M8-A); other statuses remain on teams registered earlier. */
+export const CURRENT_STATUSES: TeamStatus[] = ['approved', 'withdrawn']
 
 export type CategoryLimits = Pick<
   CategoryRecord,

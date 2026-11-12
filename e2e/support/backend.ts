@@ -85,21 +85,19 @@ export async function linkFromMail(email: string, path: string): Promise<string>
   throw new Error(`No ${path} mail for ${email}`)
 }
 
-/** Creates an approved team (2 members, age 13) in the category, optionally with a coach account. */
+/** Creates an active team (2 members, age 13) in the category, optionally with a contact email. */
 export async function createApprovedTeam(
   eventId: string,
   categoryId: string,
   name: string,
-  coachId = '',
-  coachEmail = 'coach@test.local',
+  contactEmail = '',
 ) {
   const pb = await superuser()
   return pb.collection('teams').create({
     event: eventId,
     category: categoryId,
     name,
-    coach: coachId,
-    coach_email: coachEmail,
+    coach_email: contactEmail,
     status: 'approved',
     members: [
       { first_name: 'Ada', last_name: 'L', birth_year: 2013 },

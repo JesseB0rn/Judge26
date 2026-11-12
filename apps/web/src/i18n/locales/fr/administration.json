@@ -17,7 +17,9 @@
       "games": "Résultats des manches",
       "ranking_snapshots": "Classements figés",
       "mail_templates": "Modèles d’e-mail",
-      "mail_outbox": "E-mails"
+      "mail_outbox": "E-mails",
+      "invitations": "Invitations",
+      "view_sessions": "Vue en tant que"
     },
     "filterArea": "Filtrer par domaine",
     "allAreas": "Tous les domaines",
@@ -28,7 +30,8 @@
     "what": "Quoi",
     "detailsOf": "Détails de {entry}",
     "empty": "Aucune entrée.",
-    "description": "Actions administratives de tous les événements : qui a modifié quoi, quand et d’où. L’historique des feuilles de score est conservé avec chaque manche."
+    "description": "Actions administratives de tous les événements : qui a modifié quoi, quand et d’où. L’historique des feuilles de score est conservé avec chaque manche.",
+    "viewAs": "en tant que {role}"
   },
   "staff": {
     "assigned": "Rôle attribué.",
@@ -38,7 +41,15 @@
     "assign": "Attribuer un rôle",
     "userEmail": "E-mail de l’utilisateur",
     "userEmailHint": "La personne doit déjà avoir un compte.",
-    "submit": "Attribuer"
+    "submit": "Attribuer",
+    "status": {
+      "active": "Actif",
+      "invited": "Invité·e",
+      "expired": "Invitation expirée",
+      "revoked": "Révoquée"
+    },
+    "validUntil": "Lien valable jusqu’au {date}",
+    "confirmRemove": "Retirer {name} de cet événement ?"
   },
   "users": {
     "description": "Les comptes et leurs rôles. Les rôles d’événement s’attribuent dans l’onglet « Équipe d’organisation » de chaque événement.",
@@ -107,6 +118,40 @@
       "backups_stale": "La dernière sauvegarde est trop ancienne : il y a {hours} heures",
       "backups_latest": "Dernière sauvegarde il y a {hours} heures (planification « {cron} »)",
       "check_failed": "Le contrôle a échoué : {error}"
+    }
+  },
+  "invite": {
+    "title": "Inviter des personnes",
+    "description": "Les personnes sans compte reçoivent un e-mail pour choisir un mot de passe ; celles qui ont un compte sont ajoutées et informées par e-mail.",
+    "submit": "Inviter",
+    "importButton": "Importer un CSV",
+    "importTitle": "Inviter des personnes à {event}",
+    "importDescription": "Un CSV avec les colonnes name, email et éventuellement role (judge ou head_judge). Rien n’est enregistré avant votre confirmation.",
+    "file": "Fichier CSV",
+    "example": "Télécharger un fichier d’exemple",
+    "summary": "{invite} à inviter, {add} à ajouter, {skipped} ignorées.",
+    "importSubmit": "N’inviter personne | Inviter une personne | Inviter {count} personnes",
+    "result": "{invited} invitées, {added} ajoutées, {already} déjà présentes.",
+    "resent": "Invitation renvoyée.",
+    "revoked": "Invitation révoquée.",
+    "resend": "Renvoyer l’invitation à {name}",
+    "revoke": "Révoquer l’invitation de {name}",
+    "missingColumns": "Colonne(s) obligatoire(s) manquante(s) : {columns}.",
+    "noRows": "Le fichier ne contient aucune ligne de données.",
+    "tooManyRows": "Au maximum {max} personnes peuvent être invitées à la fois.",
+    "rowStatus": {
+      "invite": "Nouveau : invitation",
+      "add": "Compte existant",
+      "already": "Déjà présent·e",
+      "duplicate": "Doublon, fusionné",
+      "invalid": "Non valable"
+    },
+    "errors": {
+      "name_required": "Le nom est obligatoire.",
+      "name_too_long": "Le nom est trop long.",
+      "email_required": "L’e-mail est obligatoire.",
+      "invalid_email": "Adresse e-mail non valable.",
+      "invalid_role": "Ce rôle ne peut pas être invité."
     }
   }
 }

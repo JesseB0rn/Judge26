@@ -88,10 +88,13 @@ export interface TeamRecord extends BaseRecord {
   name: string
   organization: string
   country: string
+  /** Unused since M8-A (teams have no owner); kept so older records stay valid. */
   coach: string
+  /** The team's optional contact (shown as "Contact"); gets schedule emails when set. */
   coach_name: string
   coach_email: string
   members: TeamMember[] | null
+  /** Active (`approved`) or `withdrawn`; the others only occur on teams registered before M8-A. */
   status: TeamStatus
   review_note: string
   submitted_at: string
@@ -241,4 +244,6 @@ export interface AuditLogRecord extends BaseRecord {
   summary: string
   changes: Record<string, unknown> | null
   ip: string
+  /** The role an admin was viewing as (M8-C), e.g. "judge · Swiss Final". */
+  view_as?: string
 }

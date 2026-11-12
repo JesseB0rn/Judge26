@@ -5,8 +5,8 @@ describe('communication lib', () => {
   it('replaces variables, tolerating spaces and missing values', () => {
     expect(
       renderTemplate(
-        'Hi {{ coach_name }}, {{team_name}}{{missing}}!',
-        { coach_name: 'Ada', team_name: 'Bots' },
+        'Hi {{ contact_name }}, {{team_name}}{{missing}}!',
+        { contact_name: 'Ada', team_name: 'Bots' },
         false,
       ),
     ).toBe('Hi Ada, Bots!')

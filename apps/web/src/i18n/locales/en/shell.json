@@ -8,13 +8,30 @@
     "judging": "Judging",
     "review": "Review",
     "events": "Events",
-    "myTeams": "My teams",
     "live": "Live results",
     "admin": "Admin",
     "categories": "Categories",
     "users": "Users",
     "emails": "Emails",
     "audit": "Audit log",
-    "monitoring": "System health"
+    "monitoring": "System health",
+    "mailbox": "Mailbox (dev)"
+  },
+  "viewAs": {
+    "open": "View as",
+    "title": "View the app as",
+    "description": "See the app with the permissions of a role in an event. The API applies that role, not your admin rights; changes are recorded under your account.",
+    "event": "Event",
+    "role": "Role",
+    "person": "Person",
+    "personHint": "Optional. Viewing as a specific person is read-only.",
+    "anyone": "Anyone with the role",
+    "submit": "Switch",
+    "banner": "Viewing as {role} of {event}",
+    "bannerPerson": "Viewing as {name} ({role}, {event})",
+    "readOnly": "Read-only",
+    "until": "until {date}",
+    "exit": "Back to admin",
+    "hotkey": "Alt+Shift+V"
   }
 }

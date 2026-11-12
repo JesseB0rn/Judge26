@@ -18,6 +18,7 @@ const LEASE_MS = 2 * 60 * 1000
  * server renders itself.
  */
 const TEMPLATE_VARIABLES = {
+  // Registration templates (M7-03) are disabled since M8-A; kept so stored records validate.
   registration_submitted: ['coach_name', 'team_name', 'category_name', 'event_name', 'team_url'],
   registration_approved: [
     'coach_name',
@@ -36,7 +37,7 @@ const TEMPLATE_VARIABLES = {
     'review_note',
   ],
   schedule_changed: [
-    'coach_name',
+    'contact_name',
     'team_name',
     'event_name',
     'schedule',
@@ -44,11 +45,27 @@ const TEMPLATE_VARIABLES = {
     'message',
     'schedule_url',
   ],
+  // Judge invitations (M8-B, hooks/lib/invitations.js).
+  invitation: [
+    'name',
+    'event_name',
+    'role_name',
+    'inviter_name',
+    'action_url',
+    'expires_on',
+    'app_name',
+  ],
+  event_access: ['name', 'event_name', 'role_name', 'inviter_name', 'action_url', 'app_name'],
   // Account emails sent by PocketBase (hooks/mail.pb.js renders them in the user's language).
   auth_verification: ['name', 'action_url', 'app_name'],
   auth_password_reset: ['name', 'action_url', 'app_name'],
 }
 const RAW = ['schedule']
+/**
+ * Former variable names, still accepted and rendered but no longer offered: templates saved
+ * before M8-A (and the migrations that create them) use `coach_name`.
+ */
+const ALIASES = { schedule_changed: { coach_name: 'contact_name' } }
 
 const PLACEHOLDER = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g
 
@@ -71,7 +88,7 @@ function render(text, vars, html) {
 
 /** Placeholders used in a template that the template does not provide. */
 function unknownVariables(key, text) {
-  const allowed = TEMPLATE_VARIABLES[key] || []
+  const allowed = (TEMPLATE_VARIABLES[key] || []).concat(Object.keys(ALIASES[key] || {}))
   const unknown = []
   String(text || '').replace(PLACEHOLDER, (_, name) => {
     if (allowed.indexOf(name) === -1 && unknown.indexOf(name) === -1) unknown.push(name)
@@ -112,7 +129,9 @@ function findTemplate(app, key, language) {
 function enqueue(app, options) {
   const template = findTemplate(app, options.template, options.language)
   if (!template || !template.getBool('enabled') || !options.to) return null
-  const vars = options.vars || {}
+  const vars = Object.assign({}, options.vars)
+  const aliases = ALIASES[options.template] || {}
+  Object.keys(aliases).forEach((alias) => (vars[alias] = vars[aliases[alias]]))
   const record = new Record(app.findCollectionByNameOrId('mail_outbox'))
   record.set('template', options.template)
   record.set('to', options.to)
@@ -224,60 +243,9 @@ function retry(app, id) {
   return record
 }
 
-// ---------------------------------------------------------------------------
-// Registration notifications (M7-03)
-// ---------------------------------------------------------------------------
-
-const REGISTRATION_TEMPLATES = {
-  submitted: 'registration_submitted',
-  approved: 'registration_approved',
-  rejected: 'registration_rejected',
-}
-
-/** Queues the coach's email for a team's new registration status, if there is one. */
-function queueRegistration(app, team) {
-  const template = REGISTRATION_TEMPLATES[team.getString('status')]
-  if (!template) return null
-  const category = app.findRecordById('categories', team.getString('category'))
-  const event = app.findRecordById('events', team.getString('event'))
-  const i18n = require(`${__hooks}/lib/i18n.js`)
-  const language = coachLanguage(app, team)
-  return enqueue(app, {
-    template,
-    to: team.getString('coach_email'),
-    event: event.id,
-    team: team.id,
-    immediate: true,
-    language,
-    vars: {
-      coach_name: team.getString('coach_name') || i18n.t(language, 'coach'),
-      team_name: team.getString('name'),
-      category_name: category.getString('name'),
-      event_name: event.getString('name'),
-      team_url: `${appUrl(app)}/teams/${team.id}`,
-      review_note: team.getString('review_note'),
-    },
-  })
-}
-
-/** Language of a team's coach: the coach account's, else the account with the coach email's. */
-function coachLanguage(app, team) {
-  return require(`${__hooks}/lib/i18n.js`).languageOf(app, {
-    userId: team.getString('coach'),
-    email: team.getString('coach_email'),
-  })
-}
-
-/** Team create/update hook: queues the coach's email if the status changed (never throws). */
-function onTeamSaved(e, from) {
-  if (e.record.getString('status') === from) return
-  try {
-    queueRegistration(e.app, e.record)
-  } catch (err) {
-    e.app
-      .logger()
-      .error('Could not queue registration mail', 'team', e.record.id, 'error', String(err))
-  }
+/** Language of a team's contact: that of the account with the contact email, if any. */
+function contactLanguage(app, team) {
+  return require(`${__hooks}/lib/i18n.js`).languageOf(app, { email: team.getString('coach_email') })
 }
 
 // ---------------------------------------------------------------------------
@@ -310,7 +278,7 @@ function phaseOf(phases, roundId, phase) {
 }
 
 /**
- * The schedule of every approved team of an event, as a coach would be told about it: per game
+ * The schedule of every approved team of an event, as its contact would be told about it: per game
  * the round, day, scoring start, table and position, plus the round's robot check.
  */
 function eventSchedules(app, eventId) {
@@ -430,7 +398,7 @@ function noticeFor(app, teamId) {
 }
 
 /**
- * Teams whose schedule differs from what their coach was last told. A team that was never
+ * Teams whose schedule differs from what their contact was last told. A team that was never
  * notified is affected once it has a schedule.
  */
 function scheduleChanges(app, eventId) {
@@ -451,21 +419,24 @@ function serializeChange(change) {
   const team = change.entry.team
   return {
     team: { id: team.id, name: team.getString('name'), category: team.getString('category') },
-    coach_email: team.getString('coach_email'),
+    contact_email: team.getString('coach_email'),
     changed: change.changed,
     notified_at: change.notified_at,
     items: change.entry.items.map((i) => ({ ...i, text: describeItem(i) })),
   }
 }
 
-/** Queues schedule emails for the given changes and records what each coach was told. */
+/**
+ * Queues schedule emails for the given changes and records what each contact was told. Teams
+ * without a contact email are skipped and stay "changed".
+ */
 function notifySchedule(app, eventId, changes, message) {
   const event = app.findRecordById('events', eventId)
   const notices = app.findCollectionByNameOrId('schedule_notices')
   let queued = 0
   changes.forEach((change) => {
     const team = change.entry.team
-    const language = coachLanguage(app, team)
+    const language = contactLanguage(app, team)
     const record = enqueue(app, {
       template: 'schedule_changed',
       to: team.getString('coach_email'),
@@ -473,8 +444,8 @@ function notifySchedule(app, eventId, changes, message) {
       team: team.id,
       language,
       vars: {
-        coach_name:
-          team.getString('coach_name') || require(`${__hooks}/lib/i18n.js`).t(language, 'coach'),
+        contact_name:
+          team.getString('coach_name') || require(`${__hooks}/lib/i18n.js`).t(language, 'contact'),
         team_name: team.getString('name'),
         event_name: event.getString('name'),
         schedule: scheduleHtml(change.entry.items, language),
@@ -513,6 +484,7 @@ function localizeAccountEmail(e, key, path) {
 }
 
 module.exports = {
+  appUrl,
   localizeAccountEmail,
   BACKOFF_MINUTES,
   MAX_ATTEMPTS,
@@ -524,8 +496,6 @@ module.exports = {
   deliver,
   processDue,
   retry,
-  queueRegistration,
-  onTeamSaved,
   requireScheduleNotifier,
   scheduleChanges,
   serializeChange,

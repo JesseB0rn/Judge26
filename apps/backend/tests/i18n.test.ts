@@ -1,13 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { startPocketBase, type TestServer } from './support/pocketbase'
-import {
-  expectDenied,
-  Fixtures,
-  mailsTo,
-  PASSWORD,
-  tokenFromMail,
-  validMembers,
-} from './support/fixtures'
+import { expectDenied, Fixtures, mailsTo, PASSWORD, tokenFromMail } from './support/fixtures'
 
 // Languages (docs/specifications/i18n.md): users choose de, fr, it or en; emails are sent in the
 // recipient's language and server errors carry codes the web app translates.
@@ -71,35 +64,29 @@ describe('i18n', () => {
     )
   })
 
-  it('queues registration emails in the coach’s language', async () => {
-    const event = await fx.event({ status: 'published' })
-    const category = await fx.category(event.id)
-    const coach = await fx.user({ name: 'Grace' })
-    await coach.pb.collection('users').update(coach.id, { language: 'de' })
-    const team = await coach.pb.collection('teams').create({
-      event: event.id,
-      category: category.id,
-      name: 'Bit Bären',
-      coach: coach.id,
-      coach_email: coach.email,
-      status: 'submitted',
-      members: validMembers(),
-    })
+  it('queues schedule emails in the language of the contact’s account', async () => {
+    const contact = await fx.user({ name: 'Grace' })
+    await contact.pb.collection('users').update(contact.id, { language: 'de' })
+    const { team, notify } = await fx.scheduledTeam(
+      { name: 'Bit Bären', coach_email: contact.email },
+      { name: 'Schweizer Final' },
+    )
+    await notify()
     const [mail] = await fx.su
       .collection('mail_outbox')
       .getFullList({ filter: `team = "${team.id}"` })
-    expect(mail!.subject).toBe('Anmeldung erhalten: Bit Bären')
+    expect(mail!.subject).toBe('Zeitplan für Bit Bären am Anlass Schweizer Final')
   })
 
   it('each language of a template is edited separately and cannot be re-assigned', async () => {
     const admin = await fx.admin()
     const german = await admin.pb
       .collection('mail_templates')
-      .getFirstListItem('key = "registration_submitted" && language = "de"')
+      .getFirstListItem('key = "schedule_changed" && language = "de"')
     await admin.pb.collection('mail_templates').update(german.id, { subject: 'Neu: {{team_name}}' })
     const english = await admin.pb
       .collection('mail_templates')
-      .getFirstListItem('key = "registration_submitted" && language = "en"')
+      .getFirstListItem('key = "schedule_changed" && language = "en"')
     expect(english.subject).not.toContain('Neu')
     await expectDenied(admin.pb.collection('mail_templates').update(german.id, { language: 'fr' }))
   })

@@ -83,8 +83,8 @@
   "invalid_ruleset": "Use a published ruleset of this category.",
   "invalid_scope": "Choose whom to notify.",
   "category_full": "The category is full.",
-  "invalid_status": "This status is not possible for a new registration.",
-  "invalid_transition": "The registration cannot change to this status.",
+  "invalid_status": "This status is not possible for a new team.",
+  "invalid_transition": "The team cannot change to this status.",
   "invalid_team": "The team is not registered in this round’s category.",
   "team_not_approved": "Only approved teams can play games.",
   "invalid_game_rule": "Choose a game of this category.",
@@ -129,6 +129,25 @@
     },
     "active": {
       "table_in_use": "Games are still scheduled on this table."
+    },
+    "password": {
+      "too_short": "The password must have at least 8 characters."
+    },
+    "passwordConfirm": {
+      "mismatch": "The passwords do not match."
     }
-  }
+  },
+  "invitation_invalid": "This invitation link is not valid.",
+  "invitation_expired": "This invitation has expired.",
+  "invitation_revoked": "This invitation was revoked.",
+  "invitation_accepted": "This invitation was already accepted.",
+  "invitation_not_found": "The invitation was not found.",
+  "staff_not_found": "The staff member was not found.",
+  "invalid_rows": "There is nothing to invite.",
+  "invalid_role": "Choose a role of the event.",
+  "person_not_found": "This person does not have the role in the event.",
+  "person_not_activated": "This person has not activated their account yet.",
+  "view_as_read_only": "Viewing as a person is read-only.",
+  "view_session_ended": "The view session has ended.",
+  "no_view_session": "No active view session."
 }

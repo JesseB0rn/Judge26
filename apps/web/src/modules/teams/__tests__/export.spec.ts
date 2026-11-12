@@ -17,29 +17,25 @@ const teams = [
       { first_name: 'Ada', last_name: 'Lovelace', birth_year: 2013 },
       { first_name: 'Alan', last_name: 'Turing', birth_year: 2012 },
     ],
-    submitted_at: '',
-    reviewed_at: '',
-    review_note: '',
   }),
   makeTeam({
     name: 'Bravo',
     category: 'cat1',
-    status: 'rejected',
+    status: 'withdrawn',
+    coach_name: '',
+    coach_email: '',
     members: null,
-    review_note: 'Too old',
   }),
 ]
 
 describe('team export (M7-05)', () => {
-  it('one row per team with category, status and coach', () => {
+  it('one row per team with category, status and contact', () => {
     const lines = toCsv(teamsTable(teams, categories)).trimEnd().split('\r\n')
-    expect(lines[0]).toBe(
-      'Team,Category,Status,Organization,Country,Coach,Coach email,Members,Submitted,Reviewed,Review note',
-    )
+    expect(lines[0]).toBe('Team,Category,Status,Organization,Country,Contact,Contact email,Members')
     expect(lines[1]).toBe(
-      'Alpha,RoboMission Junior,Approved,School A,CH,Grace Hopper,grace@example.com,2,,,',
+      'Alpha,RoboMission Junior,Active,School A,CH,Grace Hopper,grace@example.com,2',
     )
-    expect(lines[2]).toMatch(/^Bravo,RoboMission Junior,Rejected,.*,0,.*,Too old$/)
+    expect(lines[2]).toBe('Bravo,RoboMission Junior,Withdrawn,School,CH,,,0')
   })
 
   it('members with their age in the season', () => {
