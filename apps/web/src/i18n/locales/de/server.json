@@ -149,5 +149,11 @@
   "person_not_activated": "Diese Person hat ihr Konto noch nicht aktiviert.",
   "view_as_read_only": "Die Ansicht als Person ist schreibgeschützt.",
   "view_session_ended": "Die Ansicht ist beendet.",
-  "no_view_session": "Keine aktive Ansicht."
+  "no_view_session": "Keine aktive Ansicht.",
+  "team_not_found": "Das Team wurde nicht gefunden.",
+  "no_rounds": "Die Kategorie hat noch keine Runden.",
+  "invalid_round": "Wählen Sie eine Runde der Kategorie des Teams.",
+  "table_has_teams": "Auf diesem Tisch sind Teams einer anderen Kategorie.",
+  "table_has_results": "Auf diesem Tisch haben bereits Teams einer anderen Kategorie gespielt.",
+  "too_many_judges": "Der Tisch hat keinen freien Platz für Schiedsrichter/innen."
 }

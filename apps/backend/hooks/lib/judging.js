@@ -84,7 +84,7 @@ function permissions(app, auth, ctx) {
   const tableJudge =
     verified &&
     !!ctx.table &&
-    ctx.table.getString('judge') === auth.id &&
+    ctx.table.getStringSlice('judges').indexOf(auth.id) !== -1 &&
     a.hasEventRole(app, auth, eventId, ['judge', 'head_judge'])
   const archived = ctx.event.getString('status') === 'archived'
   return {
@@ -637,7 +637,9 @@ function compareSummaries(a, b) {
 function assignments(app, auth) {
   const cache = {}
   const rows = []
-  const tables = app.findRecordsByFilter('tables', 'judge = {:judge}', '', 0, 0, { judge: auth.id })
+  const tables = app.findRecordsByFilter('tables', 'judges.id ?= {:judge}', '', 0, 0, {
+    judge: auth.id,
+  })
   for (const table of tables) {
     const event = app.findRecordById('events', table.getString('event'))
     if (event.getString('status') === 'archived') continue

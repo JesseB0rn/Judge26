@@ -52,6 +52,7 @@ routerAdd(
       'min_team_size',
       'max_team_size',
       'max_teams',
+      'judges_per_table',
     ]) {
       copy.set(field, source.get(field))
     }

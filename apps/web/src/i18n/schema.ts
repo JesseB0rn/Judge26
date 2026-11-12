@@ -19,6 +19,7 @@ import type rankings from './locales/en/rankings.json'
 import type scoring from './locales/en/scoring.json'
 import type diagram from './locales/en/diagram.json'
 import type planner from './locales/en/planner.json'
+import type board from './locales/en/board.json'
 
 export interface MessageSchema {
   auth: typeof auth
@@ -40,4 +41,5 @@ export interface MessageSchema {
   scoring: typeof scoring
   diagram: typeof diagram
   planner: typeof planner
+  board: typeof board
 }

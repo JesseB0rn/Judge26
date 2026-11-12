@@ -149,5 +149,11 @@
   "person_not_activated": "This person has not activated their account yet.",
   "view_as_read_only": "Viewing as a person is read-only.",
   "view_session_ended": "The view session has ended.",
-  "no_view_session": "No active view session."
+  "no_view_session": "No active view session.",
+  "team_not_found": "The team was not found.",
+  "no_rounds": "The category has no rounds yet.",
+  "invalid_round": "Choose a round of the team’s category.",
+  "table_has_teams": "Teams of another category are on this table.",
+  "table_has_results": "Teams of another category already played on this table.",
+  "too_many_judges": "The table has no free judge slot."
 }

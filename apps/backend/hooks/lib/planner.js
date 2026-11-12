@@ -312,7 +312,9 @@ function detectIssues(input) {
   function sharesJudge(a, b) {
     for (const t1 of tablesOf(a.round)) {
       for (const t2 of tablesOf(b.round)) {
-        if (t1 !== t2 && tableJudges[t1] && tableJudges[t1] === tableJudges[t2]) return true
+        const a = tableJudges[t1] || []
+        const b = tableJudges[t2] || []
+        if (t1 !== t2 && a.some((judge) => b.indexOf(judge) !== -1)) return true
       }
     }
     return false
@@ -385,7 +387,7 @@ function eventIssues(app, eventId, records) {
   const tableJudges = {}
   app
     .findRecordsByFilter('tables', 'event = {:e}', '', 0, 0, { e: eventId })
-    .forEach((t) => (tableJudges[t.id] = t.getString('judge')))
+    .forEach((t) => (tableJudges[t.id] = t.getStringSlice('judges')))
 
   return detectIssues({
     days: data.days.map((d) => {

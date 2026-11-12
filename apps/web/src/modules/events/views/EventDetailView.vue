@@ -133,7 +133,9 @@ watch(() => props.id, load)
         <TabsTrigger value="overview">{{ t('events.tabs.overview') }}</TabsTrigger>
         <TabsTrigger value="categories">{{ t('events.tabs.categories') }}</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
-        <TabsTrigger v-if="isStaff" value="schedule">{{ t('events.tabs.schedule') }}</TabsTrigger>
+        <TabsTrigger v-if="isStaff" value="schedule">{{
+          t('events.tabs.assignments')
+        }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="publication">{{
           t('events.tabs.publication')
         }}</TabsTrigger>

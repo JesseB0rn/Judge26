@@ -62,17 +62,6 @@
     "empty": "Noch keine Läufe. Erstellen Sie den Zeitplan, sobald Runden, genehmigte Teams und Tische vorhanden sind."
   },
   "tables": {
-    "title": "Tische",
-    "allCategories": "alle Kategorien",
-    "noJudge": "Kein Schiedsrichter",
-    "deactivated": "deaktiviert",
-    "empty": "Noch keine Tische.",
-    "name": "Name des Tisches",
-    "active": "Aktiv",
-    "judge": "Zugewiesener Schiedsrichter",
-    "selectJudge": "Schiedsrichter wählen",
-    "categories": "Kategorien (keine gewählt = alle Kategorien)",
-    "save": "Tisch speichern",
-    "add": "Tisch hinzufügen"
+    "deactivated": "deaktiviert"
   }
 }

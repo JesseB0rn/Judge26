@@ -185,7 +185,7 @@ describe('M7 backup and recovery', () => {
     })
     const table = await manager.pb
       .collection('tables')
-      .create({ event: event.id, name: 'Table A', active: true, judge: judge.id })
+      .create({ event: event.id, name: 'Table A', active: true, judges: [judge.id] })
     const team = await fx.team(event.id, category.id, { status: 'approved', name: 'Keepers' })
     const game = await manager.pb.collection('games').create({
       round: round.id,
@@ -263,7 +263,7 @@ describe('M7 backup and recovery', () => {
     expect(restored!.expand).toMatchObject({
       round: { id: ctx.round.id, category: ctx.category.id },
       team: { id: ctx.team.id, name: 'Keepers', event: ctx.event.id },
-      table: { id: ctx.table.id, judge: ctx.judge.id },
+      table: { id: ctx.table.id, judges: [ctx.judge.id] },
     })
     expect(restored!.updated).toBe(before.updated)
     expect((await fx.su.collection('events').getOne(ctx.event.id)).name).toBe('Backup Cup')

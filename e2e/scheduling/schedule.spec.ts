@@ -12,7 +12,7 @@ const row = (page: Page, team: string) =>
   page.getByTestId('schedule-games').locator('tr', { hasText: team })
 
 test.describe('Tables and scheduling', () => {
-  test('manager assigns a judge, generates missing games and sets their sequence', async ({
+  test('manager assigns judges, generates missing games and sets their sequence', async ({
     page,
   }) => {
     const { event, category } = await createEvent()
@@ -29,14 +29,15 @@ test.describe('Tables and scheduling', () => {
 
     await login(page, manager.email, manager.password)
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('tab', { name: 'Schedule' }).click()
+    await page.getByRole('tab', { name: 'Assignments' }).click()
     await expect(page.getByTestId('schedule-summary')).toHaveText('0 assigned · 0 unassigned')
 
-    // A table has one fixed judge.
-    await page.getByLabel('Table name').fill('Table A')
-    await page.getByLabel('Assigned judge').selectOption(judge.id)
-    await page.getByRole('button', { name: 'Add table' }).click()
-    await expect(page.getByTestId('tables')).toContainText('Table A')
+    // Tables and their judges are set up on the board (M8-E).
+    await page.getByRole('button', { name: 'Add a table to RoboMission Junior' }).click()
+    await expect(page.locator('[data-column="Table 1"]')).toBeVisible()
+    await page.getByRole('button', { name: `Actions for judge ${judge.name}` }).click()
+    await page.getByRole('menuitem', { name: 'Table 1', exact: true }).click()
+    await expect(page.getByTestId('judges-Table 1')).toContainText(judge.name)
 
     // Preview does not create games; generation creates the missing team/round games.
     await page.getByRole('button', { name: 'Preview' }).click()
@@ -63,7 +64,7 @@ test.describe('Tables and scheduling', () => {
     const judge = await createUser({ roles: [{ role: 'judge', event: event.id }] })
     await login(page, judge.email, judge.password)
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('tab', { name: 'Schedule' }).click()
+    await page.getByRole('tab', { name: 'Assignments' }).click()
     await expect(page.getByTestId('schedule-summary')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Add table' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Generate schedule' })).toHaveCount(0)
