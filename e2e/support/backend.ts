@@ -262,3 +262,31 @@ export async function processOutbox() {
   if (!res.ok) throw new Error(`Outbox processing failed: ${res.status} ${await res.text()}`)
   return (await res.json()) as { sent: number; pending: number; failed: number }
 }
+
+/** Creates another category of an event (M8-E boards with several categories). */
+export async function createCategory(eventId: string, code: string, name: string) {
+  const pb = await superuser()
+  return pb.collection('categories').create({
+    event: eventId,
+    name,
+    code,
+    min_team_size: 2,
+    max_team_size: 3,
+    min_age: 8,
+    max_age: 15,
+  })
+}
+
+/** Creates an active table of one category (M8-E). */
+export async function createCategoryTable(
+  eventId: string,
+  name: string,
+  categoryId: string,
+  position: number,
+  judges: string[] = [],
+) {
+  const pb = await superuser()
+  return pb
+    .collection('tables')
+    .create({ event: eventId, name, active: true, position, categories: [categoryId], judges })
+}

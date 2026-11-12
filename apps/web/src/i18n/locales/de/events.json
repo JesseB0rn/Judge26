@@ -30,7 +30,8 @@
     "reviewScores": "Punkte prüfen",
     "planner": "Planer",
     "archivedNotice": "Dieser Anlass ist archiviert. Seine Daten können nur gelesen werden.",
-    "details": "Details"
+    "details": "Details",
+    "board": "Board"
   },
   "tabs": {
     "overview": "Übersicht",

@@ -149,5 +149,11 @@
   "person_not_activated": "Cette personne n’a pas encore activé son compte.",
   "view_as_read_only": "La vue en tant que personne est en lecture seule.",
   "view_session_ended": "La vue est terminée.",
-  "no_view_session": "Aucune vue active."
+  "no_view_session": "Aucune vue active.",
+  "team_not_found": "L’équipe est introuvable.",
+  "no_rounds": "La catégorie n’a pas encore de manches.",
+  "invalid_round": "Choisissez une manche de la catégorie de l’équipe.",
+  "table_has_teams": "Des équipes d’une autre catégorie sont sur cette table.",
+  "table_has_results": "Des équipes d’une autre catégorie ont déjà joué sur cette table.",
+  "too_many_judges": "La table n’a plus de place pour un juge."
 }

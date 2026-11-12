@@ -1,18 +1,19 @@
 # M4 – Tables and scheduling
 
 Defines event tables, shared round phases, and game ordering during the scoring phase. Scheduling
-does not assign clock times: every table has one fixed event judge, and each game is assigned to a
-table with a positive sequence number within its round.
+does not assign clock times: every table has fixed event judges (several since M8-E), and each game
+is assigned to a table with a positive sequence number within its round. Tables, judges and teams
+are usually assigned on the board ([M8-board.md](M8-board.md)).
 
 ## Data model
 
-| Collection / field       | Purpose                                                                                                                                                                               |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tables`                 | Physical tables of an event. `name` is unique per event; `active` controls availability; an empty `categories` list accepts every category; `judge` is the table's fixed event judge. |
-| `rounds.testing_minutes` | Shared maintenance/testing phase duration in minutes (0 or more).                                                                                                                     |
-| `rounds.scoring_minutes` | Shared scoring phase duration in minutes (at least 1).                                                                                                                                |
-| `games.table`            | Assigned table, or empty while unassigned.                                                                                                                                            |
-| `games.sequence`         | Positive order on the assigned table for that round; 0 means unassigned.                                                                                                              |
+| Collection / field       | Purpose                                                                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tables`                 | Physical tables of an event. `name` is unique per event; `active` controls availability; an empty `categories` list accepts every category; `judges` are the table's event judges (M8-E). |
+| `rounds.testing_minutes` | Shared maintenance/testing phase duration in minutes (0 or more).                                                                                                                         |
+| `rounds.scoring_minutes` | Shared scoring phase duration in minutes (at least 1).                                                                                                                                    |
+| `games.table`            | Assigned table, or empty while unassigned.                                                                                                                                                |
+| `games.sequence`         | Positive order on the assigned table for that round; 0 means unassigned.                                                                                                                  |
 
 The round's total duration is `testing_minutes + scoring_minutes`. Maintenance/testing and scoring
 are shared phases, not per-game time slots. Games run at their assigned tables during the scoring
@@ -20,20 +21,21 @@ phase. Judges are not assigned to individual games.
 
 ## Assignment validation
 
-Each game assignment must reference an active table in the same event, a table that accepts the
-round's category, and a table with an assigned judge. Sequence numbers must be positive and unique
+Each game assignment must reference an active table in the same event and a table that accepts the
+round's category. A table without judges is reported by the validation but no longer blocks a
+placement (M8-E). Sequence numbers must be positive and unique
 for each round/table pair. Unassigned games use an empty `table` and sequence `0`.
 
-| Code                    | Field      | Rule                                                            |
-| ----------------------- | ---------- | --------------------------------------------------------------- |
-| `missing_table`         | `table`    | The game has not been assigned to a table.                      |
-| `invalid_table`         | `table`    | The table belongs to another event.                             |
-| `table_inactive`        | `table`    | The assigned table is deactivated.                              |
-| `incompatible_category` | `table`    | The table only accepts other categories.                        |
-| `missing_table_judge`   | `table`    | The table has no assigned judge.                                |
-| `required`              | `sequence` | An assigned game must have a positive sequence.                 |
-| `sequence_in_use`       | `sequence` | The round/table already has this sequence number.               |
-| `invalid_judge`         | `judge`    | The assigned judge is not a judge or head judge for this event. |
+| Code                    | Field      | Rule                                                           |
+| ----------------------- | ---------- | -------------------------------------------------------------- |
+| `missing_table`         | `table`    | The game has not been assigned to a table.                     |
+| `invalid_table`         | `table`    | The table belongs to another event.                            |
+| `table_inactive`        | `table`    | The assigned table is deactivated.                             |
+| `incompatible_category` | `table`    | The table only accepts other categories.                       |
+| `missing_table_judge`   | `table`    | The table has no assigned judge (validation only).             |
+| `required`              | `sequence` | An assigned game must have a positive sequence.                |
+| `sequence_in_use`       | `sequence` | The round/table already has this sequence number.              |
+| `invalid_judge`         | `judges`   | An assigned judge is not a judge or head judge for this event. |
 
 Validation runs on game writes. A table with assigned games cannot be deactivated or deleted until
 those games are moved or unassigned.

@@ -30,7 +30,8 @@
     "reviewScores": "Review scores",
     "planner": "Planner",
     "archivedNotice": "This event is archived. Its records are read-only.",
-    "details": "Details"
+    "details": "Details",
+    "board": "Board"
   },
   "tabs": {
     "overview": "Overview",

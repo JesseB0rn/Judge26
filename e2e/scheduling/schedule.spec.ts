@@ -12,7 +12,7 @@ const row = (page: Page, team: string) =>
   page.getByTestId('schedule-games').locator('tr', { hasText: team })
 
 test.describe('Tables and scheduling', () => {
-  test('manager assigns a judge, generates missing games and sets their sequence', async ({
+  test('manager assigns judges, generates missing games and sets their sequence', async ({
     page,
   }) => {
     const { event, category } = await createEvent()
@@ -32,9 +32,9 @@ test.describe('Tables and scheduling', () => {
     await page.getByRole('tab', { name: 'Schedule' }).click()
     await expect(page.getByTestId('schedule-summary')).toHaveText('0 assigned · 0 unassigned')
 
-    // A table has one fixed judge.
+    // A table has fixed judges (M8-E: several).
     await page.getByLabel('Table name').fill('Table A')
-    await page.getByLabel('Assigned judge').selectOption(judge.id)
+    await page.getByTestId('table-judges').getByLabel(judge.name).check()
     await page.getByRole('button', { name: 'Add table' }).click()
     await expect(page.getByTestId('tables')).toContainText('Table A')
 

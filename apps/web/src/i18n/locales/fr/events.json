@@ -30,7 +30,8 @@
     "reviewScores": "Contrôler les scores",
     "planner": "Planificateur",
     "archivedNotice": "Cet événement est archivé. Ses données sont en lecture seule.",
-    "details": "Détails"
+    "details": "Détails",
+    "board": "Tableau"
   },
   "tabs": {
     "overview": "Aperçu",

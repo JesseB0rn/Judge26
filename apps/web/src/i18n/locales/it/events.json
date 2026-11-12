@@ -30,7 +30,8 @@
     "reviewScores": "Verifica punteggi",
     "planner": "Pianificatore",
     "archivedNotice": "Questo evento è archiviato. I suoi dati sono di sola lettura.",
-    "details": "Dettagli"
+    "details": "Dettagli",
+    "board": "Tabellone"
   },
   "tabs": {
     "overview": "Panoramica",

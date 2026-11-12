@@ -15,4 +15,11 @@ export const eventRoutes: RouteRecordRaw[] = [
     component: () => import('@/modules/planner/views/PlannerView.vue'),
     props: true,
   },
+  {
+    // Assignment board (M8-E): tables, judges and teams, for event managers.
+    path: '/events/:id/board',
+    name: 'event-board',
+    component: () => import('@/modules/board/views/BoardView.vue'),
+    props: true,
+  },
 ]

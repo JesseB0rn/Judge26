@@ -76,6 +76,7 @@ export async function mountView<C extends Component>(
     'login',
     'event',
     'event-planner',
+    'event-board',
     'team',
     'team-new',
     'verify-email',

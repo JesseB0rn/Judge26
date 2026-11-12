@@ -80,9 +80,7 @@ function categoryNames(table: TableRecord): string {
           <span>
             <span class="font-medium">{{ table.name }}</span>
             <span class="text-muted-foreground"> · {{ categoryNames(table) }}</span>
-            <span class="text-muted-foreground">
-              · {{ judgeNames(table) }}</span
-            >
+            <span class="text-muted-foreground"> · {{ judgeNames(table) }}</span>
             <span v-if="!table.active" class="ml-2 text-xs text-destructive">{{
               t('scheduling.tables.deactivated')
             }}</span>
@@ -144,7 +142,9 @@ function categoryNames(table: TableRecord): string {
             <input
               type="checkbox"
               :checked="form.categories.includes(category.id)"
-              @change="toggle('categories', category.id, ($event.target as HTMLInputElement).checked)"
+              @change="
+                toggle('categories', category.id, ($event.target as HTMLInputElement).checked)
+              "
             />
             {{ category.name }}
           </label>
