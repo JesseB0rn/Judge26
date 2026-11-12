@@ -7,7 +7,6 @@ import {
   ClipboardListIcon,
   LibraryIcon,
   UsersIcon,
-  UsersRoundIcon,
 } from '@lucide/vue'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import PageHeader from '@/shared/components/PageHeader.vue'
@@ -91,15 +90,6 @@ function roleLink(r: RoleAssignmentRecord) {
           <CalendarIcon class="mb-2 size-5" />
           <CardTitle>{{ t('shell.nav.events') }}</CardTitle>
           <CardDescription>{{ t('system.dashboard.events') }}</CardDescription>
-        </CardHeader>
-      </Card>
-    </RouterLink>
-    <RouterLink to="/teams">
-      <Card class="h-full hover:bg-muted/50">
-        <CardHeader>
-          <UsersRoundIcon class="mb-2 size-5" />
-          <CardTitle>{{ t('shell.nav.myTeams') }}</CardTitle>
-          <CardDescription>{{ t('system.dashboard.teams') }}</CardDescription>
         </CardHeader>
       </Card>
     </RouterLink>

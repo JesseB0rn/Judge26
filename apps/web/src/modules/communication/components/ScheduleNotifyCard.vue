@@ -25,7 +25,8 @@ import { describeItem } from '../lib'
 
 /**
  * Schedule notifications (M7-04): compares every approved team's current schedule with what its
- * coach was last told, and emails the affected coaches (or everyone) on request.
+ * team's contact was last told, and emails the affected contacts (or everyone) on request.
+ * Teams without a contact email are listed but get no email.
  */
 const props = defineProps<{ eventId: string; editable: boolean }>()
 const emit = defineEmits<{ sent: [] }>()
@@ -111,7 +112,9 @@ onMounted(load)
           >
             <TableCell>
               {{ notice.team.name }}
-              <span class="block text-xs text-muted-foreground">{{ notice.coach_email }}</span>
+              <span class="block text-xs text-muted-foreground">{{
+                notice.contact_email || t('communication.notify.noContact')
+              }}</span>
             </TableCell>
             <TableCell class="whitespace-normal text-sm">
               <ul v-if="notice.items.length">

@@ -17,7 +17,8 @@ export interface ScheduleItem {
 
 export interface ScheduleNotice {
   team: { id: string; name: string; category: string }
-  coach_email: string
+  /** The team's contact email; empty if the team has none (it then gets no email). */
+  contact_email: string
   changed: boolean
   notified_at: string
   items: ScheduleItem[]
@@ -39,6 +40,13 @@ export const STATUS_LABELS = translatedLabels<MailStatus>(['pending', 'sent', 'f
 /** Account emails sent by PocketBase itself: always sent, so they cannot be turned off. */
 export const ACCOUNT_TEMPLATES = ['auth_verification', 'auth_password_reset']
 
+/** Registration emails, retired with team self-registration (M8-A); not shown to admins. */
+export const RETIRED_TEMPLATES = [
+  'registration_submitted',
+  'registration_approved',
+  'registration_rejected',
+]
+
 /** Name of a notification in the current language (the stored name is English). */
 export function templateName(template: Pick<MailTemplateRecord, 'key' | 'name'>): string {
   const key = `communication.templates.${template.key}`
@@ -46,7 +54,7 @@ export function templateName(template: Pick<MailTemplateRecord, 'key' | 'name'>)
 }
 
 /**
- * One game of a coach's schedule as a line of text, in `language`. Mirrors describeItem in
+ * One game of a team's schedule as a line of text, in `language`. Mirrors describeItem in
  * apps/backend/hooks/lib/mail.js (emails use the recipient's language).
  */
 export function describeItem(item: ScheduleItem, language: Locale): string {
@@ -88,7 +96,7 @@ export function sampleValues(language: Locale): Record<string, string> {
   ].map((i) => ({ ...i, day: { date: '', label: tr('communication.sample.day') } }))
   const lines = items.map((i) => describeItem(i, language))
   return {
-    coach_name: 'Grace Hopper',
+    contact_name: 'Grace Hopper',
     team_name: 'Byte Busters',
     category_name: 'RoboMission Junior',
     event_name: 'WRO National Final',

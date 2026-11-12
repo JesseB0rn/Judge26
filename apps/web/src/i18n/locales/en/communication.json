@@ -29,7 +29,7 @@
   },
   "outbox": {
     "title": "Delivery log",
-    "eventDescription": "Emails of this event. Registration emails are sent right away, schedule emails within a minute; failed deliveries are retried automatically up to five times.",
+    "eventDescription": "Emails of this event. Schedule emails are sent within a minute; failed deliveries are retried automatically up to five times.",
     "requeued": "Message queued again.",
     "all": "All messages",
     "count": "no messages | one message | {count} messages",
@@ -54,7 +54,7 @@
   "notify": {
     "queued": "Nobody to notify. | One email queued. | {count} emails queued.",
     "title": "Schedule notifications",
-    "description": "Coaches of approved teams receive their team's games (round, time, table and position). A team is affected when its schedule changed since the last email.",
+    "description": "The contacts of active teams receive their team's games (round, time, table and position). A team is affected when its schedule changed since the last email. Teams without a contact email get no email.",
     "affected": "{count} affected",
     "ofApproved": "of {count} approved teams",
     "message": "Message (optional)",
@@ -66,10 +66,11 @@
     "noGames": "No games",
     "changed": "Changed",
     "never": "Never",
-    "empty": "No approved teams yet."
+    "empty": "No approved teams yet.",
+    "noContact": "No contact email"
   },
   "emails": {
-    "description": "Emails sent to coaches and users, in each recipient's language, and the delivery log.",
+    "description": "Emails sent to team contacts and users, in each recipient's language, and the delivery log.",
     "templates": "Templates",
     "off": "off"
   }

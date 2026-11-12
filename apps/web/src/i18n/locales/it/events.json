@@ -7,13 +7,6 @@
     "published": "Pubblicato",
     "archived": "Archiviato"
   },
-  "registration": {
-    "archived": "Evento archiviato",
-    "unpublished": "Non ancora pubblicato",
-    "notYetOpen": "Iscrizioni non ancora aperte",
-    "open": "Iscrizioni aperte",
-    "closed": "Iscrizioni chiuse"
-  },
   "days": {
     "title": "Giorni di gara",
     "hoursSaved": "Orari salvati.",
@@ -26,9 +19,7 @@
   "form": {
     "editTitle": "Modifica evento",
     "newTitle": "Nuovo evento",
-    "description": "I giorni di gara e le categorie si gestiscono nella pagina dell’evento.",
-    "opens": "Apertura iscrizioni",
-    "closes": "Chiusura iscrizioni"
+    "description": "I giorni di gara e le categorie si gestiscono nella pagina dell’evento."
   },
   "detail": {
     "updated": "Evento aggiornato.",
@@ -38,12 +29,8 @@
     "restore": "Ripristina",
     "reviewScores": "Verifica punteggi",
     "planner": "Pianificatore",
-    "registerTeam": "Iscrivi una squadra",
     "archivedNotice": "Questo evento è archiviato. I suoi dati sono di sola lettura.",
-    "details": "Dettagli",
-    "registration": "Iscrizioni:",
-    "opens": "Apertura:",
-    "closes": "Chiusura:"
+    "details": "Dettagli"
   },
   "tabs": {
     "overview": "Panoramica",
@@ -57,7 +44,6 @@
   },
   "list": {
     "description": "Le competizioni a cui ha accesso.",
-    "registration": "Iscrizioni",
     "empty": "Nessun evento disponibile."
   }
 }

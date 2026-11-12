@@ -9,12 +9,15 @@ import {
   type TestUser,
 } from './support/fixtures'
 
-describe('M1 team registration and approval', () => {
+// Teams (M1-12, M8-A): event managers create and import them; teams are active (approved) or
+// withdrawn. Nobody owns a team and other users cannot read or write them.
+describe('M1 / M8-A teams', () => {
   let server: TestServer
   let fx: Fixtures
   let event: RecordModel
   let category: RecordModel
   let admin: TestUser
+  let manager: TestUser
 
   beforeAll(async () => {
     server = await startPocketBase()
@@ -22,60 +25,75 @@ describe('M1 team registration and approval', () => {
     event = await fx.event({ status: 'published' })
     category = await fx.category(event.id)
     admin = await fx.admin()
+    manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
   })
   afterAll(() => server?.dispose())
 
   let n = 0
-  const register = (coach: TestUser, data: Record<string, unknown> = {}) =>
-    coach.pb.collection('teams').create({
+  const create = (user: TestUser, data: Record<string, unknown> = {}) =>
+    user.pb.collection('teams').create({
       event: event.id,
       category: category.id,
       name: `Team ${++n}`,
-      coach: coach.id,
-      status: 'draft',
+      status: 'approved',
       members: validMembers(),
       ...data,
     })
 
-  it('M1-10: coaches create draft registrations; contact details default from the account', async () => {
-    const coach = await fx.user({ name: 'Grace Hopper' })
-    const team = await register(coach)
-    expect(team).toMatchObject({
-      status: 'draft',
-      coach: coach.id,
-      coach_email: coach.email,
+  it('M8-03: managers create active teams; the contact is optional', async () => {
+    const team = await create(manager)
+    expect(team).toMatchObject({ status: 'approved', coach: '', coach_email: '' })
+    const withContact = await create(manager, {
       coach_name: 'Grace Hopper',
+      coach_email: 'grace@test.local',
+    })
+    expect(withContact).toMatchObject({
+      coach: '',
+      coach_name: 'Grace Hopper',
+      coach_email: 'grace@test.local',
     })
   })
 
-  it('coaches can register multiple teams', async () => {
-    const coach = await fx.user()
-    await register(coach)
-    await register(coach)
-    expect(await coach.pb.collection('teams').getFullList()).toHaveLength(2)
+  it('M8-02: other users cannot create teams, even in an open event', async () => {
+    const user = await fx.user()
+    await expectDenied(create(user))
+    await expectDenied(create(user, { status: 'draft', coach: user.id }))
+    const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
+    await expectDenied(create(judge))
   })
 
-  it('M1-T08: submitting a registration sets status submitted', async () => {
-    const coach = await fx.user()
-    const team = await register(coach)
-    const submitted = await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
-    expect(submitted.status).toBe('submitted')
-    expect(submitted.submitted_at).toBeTruthy()
-    // Submitted registrations are locked for the coach.
-    await expectDenied(coach.pb.collection('teams').update(team.id, { name: 'Changed' }))
+  it('M8-04: a contact with an account does not get access to the team', async () => {
+    const contact = await fx.user()
+    const team = await create(manager, { coach_email: contact.email })
+    expect(team.coach).toBe('')
+    await expectDenied(contact.pb.collection('teams').getOne(team.id))
+    await expectDenied(contact.pb.collection('teams').update(team.id, { name: 'Changed' }))
+    expect(await contact.pb.collection('teams').getFullList()).toHaveLength(0)
   })
 
-  it('incomplete teams cannot be submitted; drafts may be incomplete', async () => {
-    const coach = await fx.user()
-    const team = await register(coach, { members: [validMembers()[0]] })
+  it('M8-04: a team linked to an account before M8-A grants that account nothing', async () => {
+    const former = await fx.user()
+    const team = await fx.team(event.id, category.id, { coach: former.id })
+    await expectDenied(former.pb.collection('teams').getOne(team.id))
+    await expectDenied(former.pb.collection('teams').update(team.id, { status: 'withdrawn' }))
+    await expectDenied(former.pb.collection('teams').delete(team.id))
+  })
+
+  it('event staff read the teams of their event', async () => {
+    const team = await create(manager)
+    const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
+    expect((await judge.pb.collection('teams').getOne(team.id)).id).toBe(team.id)
+    await expectDenied(judge.pb.collection('teams').update(team.id, { name: 'Changed' }))
+  })
+
+  it('active teams must be complete; withdrawn ones may be incomplete', async () => {
     await expectFieldError(
-      coach.pb.collection('teams').update(team.id, { status: 'submitted' }),
+      create(manager, { members: [validMembers()[0]] }),
       'members',
       'incomplete_team',
     )
     await expectFieldError(
-      register(coach, {
-        status: 'submitted',
+      create(manager, {
         members: [
           { first_name: 'Too', last_name: 'Young', birth_year: 2020 },
           { first_name: 'Ok', last_name: 'Member', birth_year: 2013 },
@@ -84,147 +102,89 @@ describe('M1 team registration and approval', () => {
       'members',
       'incomplete_team',
     )
+    const team = await create(manager)
+    const withdrawn = await manager.pb
+      .collection('teams')
+      .update(team.id, { status: 'withdrawn', members: [] })
+    expect(withdrawn.status).toBe('withdrawn')
   })
 
   it('validates member data', async () => {
-    const coach = await fx.user()
     await expectFieldError(
-      register(coach, { members: [{ first_name: '', last_name: 'X', birth_year: 2013.5 }] }),
+      create(manager, { members: [{ first_name: '', last_name: 'X', birth_year: 2013.5 }] }),
       'members',
       'invalid_members',
     )
     await expectFieldError(
-      register(coach, { members: { not: 'a list' } }),
+      create(manager, { members: { not: 'a list' } }),
       'members',
       'invalid_members',
     )
   })
 
-  it('M1-T09: rejecting a registration requires a reason and sets status rejected', async () => {
-    const coach = await fx.user()
-    const team = await register(coach, { status: 'submitted' })
-
-    await expectFieldError(
-      admin.pb.collection('teams').update(team.id, { status: 'rejected' }),
-      'review_note',
-      'required',
-    )
-    const rejected = await admin.pb
-      .collection('teams')
-      .update(team.id, { status: 'rejected', review_note: 'Missing school confirmation' })
-    expect(rejected).toMatchObject({ status: 'rejected', reviewed_by: admin.id })
-    expect(rejected.reviewed_at).toBeTruthy()
-
-    // The coach can correct and resubmit.
-    const resubmitted = await coach.pb
-      .collection('teams')
-      .update(team.id, { organization: 'School X', status: 'submitted' })
-    expect(resubmitted.status).toBe('submitted')
-  })
-
-  it('M1-11: admins and event managers approve and edit registrations', async () => {
-    const coach = await fx.user()
-    const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
-    const team = await register(coach, { status: 'submitted' })
-
+  it('managers edit, withdraw and reactivate teams', async () => {
+    const team = await create(manager)
     const edited = await manager.pb
       .collection('teams')
       .update(team.id, { organization: 'Edited by staff' })
     expect(edited.organization).toBe('Edited by staff')
-    const approved = await manager.pb.collection('teams').update(team.id, { status: 'approved' })
-    expect(approved).toMatchObject({ status: 'approved', reviewed_by: manager.id })
+    const withdrawn = await manager.pb.collection('teams').update(team.id, { status: 'withdrawn' })
+    expect(withdrawn.status).toBe('withdrawn')
+    const active = await manager.pb.collection('teams').update(team.id, { status: 'approved' })
+    expect(active).toMatchObject({ status: 'approved', reviewed_by: manager.id })
+  })
+
+  it('teams registered before M8-A can be activated or withdrawn', async () => {
+    for (const status of ['draft', 'submitted']) {
+      const team = await fx.team(event.id, category.id, { status })
+      const active = await admin.pb.collection('teams').update(team.id, { status: 'approved' })
+      expect(active.status).toBe('approved')
+    }
+    const draft = await fx.team(event.id, category.id, { status: 'draft' })
+    const withdrawn = await admin.pb.collection('teams').update(draft.id, { status: 'withdrawn' })
+    expect(withdrawn.status).toBe('withdrawn')
   })
 
   it('enforces the status workflow', async () => {
-    const coach = await fx.user()
-    const team = await register(coach)
+    const team = await create(manager)
+    for (const status of ['draft', 'submitted', 'rejected']) {
+      await expectFieldError(
+        admin.pb.collection('teams').update(team.id, { status, review_note: 'n/a' }),
+        'status',
+        'invalid_transition',
+      )
+    }
     await expectFieldError(
-      admin.pb.collection('teams').update(team.id, { status: 'approved' }),
-      'status',
-      'invalid_transition',
-    )
-    // Staff may create teams directly, but not in a terminal review state.
-    await expectFieldError(
-      admin.pb.collection('teams').create({
-        event: event.id,
-        category: category.id,
-        name: `Team ${++n}`,
-        coach_email: 'x@test.local',
-        status: 'rejected',
-        review_note: 'n/a',
-      }),
+      create(admin, { status: 'rejected', review_note: 'n/a' }),
       'status',
       'invalid_status',
     )
   })
 
-  it('coaches cannot approve their own registrations or set review fields', async () => {
-    const coach = await fx.user()
-    await expectDenied(register(coach, { status: 'approved' }))
-    const team = await register(coach)
-    await expectDenied(coach.pb.collection('teams').update(team.id, { status: 'approved' }))
-    await expectDenied(
-      coach.pb.collection('teams').update(team.id, { review_note: 'self-approved' }),
-    )
-    await expectDenied(coach.pb.collection('teams').update(team.id, { coach: admin.id }))
-  })
-
-  it('M1-T11: a coach cannot access another coach’s team', async () => {
-    const coachA = await fx.user()
-    const coachB = await fx.user()
-    const team = await register(coachA)
-
-    await expectDenied(coachB.pb.collection('teams').getOne(team.id))
-    await expectDenied(coachB.pb.collection('teams').update(team.id, { name: 'Stolen' }))
-    await expectDenied(coachB.pb.collection('teams').delete(team.id))
-    expect(await coachB.pb.collection('teams').getFullList()).toHaveLength(0)
-    // Registering a team on behalf of someone else is not possible either.
-    await expectDenied(register(coachB, { coach: coachA.id }))
-  })
-
-  it('coaches delete only their own drafts', async () => {
-    const coach = await fx.user()
-    const draft = await register(coach)
-    const submitted = await register(coach, { status: 'submitted' })
-    await coach.pb.collection('teams').delete(draft.id)
-    await expectDenied(coach.pb.collection('teams').delete(submitted.id))
+  it('only admins delete teams', async () => {
+    const team = await create(manager)
+    await expectDenied(manager.pb.collection('teams').delete(team.id))
+    await admin.pb.collection('teams').delete(team.id)
   })
 
   it('team names are unique per category (case-insensitive)', async () => {
-    const coach = await fx.user()
-    await register(coach, { name: 'Robo Rangers' })
-    await expectDenied(register(coach, { name: 'robo rangers' }))
+    await create(manager, { name: 'Robo Rangers' })
+    await expectDenied(create(manager, { name: 'robo rangers' }))
   })
 
   it('rejects a category from another event', async () => {
     const otherEvent = await fx.event()
     const foreign = await fx.category(otherEvent.id)
-    const coach = await fx.user()
-    await expectFieldError(
-      register(coach, { category: foreign.id }),
-      'category',
-      'invalid_category',
-    )
+    await expectFieldError(create(admin, { category: foreign.id }), 'category', 'invalid_category')
   })
 
-  it('respects the registration window and event status', async () => {
-    const coach = await fx.user()
-    const closed = await fx.event({ registration_closes_at: '2020-01-01 00:00:00.000Z' })
-    const draft = await fx.event({ status: 'draft' })
-    for (const ev of [closed, draft]) {
-      const cat = await fx.category(ev.id)
-      await expectDenied(register(coach, { event: ev.id, category: cat.id }))
-    }
-  })
-
-  it('enforces the maximum number of approved teams per category', async () => {
+  it('enforces the maximum number of active teams per category', async () => {
     const cat = await fx.category(event.id, { max_teams: 1 })
-    const coach = await fx.user()
-    const a = await register(coach, { category: cat.id, status: 'submitted' })
-    const b = await register(coach, { category: cat.id, status: 'submitted' })
-    await admin.pb.collection('teams').update(a.id, { status: 'approved' })
+    await create(manager, { category: cat.id })
+    await expectFieldError(create(manager, { category: cat.id }), 'status', 'category_full')
+    const legacy = await fx.team(event.id, cat.id, { status: 'draft' })
     await expectFieldError(
-      admin.pb.collection('teams').update(b.id, { status: 'approved' }),
+      manager.pb.collection('teams').update(legacy.id, { status: 'approved' }),
       'status',
       'category_full',
     )

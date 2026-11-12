@@ -18,7 +18,7 @@ import { createColumn, deleteColumn, updateColumn } from '../api'
 import type { PlannerColumn } from '../types'
 
 /**
- * Custom columns next to the categories (M4-14-33), e.g. visitors or coaches: add, rename,
+ * Custom columns next to the categories (M4-14-33), e.g. visitors or judges: add, rename,
  * reorder, show to the public or keep internal, and delete (only while empty).
  */
 const props = defineProps<{ eventId: string; columns: PlannerColumn[] }>()

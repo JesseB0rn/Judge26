@@ -1,6 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Team registration workflow (M1-10, M1-11, M1-12).
+// Teams (M1-12, M8-A): event managers import or create them; managers withdraw and
+// reactivate them. Nobody owns a team; coach_name/coach_email are the optional contact.
 
 onRecordValidate((e) => {
   const { fieldError } = require(`${__hooks}/lib/errors.js`)
@@ -33,24 +34,6 @@ onRecordValidate((e) => {
 
 onRecordCreateRequest((e) => {
   const team = e.record
-  const auth = e.auth
-
-  if (!team.getString('coach_email') && auth && !auth.isSuperuser()) {
-    team.set('coach_email', auth.email())
-  }
-  if (!team.getString('coach_name') && auth && team.getString('coach') === auth.id) {
-    team.set('coach_name', auth.getString('name'))
-  }
-  // Imported teams: link an existing account by email.
-  if (!team.getString('coach') && team.getString('coach_email')) {
-    try {
-      const user = e.app.findAuthRecordByEmail('users', team.getString('coach_email'))
-      team.set('coach', user.id)
-    } catch (_) {
-      // No account yet.
-    }
-  }
-
   const status = team.getString('status')
   if (status === 'rejected' || status === 'withdrawn') {
     const { fieldError } = require(`${__hooks}/lib/errors.js`)

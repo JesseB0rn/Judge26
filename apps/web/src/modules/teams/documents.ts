@@ -1,7 +1,7 @@
 import { pb } from '@/shared/api/pocketbase'
 import type { TeamDocumentRecord } from '@/shared/types/records'
 
-// Team documents (M1-13). Managers upload; the coach and event staff read. Files are protected,
+// Team documents (M1-13). Managers upload; event staff read. Files are protected,
 // so links need a short-lived file token (see useFileToken).
 
 const documents = () => pb.collection<TeamDocumentRecord>('team_documents')

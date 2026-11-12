@@ -53,12 +53,12 @@ describe('M3 rounds, games and ranking', () => {
     await expectDenied(
       manager.pb.collection('rounds').create({ category: cat.id, key: 'R1', name: 'Again' }),
     )
-    const coach = await fx.user()
+    const user = await fx.user()
     await expectDenied(
-      coach.pb.collection('rounds').create({ category: cat.id, key: 'X', name: 'X' }),
+      user.pb.collection('rounds').create({ category: cat.id, key: 'X', name: 'X' }),
     )
     expect(
-      await coach.pb.collection('rounds').getFullList({ filter: `category = "${cat.id}"` }),
+      await user.pb.collection('rounds').getFullList({ filter: `category = "${cat.id}"` }),
     ).toHaveLength(5)
   })
 
@@ -139,17 +139,17 @@ describe('M3 rounds, games and ranking', () => {
     expect(dq.points).toBe(0)
   })
 
-  it('game access: staff and the team’s coach read; only managers write', async () => {
-    const coach = await fx.user()
-    const team = await fx.team(event.id, category.id, { status: 'approved', coach: coach.id })
+  it('game access: staff read; only managers write; former coaches see nothing', async () => {
+    const formerCoach = await fx.user()
+    const team = await fx.team(event.id, category.id, { status: 'approved', coach: formerCoach.id })
     const other = await approvedTeam()
     const own = await game(manager, { round: rounds.R1!.id, team: team.id, points: 10 })
     const foreign = await game(manager, { round: rounds.R1!.id, team: other.id, points: 10 })
     const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
 
-    expect((await coach.pb.collection('games').getOne(own.id)).points).toBe(10)
-    await expectDenied(coach.pb.collection('games').getOne(foreign.id))
-    await expectDenied(coach.pb.collection('games').update(own.id, { points: 100 }))
+    await expectDenied(formerCoach.pb.collection('games').getOne(own.id))
+    await expectDenied(formerCoach.pb.collection('games').getOne(foreign.id))
+    await expectDenied(formerCoach.pb.collection('games').update(own.id, { points: 100 }))
     expect((await judge.pb.collection('games').getOne(foreign.id)).id).toBe(foreign.id)
     await expectDenied(
       judge.pb
@@ -273,14 +273,14 @@ describe('M3 rounds, games and ranking', () => {
       await admin.pb.collection('ranking_snapshots').delete(snap.id)
     })
 
-    it('only managers publish snapshots; staff read them; coaches cannot', async () => {
+    it('only managers publish snapshots; staff read them; outsiders cannot', async () => {
       const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
-      const coach = await fx.user()
+      const outsider = await fx.user()
       const error = await expectDenied(snapshot(judge, cat))
       expect(error.status).toBe(403)
       const snap = await snapshot(manager, cat)
       expect((await judge.pb.collection('ranking_snapshots').getOne(snap.id)).id).toBe(snap.id)
-      await expectDenied(coach.pb.collection('ranking_snapshots').getOne(snap.id))
+      await expectDenied(outsider.pb.collection('ranking_snapshots').getOne(snap.id))
       await expectFieldError(snapshot(manager, cat, '  '), 'title', 'required')
     })
 

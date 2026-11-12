@@ -3,18 +3,15 @@
   "category": "Catégorie",
   "organization": "Organisation",
   "country": "Pays",
-  "coach": "Coach",
-  "coachEmail": "E-mail du coach",
   "members": "Membres",
   "firstName": "Prénom",
   "lastName": "Nom",
   "birthYear": "Année de naissance",
   "empty": "Aucune équipe.",
-  "ownOnly": "Vous voyez les équipes que vous avez inscrites.",
   "status": {
     "draft": "Brouillon",
     "submitted": "Soumise",
-    "approved": "Acceptée",
+    "approved": "Active",
     "rejected": "Refusée",
     "withdrawn": "Retirée"
   },
@@ -36,11 +33,6 @@
   },
   "review": {
     "approve": "Accepter",
-    "approved": "Inscription acceptée.",
-    "reject": "Refuser",
-    "rejected": "Inscription refusée.",
-    "rejectTitle": "Refuser {team}",
-    "rejectDescription": "Le coach voit le motif et peut corriger puis soumettre à nouveau.",
     "reason": "Motif"
   },
   "documents": {
@@ -49,7 +41,7 @@
     "tooLarge": "Le fichier dépasse {max} Mo.",
     "uploaded": "Document téléversé.",
     "deleted": "Document supprimé.",
-    "visibility": "Visible par le coach de l’équipe ainsi que par les juges, juges principaux et responsables de l’événement.",
+    "visibility": "Visible par les juges, juges principaux et responsables de l’événement.",
     "empty": "Aucun document pour l’instant.",
     "file": "Fichier (PDF, image, Office, max. {max} Mo)",
     "upload": "Téléverser"
@@ -66,9 +58,8 @@
   "import": {
     "button": "Importer un CSV",
     "title": "Importer des équipes depuis un CSV",
-    "description": "Les lignes non valables sont signalées et ignorées. Les lignes valables sont importées ensemble : si le serveur en refuse une, rien n’est importé.",
+    "description": "Les équipes importées sont actives immédiatement. Les lignes non valables sont signalées et ignorées. Les lignes valables sont importées ensemble — si le serveur en refuse une, rien n’est importé.",
     "file": "Fichier CSV",
-    "initialStatus": "Statut initial",
     "example": "Télécharger un fichier d’exemple",
     "summary": "{valid} ligne(s) valable(s), {invalid} non valable(s).",
     "line": "Ligne",
@@ -83,47 +74,40 @@
     "nameTooLong": "Le nom de l’équipe doit comporter au plus {max} caractères.",
     "categoryRequired": "Le code de catégorie est obligatoire.",
     "unknownCategory": "Code de catégorie inconnu « {code} ».",
-    "coachEmailRequired": "L’e-mail du coach est obligatoire.",
-    "invalidCoachEmail": "E-mail du coach non valable « {email} ».",
     "duplicateInFile": "Le nom d’équipe « {name} » figure plusieurs fois dans ce fichier.",
-    "alreadyExists": "Une équipe nommée « {name} » existe déjà dans {code}."
+    "alreadyExists": "Une équipe nommée « {name} » existe déjà dans {code}.",
+    "invalidContactEmail": "E-mail du contact non valable « {email} »."
   },
   "export": {
     "title": "equipes {event}",
     "teamsSheet": "Équipes",
-    "submitted": "Soumise le",
-    "reviewed": "Contrôlée le",
-    "reviewNote": "Remarque de contrôle",
     "ageIn": "Âge en {season}"
   },
   "mine": {
-    "description": "Les inscriptions d’équipes que vous gérez en tant que coach.",
-    "resubmit": "Soumettre à nouveau",
-    "submit": "Soumettre",
-    "empty": "Vous n’avez encore inscrit aucune équipe.",
-    "loadingSchedule": "Chargement de l’horaire…",
     "round": "Tour",
     "when": "Quand",
     "table": "Table",
     "sequence": "Ordre",
-    "from": "dès {time}",
-    "noGames": "Aucune manche de vos équipes n’est encore planifiée."
+    "from": "dès {time}"
   },
   "form": {
-    "submitted": "Inscription soumise.",
-    "confirmDeleteDraft": "Supprimer le brouillon {team} ?",
-    "rejectedTitle": "Inscription refusée",
-    "rejectedText": "{note} — corrigez l’inscription et soumettez-la à nouveau.",
-    "awaitingReview": "Soumise le {date} ; en attente de contrôle.",
-    "approvedAt": "Acceptée le {date}.",
-    "locked": "Cette inscription ne peut plus être modifiée.",
     "name": "Nom de l’équipe",
     "organization": "École / organisation",
-    "coachName": "Nom du coach",
     "categoryLimits": "{category} : {min} à {max} membres.",
     "categoryLimitsAge": "{category} : {min} à {max} membres, âgés de {minAge} à {maxAge} ans en {season}.",
+    "newTitle": "Nouvelle équipe",
+    "readOnly": "Seuls les responsables de l’événement peuvent modifier les équipes.",
+    "archived": "L’événement est archivé ; ses équipes ne peuvent plus être modifiées.",
+    "inactiveTitle": "Équipe inactive",
+    "inactiveText": "L’équipe n’est ni planifiée ni classée. Activez-la pour qu’elle participe à nouveau.",
+    "withdraw": "Retirer l’équipe",
+    "activate": "Activer l’équipe",
+    "delete": "Supprimer l’équipe",
+    "confirmDelete": "Supprimer {team} avec ses manches et documents ?",
     "saveDraft": "Enregistrer le brouillon",
-    "submit": "Soumettre l’inscription",
     "deleteDraft": "Supprimer le brouillon"
-  }
+  },
+  "contact": "Contact",
+  "contactEmail": "E-mail du contact",
+  "add": "Ajouter une équipe"
 }

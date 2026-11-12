@@ -41,7 +41,8 @@ describe('access rules', () => {
     fx = await Fixtures.create(server)
     const su = fx.su
 
-    const coach = await fx.user()
+    // Linked to a team before the coach role was retired (M8-A); that grants nothing now.
+    const formerCoach = await fx.user()
     const tableJudge = await fx.user()
 
     const events = {
@@ -115,7 +116,7 @@ describe('access rules', () => {
         key,
         await fx.team(event.id, category.id, {
           status: 'approved',
-          coach: key === 'X' ? coach.id : '',
+          coach: key === 'X' ? formerCoach.id : '',
         }),
       )
       if (key === 'X') continue
@@ -195,7 +196,7 @@ describe('access rules', () => {
       ],
     })
     actors.tableJudge = tableJudge
-    actors.coach = coach
+    actors.formerCoach = formerCoach
     actors.nobody = await fx.user()
     actors.unverifiedAdmin = await fx.user({ verified: false, roles: [{ role: 'admin' }] })
     anon = server.client()
@@ -225,7 +226,8 @@ describe('access rules', () => {
   }
 
   // Expected visible keys per actor and collection (A, B published; D draft; X, Y archived;
-  // T templates). managerA also manages archived X; the coach has a team in archived X.
+  // T templates). managerA also manages archived X; formerCoach is still linked to the team of
+  // archived X (M8-T02: that grants nothing).
   const expected: Record<string, Record<string, string>> = {
     admin: {
       events: 'ABDXY',
@@ -297,15 +299,15 @@ describe('access rules', () => {
       score_sheets: 'A',
       score_audit: 'A',
     },
-    coach: {
-      events: 'ABX',
-      categories: 'ABX',
-      competition_days: 'ABX',
-      rounds: 'ABX',
+    formerCoach: {
+      events: 'AB',
+      categories: 'AB',
+      competition_days: 'AB',
+      rounds: 'AB',
       game_rules: 'AB',
       rulesets: 'AB',
-      tables: 'ABX',
-      teams: 'X',
+      tables: 'AB',
+      teams: '',
       games: '',
       ranking_snapshots: '',
       score_sheets: '',
@@ -440,8 +442,7 @@ describe('access rules', () => {
     },
     reviewer: none,
     tableJudge: none,
-    // The coach's team is approved and registration is not open: no changes.
-    coach: none,
+    formerCoach: none,
     nobody: none,
     unverifiedAdmin: none,
   }

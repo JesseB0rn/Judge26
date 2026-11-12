@@ -31,7 +31,7 @@ import {
 } from '../documents'
 
 /**
- * Documents of a team (M1-13): managers upload and delete them; the coach and event staff
+ * Documents of a team (M1-13): managers upload and delete them; event staff
  * open and download them.
  */
 const props = defineProps<{ teamId: string; editable: boolean }>()

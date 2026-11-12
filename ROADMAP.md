@@ -1510,7 +1510,8 @@ and give managers one direct board for table, team and judge assignment.
 
 ### Tracking
 
--   [ ] **M8-A** Remove the coach role from the product (M8-01 to M8-05)
+-   [x] **M8-A** Remove the coach role from the product (M8-01 to M8-04; M8-05 is P3, not
+    scheduled)
 -   [ ] **M8-B** Judge onboarding by CSV invitation, with a development
     email outbox (M8-06 to M8-12)
 -   [ ] **M8-C** Admin "view as" role switch (M8-13 to M8-18)
@@ -1519,6 +1520,12 @@ and give managers one direct board for table, team and judge assignment.
     M8-33)
 
 ### M8-A --- Removal of the coach role
+
+**Status:** M8-01 to M8-04 implemented (see `docs/specifications/M1-teams.md`). Decisions: the
+team keeps an optional **contact** (stored in `coach_name` / `coach_email`) that receives schedule
+emails when set; registration-status emails are retired; teams are **Active** or **Withdrawn**;
+public sign-up stays. Open question 1 is settled: former coach accounts are kept, but grant
+nothing.
 
 Teams are created only by CSV import (M1-12). Coaches no longer have
 accounts. The `coach` role stays in the data model, dormant, so existing

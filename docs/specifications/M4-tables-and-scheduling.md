@@ -66,27 +66,27 @@ Server-side generation uses a transaction and does not use this client version c
 
 `GET /api/events/{id}/schedule/validation` returns assignment issues for event staff.
 
-| Collection | Read                                                 | Write                  |
-| ---------- | ---------------------------------------------------- | ---------------------- |
-| `tables`   | Like the event (staff; coaches for published events) | Event managers, admins |
-| `games`    | Unchanged from M3 (staff and the team's coach)       | Event managers, admins |
+| Collection | Read                                                   | Write                  |
+| ---------- | ------------------------------------------------------ | ---------------------- |
+| `tables`   | Like the event (staff; any verified user if published) | Event managers, admins |
+| `games`    | Staff of the event, admins                             | Event managers, admins |
 
 Generation requires event-manager or admin access. Validation and the event-judge list are
-available to event staff. Coaches read their own scheduled games from `GET /api/users/{id}/schedule`;
-the endpoint verifies ownership and returns only their assigned games.
+available to event staff. (The coaches' `GET /api/users/{id}/schedule` endpoint was removed with
+the coach role, M8-A.)
 
 ## Staff interface
 
 The event **Schedule** tab lets managers configure tables, their fixed judges and category limits;
 preview or generate a schedule; review validation issues; and edit a game's table/sequence.
 Preview does not create games. Generation creates missing games only when all assignments can be
-made. Coaches see each scheduled team's round, table and sequence on **My teams**.
+made.
 
 ## Schedule planner (M4-14)
 
 The planner (`/events/{id}/planner`) shows **all competition days next to one another**. Each day
 is a group of columns, one per category (by name) followed by the event's **custom columns**
-(e.g. visitors, coaches; M4-14-33) in their own order; rows are time of day on an axis shared by all
+(e.g. visitors, judges; M4-14-33) in their own order; rows are time of day on an axis shared by all
 days, from the earliest day start to the latest day end in whole hours (widened to any block outside
 those hours). Hours outside a day's own window are shaded. Times are local times of day (`HH:MM`)
 on a competition day, like `competition_days.date`: no time zone conversion, nothing crosses
@@ -154,9 +154,8 @@ Custom blocks never cause warnings.
   to the round's settings and back).
 - **Deep links**: `?item=phase:<id>` or `?item=block:<id>` opens the block's form (read-only details
   for viewers) and scrolls to it. `cols` and `days` keep the shown columns and days.
-- **Read-only**: event staff see internal blocks and warnings; coaches and other users of a
-  published event see public blocks and public custom columns only, and start with their own
-  teams' categories plus the custom columns. Public pages and TV mode always show the public custom
+- **Read-only**: event staff see internal blocks and warnings; other users of a published event
+  see public blocks and public custom columns only. Archived events are staff only. Public pages and TV mode always show the public custom
   columns. Phones are always read-only.
 - Today's column has a line at the current time; printing gives one A4 landscape page per day,
   titled with the event name and venue.

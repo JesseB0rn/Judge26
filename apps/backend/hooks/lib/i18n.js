@@ -15,7 +15,7 @@ const MESSAGES = {
     noTable: 'table not assigned yet',
     check: 'robot check {day}',
     noGames: 'No games are currently scheduled for this team.',
-    coach: 'coach',
+    contact: 'team',
   },
   de: {
     attempt: '{round} (Versuch {attempt})',
@@ -24,7 +24,7 @@ const MESSAGES = {
     noTable: 'Tisch noch nicht zugeteilt',
     check: 'Roboterkontrolle {day}',
     noGames: 'Für dieses Team sind zurzeit keine Läufe geplant.',
-    coach: 'Coach',
+    contact: 'Team',
   },
   fr: {
     attempt: '{round} (essai {attempt})',
@@ -33,7 +33,7 @@ const MESSAGES = {
     noTable: 'table pas encore attribuée',
     check: 'contrôle du robot {day}',
     noGames: 'Aucune manche n’est actuellement planifiée pour cette équipe.',
-    coach: 'coach',
+    contact: 'équipe',
   },
   it: {
     attempt: '{round} (tentativo {attempt})',
@@ -42,7 +42,7 @@ const MESSAGES = {
     noTable: 'tavolo non ancora assegnato',
     check: 'controllo del robot {day}',
     noGames: 'Al momento non è pianificata nessuna manche per questa squadra.',
-    coach: 'coach',
+    contact: 'squadra',
   },
 }
 

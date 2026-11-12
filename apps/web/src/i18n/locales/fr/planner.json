@@ -29,7 +29,7 @@
   "columns": {
     "confirmDelete": "Supprimer la colonne « {column} » ?",
     "title": "Colonnes personnalisées",
-    "description": "Des colonnes à côté des catégories, p. ex. visiteurs ou coachs. Les blocs personnalisés peuvent y être placés chaque jour.",
+    "description": "Des colonnes à côté des catégories, p. ex. visiteurs ou juges. Les blocs personnalisés peuvent y être placés chaque jour.",
     "nameOf": "Nom de {column}",
     "left": "Déplacer {column} à gauche",
     "right": "Déplacer {column} à droite",
@@ -62,7 +62,7 @@
     "responsibilityPlaceholder": "p. ex. Juge principal·e",
     "columnsHint": "Aucune choisie : le bloc couvre toutes les colonnes.",
     "color": "Couleur",
-    "publicHint": "Public — visible par les coachs et sur les pages publiques",
+    "publicHint": "Public — visible sur les pages publiques",
     "delete": "Supprimer",
     "duplicateHint": "Crée une copie avec les valeurs ci-dessus, p. ex. un autre jour",
     "duplicate": "Dupliquer"

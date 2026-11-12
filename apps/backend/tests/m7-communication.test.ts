@@ -7,7 +7,6 @@ import {
   Fixtures,
   mailsTo,
   tokenFromMail,
-  validMembers,
   type TestUser,
 } from './support/fixtures'
 
@@ -27,7 +26,7 @@ interface Outbox extends RecordModel {
 
 interface ScheduleTeam {
   team: { id: string; name: string }
-  coach_email: string
+  contact_email: string
   changed: boolean
   notified_at: string
   items: { round: string; table: string; sequence: number; text: string }[]
@@ -67,20 +66,12 @@ describe('M7 communication', () => {
       .getFirstListItem(`key = "${key}" && language = "${language}"`)
 
   let n = 0
-  async function registration(eventData: Record<string, unknown> = {}) {
-    const event = await fx.event(eventData)
-    const category = await fx.category(event.id, { name: 'RoboMission Elementary' })
-    const coach = await fx.user({ name: 'Grace Hopper' })
-    const team = await coach.pb.collection('teams').create({
-      event: event.id,
-      category: category.id,
-      name: `Byte Busters ${++n}`,
-      coach: coach.id,
-      status: 'draft',
-      members: validMembers(),
-    })
-    return { event, category, coach, team }
-  }
+  /** An active team with a game and a contact: notifying its schedule queues one email. */
+  const teamWithGame = (data: Record<string, unknown> = {}) =>
+    fx.scheduledTeam(
+      { name: `Byte Busters ${++n}`, coach_name: 'Grace Hopper', ...data },
+      { name: 'Swiss Open' },
+    )
 
   describe('templates (M7-02)', () => {
     it('ships a template per notification; only admins read and edit them', async () => {
@@ -95,7 +86,14 @@ describe('M7 communication', () => {
         'schedule_changed',
       ])
       expect(list).toHaveLength(6 * 4)
-      expect(list.every((t) => t.enabled)).toBe(true)
+      // Registration emails are retired with the coach role (M8-A).
+      expect(list.filter((t) => !t.enabled).map((t) => t.key)).toEqual(
+        expect.arrayContaining(['registration_submitted']),
+      )
+      expect(list.filter((t) => !t.enabled).every((t) => t.key.startsWith('registration_'))).toBe(
+        true,
+      )
+      expect(list.filter((t) => !t.enabled)).toHaveLength(3 * 4)
 
       const manager = await fx.user({
         roles: [{ role: 'event_manager', event: (await fx.event()).id }],
@@ -121,7 +119,7 @@ describe('M7 communication', () => {
     })
 
     it('rejects variables a template does not provide', async () => {
-      const t = await template('registration_submitted')
+      const t = await template('schedule_changed')
       const error = await expectFieldError(
         admin.pb.collection('mail_templates').update(t.id, { body: 'Hi {{password}}' }),
         'body',
@@ -129,7 +127,7 @@ describe('M7 communication', () => {
       )
       expect(JSON.stringify(error.response)).toContain('team_name')
       await expectFieldError(
-        admin.pb.collection('mail_templates').update(t.id, { subject: '{{schedule}}' }),
+        admin.pb.collection('mail_templates').update(t.id, { subject: '{{review_note}}' }),
         'subject',
         'unknown_variable',
       )
@@ -138,93 +136,74 @@ describe('M7 communication', () => {
     it('exposes the variables of each template to admins', async () => {
       const vars = await admin.pb.send('/api/mail/templates/variables', {})
       expect(vars.schedule_changed).toContain('schedule')
+      expect(vars.schedule_changed).toContain('contact_name')
+      expect(vars.schedule_changed).not.toContain('coach_name')
       const user = await fx.user()
       await expectDenied(user.pb.send('/api/mail/templates/variables', {}))
     })
 
     it('an edited template is used for the next message; a disabled one sends nothing', async () => {
-      const t = await template('registration_submitted')
+      const t = await template('schedule_changed')
       try {
         await admin.pb.collection('mail_templates').update(t.id, {
-          subject: 'Thanks, {{coach_name}}',
-          body: '<p>{{team_name}} / {{category_name}} / {{event_name}}</p>',
+          subject: 'Hi, {{contact_name}}',
+          body: '<p>{{team_name}} / {{event_name}}</p>',
         })
-        const a = await registration({ name: 'Swiss Open' })
-        await a.coach.pb.collection('teams').update(a.team.id, { status: 'submitted' })
-        const [mail] = await mailsTo(server, a.coach.email)
-        expect(mail!.subject).toBe('Thanks, Grace Hopper')
-        expect(mail!.html).toBe(`<p>${a.team.name} / RoboMission Elementary / Swiss Open</p>`)
+        const a = await teamWithGame()
+        await a.notify()
+        await processOutbox()
+        const [mail] = await mailsTo(server, a.email)
+        expect(mail!.subject).toBe('Hi, Grace Hopper')
+        expect(mail!.html).toBe(`<p>${a.team.name} / Swiss Open</p>`)
 
         await admin.pb.collection('mail_templates').update(t.id, { enabled: false })
-        const b = await registration()
-        await b.coach.pb.collection('teams').update(b.team.id, { status: 'submitted' })
-        expect(await mailsTo(server, b.coach.email)).toHaveLength(0)
-        expect(await outboxFor(b.coach.email)).toHaveLength(0)
+        const b = await teamWithGame()
+        expect(await b.notify()).toEqual({ queued: 0 })
+        expect(await outboxFor(b.email)).toHaveLength(0)
       } finally {
         await fx.su
           .collection('mail_templates')
           .update(t.id, { subject: t.subject, body: t.body, enabled: true })
       }
     })
+
+    it('templates saved before M8-A may still use {{coach_name}}', async () => {
+      const t = await template('schedule_changed')
+      try {
+        await admin.pb.collection('mail_templates').update(t.id, { subject: 'Hi {{coach_name}}' })
+        const a = await teamWithGame()
+        await a.notify()
+        await processOutbox()
+        expect((await mailsTo(server, a.email))[0]!.subject).toBe('Hi Grace Hopper')
+      } finally {
+        await fx.su.collection('mail_templates').update(t.id, { subject: t.subject })
+      }
+    })
   })
 
-  describe('registration notifications (M7-03)', () => {
-    it('M7-T01: submitting a registration delivers a confirmation email', async () => {
-      const { coach, team } = await registration()
-      expect(await mailsTo(server, coach.email)).toHaveLength(0) // drafts send nothing
-
-      await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
-      const mails = await mailsTo(server, coach.email)
-      expect(mails).toHaveLength(1)
-      expect(mails[0]!.subject).toBe(`Registration received: ${team.name}`)
-      expect(mails[0]!.html).toContain('Hello Grace Hopper')
-      expect(mails[0]!.html).toContain(`href="${TEST_APP_URL}/teams/${team.id}"`)
-
-      const [entry] = await outboxFor(coach.email)
-      expect(entry).toMatchObject({
-        template: 'registration_submitted',
-        status: 'sent',
-        attempts: 1,
-        team: team.id,
-      })
-      expect(entry!.sent_at).toBeTruthy()
-
-      // Saving again without a status change sends nothing.
-      await fx.su.collection('teams').update(team.id, { name: `${team.name} 2` })
-      expect(await mailsTo(server, coach.email)).toHaveLength(1)
+  describe('team emails (M7-03, M8-A)', () => {
+    it('M8-A: creating, activating or withdrawing a team sends no email', async () => {
+      const event = await fx.event()
+      const category = await fx.category(event.id)
+      const email = `quiet-${Date.now()}@test.local`
+      const team = await fx.team(event.id, category.id, { coach_email: email, status: 'approved' })
+      await fx.su.collection('teams').update(team.id, { status: 'withdrawn' })
+      await fx.su.collection('teams').update(team.id, { status: 'approved' })
+      expect(await outboxFor(email)).toHaveLength(0)
     })
 
-    it('approval and rejection notify the coach, with the reason', async () => {
-      const { event, coach, team } = await registration()
-      const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
-      await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
-      await manager.pb
-        .collection('teams')
-        .update(team.id, { status: 'rejected', review_note: 'Birth year of member 2 missing <b>' })
-      await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
-      await manager.pb.collection('teams').update(team.id, { status: 'approved', review_note: '' })
-
-      const mails = await mailsTo(server, coach.email)
-      expect(mails.map((m) => m.subject)).toEqual([
-        `Registration received: ${team.name}`,
-        `Registration not accepted: ${team.name}`,
-        `Registration received: ${team.name}`,
-        `Registration approved: ${team.name}`,
-      ])
-      // Values are escaped in the body.
-      expect(mails[1]!.html).toContain('Reason: Birth year of member 2 missing &lt;b&gt;')
+    it('greets a team without a contact name as the team', async () => {
+      const a = await teamWithGame({ coach_name: '' })
+      await a.notify()
+      await processOutbox()
+      expect((await mailsTo(server, a.email))[0]!.html).toContain('Hello team,')
     })
 
     it('escapes team data in the body and keeps the subject on one line', async () => {
-      const event = await fx.event()
-      const category = await fx.category(event.id)
-      const email = `escape-${Date.now()}@test.local`
-      await fx.team(event.id, category.id, {
-        name: '<img src=x onerror=alert(1)>\nX',
-        coach_email: email,
-        status: 'submitted',
-      })
-      const [mail] = await mailsTo(server, email)
+      const a = await teamWithGame({ name: '<img src=x onerror=alert(1)>\nX' })
+      await a.notify()
+      await processOutbox()
+      const [mail] = await mailsTo(server, a.email)
       expect(mail!.html).toContain('&lt;img src=x onerror=alert(1)&gt;')
       expect(mail!.html).not.toContain('<img')
       expect(mail!.subject).not.toContain('\n')
@@ -240,65 +219,67 @@ describe('M7 communication', () => {
 
   describe('delivery and retries (M7-01)', () => {
     it('M7-T12: a provider failure is recorded and retried with backoff', async () => {
-      const { coach, team } = await registration()
+      const { email, notify } = await teamWithGame()
       await failNext(1)
-      await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
+      await notify()
+      await processOutbox()
 
-      let [entry] = await outboxFor(coach.email)
+      let [entry] = await outboxFor(email)
       expect(entry).toMatchObject({ status: 'pending', attempts: 1 })
       expect(entry!.last_error).toContain('Simulated mail provider failure')
       const delay = Date.parse(entry!.next_attempt_at) - Date.parse(entry!.updated)
       expect(delay).toBeGreaterThan(50_000) // first retry after a minute
-      expect(await mailsTo(server, coach.email)).toHaveLength(0)
+      expect(await mailsTo(server, email)).toHaveLength(0)
 
       // Not due yet: the job leaves it alone.
       await processOutbox()
-      expect((await outboxFor(coach.email))[0]!.attempts).toBe(1)
+      expect((await outboxFor(email))[0]!.attempts).toBe(1)
 
       // A minute later the job sends it.
       await processOutbox(Date.now() + 2 * 60_000)
-      ;[entry] = await outboxFor(coach.email)
+      ;[entry] = await outboxFor(email)
       expect(entry).toMatchObject({ status: 'sent', attempts: 2, last_error: '' })
-      expect(await mailsTo(server, coach.email)).toHaveLength(1)
+      expect(await mailsTo(server, email)).toHaveLength(1)
     })
 
     it('gives up after five attempts; admins and the event manager can retry', async () => {
-      const { event, coach, team } = await registration()
+      const { event, manager, email, notify } = await teamWithGame()
       await failNext(5)
-      await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
+      await notify()
+      await processOutbox()
       for (const minutes of [2, 10, 30, 120]) await processOutbox(Date.now() + minutes * 60_000)
 
-      let [entry] = await outboxFor(coach.email)
+      let [entry] = await outboxFor(email)
       expect(entry).toMatchObject({ status: 'failed', attempts: 5 })
-      expect(await mailsTo(server, coach.email)).toHaveLength(0)
+      expect(await mailsTo(server, email)).toHaveLength(0)
       await processOutbox(Date.now() + 24 * 60 * 60_000)
-      expect((await outboxFor(coach.email))[0]!.status).toBe('failed')
+      expect((await outboxFor(email))[0]!.status).toBe('failed')
 
       // Managers of the event see the message; other users do not.
-      const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
       const other = await fx.user({
         roles: [{ role: 'event_manager', event: (await fx.event()).id }],
       })
+      const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
       expect(await manager.pb.collection('mail_outbox').getFullList()).toHaveLength(1)
       expect(await other.pb.collection('mail_outbox').getFullList()).toHaveLength(0)
-      expect(await coach.pb.collection('mail_outbox').getFullList()).toHaveLength(0)
+      expect(await judge.pb.collection('mail_outbox').getFullList()).toHaveLength(0)
       await expectDenied(other.pb.send(`/api/mail/outbox/${entry!.id}/retry`, { method: 'POST' }))
-      await expectDenied(coach.pb.send(`/api/mail/outbox/${entry!.id}/retry`, { method: 'POST' }))
+      await expectDenied(judge.pb.send(`/api/mail/outbox/${entry!.id}/retry`, { method: 'POST' }))
 
       const retried = await manager.pb.send(`/api/mail/outbox/${entry!.id}/retry`, {
         method: 'POST',
       })
       expect(retried).toMatchObject({ status: 'sent', attempts: 1 })
-      expect(await mailsTo(server, coach.email)).toHaveLength(1)
+      expect(await mailsTo(server, email)).toHaveLength(1)
       await expectDenied(admin.pb.send(`/api/mail/outbox/${entry!.id}/retry`, { method: 'POST' }))
-      ;[entry] = await outboxFor(coach.email)
+      ;[entry] = await outboxFor(email)
       expect(entry!.status).toBe('sent')
     })
 
     it('the outbox cannot be written through the API', async () => {
-      const { coach, team } = await registration()
-      await coach.pb.collection('teams').update(team.id, { status: 'submitted' })
-      const [entry] = await outboxFor(coach.email)
+      const { email, notify } = await teamWithGame()
+      await notify()
+      const [entry] = await outboxFor(email)
       await expectDenied(
         admin.pb
           .collection('mail_outbox')
@@ -337,11 +318,11 @@ describe('M7 communication', () => {
         const team = await fx.team(event.id, category.id, {
           name: `Team ${i}`,
           coach_email: `sched-${event.id}-${i}@test.local`,
-          coach_name: `Coach ${i}`,
+          coach_name: `Contact ${i}`,
           status: i === 3 ? 'submitted' : 'approved',
         })
         teams.push(team)
-        if (i === 3) continue // pending registrations have no games
+        if (i === 3) continue // a registration from before M8-A, not active, without games
         games.push(
           await manager.pb.collection('games').create({
             round: round.id,
@@ -441,15 +422,23 @@ describe('M7 communication', () => {
 
     it('only event managers and admins can preview and notify', async () => {
       const ctx = await scheduled()
-      const coach = await fx.user()
+      const outsider = await fx.user()
       await expectDenied(preview(ctx.judge, ctx.event.id))
       await expectDenied(notify(ctx.judge, ctx.event.id))
-      await expectDenied(notify(coach, ctx.event.id))
+      await expectDenied(notify(outsider, ctx.event.id))
       await expectDenied(
         server.client().send(`/api/events/${ctx.event.id}/notifications/schedule`, {}),
       )
       expect((await preview(admin, ctx.event.id)).changed).toBe(2)
       await expectFieldError(notify(ctx.manager, ctx.event.id, { scope: 'everyone' }), 'scope')
+    })
+
+    it('teams without a contact email are skipped and stay changed', async () => {
+      const ctx = await scheduled()
+      await fx.su.collection('teams').update(ctx.teams[0]!.id, { coach_email: '' })
+      expect(await notify(ctx.manager, ctx.event.id)).toEqual({ queued: 1 })
+      const state = await preview(ctx.manager, ctx.event.id)
+      expect(state.teams.filter((t) => t.changed).map((t) => t.team.name)).toEqual(['Team 1'])
     })
 
     it('archived events cannot send notifications', async () => {

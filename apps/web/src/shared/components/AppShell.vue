@@ -32,12 +32,7 @@ const work = computed(() => {
 const browse = computed(() => {
   const signedIn = session.isAuthenticated && session.isVerified
   return [
-    ...(signedIn
-      ? [
-          { to: '/events', label: t('shell.nav.events') },
-          { to: '/teams', label: t('shell.nav.myTeams') },
-        ]
-      : []),
+    ...(signedIn ? [{ to: '/events', label: t('shell.nav.events') }] : []),
     { to: '/live', label: t('shell.nav.live') },
   ]
 })

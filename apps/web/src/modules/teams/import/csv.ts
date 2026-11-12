@@ -1,21 +1,25 @@
 import { t } from '@/i18n'
 import Papa from 'papaparse'
-import type { CategoryRecord, TeamMember, TeamStatus } from '@/shared/types/records'
-import { COMPLETE_STATUSES, validateMembers } from '../lib'
+import type { CategoryRecord, TeamMember } from '@/shared/types/records'
+import { validateMembers } from '../lib'
 
 /**
- * Team CSV import (M1-12).
+ * Team CSV import (M1-12, M8-03). Imported teams are active, so every row must be a complete
+ * team for its category.
  *
  * Columns (header row required, order free, case-insensitive):
- *   team_name*, category_code*, coach_email*, organization, country, coach_name,
+ *   team_name*, category_code*, organization, country, contact_name, contact_email,
  *   member<N>_first_name, member<N>_last_name, member<N>_birth_year  (N = 1, 2, …)
+ *
+ * The optional contact is stored in the team's coach_name / coach_email fields and receives
+ * schedule emails.
  *
  * Import policy: every row is validated independently. Invalid rows are reported
  * with their line number and skipped. All valid rows are imported in one atomic
  * batch; if the server rejects any of them, nothing is imported.
  */
 
-export const REQUIRED_COLUMNS = ['team_name', 'category_code', 'coach_email'] as const
+export const REQUIRED_COLUMNS = ['team_name', 'category_code'] as const
 export const MAX_ROWS = 500
 
 export interface TeamImportData {
@@ -50,8 +54,6 @@ export interface ImportContext {
   /** Existing team names per category id (any case). */
   existingNames: Map<string, Set<string>>
   season: number
-  /** Status the imported teams will receive. */
-  status: TeamStatus
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -87,7 +89,6 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
   ].sort((a, b) => a - b)
   const byCode = new Map(context.categories.map((c) => [c.code.toLowerCase(), c]))
   const seen = new Map<string, Set<string>>()
-  const complete = COMPLETE_STATUSES.includes(context.status)
 
   // Papaparse reports structural problems (e.g. wrong field count) per row.
   const structural = new Map<number, string[]>()
@@ -110,10 +111,9 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
     if (!code) errors.push(t('teams.import.categoryRequired'))
     else if (!category) errors.push(t('teams.import.unknownCategory', { code }))
 
-    const coachEmail = get('coach_email')
-    if (!coachEmail) errors.push(t('teams.import.coachEmailRequired'))
-    else if (!EMAIL.test(coachEmail)) {
-      errors.push(t('teams.import.invalidCoachEmail', { email: coachEmail }))
+    const contactEmail = get('contact_email')
+    if (contactEmail && !EMAIL.test(contactEmail)) {
+      errors.push(t('teams.import.invalidContactEmail', { email: contactEmail }))
     }
 
     const members: TeamMember[] = []
@@ -128,7 +128,7 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
         birth_year: /^\d{4}$/.test(year) ? Number(year) : NaN,
       })
     }
-    errors.push(...validateMembers(members, { category, season: context.season, complete }))
+    errors.push(...validateMembers(members, { category, season: context.season, complete: true }))
 
     if (category && name) {
       const key = name.toLowerCase()
@@ -151,8 +151,8 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
         category: category.id,
         organization: get('organization'),
         country: get('country'),
-        coach_name: get('coach_name'),
-        coach_email: coachEmail,
+        coach_name: get('contact_name'),
+        coach_email: contactEmail,
         members,
       },
     }
@@ -163,6 +163,6 @@ export function parseTeamCsv(text: string, context: ImportContext): ImportResult
 
 /** Example file offered for download in the import dialog. */
 export const TEMPLATE_CSV = [
-  'team_name,category_code,organization,country,coach_name,coach_email,member1_first_name,member1_last_name,member1_birth_year,member2_first_name,member2_last_name,member2_birth_year',
-  'Robo Rangers,RM-J,Example School,CH,Jane Coach,jane@example.com,Ada,Lovelace,2013,Alan,Turing,2012',
+  'team_name,category_code,organization,country,contact_name,contact_email,member1_first_name,member1_last_name,member1_birth_year,member2_first_name,member2_last_name,member2_birth_year',
+  'Robo Rangers,RM-J,Example School,CH,Jane Doe,jane@example.com,Ada,Lovelace,2013,Alan,Turing,2012',
 ].join('\n')

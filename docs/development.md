@@ -90,13 +90,12 @@ and one team:
 | `manager@judge26.local`   | Event manager of the demo event |
 | `headjudge@judge26.local` | Head judge of the demo event    |
 | `judge@judge26.local`     | Judge of the demo event         |
-| `coach@judge26.local`     | Coach of "Robo Rangers"         |
 
 The demo categories also get rounds R1–R3, an example ranking configuration and an example
 ruleset; three approved RM-J teams have results. Rounds are on the two competition days, and the
 round 3 games of those teams wait on "Table 1" for `judge@judge26.local` to score them (M5). The live ranking of RM-J is public at `/live/{event id}` (M6). The rounds' phases are placed in the
 schedule planner at `/events/{event id}/planner` next to registration, lunch, an internal judges'
-briefing and the award ceremony, with a custom "Coaches" column for the coach briefing (M4-14). The script is idempotent and also creates the superuser `superuser@judge26.local` /
+briefing and the award ceremony, with a custom "Visitors" column for the team briefing (M4-14). The script is idempotent and also creates the superuser `superuser@judge26.local` /
 `superuser-password` for the dashboard at http://127.0.0.1:8090/_/.
 
 ## Frontend

@@ -1,15 +1,18 @@
 /// <reference path="../../pb_data/types.d.ts" />
 
-// Team registration rules (M1-10, M1-11). Pure functions where possible so the
-// rules are easy to read next to docs/specifications/M1-teams.md.
+// Team rules (M1-12, M8-A). Pure functions where possible so the rules are easy to read
+// next to docs/specifications/M1-teams.md.
 
-/** Allowed status transitions. Coaches are further restricted by API rules. */
+/**
+ * Allowed status transitions. Teams are active (`approved`) or `withdrawn`; draft, submitted
+ * and rejected only remain on teams registered before M8-A, and lead to either.
+ */
 const TRANSITIONS = {
-  draft: ['submitted', 'withdrawn'],
-  submitted: ['approved', 'rejected', 'draft', 'withdrawn'],
-  approved: ['rejected', 'withdrawn'],
-  rejected: ['draft', 'submitted', 'approved', 'withdrawn'],
-  withdrawn: ['draft'],
+  draft: ['approved', 'withdrawn'],
+  submitted: ['approved', 'withdrawn'],
+  approved: ['withdrawn'],
+  rejected: ['approved', 'withdrawn'],
+  withdrawn: ['approved'],
 }
 
 /** Statuses that require a complete, valid team. */

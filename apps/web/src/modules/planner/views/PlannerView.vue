@@ -20,7 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -108,13 +107,7 @@ const allColumns = computed(() => (data.value ? gridColumns(data.value) : []))
 const shownColumns = computed(() => {
   const d = data.value
   if (!d) return []
-  const chosen = idList(route.query.cols)
-  // Coaches start with their own teams' categories and the custom columns.
-  const fallback =
-    d.internal || !d.my_categories?.length
-      ? []
-      : [...d.my_categories, ...(d.columns ?? []).map((c) => c.id)]
-  return gridColumns(d, chosen ?? fallback)
+  return gridColumns(d, idList(route.query.cols) ?? [])
 })
 const shownDays = computed(() => {
   const chosen = idList(route.query.days)
@@ -465,17 +458,6 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
               @update:model-value="toggleColumn(c.id, !!$event)"
               @select.prevent
               >{{ c.name }}</DropdownMenuCheckboxItem
-            >
-          </template>
-          <template v-if="!data.internal && data.my_categories?.length">
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              @select="
-                router.replace({
-                  query: { ...route.query, cols: allColumns.map((c) => c.id).join(',') },
-                })
-              "
-              >{{ t('planner.view.showAll') }}</DropdownMenuItem
             >
           </template>
         </DropdownMenuContent>

@@ -3,18 +3,15 @@
   "category": "Categoria",
   "organization": "Organizzazione",
   "country": "Paese",
-  "coach": "Coach",
-  "coachEmail": "E-mail del coach",
   "members": "Membri",
   "firstName": "Nome",
   "lastName": "Cognome",
   "birthYear": "Anno di nascita",
   "empty": "Nessuna squadra.",
-  "ownOnly": "Vede le squadre che ha iscritto.",
   "status": {
     "draft": "Bozza",
     "submitted": "Inviata",
-    "approved": "Approvata",
+    "approved": "Attiva",
     "rejected": "Respinta",
     "withdrawn": "Ritirata"
   },
@@ -36,11 +33,6 @@
   },
   "review": {
     "approve": "Approva",
-    "approved": "Iscrizione approvata.",
-    "reject": "Respingi",
-    "rejected": "Iscrizione respinta.",
-    "rejectTitle": "Respingi {team}",
-    "rejectDescription": "Il coach vede il motivo e può correggere e inviare di nuovo.",
     "reason": "Motivo"
   },
   "documents": {
@@ -49,7 +41,7 @@
     "tooLarge": "Il file supera i {max} MB.",
     "uploaded": "Documento caricato.",
     "deleted": "Documento eliminato.",
-    "visibility": "Visibile al coach della squadra e a giudici, giudici capo e responsabili dell’evento.",
+    "visibility": "Visibile a giudici, giudici capo e responsabili dell’evento.",
     "empty": "Ancora nessun documento.",
     "file": "File (PDF, immagine, Office, max. {max} MB)",
     "upload": "Carica"
@@ -66,9 +58,8 @@
   "import": {
     "button": "Importa CSV",
     "title": "Importa squadre da CSV",
-    "description": "Le righe non valide vengono segnalate e saltate. Le righe valide vengono importate insieme: se il server ne rifiuta una, non viene importato nulla.",
+    "description": "Le squadre importate sono subito attive. Le righe non valide vengono segnalate e saltate. Le righe valide vengono importate insieme — se il server ne respinge una, non viene importato nulla.",
     "file": "File CSV",
-    "initialStatus": "Stato iniziale",
     "example": "Scarica un file di esempio",
     "summary": "{valid} riga/e valida/e, {invalid} non valida/e.",
     "line": "Riga",
@@ -83,47 +74,40 @@
     "nameTooLong": "Il nome della squadra può contenere al massimo {max} caratteri.",
     "categoryRequired": "Il codice della categoria è obbligatorio.",
     "unknownCategory": "Codice di categoria sconosciuto «{code}».",
-    "coachEmailRequired": "L’e-mail del coach è obbligatoria.",
-    "invalidCoachEmail": "E-mail del coach non valida «{email}».",
     "duplicateInFile": "Il nome di squadra «{name}» compare più volte in questo file.",
-    "alreadyExists": "In {code} esiste già una squadra di nome «{name}»."
+    "alreadyExists": "In {code} esiste già una squadra di nome «{name}».",
+    "invalidContactEmail": "E-mail del contatto non valida «{email}»."
   },
   "export": {
     "title": "squadre {event}",
     "teamsSheet": "Squadre",
-    "submitted": "Inviata il",
-    "reviewed": "Verificata il",
-    "reviewNote": "Nota di verifica",
     "ageIn": "Età nel {season}"
   },
   "mine": {
-    "description": "Le iscrizioni delle squadre che gestisce come coach.",
-    "resubmit": "Invia di nuovo",
-    "submit": "Invia",
-    "empty": "Non ha ancora iscritto nessuna squadra.",
-    "loadingSchedule": "Caricamento del programma…",
     "round": "Turno",
     "when": "Quando",
     "table": "Tavolo",
     "sequence": "Ordine",
-    "from": "dalle {time}",
-    "noGames": "Non è ancora pianificata nessuna manche delle sue squadre."
+    "from": "dalle {time}"
   },
   "form": {
-    "submitted": "Iscrizione inviata.",
-    "confirmDeleteDraft": "Eliminare la bozza {team}?",
-    "rejectedTitle": "Iscrizione respinta",
-    "rejectedText": "{note} — corregga l’iscrizione e la invii di nuovo.",
-    "awaitingReview": "Inviata il {date}; in attesa di verifica.",
-    "approvedAt": "Approvata il {date}.",
-    "locked": "Questa iscrizione non può più essere modificata.",
     "name": "Nome della squadra",
     "organization": "Scuola / organizzazione",
-    "coachName": "Nome del coach",
     "categoryLimits": "{category}: da {min} a {max} membri.",
     "categoryLimitsAge": "{category}: da {min} a {max} membri, età da {minAge} a {maxAge} anni nel {season}.",
+    "newTitle": "Nuova squadra",
+    "readOnly": "Solo i responsabili dell’evento possono modificare le squadre.",
+    "archived": "L’evento è archiviato; le sue squadre non possono più essere modificate.",
+    "inactiveTitle": "Squadra non attiva",
+    "inactiveText": "La squadra non viene pianificata né classificata. La attivi per farla partecipare di nuovo.",
+    "withdraw": "Ritira la squadra",
+    "activate": "Attiva la squadra",
+    "delete": "Elimina la squadra",
+    "confirmDelete": "Eliminare {team} con le sue manche e i documenti?",
     "saveDraft": "Salva bozza",
-    "submit": "Invia l’iscrizione",
     "deleteDraft": "Elimina bozza"
-  }
+  },
+  "contact": "Contatto",
+  "contactEmail": "E-mail del contatto",
+  "add": "Aggiungi squadra"
 }

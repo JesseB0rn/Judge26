@@ -25,13 +25,12 @@ describe('event views', () => {
   })
   afterEach(() => document.body.replaceChildren())
 
-  it('lists events with status and registration state', async () => {
+  it('lists events with their status', async () => {
     const { wrapper } = await mountView(EventListView)
     const text = wrapper.get('[data-testid=event-list]').text()
     expect(text).toContain('WRO Final')
-    expect(text).toContain('Registration open')
     expect(text).toContain('Draft Cup')
-    expect(text).toContain('Not yet published')
+    expect(text).not.toContain('Registration')
   })
 
   it('only admins can create events (M1-06)', async () => {
@@ -67,9 +66,11 @@ describe('event views', () => {
     expect(wrapper.text()).toContain('Restore')
   })
 
-  it('offers team registration to coaches while registration is open', async () => {
+  it('M8-02: users without a role see the event, but no teams and no registration', async () => {
     const { wrapper } = await mountView(EventDetailView, { props: { id: 'event1' } })
-    expect(wrapper.text()).toContain('Register a team')
+    expect(wrapper.text()).not.toContain('Register a team')
+    expect(wrapper.text()).not.toContain('Registration')
+    expect(wrapper.findAll('[role=tab]').map((t) => t.text())).toEqual(['Overview', 'Categories'])
     expect(wrapper.text()).not.toContain('Archive')
     expect(wrapper.text()).not.toContain('Staff')
   })
@@ -91,15 +92,6 @@ describe('event views', () => {
     // Reviewing has one home: the review page, linked from the event header.
     expect(wrapper.text()).not.toContain('Scores')
     expect(wrapper.get('a[href*="event=event1"]').text()).toContain('Review scores')
-  })
-
-  it('hides registration when it is closed', async () => {
-    mocked.getEvent.mockResolvedValue(
-      makeEvent({ registration_closes_at: '2020-01-01 00:00:00.000Z' }),
-    )
-    const { wrapper } = await mountView(EventDetailView, { props: { id: 'event1' } })
-    expect(wrapper.text()).not.toContain('Register a team')
-    expect(wrapper.text()).toContain('Registration closed')
   })
 
   it('publishes draft events', async () => {

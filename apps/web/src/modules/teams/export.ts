@@ -18,12 +18,9 @@ export function teamsTable(teams: TeamRecord[], categories: CategoryRecord[]): E
       { header: t('common.status') },
       { header: t('teams.organization') },
       { header: t('teams.country') },
-      { header: t('teams.coach') },
-      { header: t('teams.coachEmail') },
+      { header: t('teams.contact') },
+      { header: t('teams.contactEmail') },
       { header: t('teams.members'), type: 'number', decimals: 0 },
-      { header: t('teams.export.submitted'), type: 'datetime' },
-      { header: t('teams.export.reviewed'), type: 'datetime' },
-      { header: t('teams.export.reviewNote') },
     ],
     rows: teams.map((team) => [
       team.name,
@@ -34,9 +31,6 @@ export function teamsTable(teams: TeamRecord[], categories: CategoryRecord[]): E
       team.coach_name,
       team.coach_email,
       team.members?.length ?? 0,
-      team.submitted_at,
-      team.reviewed_at,
-      team.review_note,
     ]),
   }
 }

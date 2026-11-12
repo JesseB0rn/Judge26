@@ -228,28 +228,11 @@ onRecordValidate((e) => {
 }, 'mail_templates')
 
 // ---------------------------------------------------------------------------
-// Registration notifications (M7-03)
-// ---------------------------------------------------------------------------
-
-// The coach is emailed when a registration is submitted, approved or rejected. Queued in the
-// same transaction as the status change; a failure to queue never blocks the registration.
-onRecordCreate((e) => {
-  e.next()
-  require(`${__hooks}/lib/mail.js`).onTeamSaved(e, '')
-}, 'teams')
-
-onRecordUpdate((e) => {
-  const from = e.record.original().getString('status')
-  e.next()
-  require(`${__hooks}/lib/mail.js`).onTeamSaved(e, from)
-}, 'teams')
-
-// ---------------------------------------------------------------------------
 // Schedule notifications (M7-04)
 // ---------------------------------------------------------------------------
 
-// GET /api/events/{id}/notifications/schedule -> every approved team's schedule and whether it
-// changed since the coach was last notified
+// GET /api/events/{id}/notifications/schedule -> every active team's schedule and whether it
+// changed since its contact was last notified
 routerAdd(
   'GET',
   '/api/events/{id}/notifications/schedule',

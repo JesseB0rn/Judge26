@@ -3,18 +3,15 @@
   "category": "Category",
   "organization": "Organization",
   "country": "Country",
-  "coach": "Coach",
-  "coachEmail": "Coach email",
   "members": "Members",
   "firstName": "First name",
   "lastName": "Last name",
   "birthYear": "Birth year",
   "empty": "No teams.",
-  "ownOnly": "You see the teams you registered.",
   "status": {
     "draft": "Draft",
     "submitted": "Submitted",
-    "approved": "Approved",
+    "approved": "Active",
     "rejected": "Rejected",
     "withdrawn": "Withdrawn"
   },
@@ -36,11 +33,6 @@
   },
   "review": {
     "approve": "Approve",
-    "approved": "Registration approved.",
-    "reject": "Reject",
-    "rejected": "Registration rejected.",
-    "rejectTitle": "Reject {team}",
-    "rejectDescription": "The coach sees the reason and can correct and resubmit.",
     "reason": "Reason"
   },
   "documents": {
@@ -49,7 +41,7 @@
     "tooLarge": "The file is larger than {max} MB.",
     "uploaded": "Document uploaded.",
     "deleted": "Document deleted.",
-    "visibility": "Visible to the team's coach and the event's judges, head judges and managers.",
+    "visibility": "Visible to the event's judges, head judges and managers.",
     "empty": "No documents yet.",
     "file": "File (PDF, image, Office, max. {max} MB)",
     "upload": "Upload"
@@ -66,9 +58,8 @@
   "import": {
     "button": "Import CSV",
     "title": "Import teams from CSV",
-    "description": "Invalid rows are reported and skipped. Valid rows are imported together — if any of them is rejected by the server, nothing is imported.",
+    "description": "Imported teams are active right away. Invalid rows are reported and skipped. Valid rows are imported together — if any of them is rejected by the server, nothing is imported.",
     "file": "CSV file",
-    "initialStatus": "Initial status",
     "example": "Download example file",
     "summary": "{valid} valid, {invalid} invalid row(s).",
     "line": "Line",
@@ -83,47 +74,40 @@
     "nameTooLong": "Team name must be at most {max} characters.",
     "categoryRequired": "Category code is required.",
     "unknownCategory": "Unknown category code \"{code}\".",
-    "coachEmailRequired": "Coach email is required.",
-    "invalidCoachEmail": "Invalid coach email \"{email}\".",
     "duplicateInFile": "Duplicate team name \"{name}\" in this file.",
-    "alreadyExists": "A team named \"{name}\" already exists in {code}."
+    "alreadyExists": "A team named \"{name}\" already exists in {code}.",
+    "invalidContactEmail": "Invalid contact email \"{email}\"."
   },
   "export": {
     "title": "teams {event}",
     "teamsSheet": "Teams",
-    "submitted": "Submitted",
-    "reviewed": "Reviewed",
-    "reviewNote": "Review note",
     "ageIn": "Age in {season}"
   },
   "mine": {
-    "description": "Team registrations you manage as coach.",
-    "resubmit": "Resubmit",
-    "submit": "Submit",
-    "empty": "You have not registered any teams yet.",
-    "loadingSchedule": "Loading schedule…",
     "round": "Round",
     "when": "When",
     "table": "Table",
     "sequence": "Sequence",
-    "from": "from {time}",
-    "noGames": "No games of your teams are scheduled yet."
+    "from": "from {time}"
   },
   "form": {
-    "submitted": "Registration submitted.",
-    "confirmDeleteDraft": "Delete draft {team}?",
-    "rejectedTitle": "Registration rejected",
-    "rejectedText": "{note} — correct the registration and submit it again.",
-    "awaitingReview": "Submitted {date}; awaiting review.",
-    "approvedAt": "Approved {date}.",
-    "locked": "This registration can no longer be changed.",
     "name": "Team name",
     "organization": "School / organization",
-    "coachName": "Coach name",
     "categoryLimits": "{category}: {min}–{max} members.",
     "categoryLimitsAge": "{category}: {min}–{max} members, age {minAge}–{maxAge} in {season}.",
+    "newTitle": "New team",
+    "readOnly": "Only event managers can change teams.",
+    "archived": "The event is archived; its teams can no longer be changed.",
+    "inactiveTitle": "Team not active",
+    "inactiveText": "The team is not scheduled or ranked. Activate it to take part again.",
+    "withdraw": "Withdraw team",
+    "activate": "Activate team",
+    "delete": "Delete team",
+    "confirmDelete": "Delete {team} with its games and documents?",
     "saveDraft": "Save draft",
-    "submit": "Submit registration",
     "deleteDraft": "Delete draft"
-  }
+  },
+  "contact": "Contact",
+  "contactEmail": "Contact email",
+  "add": "Add team"
 }

@@ -1,7 +1,7 @@
 # M7 – Communication
 
-Refines roadmap tasks M7-01 – M7-04. The platform emails coaches when their registration changes
-and when their team's schedule changes. Every notification is queued in an **outbox** first and
+Refines roadmap tasks M7-01 – M7-04. The platform emails a team's contact when the team's schedule
+changes. (Registration emails were retired with team self-registration, M8-A.) Every notification is queued in an **outbox** first and
 delivered with retries, so a mail-server problem never blocks a registration or loses a message.
 See [ADR 0008](../architecture/decisions/0008-transactional-email-outbox.md).
 
@@ -60,29 +60,36 @@ Variables are written `{{name}}`. Values are HTML-escaped in the body (the subje
 kept on one line), except `schedule`, which the server renders as a list. A template may only use
 its own variables (`400`, `unknown_variable`); `GET /api/mail/templates/variables` lists them.
 
-| Key                      | Sent when                                  | Variables                                                                                       |
-| ------------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `registration_submitted` | A registration becomes `submitted`         | `coach_name`, `team_name`, `category_name`, `event_name`, `team_url`                            |
-| `registration_approved`  | A registration becomes `approved`          | as above, and `review_note`                                                                     |
-| `registration_rejected`  | A registration becomes `rejected`          | as above, and `review_note` (the required reason)                                               |
-| `schedule_changed`       | A manager notifies teams of their schedule | `coach_name`, `team_name`, `event_name`, `schedule`, `schedule_text`, `message`, `schedule_url` |
-| `auth_verification`      | A user asks to confirm their email address | `name`, `action_url`, `app_name`                                                                |
-| `auth_password_reset`    | A user asks to reset their password        | `name`, `action_url`, `app_name`                                                                |
+| Key                      | Sent when                                  | Variables                                                                                         |
+| ------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `registration_submitted` | Retired (M8-A); disabled and not listed    | `coach_name`, `team_name`, `category_name`, `event_name`, `team_url`                              |
+| `registration_approved`  | Retired (M8-A); disabled and not listed    | as above, and `review_note`                                                                       |
+| `registration_rejected`  | Retired (M8-A); disabled and not listed    | as above, and `review_note` (the required reason)                                                 |
+| `schedule_changed`       | A manager notifies teams of their schedule | `contact_name`, `team_name`, `event_name`, `schedule`, `schedule_text`, `message`, `schedule_url` |
+| `auth_verification`      | A user asks to confirm their email address | `name`, `action_url`, `app_name`                                                                  |
+| `auth_password_reset`    | A user asks to reset their password        | `name`, `action_url`, `app_name`                                                                  |
 
 `team_url` is `{APP_URL}/teams/{id}`, `schedule_url` the public event page `{APP_URL}/live/{id}`.
 
-## Registration notifications (M7-03)
+`schedule_changed` templates saved before M8-A may still use `{{coach_name}}`; it is accepted and
+rendered like `{{contact_name}}` but no longer offered. Migration `1764400000_m8_retire_coach.js`
+renamed it in the stored templates.
 
-- The coach (`coach_email`) is emailed whenever a team's status changes to `submitted`, `approved`
-  or `rejected`, whoever made the change (coach, manager, import). Saves without a status change,
-  drafts and withdrawals send nothing.
-- A disabled template sends nothing. A failure to queue is logged and never blocks the change.
+## Registration notifications (M7-03, retired)
+
+Until M8-A the coach was emailed when a registration was submitted, approved or rejected. Teams are
+now created by managers, so creating, activating or withdrawing a team sends nothing. The migration
+disabled the three registration templates, and the admin email page no longer lists them.
 
 ## Schedule notifications (M7-04)
 
 Schedules change often while an event is planned, so emails are sent when a manager decides, not on
 every edit. The event's **Messages** tab (event managers and admins) shows every approved team's
 current schedule and which teams are **affected**.
+
+- The email goes to the team's contact (`coach_email`, shown as "Contact email"), greeting them by
+  `coach_name` or, without a name, as "team". Teams without a contact email get no email and stay
+  affected.
 
 - A team's schedule is the list of its scheduled games: round (and attempt), competition day and
   start of the round's scoring phase, table and position, and the round's robot check.
@@ -96,12 +103,12 @@ current schedule and which teams are **affected**.
 
 ## API
 
-| Method | Path                                      | Auth                 | Description                                                                |
-| ------ | ----------------------------------------- | -------------------- | -------------------------------------------------------------------------- |
-| GET    | `/api/mail/templates/variables`           | admins               | `{ key: [variable] }`                                                      |
-| POST   | `/api/mail/outbox/{id}/retry`             | admins, its managers | Queue a failed message again and try to send it                            |
-| GET    | `/api/events/{id}/notifications/schedule` | event managers       | `{ teams: [{ team, coach_email, changed, notified_at, items }], changed }` |
-| POST   | `/api/events/{id}/notifications/schedule` | event managers       | `{ scope: "changed" \| "all", message? }` → `{ queued }`                   |
+| Method | Path                                      | Auth                 | Description                                                                  |
+| ------ | ----------------------------------------- | -------------------- | ---------------------------------------------------------------------------- |
+| GET    | `/api/mail/templates/variables`           | admins               | `{ key: [variable] }`                                                        |
+| POST   | `/api/mail/outbox/{id}/retry`             | admins, its managers | Queue a failed message again and try to send it                              |
+| GET    | `/api/events/{id}/notifications/schedule` | event managers       | `{ teams: [{ team, contact_email, changed, notified_at, items }], changed }` |
+| POST   | `/api/events/{id}/notifications/schedule` | event managers       | `{ scope: "changed" \| "all", message? }` → `{ queued }`                     |
 
 Development and test only: `POST /api/dev/mail-outbox/process { now? }` runs the delivery job now
 (`now`, in ms, makes messages due by then due immediately), `POST /api/dev/mail-failures { count }`

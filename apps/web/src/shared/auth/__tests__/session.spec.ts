@@ -45,7 +45,7 @@ describe('session store', () => {
     ])
     const session = useSessionStore()
 
-    await session.login('coach@example.com', 'secret')
+    await session.login('user@example.com', 'secret')
     expect(session.isAuthenticated).toBe(true)
     expect(session.rolesFor('e1')).toEqual(['judge'])
     expect(session.canManageEvent('e2')).toBe(true)

@@ -1,6 +1,7 @@
 # ADR 0002: Identity, scoped roles and team registration model
 
-- **Status:** accepted
+- **Status:** accepted; decision 3 superseded by M8-A (2026-11-12): teams are created by event
+  managers and nobody owns a team, see [M1-teams.md](../../specifications/M1-teams.md)
 - **Date:** 2026-11-09
 
 ## Context

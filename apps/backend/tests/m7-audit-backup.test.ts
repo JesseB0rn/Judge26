@@ -47,36 +47,34 @@ describe('M7 audit log', () => {
 
   it('M7-08: records who changed what, with the changed fields', async () => {
     const { event, category, manager } = await eventWithManager()
-    const coach = await fx.user()
-    const team = await coach.pb.collection('teams').create({
+    const team = await manager.pb.collection('teams').create({
       event: event.id,
       category: category.id,
       name: 'Robo Rangers',
-      coach: coach.id,
-      status: 'submitted',
+      status: 'approved',
       members: validMembers(),
     })
-    await manager.pb.collection('teams').update(team.id, { status: 'approved' })
+    await admin.pb.collection('teams').update(team.id, { status: 'withdrawn' })
 
-    const [created, approved] = await entriesFor(team.id)
+    const [created, withdrawn] = await entriesFor(team.id)
     expect(created).toMatchObject({
       action: 'create',
       collection: 'teams',
       event: event.id,
-      actor: coach.id,
-      actor_label: coach.email,
+      actor: manager.id,
+      actor_label: manager.email,
       summary: 'Created team “Robo Rangers”',
     })
     // Personal data is not copied into the log.
     expect(created!.changes).toMatchObject({ name: 'Robo Rangers', members: '[set]' })
     expect(JSON.stringify(created!.changes)).not.toContain('Lovelace')
-    expect(approved).toMatchObject({
+    expect(withdrawn).toMatchObject({
       action: 'update',
-      actor: manager.id,
-      summary: 'Updated team “Robo Rangers”: status submitted → approved',
+      actor: admin.id,
+      summary: 'Updated team “Robo Rangers”: status approved → withdrawn',
     })
-    expect(approved!.changes).toMatchObject({ status: ['submitted', 'approved'] })
-    expect(approved!.ip).toBeTruthy()
+    expect(withdrawn!.changes).toMatchObject({ status: ['approved', 'withdrawn'] })
+    expect(withdrawn!.ip).toBeTruthy()
   })
 
   it('records deletions and admin role changes; unchanged saves are not logged', async () => {
@@ -287,21 +285,22 @@ describe('M7-T11 server restart', () => {
     const dataDir = server.dataDir
     try {
       let fx = await Fixtures.create(server)
-      const event = await fx.event()
-      const category = await fx.category(event.id)
-      const email = `restart-${Date.now()}@test.local`
-      await fetch(`${server.url}/api/dev/mail-failures`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ count: 1 }),
-      })
-      const team = await fx.team(event.id, category.id, { coach_email: email, status: 'submitted' })
+      const post = (path: string, body: unknown) =>
+        fetch(`${server.url}${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+      const { team, email, notify } = await fx.scheduledTeam()
+      await post('/api/dev/mail-failures', { count: 1 })
+      await notify()
+      await post('/api/dev/mail-outbox/process', { now: 0 })
       expect(await mailsTo(server, email)).toHaveLength(0) // failed, queued for a retry
 
       await server.stop()
       server = await startPocketBase({ dataDir })
       fx = await Fixtures.create(server)
-      expect((await fx.su.collection('teams').getOne(team.id)).status).toBe('submitted')
+      expect((await fx.su.collection('teams').getOne(team.id)).status).toBe('approved')
       const [queued] = await fx.su
         .collection('mail_outbox')
         .getFullList({ filter: `to = "${email}"` })
@@ -313,7 +312,7 @@ describe('M7-T11 server restart', () => {
         body: JSON.stringify({ now: Date.now() + 2 * 60_000 }),
       })
       expect((await mailsTo(server, email)).map((m) => m.subject)).toEqual([
-        `Registration received: ${team.name}`,
+        `Schedule for ${team.name} at ${(await fx.su.collection('events').getOne(team.event)).name}`,
       ])
     } finally {
       await server.dispose()

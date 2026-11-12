@@ -12,25 +12,20 @@ import {
 } from '../support/backend'
 import { login } from '../support/pages'
 
-// M7-03, M7-04: registration and schedule emails (desktop; managers do not work on tablets).
+// M7-04: schedule emails to team contacts (desktop; managers do not work on tablets).
 test.describe('M7 notifications', () => {
   test.skip(({ isMobile, viewport }) => !!isMobile || (viewport?.width ?? 0) < 1000, 'desktop only')
 
-  test('M7-T03: a manager notifies the coaches of a changed schedule', async ({ page }) => {
+  test('M7-T03: a manager notifies the team contacts of a changed schedule', async ({ page }) => {
     const { event, category } = await createEvent()
     const manager = await createUser({ roles: [{ role: 'event_manager', event: event.id }] })
     const judge = await createUser({ roles: [{ role: 'judge', event: event.id }] })
     const round = await createRound(category.id, 'R1')
     const table = await createTable(event.id, 'Table 1', judge.id)
-    const coachEmail = `${unique('coach')}@test.local`
+    const contactEmail = `${unique('contact')}@test.local`
     const teamName = unique('Gear Heads')
-    const team = await createApprovedTeam(event.id, category.id, teamName, '', coachEmail)
+    const team = await createApprovedTeam(event.id, category.id, teamName, contactEmail)
     await createPlacedGame(round.id, team.id, table.id, 1)
-
-    // Approval itself was confirmed by email (M7-03).
-    await expect
-      .poll(async () => (await mailsTo(coachEmail)).map((m) => m.subject))
-      .toEqual([`Registration approved: ${teamName}`])
 
     await login(page, manager.email, manager.password)
     await page.goto(`/events/${event.id}?tab=messages`)
@@ -45,14 +40,14 @@ test.describe('M7 notifications', () => {
 
     await processOutbox()
     await expect
-      .poll(async () => (await mailsTo(coachEmail)).map((m) => m.subject))
+      .poll(async () => (await mailsTo(contactEmail)).map((m) => m.subject))
       .toContain(`Schedule for ${teamName} at ${event.name}`)
-    const mail = (await mailsTo(coachEmail)).find((m) => m.subject.startsWith('Schedule'))!
+    const mail = (await mailsTo(contactEmail)).find((m) => m.subject.startsWith('Schedule'))!
     expect(mail.html).toContain('Please arrive 30 minutes early.')
 
-    // The event's delivery log shows both messages as sent.
+    // The event's delivery log shows the message as sent; adding the team sent nothing (M8-A).
     await page.reload()
     const log = page.getByTestId('outbox')
-    await expect(log.locator('[data-status=sent]')).toHaveCount(2)
+    await expect(log.locator('[data-status=sent]')).toHaveCount(1)
   })
 })

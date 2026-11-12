@@ -31,8 +31,7 @@
     "roles": "Vos rôles",
     "judging": "Évaluez les manches de votre table.",
     "review": "Validez ou renvoyez les feuilles de score soumises par les juges.",
-    "events": "Parcourir les compétitions et inscrire des équipes.",
-    "teams": "Vos inscriptions d’équipes et leur statut.",
+    "events": "Parcourir les compétitions et leurs équipes.",
     "library": "Bibliothèque de catégories",
     "libraryDescription": "Modèles de catégories réutilisables.",
     "users": "Comptes et rôles d’administration."

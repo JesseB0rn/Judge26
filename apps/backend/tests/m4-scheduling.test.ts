@@ -22,12 +22,10 @@ interface SetupOptions {
 describe('M5 round and table scheduling', () => {
   let server: TestServer
   let fx: Fixtures
-  let coach: TestUser
 
   beforeAll(async () => {
     server = await startPocketBase()
     fx = await Fixtures.create(server)
-    coach = await fx.user()
   })
   afterAll(() => server?.dispose())
 
@@ -246,27 +244,14 @@ describe('M5 round and table scheduling', () => {
     expect(result.issues).toEqual([expect.objectContaining({ code: 'missing_table' })])
   })
 
-  it('lets coaches read only their own scheduled games', async () => {
+  it('M8-04: the former coach schedule endpoint is gone', async () => {
     const ctx = await setup()
-    const coach = await fx.user()
-    const ownTeam = await team(ctx, { coach: coach.id })
+    const formerCoach = await fx.user()
+    await team(ctx, { coach: formerCoach.id })
     await generate(ctx)
-
-    const schedule = await coach.pb.send<
-      {
-        team: string
-        sequence: number
-        expand: { team: { name: string }; table: { name: string } }
-      }[]
-    >(`/api/users/${coach.id}/schedule`, { method: 'GET' })
-    expect(schedule).toHaveLength(1)
-    expect(schedule[0]).toMatchObject({
-      team: ownTeam.id,
-      sequence: 1,
-      expand: { team: { name: ownTeam.name }, table: { name: 'T1' } },
-    })
-
-    const other = await fx.user()
-    await expectDenied(other.pb.send(`/api/users/${coach.id}/schedule`, { method: 'GET' }))
+    const error = await expectDenied(
+      formerCoach.pb.send(`/api/users/${formerCoach.id}/schedule`, { method: 'GET' }),
+    )
+    expect(error.status).toBe(404)
   })
 })

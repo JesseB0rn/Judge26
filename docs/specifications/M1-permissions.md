@@ -12,42 +12,37 @@ mirrors them for usability.
   events and can perform no actions until they confirm their email address.
 - **Roles are scoped.** A user can hold any number of role assignments (M1-05). `admin` is
   global; all other roles are scoped to exactly one event.
-- **Coach is not a role.** Any verified user can register teams and becomes their coach.
-  Ownership (`teams.coach`) grants access to those teams only.
-- **Archived events are read-only** for everyone except admins, and stay readable for staff
-  and coaches with teams in them (M1-T12).
+- **Nobody owns a team (M8-A).** Teams are created by event managers; the former implicit
+  coach role (`teams.coach`) grants nothing. See [M1-teams.md](M1-teams.md#access).
+- **Archived events are read-only** for everyone except admins, and stay readable for their
+  staff (M1-T12).
 
 ## Roles
 
-| Role             | Scope  | Purpose                                                      |
-| ---------------- | ------ | ------------------------------------------------------------ |
-| `admin`          | global | Manages everything, including users' roles and templates     |
-| `event_manager`  | event  | Manages one event: details, days, categories, teams          |
-| `head_judge`     | event  | Reads event data; approves, returns and corrects scores (M5) |
-| `judge`          | event  | Reads event data; scores the games on their table (M5)       |
-| coach (implicit) | teams  | Owner of team registrations                                  |
+| Role            | Scope  | Purpose                                                      |
+| --------------- | ------ | ------------------------------------------------------------ |
+| `admin`         | global | Manages everything, including users' roles and templates     |
+| `event_manager` | event  | Manages one event: details, days, categories, teams          |
+| `head_judge`    | event  | Reads event data; approves, returns and corrects scores (M5) |
+| `judge`         | event  | Reads event data; scores the games on their table (M5)       |
 
 ## Access matrix
 
 "Staff" = any role in the event. "Manager" = admin or `event_manager` of the event.
 
-| Collection              | List / view                                                                      | Create                                           | Update                                                            | Delete                      |
-| ----------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------- | --------------------------- |
-| `users`                 | own record; admins: all (incl. email)                                            | anyone (registration)                            | own record                                                        | own record                  |
-| `role_assignments`      | own assignments; admins: all                                                     | admin                                            | admin                                                             | admin                       |
-| `events`                | admin, staff, any verified user if `published`, coaches with teams if `archived` | admin                                            | manager                                                           | admin                       |
-| `competition_days`      | same as event                                                                    | manager, event not archived                      | manager, event not archived                                       | manager, event not archived |
-| `categories` (event)    | same as event                                                                    | manager, event not archived                      | manager, event not archived                                       | manager, event not archived |
-| `categories` (template) | admins and users with any `event_manager` role                                   | admin                                            | admin                                                             | admin                       |
-| `teams`                 | coach (own), staff of the event, admin                                           | manager; coach for self while registration open¹ | manager; coach while registration open and status draft/rejected² | admin; coach for own drafts |
-| `team_documents`        | coach of the team, staff of the event, admin; files need a file token            | manager, event not archived                      | manager, event not archived; team and uploader fixed              | manager, event not archived |
+| Collection              | List / view                                        | Create                      | Update                                               | Delete                      |
+| ----------------------- | -------------------------------------------------- | --------------------------- | ---------------------------------------------------- | --------------------------- |
+| `users`                 | own record; admins: all (incl. email)              | anyone (registration)       | own record                                           | own record                  |
+| `role_assignments`      | own assignments; admins: all                       | admin                       | admin                                                | admin                       |
+| `events`                | admin, staff, any verified user if `published`     | admin                       | manager                                              | admin                       |
+| `competition_days`      | same as event                                      | manager, event not archived | manager, event not archived                          | manager, event not archived |
+| `categories` (event)    | same as event                                      | manager, event not archived | manager, event not archived                          | manager, event not archived |
+| `categories` (template) | admins and users with any `event_manager` role     | admin                       | admin                                                | admin                       |
+| `teams`                 | staff of the event, admin                          | manager                     | manager                                              | admin                       |
+| `team_documents`        | staff of the event, admin; files need a file token | manager, event not archived | manager, event not archived; team and uploader fixed | manager, event not archived |
 
-¹ Coaches can only create teams with `coach` = themselves, status `draft` or `submitted`, and
-without review fields. Registration is open when the event is `published` and the current time
-is within the optional `registration_opens_at` / `registration_closes_at` window.
-
-² Coaches cannot change `event`, `coach` or review fields, and can only set status `draft` or
-`submitted`.
+Until M8-A, coaches could also create and edit their own registrations while registration was
+open (`registration_opens_at` / `registration_closes_at`, still in the schema but no longer used).
 
 ## Custom endpoints
 

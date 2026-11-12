@@ -77,11 +77,47 @@ export class Fixtures {
       event,
       category,
       name: unique('Team'),
-      coach_email: 'coach@test.local',
+      coach_email: 'contact@test.local',
       status: 'draft',
       members: validMembers(),
       ...data,
     })
+  }
+
+  /**
+   * An active team with one scheduled game and a contact, in a new event with a manager.
+   * `notify()` sends the event's schedule emails (M7-04), which queues one email to the contact.
+   */
+  async scheduledTeam(data: Record<string, unknown> = {}, eventData: Record<string, unknown> = {}) {
+    const event = await this.event(eventData)
+    const category = await this.category(event.id, { name: 'RoboMission Elementary' })
+    const manager = await this.user({ roles: [{ role: 'event_manager', event: event.id }] })
+    const judge = await this.user({ roles: [{ role: 'judge', event: event.id }] })
+    const round = await manager.pb.collection('rounds').create({
+      category: category.id,
+      key: 'R1',
+      name: 'Round 1',
+      position: 1,
+      testing_minutes: 30,
+      scoring_minutes: 60,
+    })
+    const table = await manager.pb
+      .collection('tables')
+      .create({ event: event.id, name: 'A', active: true, position: 1, judge: judge.id })
+    const team = await this.team(event.id, category.id, {
+      coach_email: `${unique('contact')}@test.local`,
+      status: 'approved',
+      ...data,
+    })
+    await manager.pb
+      .collection('games')
+      .create({ round: round.id, team: team.id, status: 'scheduled', table: table.id, sequence: 1 })
+    const notify = () =>
+      manager.pb.send(`/api/events/${event.id}/notifications/schedule`, {
+        method: 'POST',
+        body: {},
+      }) as Promise<{ queued: number }>
+    return { event, category, manager, team, email: team.coach_email as string, notify }
   }
 }
 

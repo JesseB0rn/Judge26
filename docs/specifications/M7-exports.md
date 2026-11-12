@@ -32,8 +32,8 @@ rank).
 **Results:** Team, Round, Attempt, Status, Points, Time (s): one row per game that entered the
 ranking.
 
-**Teams:** Team, Category, Status, Organization, Country, Coach, Coach email, Members (count),
-Submitted, Reviewed, Review note. **Members:** Team, Category, First name, Last name, Birth year,
+**Teams:** Team, Category, Status, Organization, Country, Contact, Contact email, Members (count).
+**Members:** Team, Category, First name, Last name, Birth year,
 Age in `<season>` (season − birth year, as in registration checks).
 
 **Games:** Category, Round, Attempt, Day, Table, Position, Team, Status, Points, Time (s); sorted by

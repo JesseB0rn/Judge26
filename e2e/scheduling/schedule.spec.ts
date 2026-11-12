@@ -12,7 +12,7 @@ const row = (page: Page, team: string) =>
   page.getByTestId('schedule-games').locator('tr', { hasText: team })
 
 test.describe('Tables and scheduling', () => {
-  test('manager assigns a judge, generates missing games, sets their sequence; the coach sees it', async ({
+  test('manager assigns a judge, generates missing games and sets their sequence', async ({
     page,
   }) => {
     const { event, category } = await createEvent()
@@ -21,11 +21,10 @@ test.describe('Tables and scheduling', () => {
       name: unique('Judge'),
       roles: [{ role: 'judge', event: event.id }],
     })
-    const coach = await createUser()
     const alpha = unique('Alpha')
     const bravo = unique('Bravo')
     const round = await createRound(category.id, 'R1', 5, 10)
-    const alphaTeam = await createApprovedTeam(event.id, category.id, alpha, coach.id)
+    await createApprovedTeam(event.id, category.id, alpha)
     await createApprovedTeam(event.id, category.id, bravo)
 
     await login(page, manager.email, manager.password)
@@ -57,17 +56,6 @@ test.describe('Tables and scheduling', () => {
     await dialog.getByRole('button', { name: 'Save' }).click()
     await expect(dialog).toBeHidden()
     await expect(row(page, alpha)).toContainText('3')
-
-    // The coach sees the table and sequence of their team.
-    await logout(page)
-    await login(page, coach.email, coach.password)
-    await page.goto('/teams')
-    await expect(page.getByTestId('my-teams')).toContainText(alpha)
-    const schedule = page.getByTestId('my-schedule')
-    await expect(schedule).toContainText(alpha, { timeout: 15_000 })
-    await expect(schedule).toContainText('Table A')
-    await expect(schedule).toContainText('3')
-    await expect(schedule).not.toContainText(bravo)
   })
 
   test('judges see the schedule but cannot change it', async ({ page }) => {

@@ -90,6 +90,6 @@ to the next day by changing the round's day.
 | GET    | `/api/public/events/{id}`             | `revision`, event, days, categories (`live`, `official`), active tables, rounds, games + state |
 | GET    | `/api/public/categories/{id}/ranking` | `revision`, `official` (snapshot result + config), `live`, `progress`, team organizations      |
 
-The public payloads contain team names, organizations and countries only: no coach contacts, members,
+The public payloads contain team names, organizations and countries only: no team contacts, members,
 score values, points of unpublished results or snapshot inputs. `live_revisions` is readable by
 anyone for public events (and by signed-in users) and never writable through the API.

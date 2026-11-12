@@ -19,11 +19,11 @@ describe('auth views', () => {
       path: '/login?redirect=/events',
     })
     const login = vi.spyOn(session, 'login').mockResolvedValue()
-    await fill('input[type=email]', 'coach@example.com')
+    await fill('input[type=email]', 'user@example.com')
     await fill('input[type=password]', 'secret-pass')
     await wrapper.find('form').trigger('submit')
     await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/events'))
-    expect(login).toHaveBeenCalledWith('coach@example.com', 'secret-pass')
+    expect(login).toHaveBeenCalledWith('user@example.com', 'secret-pass')
   })
 
   it('LoginView shows an error for invalid credentials (M1-T03)', async () => {
@@ -56,13 +56,13 @@ describe('auth views', () => {
   it('RegisterView registers and goes to the verification page', async () => {
     const { wrapper, router, session } = await mountView(RegisterView, { session: { user: null } })
     const register = vi.spyOn(session, 'register').mockResolvedValue()
-    await fill('input[autocomplete=name]', 'New Coach')
+    await fill('input[autocomplete=name]', 'New User')
     await fill('input[type=email]', 'new@example.com')
     await fill('input[type=password]', 'password1')
     await wrapper.find('form').trigger('submit')
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('verify-email'))
     expect(register).toHaveBeenCalledWith({
-      name: 'New Coach',
+      name: 'New User',
       email: 'new@example.com',
       password: 'password1',
     })
@@ -103,10 +103,10 @@ describe('auth views', () => {
   it('ForgotPasswordView requests a reset link (M1-04)', async () => {
     const { wrapper, session } = await mountView(ForgotPasswordView, { session: { user: null } })
     const request = vi.spyOn(session, 'requestPasswordReset').mockResolvedValue()
-    await fill('input[type=email]', 'coach@example.com')
+    await fill('input[type=email]', 'user@example.com')
     await wrapper.find('form').trigger('submit')
     await vi.waitFor(() => expect(wrapper.find('[data-testid=reset-sent]').exists()).toBe(true))
-    expect(request).toHaveBeenCalledWith('coach@example.com')
+    expect(request).toHaveBeenCalledWith('user@example.com')
   })
 
   it('ResetPasswordView sets a new password with the token (M1-04)', async () => {

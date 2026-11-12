@@ -8,15 +8,14 @@ const context = (overrides: Partial<ImportContext> = {}): ImportContext => ({
   ],
   existingNames: new Map([['cat-rm', new Set(['existing team'])]]),
   season: 2026,
-  status: 'submitted',
   ...overrides,
 })
 
 const HEADER =
-  'team_name,category_code,coach_email,organization,member1_first_name,member1_last_name,member1_birth_year,member2_first_name,member2_last_name,member2_birth_year'
+  'team_name,category_code,contact_email,organization,member1_first_name,member1_last_name,member1_birth_year,member2_first_name,member2_last_name,member2_birth_year'
 const csv = (...rows: string[]) => [HEADER, ...rows].join('\n')
 
-describe('parseTeamCsv (M1-12)', () => {
+describe('parseTeamCsv (M1-12, M8-03)', () => {
   it('parses valid rows into team data', () => {
     const result = parseTeamCsv(
       csv('Robo Rangers,RM-J,jane@example.com,School,Ada,Lovelace,2013,Alan,Turing,2012'),
@@ -60,7 +59,7 @@ describe('parseTeamCsv (M1-12)', () => {
     expect(byLine[3]!.errors).toEqual([
       'Team name is required.',
       'Unknown category code "XX".',
-      'Invalid coach email "not-an-email".',
+      'Invalid contact email "not-an-email".',
       'A team needs at least one member.',
     ])
     expect(byLine[4]!.errors).toEqual(['The category requires at least 2 members.'])
@@ -87,21 +86,31 @@ describe('parseTeamCsv (M1-12)', () => {
     ])
   })
 
-  it('only checks completeness when importing as submitted or approved', () => {
+  it('the contact is optional and maps to the team contact fields', () => {
+    const text =
+      'team_name,category_code,contact_name,contact_email,member1_first_name,member1_last_name,member1_birth_year\nA,FI,,,Ada,L,2013\nB,FI,Jane Doe,jane@example.com,Ada,L,2013'
+    const [a, b] = parseTeamCsv(text, context()).rows
+    expect(a!.team).toMatchObject({ coach_name: '', coach_email: '' })
+    expect(b!.team).toMatchObject({ coach_name: 'Jane Doe', coach_email: 'jane@example.com' })
+  })
+
+  it('imported teams are active, so every row must be complete', () => {
     const row = 'Small,RM-J,a@example.com,,Ada,L,2013,,,'
-    expect(parseTeamCsv(csv(row), context({ status: 'draft' })).rows[0]!.errors).toEqual([])
-    expect(parseTeamCsv(csv(row), context({ status: 'approved' })).rows[0]!.errors).not.toEqual([])
+    expect(parseTeamCsv(csv(row), context()).rows[0]!.errors).toEqual([
+      'The category requires at least 2 members.',
+    ])
   })
 
   it('accepts headers in any case and order, and category codes in any case', () => {
-    const text = 'Coach_Email,TEAM_NAME,Category_Code\nx@example.com,Lowercase,fi'
-    const result = parseTeamCsv(text, context({ status: 'draft' }))
+    const text =
+      'Member1_Birth_Year,TEAM_NAME,Category_Code,member1_first_name,member1_last_name\n2013,Lowercase,fi,Ada,L'
+    const result = parseTeamCsv(text, context())
     expect(result.rows[0]!.team?.category).toBe('cat-fi')
   })
 
   it('reports file-level problems', () => {
     expect(parseTeamCsv('name,code\nA,B', context()).fileErrors).toEqual([
-      'Missing required column(s): team_name, category_code, coach_email.',
+      'Missing required column(s): team_name, category_code.',
     ])
     expect(parseTeamCsv(HEADER, context()).fileErrors).toEqual(['The file contains no data rows.'])
     const many = csv(...Array.from({ length: MAX_ROWS + 1 }, (_, i) => `T${i},FI,a@example.com`))
@@ -111,7 +120,7 @@ describe('parseTeamCsv (M1-12)', () => {
   })
 
   it('reports rows with the wrong number of fields', () => {
-    const result = parseTeamCsv(csv('Short,RM-J'), context({ status: 'draft' }))
+    const result = parseTeamCsv(csv('Short,RM-J'), context())
     expect(result.rows[0]!.team).toBeUndefined()
     expect(result.rows[0]!.errors.join(' ')).toMatch(/fields/i)
   })

@@ -29,7 +29,7 @@
   },
   "outbox": {
     "title": "Versandprotokoll",
-    "eventDescription": "E-Mails dieses Anlasses. Anmelde-E-Mails werden sofort versendet, Zeitplan-E-Mails innerhalb einer Minute; fehlgeschlagene Zustellungen werden automatisch bis zu fünfmal wiederholt.",
+    "eventDescription": "E-Mails dieses Anlasses. Zeitplan-E-Mails werden innerhalb einer Minute versendet; fehlgeschlagene Zustellungen werden automatisch bis zu fünfmal wiederholt.",
     "requeued": "Nachricht erneut eingereiht.",
     "all": "Alle Nachrichten",
     "count": "keine Nachrichten | eine Nachricht | {count} Nachrichten",
@@ -54,7 +54,7 @@
   "notify": {
     "queued": "Niemand zu benachrichtigen. | Eine E-Mail eingereiht. | {count} E-Mails eingereiht.",
     "title": "Zeitplan-Benachrichtigungen",
-    "description": "Coaches genehmigter Teams erhalten die Läufe ihres Teams (Runde, Zeit, Tisch und Position). Ein Team ist betroffen, wenn sich sein Zeitplan seit der letzten E-Mail geändert hat.",
+    "description": "Die Kontakte aktiver Teams erhalten die Läufe ihres Teams (Runde, Zeit, Tisch und Position). Ein Team ist betroffen, wenn sich sein Zeitplan seit der letzten E-Mail geändert hat. Teams ohne Kontakt-E-Mail erhalten keine E-Mail.",
     "affected": "{count} betroffen",
     "ofApproved": "von {count} genehmigten Teams",
     "message": "Nachricht (optional)",
@@ -66,10 +66,11 @@
     "noGames": "Keine Läufe",
     "changed": "Geändert",
     "never": "Nie",
-    "empty": "Noch keine genehmigten Teams."
+    "empty": "Noch keine genehmigten Teams.",
+    "noContact": "Keine Kontakt-E-Mail"
   },
   "emails": {
-    "description": "E-Mails an Coaches und Benutzer, jeweils in der Sprache der Empfänger, und das Versandprotokoll.",
+    "description": "E-Mails an Team-Kontakte und Benutzer, jeweils in der Sprache der Empfänger, und das Versandprotokoll.",
     "templates": "Vorlagen",
     "off": "aus"
   }
