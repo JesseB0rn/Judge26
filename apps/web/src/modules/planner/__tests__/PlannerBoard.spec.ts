@@ -72,7 +72,7 @@ describe('PlannerBoard', () => {
     expect(phase.text()).toContain('09:00–09:30')
     // The event-wide lunch spans both columns and shows its warning.
     const lunch = wrapper.get('[data-item^="block:b1"]')
-    expect(lunch.attributes('style')).toContain('var(--col) * 2')
+    expect(lunch.attributes('style')).toContain('left: 2px; width: 332px')
     expect(lunch.attributes('aria-label')).toContain('Outside the hours of this day.')
     expect(lunch.attributes('aria-label')).toContain('Internal (staff only)')
     wrapper.unmount()
@@ -152,8 +152,53 @@ describe('PlannerBoard', () => {
       .map((h) => h.text())
     expect(headers).toEqual(['RoboMission', 'Future Engineers', 'Visitors'])
     // Third column (index 2); the event-wide lunch now spans all three columns.
-    expect(wrapper.get('[data-item^="block:b2"]').attributes('style')).toContain('var(--col) * 2 +')
-    expect(wrapper.get('[data-item^="block:b1"]').attributes('style')).toContain('var(--col) * 3 -')
+    expect(wrapper.get('[data-item^="block:b2"]').attributes('style')).toContain('left: 338px')
+    expect(wrapper.get('[data-item^="block:b1"]').attributes('style')).toContain('width: 500px')
+    wrapper.unmount()
+  })
+
+  it('M4-14-31: columns can be resized and remember their width', async () => {
+    localStorage.clear()
+    const d = data()
+    const props = { data: d, days: d.days, columns: gridColumns(d), storageKey: 'e1' }
+    const wrapper = mount(PlannerBoard, { props })
+    const handle = wrapper.get('section[data-day="d1"] [data-resize-column="c1"]')
+    await handle.trigger('keydown', { key: 'ArrowRight' })
+    await handle.trigger('keydown', { key: 'ArrowRight', shiftKey: true })
+    // 168 + 16 + 48: both days use the new width.
+    expect(wrapper.get('section[data-day="d2"] [data-column="c1"]').attributes('style')).toContain(
+      'width: 232px',
+    )
+    expect(wrapper.get('[data-item="phase:m1"]').attributes('style')).toContain('width: 228px')
+    expect(JSON.parse(localStorage.getItem('judge26.planner.columnWidths.e1')!)).toEqual({
+      c1: 232,
+    })
+    wrapper.unmount()
+    const again = mount(PlannerBoard, { props })
+    expect(again.get('[data-column="c1"]').attributes('style')).toContain('width: 232px')
+    await again.get('[data-resize-column="c1"]').trigger('dblclick')
+    expect(again.get('[data-column="c1"]').attributes('style')).toContain('width: 168px')
+    again.unmount()
+    localStorage.clear()
+  })
+
+  it('M4-14-31: printed days fill the page and keep the column proportions', () => {
+    const d = data()
+    const wrapper = mount(PlannerBoard, {
+      props: {
+        data: d,
+        days: d.days,
+        columns: gridColumns(d),
+        print: { width: 1046, height: 726 },
+        printTitle: 'Regional',
+      },
+    })
+    // 1046 - 40 axis - 6 slack, shared by two equal columns.
+    expect(wrapper.get('[data-column="c2"]').attributes('style')).toContain('width: 500px')
+    // 08:00–18:00 into 726 - 32 title - 60 header - 6 slack = 628px.
+    const body = wrapper.get('section[data-day="d1"] .planner-body')
+    expect(body.attributes('style')).toContain('height: 628px')
+    expect(wrapper.findAll('[data-testid=planner-print-title]')).toHaveLength(2)
     wrapper.unmount()
   })
 })

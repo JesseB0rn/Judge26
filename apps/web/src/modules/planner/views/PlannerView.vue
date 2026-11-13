@@ -11,6 +11,8 @@ import {
   ColumnsIcon,
   PlusIcon,
   PrinterIcon,
+  RectangleHorizontalIcon,
+  RectangleVerticalIcon,
   SettingsIcon,
   Undo2Icon,
 } from '@lucide/vue'
@@ -20,6 +22,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -398,9 +401,79 @@ watch(
   { immediate: true },
 )
 
-function print() {
+// --- Print (M4-14-31): one day per A4 page in the chosen orientation ----------------
+
+type Orientation = 'landscape' | 'portrait'
+const ORIENTATION_KEY = 'judge26.planner.printOrientation'
+const PAGE_MM: Record<Orientation, [number, number]> = {
+  landscape: [297, 210],
+  portrait: [210, 297],
+}
+const MARGIN_MM = 8
+const mmToPx = (mm: number) => (mm * 96) / 25.4
+
+const printing = ref<Orientation | null>(null)
+const printPage = computed(() => {
+  if (!printing.value) return null
+  const [w, h] = PAGE_MM[printing.value]
+  return { width: mmToPx(w - 2 * MARGIN_MM), height: mmToPx(h - 2 * MARGIN_MM) }
+})
+
+function lastOrientation(): Orientation {
+  try {
+    return localStorage.getItem(ORIENTATION_KEY) === 'portrait' ? 'portrait' : 'landscape'
+  } catch {
+    return 'landscape'
+  }
+}
+
+let pageStyle: HTMLStyleElement | undefined
+function preparePrint(orientation: Orientation) {
+  printing.value = orientation
+  pageStyle ??= document.head.appendChild(document.createElement('style'))
+  // The page box is fixed so the board can size each day to fill it exactly.
+  pageStyle.textContent = `@page { size: A4 ${orientation}; margin: ${MARGIN_MM}mm; }
+@media print {
+  html, body { background: white !important; }
+  main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  :has(> main) { min-height: 0 !important; }
+}`
+}
+function endPrint() {
+  printing.value = null
+  pageStyle?.remove()
+  pageStyle = undefined
+}
+
+async function print(orientation: Orientation) {
+  try {
+    localStorage.setItem(ORIENTATION_KEY, orientation)
+  } catch {
+    // Not remembered; printing still works.
+  }
+  preparePrint(orientation)
+  // Let the menu finish closing so it is not part of the printout.
+  await new Promise((resolve) => setTimeout(resolve, 200))
+  await nextTick()
+  board.value?.fit()
   window.print()
 }
+
+// Ctrl+P / the browser menu: lay out for the last chosen orientation before the pages render.
+function onBeforePrint() {
+  if (printing.value) return
+  preparePrint(lastOrientation())
+  void nextTick(() => board.value?.fit())
+}
+onMounted(() => {
+  window.addEventListener('beforeprint', onBeforePrint)
+  window.addEventListener('afterprint', endPrint)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeprint', onBeforePrint)
+  window.removeEventListener('afterprint', endPrint)
+  endPrint()
+})
 
 const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
 </script>
@@ -409,11 +482,6 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
   <ErrorAlert v-if="!data" :error="loadError" />
   <Skeleton v-if="!data && loading" class="h-10 w-1/2" />
   <template v-if="data && event">
-    <!-- Printed pages are titled with the event (M4-14-31). -->
-    <div class="mb-4 hidden print:block" data-testid="planner-print-title">
-      <h1 class="text-2xl font-semibold tracking-tight">{{ event.name }}</h1>
-      <p v-if="event.venue" class="text-muted-foreground">{{ event.venue }}</p>
-    </div>
     <PageHeader
       class="print:hidden"
       :title="data.can_edit ? t('planner.view.title') : t('events.tabs.schedule')"
@@ -428,9 +496,23 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
         <Button as-child variant="outline" class="print:hidden">
           <RouterLink :to="backLink"><ArrowLeftIcon /> {{ t('events.event') }}</RouterLink>
         </Button>
-        <Button variant="outline" class="print:hidden" @click="print">
-          <PrinterIcon /> {{ t('planner.view.print') }}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" class="print:hidden">
+              <PrinterIcon /> {{ t('planner.view.print') }}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>{{ t('planner.view.printHint') }}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @select="print('landscape')">
+              <RectangleHorizontalIcon /> {{ t('planner.view.printLandscape') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="print('portrait')">
+              <RectangleVerticalIcon /> {{ t('planner.view.printPortrait') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button v-if="editable" class="print:hidden" :disabled="!days.length" @click="newBlock()">
           <PlusIcon /> {{ t('planner.block.new') }}
         </Button>
@@ -548,6 +630,10 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
       :editable="editable"
       :selected="selected ? refKey(selected) : ''"
       :move-later="moveLater"
+      :print="printPage"
+      :print-title="event.name"
+      :print-subtitle="event.venue"
+      :storage-key="props.id"
       @open="openItem"
       @move="onMove"
       @resize="onResize"

@@ -71,13 +71,18 @@
     "unplaced": "Pas encore placés",
     "trayHint": "Faites glisser dans la colonne du tour, ou ouvrez pour placer.",
     "noDays": "Aucun jour de compétition pour l’instant. Ajoutez des jours dans l’aperçu de l’événement.",
-    "customColumn": "colonne personnalisée"
+    "customColumn": "colonne personnalisée",
+    "resizeColumn": "Redimensionner la colonne {column}",
+    "resizeHint": "Faire glisser pour redimensionner, double-clic pour réinitialiser. Clavier : flèches."
   },
   "view": {
     "linkGone": "Le bloc lié n’existe plus.",
     "conflict": "Quelqu’un d’autre a modifié ce bloc entre-temps. Le planificateur a été rechargé.",
     "title": "Planificateur d’horaire",
     "print": "Imprimer",
+    "printHint": "Un jour par page A4",
+    "printLandscape": "Paysage",
+    "printPortrait": "Portrait",
     "shownColumns": "Colonnes affichées",
     "showAll": "Tout afficher",
     "days": "Jours",

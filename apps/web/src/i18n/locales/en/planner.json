@@ -71,13 +71,18 @@
     "unplaced": "Not yet placed",
     "trayHint": "Drag into the round's column, or open to place.",
     "noDays": "No competition days yet. Add days on the event's overview.",
-    "customColumn": "custom column"
+    "customColumn": "custom column",
+    "resizeColumn": "Resize column {column}",
+    "resizeHint": "Drag to resize, double-click to reset. Keyboard: arrow keys."
   },
   "view": {
     "linkGone": "The linked block no longer exists.",
     "conflict": "Someone else changed this block in the meantime. The planner was reloaded.",
     "title": "Schedule planner",
     "print": "Print",
+    "printHint": "One day per A4 page",
+    "printLandscape": "Landscape",
+    "printPortrait": "Portrait",
     "shownColumns": "Shown columns",
     "showAll": "Show all",
     "days": "Days",
