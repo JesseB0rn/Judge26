@@ -59,7 +59,7 @@ test.describe('Schedule planner', () => {
 
     // Drag the unplaced scoring run from the tray into day 1 at 10:00 (M4-14-09).
     const tray = page.getByTestId('planner-tray')
-    await expect(tray).toContainText('Scoring')
+    await expect(tray).toContainText('Round')
     await drag(
       page,
       await center(tray.locator(`[data-tray="${phases.scoring!.id}"]`)),
@@ -147,7 +147,7 @@ test.describe('Schedule planner', () => {
 
     await item(page, `phase:${phases.scoring!.id}`).click()
     const dialog = page.getByRole('dialog')
-    await expect(dialog).toContainText('Scoring run')
+    await expect(dialog).toContainText('Robot Round')
     await expect(dialog).toContainText('10:00–11:00')
     await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0)
   })
