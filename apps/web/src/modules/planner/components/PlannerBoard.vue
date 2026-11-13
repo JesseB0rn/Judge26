@@ -39,6 +39,7 @@ import type {
   PlannerDay,
   PlannerPhase,
 } from '../types'
+import { fitText } from '../fitText'
 
 /**
  * The planner grid (M4-14-05): all days next to one another, one column per category, rows are
@@ -60,8 +61,25 @@ const props = withDefaults(
     scale?: number
     /** Limit the height of the scroll area (off for TV and print). */
     contained?: boolean
+    /** Printable page area in CSS px while printing: each day fills one page (M4-14-31). */
+    print?: { width: number; height: number } | null
+    /** Heading repeated on every printed page, e.g. the event and venue. */
+    printTitle?: string
+    printSubtitle?: string
+    /** Remembers adjusted column widths in this browser under this key, e.g. the event id. */
+    storageKey?: string
   }>(),
-  { editable: false, selected: '', moveLater: false, scale: 1.6, contained: true },
+  {
+    editable: false,
+    selected: '',
+    moveLater: false,
+    scale: 1.6,
+    contained: true,
+    print: null,
+    printTitle: '',
+    printSubtitle: '',
+    storageKey: '',
+  },
 )
 
 const emit = defineEmits<{
@@ -72,8 +90,14 @@ const emit = defineEmits<{
 }>()
 
 const COL_W = 168
+const COL_MIN = 48
+const COL_MAX = 640
 const AXIS_W = 56
 const HEADER_H = 60
+const PRINT_AXIS_W = 40
+const PRINT_TITLE_H = 32
+/** Slack so rounding never pushes a day onto a second page. */
+const PRINT_SLACK = 6
 
 const rounds = computed(() => new Map(props.data.rounds.map((r) => [r.id, r])))
 const phases = computed(() => new Map(props.data.phases.map((p) => [p.id, p])))
@@ -93,24 +117,125 @@ const layouts = computed(() => {
 })
 const tray = computed(() => (props.editable ? unplacedPhases(props.data) : []))
 
-// Print: one day per A4 landscape page (M4-14-31).
-const printVars = computed(() => {
-  const minutes = axis.value.end - axis.value.start
+// --- Column widths: adjustable, remembered per browser --------------------------------
+
+const storageName = computed(() =>
+  props.storageKey ? `judge26.planner.columnWidths.${props.storageKey}` : '',
+)
+function loadWidths(): Record<string, number> {
+  try {
+    const raw = storageName.value && localStorage.getItem(storageName.value)
+    const parsed: unknown = raw ? JSON.parse(raw) : {}
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, number>) : {}
+  } catch {
+    return {}
+  }
+}
+const widths = ref<Record<string, number>>(loadWidths())
+watch(storageName, () => (widths.value = loadWidths()))
+function saveWidths() {
+  try {
+    if (storageName.value) localStorage.setItem(storageName.value, JSON.stringify(widths.value))
+  } catch {
+    // Storage blocked: the widths last for this page only.
+  }
+}
+const widthOf = (id: string) => clamp(widths.value[id] ?? COL_W, COL_MIN, COL_MAX)
+function setWidth(id: string, width: number | undefined) {
+  const next = { ...widths.value }
+  if (width === undefined) delete next[id]
+  else next[id] = Math.round(clamp(width, COL_MIN, COL_MAX))
+  widths.value = next
+}
+
+// --- Geometry: screen, or one day per printed page (M4-14-31) ----------------------
+
+const geometry = computed(() => {
+  const screen = props.columns.map((c) => widthOf(c.id))
+  const page = props.print
+  if (!page) return { ppm: props.scale, cols: screen, gap: 2 }
+  // Columns keep their proportions and fill the page width; the day fills the page height.
+  const total = screen.reduce((a, b) => a + b, 0) || 1
+  const factor = (page.width - PRINT_AXIS_W - PRINT_SLACK) / total
+  const minutes = Math.max(60, axis.value.end - axis.value.start)
+  const titleH = props.printTitle ? PRINT_TITLE_H : 0
   return {
-    '--ppm': `${props.scale}px`,
-    '--col': `${COL_W}px`,
-    '--ppm-print': `${Math.min(props.scale, 520 / minutes)}px`,
-    '--col-print': `${Math.min(COL_W, 960 / Math.max(1, props.columns.length))}px`,
+    ppm: Math.max(0.2, (page.height - titleH - HEADER_H - PRINT_SLACK) / minutes),
+    cols: screen.map((w) => w * factor),
+    gap: 1,
   }
 })
+const colLefts = computed(() => {
+  const lefts = [0]
+  for (const w of geometry.value.cols) lefts.push(lefts[lefts.length - 1]! + w)
+  return lefts
+})
+const gridWidth = computed(() => Math.max(COL_W, colLefts.value[colLefts.value.length - 1]!))
+const px = (value: number) => `${value}px`
 
-const y = (minutes: number) => `calc(${minutes - axis.value.start} * var(--ppm))`
-const h = (minutes: number) => `calc(${minutes} * var(--ppm))`
+const y = (minutes: number) => px((minutes - axis.value.start) * geometry.value.ppm)
+const h = (minutes: number) => px(minutes * geometry.value.ppm)
 
 function itemStyle(item: { col: number; span: number; lane: number; lanes: number }) {
-  const left = item.col + item.lane / item.lanes
-  const width = item.span / item.lanes
-  return { left: `calc(var(--col) * ${left} + 2px)`, width: `calc(var(--col) * ${width} - 4px)` }
+  const lefts = colLefts.value
+  const start = lefts[Math.min(item.col, lefts.length - 1)] ?? 0
+  const end = lefts[Math.min(item.col + item.span, lefts.length - 1)] ?? start + COL_W
+  const lane = (end - start) / item.lanes
+  const gap = geometry.value.gap
+  return {
+    left: px(start + lane * item.lane + gap),
+    width: px(Math.max(2, lane - 2 * gap)),
+  }
+}
+
+// --- Fitting text into small cells -----------------------------------------------------
+
+const scroller = ref<HTMLElement>()
+function fit() {
+  const el = scroller.value
+  if (el) fitText(el.querySelectorAll<HTMLElement>('[data-fit]'))
+}
+watch([layouts, geometry, () => props.columns], fit, { flush: 'post' })
+onMounted(() => {
+  fit()
+  void document.fonts?.ready.then(fit)
+})
+
+// --- Resizing columns ------------------------------------------------------------------
+
+let resizing: { id: string; startX: number; width: number } | null = null
+function onColDown(event: PointerEvent, column: GridColumn) {
+  if (event.button !== 0) return
+  resizing = { id: column.id, startX: event.clientX, width: widthOf(column.id) }
+  window.addEventListener('pointermove', onColMove)
+  window.addEventListener('pointerup', onColUp)
+  window.addEventListener('pointercancel', onColUp)
+  document.body.style.userSelect = 'none'
+}
+function onColMove(event: PointerEvent) {
+  if (resizing) setWidth(resizing.id, resizing.width + event.clientX - resizing.startX)
+}
+function onColUp() {
+  if (resizing) saveWidths()
+  resizing = null
+  document.body.style.userSelect = ''
+  window.removeEventListener('pointermove', onColMove)
+  window.removeEventListener('pointerup', onColUp)
+  window.removeEventListener('pointercancel', onColUp)
+}
+onBeforeUnmount(onColUp)
+function onColKey(event: KeyboardEvent, column: GridColumn) {
+  const step = event.shiftKey ? 48 : 16
+  if (event.key === 'ArrowLeft') setWidth(column.id, widthOf(column.id) - step)
+  else if (event.key === 'ArrowRight') setWidth(column.id, widthOf(column.id) + step)
+  else if (event.key === 'Home' || event.key === 'Delete') setWidth(column.id, undefined)
+  else return
+  event.preventDefault()
+  saveWidths()
+}
+function resetCol(column: GridColumn) {
+  setWidth(column.id, undefined)
+  saveWidths()
 }
 
 // --- Item details -------------------------------------------------------------
@@ -174,7 +299,6 @@ const isToday = (day: PlannerDay) => day.date === localDate(now.value)
 
 // --- Geometry ----------------------------------------------------------------
 
-const scroller = ref<HTMLElement>()
 const bodies = new Map<string, HTMLElement>()
 function setBody(dayId: string, el: unknown) {
   if (el instanceof HTMLElement) bodies.set(dayId, el)
@@ -199,12 +323,14 @@ function hit(clientX: number, clientY: number): Hit | null {
     if (!best || distance < best.distance) best = { day: day.id, rect, distance }
   }
   if (!best || best.distance > COL_W / 2) return null
-  const col = clamp(
-    Math.floor((clientX - best.rect.left) / COL_W),
-    0,
-    Math.max(0, props.columns.length - 1),
-  )
-  return { day: best.day, col, minute: axis.value.start + (clientY - best.rect.top) / props.scale }
+  const x = clientX - best.rect.left
+  let col = 0
+  while (col < props.columns.length - 1 && x >= colLefts.value[col + 1]!) col++
+  return {
+    day: best.day,
+    col,
+    minute: axis.value.start + (clientY - best.rect.top) / geometry.value.ppm,
+  }
 }
 
 // --- Dragging (M4-14-11, M4-14-12, M4-14-15) ----------------------------------
@@ -560,11 +686,11 @@ function scrollToDay(dayId: string) {
   box.scrollLeft += el.getBoundingClientRect().left - box.getBoundingClientRect().left - AXIS_W
   const first = layouts.value[dayId]?.reduce((m, i) => Math.min(m, i.start), DAY_MINUTES)
   if (first !== undefined && first < DAY_MINUTES) {
-    box.scrollTop = Math.max(0, (first - axis.value.start) * props.scale - 40)
+    box.scrollTop = Math.max(0, (first - axis.value.start) * geometry.value.ppm - 40)
   }
 }
 
-defineExpose({ scrollToItem, scrollToDay })
+defineExpose({ scrollToItem, scrollToDay, fit })
 
 function dayShade(day: PlannerDay) {
   const start = toMinutes(day.starts_at) ?? axis.value.start
@@ -614,7 +740,7 @@ function dayShade(day: PlannerDay) {
       ref="scroller"
       class="planner-scroll relative min-w-0 flex-1 overflow-auto rounded-md border bg-background print:max-h-none print:overflow-visible print:border-0"
       :class="{ 'max-h-[calc(100vh-13rem)] min-h-80': contained }"
-      :style="printVars"
+      :style="{ '--ppm': px(geometry.ppm) }"
       data-testid="planner-grid"
     >
       <p v-if="!days.length" class="p-6 text-sm text-muted-foreground">
@@ -644,165 +770,196 @@ function dayShade(day: PlannerDay) {
         <section
           v-for="day in days"
           :key="day.id"
-          class="shrink-0 border-r print:flex print:border-r-0 print:[&:not(:first-of-type)]:break-before-page"
+          class="shrink-0 border-r print:border-r-0 print:break-inside-avoid print:[&:not(:first-of-type)]:break-before-page"
           :aria-label="dayName(day)"
           :data-day="day.id"
         >
-          <!-- Axis repeated per day when printed -->
+          <!-- Heading repeated on every printed page -->
           <div
-            class="relative hidden w-12 print:block"
-            :style="{ marginTop: `${HEADER_H}px`, height: h(axis.end - axis.start) }"
+            v-if="printTitle"
+            class="hidden items-baseline gap-2 overflow-hidden whitespace-nowrap print:flex"
+            :style="{ height: px(PRINT_TITLE_H) }"
+            data-testid="planner-print-title"
           >
-            <span
-              v-for="m in hours"
-              :key="m"
-              class="absolute right-1 text-[10px] tabular-nums"
-              :style="{ top: y(m) }"
-              >{{ formatTime(m) }}</span
-            >
+            <span class="text-lg font-semibold tracking-tight">{{ printTitle }}</span>
+            <span v-if="printSubtitle" class="truncate text-sm text-muted-foreground">{{
+              printSubtitle
+            }}</span>
           </div>
-          <div>
-            <header
-              class="sticky top-0 z-20 border-b bg-background"
-              :style="{
-                height: `${HEADER_H}px`,
-                width: `calc(var(--col) * ${Math.max(1, columns.length)})`,
-              }"
-            >
-              <div class="flex h-8 min-w-0 items-center gap-2 px-2 text-sm">
-                <span class="shrink-0 font-semibold">{{ day.label || formatDay(day.date) }}</span>
-                <span v-if="day.label" class="min-w-0 truncate text-xs text-muted-foreground">{{
-                  formatDay(day.date)
-                }}</span>
-                <span class="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground"
-                  >{{ day.starts_at }}–{{ day.ends_at }}</span
-                >
-              </div>
-              <div class="flex">
-                <div
-                  v-for="column in columns"
-                  :key="column.id"
-                  class="truncate border-t border-l px-2 py-1 text-xs font-medium first:border-l-0"
-                  :class="{ 'bg-muted/60 text-muted-foreground italic': column.custom }"
-                  :style="{ width: 'var(--col)' }"
-                  :title="
-                    column.custom
-                      ? `${column.name} (${t('planner.board.customColumn')})`
-                      : column.name
-                  "
-                  :data-column="column.id"
-                >
-                  {{ column.name }}
-                </div>
-              </div>
-            </header>
-
+          <div class="print:flex">
+            <!-- Axis repeated per day when printed -->
             <div
-              :ref="(el) => setBody(day.id, el)"
-              class="planner-body relative"
-              :class="{ 'cursor-crosshair': editable }"
+              class="relative hidden shrink-0 print:block"
               :style="{
-                width: `calc(var(--col) * ${Math.max(1, columns.length)})`,
+                width: px(PRINT_AXIS_W),
+                marginTop: px(HEADER_H),
                 height: h(axis.end - axis.start),
               }"
-              @pointerdown="onBodyDown($event, day)"
             >
-              <!-- Outside the day's hours -->
-              <div
-                v-for="shade in dayShade(day)"
-                :key="shade.key"
-                class="planner-shade pointer-events-none absolute inset-x-0"
-                :style="{ top: y(shade.top), height: h(shade.height) }"
-              />
-              <!-- Column separators; custom columns are tinted -->
-              <div
-                v-for="(column, i) in columns"
-                :key="column.id"
-                class="pointer-events-none absolute inset-y-0 border-l first:border-l-0"
-                :class="{ 'bg-muted/30': column.custom }"
-                :style="{ left: `calc(var(--col) * ${i})`, width: 'var(--col)' }"
-              />
+              <span
+                v-for="m in hours"
+                :key="m"
+                class="absolute right-1 -mt-[0.5em] text-[9px] leading-none tabular-nums first:mt-0 last:-mt-[1em]"
+                :style="{ top: y(m) }"
+                >{{ formatTime(m) }}</span
+              >
+            </div>
+            <div>
+              <header
+                class="sticky top-0 z-20 border-b bg-background"
+                :style="{ height: px(HEADER_H), width: px(gridWidth) }"
+              >
+                <div class="flex h-8 min-w-0 items-center gap-2 px-2 text-sm">
+                  <span class="shrink-0 font-semibold">{{ day.label || formatDay(day.date) }}</span>
+                  <span v-if="day.label" class="min-w-0 truncate text-xs text-muted-foreground">{{
+                    formatDay(day.date)
+                  }}</span>
+                  <span class="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground"
+                    >{{ day.starts_at }}–{{ day.ends_at }}</span
+                  >
+                </div>
+                <div class="flex">
+                  <div
+                    v-for="(column, i) in columns"
+                    :key="column.id"
+                    class="relative shrink-0 overflow-hidden border-t border-l px-1.5 py-0.5 text-xs leading-tight font-medium first:border-l-0"
+                    :class="{ 'bg-muted/60 text-muted-foreground italic': column.custom }"
+                    :style="{ width: px(geometry.cols[i] ?? COL_W), height: px(HEADER_H - 32) }"
+                    :title="
+                      column.custom
+                        ? `${column.name} (${t('planner.board.customColumn')})`
+                        : column.name
+                    "
+                    :data-column="column.id"
+                    data-fit
+                  >
+                    {{ column.name }}
+                    <span
+                      role="separator"
+                      aria-orientation="vertical"
+                      tabindex="0"
+                      class="absolute inset-y-0 right-0 w-1.5 cursor-col-resize touch-none outline-none hover:bg-ring/40 focus-visible:bg-ring/70 print:hidden"
+                      :aria-label="t('planner.board.resizeColumn', { column: column.name })"
+                      :title="t('planner.board.resizeHint')"
+                      :aria-valuenow="widthOf(column.id)"
+                      :aria-valuemin="COL_MIN"
+                      :aria-valuemax="COL_MAX"
+                      :data-resize-column="column.id"
+                      @pointerdown.stop.prevent="onColDown($event, column)"
+                      @dblclick="resetCol(column)"
+                      @keydown="onColKey($event, column)"
+                    />
+                  </div>
+                </div>
+              </header>
 
               <div
-                v-for="item in layouts[day.id]"
-                :key="item.key"
-                :data-item="item.key"
-                role="button"
-                tabindex="0"
-                class="absolute flex flex-col overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60"
-                :class="[
-                  view(item.ref)?.classes,
-                  editable ? 'touch-none cursor-grab' : 'cursor-pointer',
-                  draggingKey === refKey(item.ref) ? 'opacity-40' : '',
-                  selected === refKey(item.ref) ? 'ring-2 ring-ring' : '',
-                  hoveredRound && view(item.ref)?.round === hoveredRound
-                    ? 'ring-2 ring-ring/70'
-                    : '',
-                  issues[refKey(item.ref)] ? 'outline-2 outline-offset-0 outline-destructive' : '',
-                ]"
+                :ref="(el) => setBody(day.id, el)"
+                class="planner-body relative"
+                :class="{ 'cursor-crosshair': editable }"
                 :style="{
-                  ...itemStyle(item),
-                  top: y(item.start),
-                  height: h(item.end - item.start),
+                  width: px(gridWidth),
+                  height: h(axis.end - axis.start),
                 }"
-                :title="describe(item.ref)"
-                :aria-label="describe(item.ref)"
-                @pointerdown="onItemDown($event, item)"
-                @click="!editable && emit('open', item.ref)"
-                @keydown="onItemKey($event, item)"
-                @mouseenter="hoveredRound = view(item.ref)?.round"
-                @mouseleave="hoveredRound = undefined"
+                @pointerdown="onBodyDown($event, day)"
               >
-                <span class="flex items-center gap-1 font-semibold">
-                  <span class="truncate">{{ view(item.ref)?.title }}</span>
-                  <EyeOffIcon
-                    v-if="view(item.ref)?.internal && data.internal"
-                    class="size-3 shrink-0 opacity-70"
-                    aria-hidden="true"
-                  />
-                  <AlertTriangleIcon
-                    v-if="issues[refKey(item.ref)]"
-                    class="ml-auto size-3.5 shrink-0 text-destructive"
-                    aria-hidden="true"
-                  />
-                </span>
-                <span class="truncate opacity-80">{{ view(item.ref)?.time }}</span>
-                <span v-if="view(item.ref)?.subtitle" class="truncate opacity-80">{{
-                  view(item.ref)?.subtitle
-                }}</span>
-                <span
-                  v-if="editable"
-                  class="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize"
-                  data-resize
-                  aria-hidden="true"
-                  @pointerdown.stop="onResizeDown($event, item)"
+                <!-- Outside the day's hours -->
+                <div
+                  v-for="shade in dayShade(day)"
+                  :key="shade.key"
+                  class="planner-shade pointer-events-none absolute inset-x-0"
+                  :style="{ top: y(shade.top), height: h(shade.height) }"
                 />
-              </div>
-
-              <!-- Drag preview -->
-              <div
-                v-if="preview && preview.day === day.id"
-                class="pointer-events-none absolute z-10 flex items-start rounded-md border-2 border-dashed border-ring bg-ring/15 px-1.5 py-0.5 text-xs font-medium"
-                :style="{
-                  ...itemStyle({ col: preview.col, span: preview.span, lane: 0, lanes: 1 }),
-                  top: y(preview.start),
-                  height: h(preview.end - preview.start),
-                }"
-                data-testid="planner-preview"
-              >
-                {{ preview.label }}
-              </div>
-
-              <!-- Now -->
-              <div
-                v-if="isToday(day) && nowMinutes >= axis.start && nowMinutes <= axis.end"
-                class="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-destructive print:hidden"
-                :style="{ top: y(nowMinutes) }"
-                data-testid="planner-now"
-              >
-                <span
-                  class="absolute -top-2 left-0 size-3 -translate-x-1/2 rounded-full bg-destructive"
+                <!-- Column separators; custom columns are tinted -->
+                <div
+                  v-for="(column, i) in columns"
+                  :key="column.id"
+                  class="pointer-events-none absolute inset-y-0 border-l first:border-l-0"
+                  :class="{ 'bg-muted/30': column.custom }"
+                  :style="{ left: px(colLefts[i] ?? 0), width: px(geometry.cols[i] ?? COL_W) }"
                 />
+
+                <div
+                  v-for="item in layouts[day.id]"
+                  :key="item.key"
+                  :data-item="item.key"
+                  role="button"
+                  tabindex="0"
+                  data-fit
+                  class="planner-item absolute flex flex-col overflow-hidden rounded-md border px-1.5 py-0.5 text-left text-xs leading-tight shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60 print:rounded-sm print:px-1 print:shadow-none"
+                  :class="[
+                    view(item.ref)?.classes,
+                    editable ? 'touch-none cursor-grab' : 'cursor-pointer',
+                    draggingKey === refKey(item.ref) ? 'opacity-40' : '',
+                    selected === refKey(item.ref) ? 'ring-2 ring-ring' : '',
+                    hoveredRound && view(item.ref)?.round === hoveredRound
+                      ? 'ring-2 ring-ring/70'
+                      : '',
+                    issues[refKey(item.ref)]
+                      ? 'outline-2 outline-offset-0 outline-destructive'
+                      : '',
+                  ]"
+                  :style="{
+                    ...itemStyle(item),
+                    top: y(item.start),
+                    height: h(item.end - item.start),
+                  }"
+                  :title="describe(item.ref)"
+                  :aria-label="describe(item.ref)"
+                  @pointerdown="onItemDown($event, item)"
+                  @click="!editable && emit('open', item.ref)"
+                  @keydown="onItemKey($event, item)"
+                  @mouseenter="hoveredRound = view(item.ref)?.round"
+                  @mouseleave="hoveredRound = undefined"
+                >
+                  <span class="font-semibold"
+                    >{{ view(item.ref)?.title
+                    }}<EyeOffIcon
+                      v-if="view(item.ref)?.internal && data.internal"
+                      class="ml-1 inline size-[1em] align-[-0.125em] opacity-70"
+                      aria-hidden="true" /><AlertTriangleIcon
+                      v-if="issues[refKey(item.ref)]"
+                      class="ml-1 inline size-[1.1em] align-[-0.15em] text-destructive"
+                      aria-hidden="true"
+                  /></span>
+                  <span class="opacity-80 tabular-nums">{{ view(item.ref)?.time }}</span>
+                  <span v-if="view(item.ref)?.subtitle" class="opacity-80">{{
+                    view(item.ref)?.subtitle
+                  }}</span>
+                  <span
+                    v-if="editable"
+                    class="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize"
+                    data-resize
+                    aria-hidden="true"
+                    @pointerdown.stop="onResizeDown($event, item)"
+                  />
+                </div>
+
+                <!-- Drag preview -->
+                <div
+                  v-if="preview && preview.day === day.id"
+                  class="pointer-events-none absolute z-10 flex items-start rounded-md border-2 border-dashed border-ring bg-ring/15 px-1.5 py-0.5 text-xs font-medium"
+                  :style="{
+                    ...itemStyle({ col: preview.col, span: preview.span, lane: 0, lanes: 1 }),
+                    top: y(preview.start),
+                    height: h(preview.end - preview.start),
+                  }"
+                  data-testid="planner-preview"
+                >
+                  {{ preview.label }}
+                </div>
+
+                <!-- Now -->
+                <div
+                  v-if="isToday(day) && nowMinutes >= axis.start && nowMinutes <= axis.end"
+                  class="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-destructive print:hidden"
+                  :style="{ top: y(nowMinutes) }"
+                  data-testid="planner-now"
+                >
+                  <span
+                    class="absolute -top-2 left-0 size-3 -translate-x-1/2 rounded-full bg-destructive"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -835,10 +992,25 @@ function dayShade(day: PlannerDay) {
   );
 }
 
-@media print {
-  .planner-scroll {
-    --ppm: var(--ppm-print) !important;
-    --col: var(--col-print) !important;
-  }
+/* Words break only where even the smallest font does not fit them (see fitText). */
+[data-fit][data-overflow] {
+  overflow-wrap: anywhere;
+}
+/* Cells too small for their text even then grow downwards instead of hiding it. */
+.planner-item[data-overflow] {
+  height: auto !important;
+  z-index: 5;
+}
+/* Cells too small for stacked lines: title, time and place flow as one paragraph. */
+.planner-item[data-compact] {
+  display: block;
+  padding-block: 0;
+  line-height: 1.1;
+}
+.planner-item[data-compact] > span {
+  display: inline;
+}
+.planner-item[data-compact] > span + span::before {
+  content: ' · ';
 }
 </style>
