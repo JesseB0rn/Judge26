@@ -74,6 +74,10 @@ export function makeSheet(overrides: Partial<ScoreSheet> = {}): ScoreSheet {
     reviewed_by: nobody,
     review_note: '',
     corrections: 0,
+    mulligans: 0,
+    mulligan_reason: '',
+    mulligan_at: '',
+    mulligan_by: nobody,
     updated: '',
     ...overrides,
   }

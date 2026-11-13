@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { ClientResponseError } from 'pocketbase'
-import { buttonByText, click, makeRole, mountView } from '@/test/utils'
+import { buttonByText, click, fill, makeRole, mountView } from '@/test/utils'
 import type { TeamDocumentRecord } from '@/shared/types/records'
 import * as api from '../api'
 import * as documents from '@/modules/teams/documents'
-import { cacheAssignments, finishedChecks, setCheckFinished } from '../drafts'
+import { cacheAssignments, cachedAssignments, finishedChecks, setCheckFinished } from '../drafts'
 import {
   buildTimeline,
   dayOptions,
@@ -340,5 +340,23 @@ describe('RobotCheckView (M5-15)', () => {
     })
     expect(wrapper.text()).toContain('No connection')
     expect(wrapper.get('[data-testid=check-current]').text()).toContain('Charlie')
+    // M9-06: recording the program needs a connection.
+    expect(wrapper.find('#program-g3').exists()).toBe(false)
+  })
+
+  it('M9-06: the judge records the program the current team will run', async () => {
+    mocked.setProgram.mockResolvedValue({ program_name: 'mission_v3' })
+    const { wrapper } = await mountCheck('?table=tA&team=b')
+    const current = wrapper.get('[data-testid=check-current]')
+    expect(current.get('[data-testid=program-name]').text()).toContain('Program')
+    await fill('#program-g2', ' mission_v3 ')
+    await click(buttonByText('Save', current.element))
+    expect(mocked.setProgram).toHaveBeenCalledWith('g2', 'mission_v3')
+    expect(current.find('[data-testid=program-saved]').exists()).toBe(true)
+    expect(cachedAssignments('user1')?.find((r) => r.id === 'g2')?.program_name).toBe('mission_v3')
+
+    // The next team starts with its own (empty) program.
+    await click(wrapper.get('[data-testid=check-prev]').element as HTMLElement)
+    expect((document.querySelector('#program-g1') as HTMLInputElement).value).toBe('')
   })
 })

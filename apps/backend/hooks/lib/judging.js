@@ -5,6 +5,9 @@
 //   (none) → draft → submitted → finalized
 //                 ↖ rejected ↙
 //
+// A mulligan (M9-A) sends a sheet in any status back to an empty draft: after a catastrophic
+// failure, a head judge lets the team re-run and the table judge scores the re-run.
+//
 // Judges edit drafts (and rejected sheets) of the games on their table. Head judges and event
 // managers ("reviewers") approve or reject submitted sheets; approval copies the result into the
 // game, which then feeds the ranking. Finalized results only change through a correction with a
@@ -160,6 +163,13 @@ function serializeSheet(app, sheet) {
     },
     review_note: sheet.getString('review_note'),
     corrections: sheet.getInt('corrections'),
+    mulligans: sheet.getInt('mulligans'),
+    mulligan_reason: sheet.getString('mulligan_reason'),
+    mulligan_at: sheet.getString('mulligan_at'),
+    mulligan_by: {
+      id: sheet.getString('mulligan_by'),
+      name: userName(app, sheet.getString('mulligan_by'), names),
+    },
     updated: sheet.getString('updated'),
   }
 }
@@ -212,6 +222,7 @@ function serializeContext(ctx) {
       sequence: game.getInt('sequence'),
       points: game.getFloat('points'),
       time_ms: game.getInt('time_ms'),
+      program_name: game.getString('program_name'),
       updated: game.getString('updated'),
     },
     team: {
@@ -262,6 +273,7 @@ function sheetPayload(app, auth, gameId) {
       canEdit: p.canScore && (!sheet || EDITABLE.includes(status)),
       canReview: p.canReview && status === 'submitted',
       canCorrect: p.canReview && status === 'finalized',
+      canMulligan: p.canReview && !!sheet,
     },
   }
 }
@@ -288,7 +300,11 @@ function readInput(body) {
     badRequest('points', 'invalid_type', 'Points must be a number.')
   }
   const savedAt = Number(body.client_saved_at || 0)
+  const mulligans =
+    body.mulligans === undefined || body.mulligans === null ? null : Number(body.mulligans)
   return {
+    // The number of mulligans the device knew when the draft was made (M9-04), or null.
+    mulligans: Number.isFinite(mulligans) ? mulligans : null,
     outcome,
     values,
     time_ms: Math.round(time),
@@ -375,6 +391,10 @@ function saveDraft(app, auth, gameId, body) {
   }
   if (sheet && input.client_saved_at && input.client_saved_at < sheet.getInt('client_saved_at')) {
     // A newer draft (e.g. from another device) is already stored.
+    return { sheet: serializeSheet(app, sheet), stale: true }
+  }
+  if (sheet && input.mulligans !== null && input.mulligans < sheet.getInt('mulligans')) {
+    // The draft belongs to a run that was discarded by a mulligan (M9-04, M9-T04).
     return { sheet: serializeSheet(app, sheet), stale: true }
   }
   if (!sheet) sheet = newSheet(app, gameId)
@@ -557,6 +577,101 @@ function correct(app, auth, gameId, body) {
   return { sheet: serializeSheet(app, result) }
 }
 
+/**
+ * POST /api/games/{id}/sheet/mulligan { reason }: discards the scored run after a catastrophic
+ * failure so the team can re-run (M9-01 – M9-03). The sheet returns to an empty draft; a result
+ * already copied into the game is cleared, so it no longer counts until the re-run is approved.
+ */
+function mulligan(app, auth, gameId, body) {
+  const ctx = loadContext(app, gameId)
+  const p = requireView(app, auth, ctx)
+  if (!p.canReview) {
+    throw new ForbiddenError('Only head judges and event managers can grant a re-run.', {
+      _error: new ValidationError(
+        'mulligan_not_allowed',
+        'Only head judges and event managers can grant a re-run.',
+      ),
+    })
+  }
+  const reason = requireReason(body)
+  let result = null
+  app.runInTransaction((tx) => {
+    const sheet = sheetFor(tx, gameId)
+    if (!sheet) {
+      conflict('This game has no scored run to replace.', '', 'mulligan_no_run')
+    }
+    const before = Object.assign(snapshot(sheet), { status: sheet.getString('status') })
+    sheet.set('status', 'draft')
+    sheet.set('outcome', 'completed')
+    sheet.set('values', {})
+    sheet.set('time_ms', 0)
+    sheet.set('points', null)
+    sheet.set('submitted_at', '')
+    sheet.set('submitted_by', '')
+    sheet.set('reviewed_at', '')
+    sheet.set('reviewed_by', '')
+    sheet.set('review_note', '')
+    // Drafts saved on a device before this moment are outdated (M9-04).
+    sheet.set('client_saved_at', Math.max(Date.now(), sheet.getInt('client_saved_at') + 1))
+    sheet.set('mulligans', sheet.getInt('mulligans') + 1)
+    sheet.set('mulligan_reason', reason)
+    sheet.set('mulligan_by', auth.isSuperuser() ? '' : auth.id)
+    sheet.set('mulligan_at', new DateTime())
+    tx.save(sheet)
+
+    const game = tx.findRecordById('games', gameId)
+    if (game.getString('status') !== 'scheduled') {
+      game.set('status', 'scheduled')
+      game.set('ruleset', '')
+      game.set('values', null)
+      game.set('points', 0)
+      game.set('time_ms', 0)
+      tx.save(game)
+    }
+    audit(tx, gameId, 'mulligan', auth, { reason, before })
+    result = sheet
+  })
+  return { sheet: serializeSheet(app, result) }
+}
+
+/**
+ * PUT /api/games/{id}/program { program_name }: the program the team plans to run, recorded at
+ * the robot check (M9-06 – M9-08). Stored on every game of the team in that round (all
+ * attempts). Table judges can change it until the sheet is submitted; reviewers at any time.
+ */
+function setProgram(app, auth, gameId, body) {
+  const ctx = loadContext(app, gameId)
+  const p = requireView(app, auth, ctx)
+  if (!p.canScore)
+    throw new BadRequestError('Archived events are read-only.', {
+      _error: new ValidationError('event_archived', 'Archived events are read-only.'),
+    })
+  const raw = body.program_name === undefined || body.program_name === null ? '' : body.program_name
+  if (typeof raw !== 'string') badRequest('program_name', 'invalid_type', 'Enter a text.')
+  const name = raw.trim()
+  if (name.length > 200) badRequest('program_name', 'too_long', 'The program name is too long.')
+  const sheet = sheetFor(app, gameId)
+  const status = sheet ? sheet.getString('status') : ''
+  if (!p.canReview && (status === 'submitted' || status === 'finalized')) {
+    conflict(
+      'The score was submitted; only a head judge can change the program now.',
+      status,
+      'program_locked',
+    )
+  }
+  app.runInTransaction((tx) => {
+    tx.findRecordsByFilter('games', 'round = {:round} && team = {:team}', '', 0, 0, {
+      round: ctx.round.id,
+      team: ctx.team.id,
+    }).forEach((game) => {
+      if (game.getString('program_name') === name) return
+      game.set('program_name', name)
+      tx.save(game)
+    })
+  })
+  return { program_name: name }
+}
+
 function roundCheck(app, roundId, cache) {
   const key = `check:${roundId}`
   if (!(key in cache)) cache[key] = require(`${__hooks}/lib/planner.js`).robotCheck(app, roundId)
@@ -591,6 +706,7 @@ function summary(app, game, cache) {
     sequence: game.getInt('sequence'),
     points: game.getFloat('points'),
     time_ms: game.getInt('time_ms'),
+    program_name: game.getString('program_name'),
     team: { id: team.id, name: team.getString('name') },
     round: {
       id: round.id,
@@ -706,6 +822,8 @@ module.exports = {
   approve,
   reject,
   correct,
+  mulligan,
+  setProgram,
   assignments,
   eventGames,
   guardDirectEdit,

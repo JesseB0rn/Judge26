@@ -63,7 +63,8 @@
       "approved": "Approved",
       "rejected": "Returned to judge",
       "corrected": "Corrected",
-      "manual_edit": "Result edited"
+      "manual_edit": "Result edited",
+      "mulligan": "Re-run granted"
     },
     "system": "System",
     "empty": "No changes yet."
@@ -151,6 +152,21 @@
     "returnTitle": "Return to the judge",
     "returnDescription": "The judge sees the reason and can fix and resubmit the sheet.",
     "returnConfirm": "Return sheet",
-    "correctionDescription": "The old and new values and your reason are recorded in the history."
+    "correctionDescription": "The old and new values and your reason are recorded in the history.",
+    "mulligan": "Grant re-run",
+    "mulliganTitle": "Grant a re-run (mulligan)",
+    "mulliganDescription": "Only after a catastrophic failure the team is not responsible for. The scored run is discarded: the sheet is emptied and the table judge scores the re-run. The old result and your reason are kept in the history.",
+    "mulliganConfirm": "Discard run and allow re-run",
+    "mulliganGranted": "{team}: re-run granted.",
+    "mulliganBy": "Re-run granted by {name}",
+    "mulliganMeanwhile": "A re-run was granted meanwhile. The changes stored on this device belonged to the discarded run and were not applied."
+  },
+  "program": {
+    "label": "Program",
+    "placeholder": "Name of the program on the robot",
+    "none": "No program recorded at the robot check.",
+    "edit": "Change program",
+    "verify": "Check that this program is selected on the robot before starting.",
+    "checkHint": "Enter the program the team will run. It is shown on the score sheet so it can be verified before the start."
   }
 }

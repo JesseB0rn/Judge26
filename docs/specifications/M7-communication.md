@@ -11,6 +11,10 @@ See [ADR 0008](../architecture/decisions/0008-transactional-email-outbox.md).
   `SMTP_PASSWORD`, `SMTP_TLS`, `MAIL_SENDER_ADDRESS`, `MAIL_SENDER_NAME`, `APP_URL`), see the
   [development guide](../development.md#emails). Without SMTP in development and test, messages
   are captured instead of sent (`GET /api/dev/mails`).
+- **OAuth 2.0 (M9-D):** with `SMTP_AUTH=oauth2`, PocketBase sends to the mail relay
+  (`apps/mail-relay`), which delivers to Microsoft 365 with SMTP AUTH XOAUTH2 and client
+  credentials tokens. Errors (including token errors, as temporary `451`) reach the outbox like
+  any SMTP error. Setup: [deployment runbook](../operations/deployment.md#email-with-oauth-microsoft-365).
 - Account emails (verification, password reset) are PocketBase's own and are sent directly, but
   rendered from the `auth_verification` / `auth_password_reset` templates in the user's language
   (`hooks/mail.pb.js`). The `users` collection's own templates (PocketBase dashboard) are only used

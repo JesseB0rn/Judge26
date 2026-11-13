@@ -119,7 +119,7 @@ describe('JudgeDashboardView', () => {
     })
     mocked.saveDraft.mockResolvedValue({ sheet: makeSheet(), stale: false })
     const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
-    expect(mocked.saveDraft).toHaveBeenCalledWith('g2', expect.anything(), 1)
+    expect(mocked.saveDraft).toHaveBeenCalledWith('g2', expect.anything(), 1, undefined)
     expect(wrapper.find('[data-testid=pending-sync]').exists()).toBe(false)
   })
 

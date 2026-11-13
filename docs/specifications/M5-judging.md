@@ -11,17 +11,19 @@ the ranking (M3). Design goal: the screen must be readable at a glance in the mi
 | **Table judge** (`tables.judge`)                | Open, score and submit the games on their table (M5-01 – M5-10)         |
 | Judge of another table                          | Nothing: the score sheet returns `403` (M5-T03)                         |
 | **Reviewer** (head judge, event manager, admin) | Score any game of the event, approve, return and correct (M5-11, M5-12) |
+| Reviewer                                        | Grant a re-run (mulligan) after a catastrophic failure (M9-A)           |
 
 A game is _assigned_ when it is placed on a table (M4) whose judge is the user. Archived events
 are read-only.
 
 ## Data model
 
-| Collection / field | Purpose                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `rounds.day`       | Competition day the round is played on (optional; must belong to the round's event) (M5-02)    |
-| `score_sheets`     | At most one per game: `status`, `outcome`, `ruleset`, `values`, `time_ms`, `points`, reviewers |
-| `score_audit`      | Append-only trail: `action`, `actor`, `reason`, `before`, `after` (M5-13)                      |
+| Collection / field       | Purpose                                                                                        |
+| ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `rounds.day`             | Competition day the round is played on (optional; must belong to the round's event) (M5-02)    |
+| `score_sheets`           | At most one per game: `status`, `outcome`, `ruleset`, `values`, `time_ms`, `points`, reviewers |
+| `score_audit`            | Append-only trail: `action`, `actor`, `reason`, `before`, `after` (M5-13)                      |
+| `score_sheets.mulligan*` | Re-runs granted (`mulligans`) and the last one's `mulligan_reason`, `_by`, `_at` (M9-A)        |
 
 Both collections are **read-only through the API** (no create/update/delete rule). Reads: admins,
 head judges and event managers of the game's event, and the game's table judge. All writes go
@@ -54,6 +56,25 @@ through the judging routes. Audit entries cannot be changed, not even by superus
 - **Approval is always required** (answers roadmap question 15.4 for now). A reviewer who scores a
   game still approves it as a separate step.
 - **Ranking.** Until approval the game stays `scheduled`, so only finalized scores count.
+
+### Mulligan (M9-A)
+
+After a catastrophic failure the team is not responsible for (field fault, a hit by a person, a
+power cut), the team can ask the head judge for a re-run. A reviewer grants it from the score sheet
+(_Grant re-run_) with a **required reason**, in any sheet status:
+
+- The sheet returns to an **empty draft** (outcome _completed_, no values, no time) and the table
+  judge scores the re-run as usual: submit, approve, return and correct work as for any run.
+- If the run was already approved, the game's result is cleared (status `scheduled`), so it stops
+  counting in the ranking until the re-run is approved.
+- The audit trail records `mulligan` with the reason and the discarded run in `before` (including
+  its sheet status); the history shows it crossed out. The sheet counts its mulligans and shows
+  the last reason and reviewer to the judge.
+- Drafts made on a device before the mulligan never overwrite the re-run: the device sends the
+  number of mulligans it knows (`mulligans`), and the server answers an older one as `stale`. The
+  device then drops that draft and its stopwatch and tells the judge.
+- Table judges cannot grant a mulligan (`403`); a game without a sheet has no run to replace
+  (`409`, `mulligan_no_run`). Each mulligan is also written to the audit log (`score.mulligan`).
 
 ### Protecting results (invariant 1)
 
@@ -108,8 +129,14 @@ in milliseconds.
     the URL. Offline, the teams come from the list saved on the device; documents need a
     connection. Per-team check results are not recorded, and finishing a check is stored on the
     device only.
+  - **Program (M9-B):** for each team the judge enters the name of the program the team plans to
+    run (saved when the field loses focus or on _Save_; needs a connection). It is stored in
+    `games.program_name` on every game of the team in that round (all attempts) and survives a
+    mulligan.
 - **Score sheet** (`/judging/games/{id}`): a sticky header with team, category, round, table,
-  sequence and day, the status, the save state and a large live **total**; result choice
+  sequence and day, the status, the save state and a large live **total**; directly below it the
+  **program** recorded at the robot check, large and above the stopwatch, so the judge verifies it
+  on the robot before the start (or a note that none was recorded; it can be entered there too); result choice
   (Scored / Disqualified / Absent); stopwatch; the sheet generated from the ruleset with large touch
   targets (≥ 48 px); history. A fixed action bar holds the single next action: _Submit score_ (with
   the missing criteria listed, tap to jump; missing criteria are highlighted), _Approve / Return_,
@@ -122,16 +149,18 @@ in milliseconds.
 
 ## API
 
-| Method | Path                            | Who                    | Body / result                                                                                                                                       |
-| ------ | ------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/judging/assignments`      | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹                                                                               |
-| GET    | `/api/events/{id}/judging`      | reviewers              | All games of the event with their score status                                                                                                      |
-| GET    | `/api/games/{id}/sheet`         | table judge, reviewers | Context, ruleset, sheet, history, permissions                                                                                                       |
-| PUT    | `/api/games/{id}/sheet`         | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at }` → draft                                                                                    |
-| POST   | `/api/games/{id}/sheet/submit`  | table judge, reviewers | Same body → `submitted`                                                                                                                             |
-| POST   | `/api/games/{id}/sheet/approve` | reviewers              | → `finalized`, game updated                                                                                                                         |
-| POST   | `/api/games/{id}/sheet/reject`  | reviewers              | `{ reason }` → `rejected`                                                                                                                           |
-| POST   | `/api/games/{id}/sheet/correct` | reviewers              | `{ reason, outcome, values, time_ms, points?, expected_corrections? }` on a finalized score; an outdated `expected_corrections` gets `409` (M7-T10) |
+| Method | Path                             | Who                    | Body / result                                                                                                                                       |
+| ------ | -------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/judging/assignments`       | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹                                                                               |
+| GET    | `/api/events/{id}/judging`       | reviewers              | All games of the event with their score status                                                                                                      |
+| GET    | `/api/games/{id}/sheet`          | table judge, reviewers | Context, ruleset, sheet, history, permissions                                                                                                       |
+| PUT    | `/api/games/{id}/sheet`          | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at, mulligans? }` → draft                                                                        |
+| POST   | `/api/games/{id}/sheet/submit`   | table judge, reviewers | Same body → `submitted`                                                                                                                             |
+| POST   | `/api/games/{id}/sheet/approve`  | reviewers              | → `finalized`, game updated                                                                                                                         |
+| POST   | `/api/games/{id}/sheet/reject`   | reviewers              | `{ reason }` → `rejected`                                                                                                                           |
+| PUT    | `/api/games/{id}/program`        | table judge, reviewers | `{ program_name }` (≤ 200 characters) → stored on the team's games of the round; after submission reviewers only (`409 program_locked`) (M9-B)      |
+| POST   | `/api/games/{id}/sheet/mulligan` | reviewers              | `{ reason }` on any sheet → empty `draft`, game result cleared (M9-A)                                                                               |
+| POST   | `/api/games/{id}/sheet/correct`  | reviewers              | `{ reason, outcome, values, time_ms, points?, expected_corrections? }` on a finalized score; an outdated `expected_corrections` gets `409` (M7-T10) |
 
 ¹ Each row has `check`: `null` if the round has no robot check, otherwise
 `{ day: { id, date, label } | null, starts_at, duration_minutes }` (`day` null and `starts_at`

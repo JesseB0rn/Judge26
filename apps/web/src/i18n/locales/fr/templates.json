@@ -72,12 +72,6 @@
         "missing": "Sans manches : {codes}",
         "done": "aucune manche | 1 manche | {count} manches"
       },
-      "tables": {
-        "title": "Tables",
-        "todo": "Créez des tables pour chaque catégorie sur le tableau d’attribution.",
-        "missing": "Sans table active : {codes}",
-        "done": "aucune table active | 1 table active | {count} tables actives"
-      },
       "teams": {
         "title": "Équipes",
         "todo": "Importez les équipes depuis un fichier CSV.",
@@ -85,9 +79,15 @@
       },
       "judges": {
         "title": "Juges",
-        "todo": "Invitez les juges et attribuez-les aux tables.",
-        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge",
+        "todo": "Invitez les juges.",
         "done": "aucun juge | 1 juge | {count} juges"
+      },
+      "tables": {
+        "title": "Tables",
+        "todo": "Créez des tables pour chaque catégorie sur le tableau d’attribution et attribuez-y les juges.",
+        "missing": "Sans table active : {codes}",
+        "done": "aucune table active | 1 table active | {count} tables actives",
+        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge"
       },
       "schedule": {
         "title": "Horaire",

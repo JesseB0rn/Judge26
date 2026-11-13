@@ -73,9 +73,15 @@ test.describe('M8-D event templates', () => {
     await expect(page.getByRole('heading', { name: newName })).toBeVisible()
     const checklist = page.getByTestId('setup-checklist')
     await expect(checklist.locator('[data-step=days]')).toHaveAttribute('data-done', 'true')
-    await expect(checklist.locator('[data-step=tables]')).toHaveAttribute('data-done', 'true')
     await expect(checklist.locator('[data-step=teams]')).toHaveAttribute('data-done', 'false')
-    await expect(checklist.locator('[data-step=schedule]')).toContainText('Needs Teams first.')
+    // Judges are not part of a template, so the copied tables wait for them (M9-C).
+    await expect(checklist.locator('[data-step=judges]')).toHaveAttribute('data-done', 'false')
+    await expect(checklist.locator('[data-step=tables]')).toHaveAttribute('data-done', 'false')
+    await expect(checklist.locator('[data-step=tables]')).toContainText('1 table without a judge')
+    await expect(checklist.locator('[data-step=tables]')).toContainText(/Needs .*Judges first\./)
+    await expect(checklist.locator('[data-step=schedule]')).toContainText(
+      'Needs Tables, Teams first.',
+    )
 
     await checklist.getByRole('link', { name: 'Open: Competition days' }).click()
     // The template's days moved to the new first day.

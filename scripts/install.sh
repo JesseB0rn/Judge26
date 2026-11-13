@@ -22,13 +22,17 @@
 # Running it again upgrades: the compose files are replaced by those of the new release, .env is
 # kept (only the image version changes) and the data volume is untouched.
 #
-# For tests: JUDGE26_SOURCE (base URL or local directory holding the repository files) and
-# JUDGE26_IMAGE (image to run instead of the release image).
+# Email with OAuth for Microsoft 365 (M9-D): set SMTP_AUTH=oauth2 and the SMTP_OAUTH_* values in
+# .env, then run this script again: it enables the mail relay (COMPOSE_PROFILES=mail-oauth).
+#
+# For tests: JUDGE26_SOURCE (base URL or local directory holding the repository files),
+# JUDGE26_IMAGE and JUDGE26_MAIL_RELAY_IMAGE (images to run instead of the release images).
 
 set -eu
 
 REPO=JesseB0rn/Judge26
 IMAGE_REPO=ghcr.io/jesseb0rn/judge26
+MAIL_RELAY_IMAGE_REPO=ghcr.io/jesseb0rn/judge26-mail-relay
 
 say() { printf '\033[1m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[33mwarning:\033[0m %s\n' "$*" >&2; }
@@ -160,6 +164,16 @@ configure_mode() { # configure_mode <domain given on this run: 1 or empty>
   fi
 }
 
+# The mail relay (M9-D) runs exactly when .env asks for OAuth email.
+configure_mail() {
+  if [ "$(get_env SMTP_AUTH)" = oauth2 ]; then
+    set_env COMPOSE_PROFILES mail-oauth
+    say "Email: OAuth 2.0 through the mail relay (SMTP_OAUTH_* in .env)"
+  else
+    set_env COMPOSE_PROFILES ''
+  fi
+}
+
 public_address() {
   address=$(hostname -I 2>/dev/null | awk '{print $1}') || true
   echo "${address:-localhost}"
@@ -179,6 +193,7 @@ main() {
   fi
   version=${version#v}
   image=${JUDGE26_IMAGE:-$IMAGE_REPO:$version}
+  relay_image=${JUDGE26_MAIL_RELAY_IMAGE:-$MAIL_RELAY_IMAGE_REPO:$version}
 
   mkdir -p "$dir"
   cd "$dir"
@@ -219,7 +234,9 @@ main() {
   fi
   [ -n "$(get_env JUDGE26_PORT)" ] || set_env JUDGE26_PORT 8090
   configure_mode "$domain_given"
+  configure_mail
   set_env JUDGE26_IMAGE "$image"
+  set_env JUDGE26_MAIL_RELAY_IMAGE "$relay_image"
   set_env APP_VERSION "$version"
   chmod 600 .env
 
@@ -230,6 +247,11 @@ main() {
     say "Pulling $image"
     docker compose pull --quiet app ||
       die "Could not pull $image. Is the version right (JUDGE26_VERSION) and the package public?"
+  fi
+  if [ -n "$(get_env COMPOSE_PROFILES)" ] && ! docker image inspect "$relay_image" >/dev/null 2>&1; then
+    say "Pulling $relay_image"
+    docker compose pull --quiet mail-relay ||
+      die "Could not pull $relay_image (the mail relay exists from the release that added M9-D on)."
   fi
   say "Starting (migrations run on start)"
   docker compose up -d --no-build --remove-orphans --wait --wait-timeout 180 ||
@@ -247,7 +269,8 @@ main() {
               (also in $dir/.env; keep PB_ENCRYPTION_KEY there unchanged and backed up)
 
 Next steps (docs/operations/deployment.md):
-  1. Sign in to the dashboard, check Settings; configure SMTP in $dir/.env for emails.
+  1. Sign in to the dashboard, check Settings; configure SMTP in $dir/.env for emails
+     (Microsoft 365 with OAuth: SMTP_AUTH=oauth2, then run this script again).
   2. Register an account in the app, then give it the admin role in the dashboard:
      collection role_assignments, role "admin", no event.
   3. After editing .env: cd $dir && docker compose up -d

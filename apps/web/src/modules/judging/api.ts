@@ -15,11 +15,19 @@ export function getSheet(gameId: string) {
   return pb.send<SheetPayload>(`/api/games/${gameId}/sheet`, { method: 'GET' })
 }
 
-/** Autosave (M5-09). `stale` = a newer draft was already stored and is returned instead. */
-export function saveDraft(gameId: string, input: SheetInput, clientSavedAt: number) {
+/**
+ * Autosave (M5-09). `stale` = a newer draft was already stored and is returned instead.
+ * `mulligans`: the re-runs the draft knows of; a draft of a discarded run is stale (M9-04).
+ */
+export function saveDraft(
+  gameId: string,
+  input: SheetInput,
+  clientSavedAt: number,
+  mulligans?: number,
+) {
   return pb.send<{ sheet: ScoreSheet; stale: boolean }>(`/api/games/${gameId}/sheet`, {
     method: 'PUT',
-    body: { ...input, client_saved_at: clientSavedAt },
+    body: { ...input, client_saved_at: clientSavedAt, mulligans },
   })
 }
 
@@ -51,5 +59,21 @@ export function correctSheet(
   return pb.send<{ sheet: ScoreSheet }>(`/api/games/${gameId}/sheet/correct`, {
     method: 'POST',
     body: { ...input, reason, expected_corrections: expectedCorrections },
+  })
+}
+
+/** Discards the scored run so the team can re-run (M9-A). */
+export function mulliganSheet(gameId: string, reason: string) {
+  return pb.send<{ sheet: ScoreSheet }>(`/api/games/${gameId}/sheet/mulligan`, {
+    method: 'POST',
+    body: { reason },
+  })
+}
+
+/** The program the team plans to run, recorded at the robot check (M9-B). */
+export function setProgram(gameId: string, programName: string) {
+  return pb.send<{ program_name: string }>(`/api/games/${gameId}/program`, {
+    method: 'PUT',
+    body: { program_name: programName },
   })
 }

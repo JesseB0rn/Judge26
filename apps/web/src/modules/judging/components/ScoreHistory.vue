@@ -9,7 +9,7 @@ import type { AuditEntry, ScoreSnapshot } from '../types'
 const props = defineProps<{ entries: AuditEntry[]; definition?: RulesetDefinition | null }>()
 
 const ACTIONS = translatedLabels<AuditEntry['action']>(
-  ['submitted', 'approved', 'rejected', 'corrected', 'manual_edit'],
+  ['submitted', 'approved', 'rejected', 'corrected', 'manual_edit', 'mulligan'],
   (action) => t(`judging.history.actions.${action}`),
 )
 
@@ -76,6 +76,14 @@ const changed = (entry: AuditEntry) =>
         {{ t('scheduling.export.points') }} {{ points(entry.before) }} →
         <strong>{{ points(entry.after) }}</strong> · {{ t('judging.time') }}
         {{ time(entry.before) }} → <strong>{{ time(entry.after) }}</strong>
+      </p>
+      <p
+        v-else-if="entry.before && entry.action === 'mulligan'"
+        class="mt-1 text-muted-foreground tabular-nums line-through"
+        data-testid="history-discarded"
+      >
+        {{ t('scheduling.export.points') }} {{ points(entry.before) }} · {{ t('judging.time') }}
+        {{ time(entry.before) }}
       </p>
       <p v-else-if="entry.after && entry.action === 'submitted'" class="mt-1 tabular-nums">
         {{ t('scheduling.export.points') }} {{ points(entry.after) }} · {{ t('judging.time') }}

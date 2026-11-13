@@ -66,17 +66,72 @@ applied from the environment on every start), sign in to the app with an account
 
 All settings come from `.env` (template: `.env.example`).
 
-| Variable                                      | Purpose                                                                |
-| --------------------------------------------- | ---------------------------------------------------------------------- |
-| `APP_URL`                                     | Public URL, used in email links                                        |
-| `PB_SUPERUSER_EMAIL`, `PB_SUPERUSER_PASSWORD` | Superuser created (or password reset) on every start                   |
-| `PB_ENCRYPTION_KEY`                           | 32 characters; encrypts stored SMTP/S3 secrets. Set once, never change |
-| `SMTP_*`, `MAIL_SENDER_*`                     | Email delivery (M7-01)                                                 |
-| `BACKUP_CRON`, `BACKUP_MAX_KEEP`              | Automatic backups ([runbook](backup-and-restore.md))                   |
-| `MONITORING_*`                                | Alert emails and thresholds ([monitoring runbook](monitoring.md))      |
-| `DOMAIN`, `ACME_EMAIL`                        | HTTPS with Caddy                                                       |
-| `JUDGE26_IMAGE`, `APP_VERSION`, `GIT_COMMIT`  | Image to run and the version it reports (`/api/app/info`, status page) |
-| `JUDGE26_PORT`, `TZ`                          | Published port (without Caddy), time zone (backup schedule, logs)      |
+| Variable                                        | Purpose                                                                |
+| ----------------------------------------------- | ---------------------------------------------------------------------- |
+| `APP_URL`                                       | Public URL, used in email links                                        |
+| `PB_SUPERUSER_EMAIL`, `PB_SUPERUSER_PASSWORD`   | Superuser created (or password reset) on every start                   |
+| `PB_ENCRYPTION_KEY`                             | 32 characters; encrypts stored SMTP/S3 secrets. Set once, never change |
+| `SMTP_*`, `MAIL_SENDER_*`                       | Email delivery (M7-01)                                                 |
+| `SMTP_AUTH`, `SMTP_OAUTH_*`, `COMPOSE_PROFILES` | Email with OAuth for Microsoft 365 (M9-D, see below)                   |
+| `JUDGE26_MAIL_RELAY_IMAGE`                      | Mail relay image (set by the installer)                                |
+| `BACKUP_CRON`, `BACKUP_MAX_KEEP`                | Automatic backups ([runbook](backup-and-restore.md))                   |
+| `MONITORING_*`                                  | Alert emails and thresholds ([monitoring runbook](monitoring.md))      |
+| `DOMAIN`, `ACME_EMAIL`                          | HTTPS with Caddy                                                       |
+| `JUDGE26_IMAGE`, `APP_VERSION`, `GIT_COMMIT`    | Image to run and the version it reports (`/api/app/info`, status page) |
+| `JUDGE26_PORT`, `TZ`                            | Published port (without Caddy), time zone (backup schedule, logs)      |
+
+### Email with OAuth (Microsoft 365)
+
+Microsoft 365 is retiring password (basic) authentication for SMTP. PocketBase's SMTP client only
+knows passwords, so with `SMTP_AUTH=oauth2` the app hands every email to the **mail relay**
+(`mail-relay` service, image `ghcr.io/jesseb0rn/judge26-mail-relay`, source `apps/mail-relay`).
+The relay is reachable only inside the compose network; it gets an access token with the OAuth
+2.0 client credentials flow, renews it before it expires, and delivers to `smtp.office365.com:587`
+with SMTP AUTH XOAUTH2. A message counts as sent only once Microsoft 365 accepted it, so token and
+delivery errors show under _Emails_ and are retried like any mail-server error (M7-02).
+
+1. **Register an app** in Microsoft Entra ID (App registrations → New registration). Note the
+   _Directory (tenant) ID_ and _Application (client) ID_; create a **client secret**.
+2. **API permissions** → Add → _APIs my organization uses_ → **Office 365 Exchange Online** →
+   Application permissions → **`SMTP.SendAsApp`** → grant admin consent.
+3. **Allow the app to send as the mailbox** (Exchange Online PowerShell, as an Exchange admin):
+
+   ```powershell
+   Connect-ExchangeOnline
+   # The object ID of the app's *Enterprise application* (service principal), not the app registration.
+   New-ServicePrincipal -AppId <client-id> -ObjectId <enterprise-app-object-id>
+   Add-MailboxPermission -Identity judge26@example.org -User <enterprise-app-object-id> -AccessRights FullAccess
+   Set-CASMailbox -Identity judge26@example.org -SmtpClientAuthenticationDisabled $false
+   ```
+
+4. **Configure** `.env` and leave `SMTP_HOST` … `SMTP_PASSWORD` empty:
+
+   ```sh
+   MAIL_SENDER_ADDRESS=judge26@example.org
+   SMTP_AUTH=oauth2
+   SMTP_OAUTH_TENANT_ID=<tenant-id>
+   SMTP_OAUTH_CLIENT_ID=<client-id>
+   SMTP_OAUTH_CLIENT_SECRET=<client-secret>
+   # SMTP_OAUTH_USER=   mailbox to send as, when not MAIL_SENDER_ADDRESS
+   ```
+
+5. **Apply**: run the installer again (it sets `COMPOSE_PROFILES=mail-oauth` and pulls the relay),
+   or set `COMPOSE_PROFILES=mail-oauth` yourself and run `docker compose up -d`.
+6. **Check**: `docker compose logs mail-relay` shows `OAuth token obtained.`; send a test message
+   (e.g. a judge invitation) and look under _Emails_.
+
+Errors in `docker compose logs mail-relay`:
+
+| Error                                                                          | Cause and fix                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AADSTS700016: Application … was not found in the directory`                   | `SMTP_OAUTH_CLIENT_ID` is not the _Application (client) ID_ of an app in that tenant (often the Object ID was copied instead)                                                                              |
+| `AADSTS7000215: Invalid client secret`                                         | `SMTP_OAUTH_CLIENT_SECRET` is the secret's ID, or the secret expired: use the secret's _Value_                                                                                                             |
+| `535 5.7.3 Authentication unsuccessful`                                        | The token was accepted but Exchange refuses it: `SMTP.SendAsApp` (application permission, Office 365 Exchange Online) missing or not consented, or step 3 not done or not yet in effect (up to 30 minutes) |
+| `Connection closed unexpectedly`, `TLS handshake timed out`, no `220` greeting | The network blocks or interferes with outgoing port 587 (check with `nc smtp.office365.com 587`); not an OAuth problem                                                                                     |
+
+The client secret expires (at most 24 months): renew it in Entra ID, update `.env` and
+`docker compose up -d`. The relay never logs the secret or the token. To go back to a password,
+set `SMTP_AUTH=basic` and the `SMTP_*` settings, then run the installer again.
 
 ## Verify a deployment
 

@@ -72,12 +72,6 @@
         "missing": "Ohne Runden: {codes}",
         "done": "keine Runden | 1 Runde | {count} Runden"
       },
-      "tables": {
-        "title": "Tische",
-        "todo": "Auf der Zuteilungstafel Tische für jede Kategorie anlegen.",
-        "missing": "Ohne aktiven Tisch: {codes}",
-        "done": "keine aktiven Tische | 1 aktiver Tisch | {count} aktive Tische"
-      },
       "teams": {
         "title": "Teams",
         "todo": "Die Teams aus einer CSV-Datei importieren.",
@@ -85,9 +79,15 @@
       },
       "judges": {
         "title": "Schiedsrichter/innen",
-        "todo": "Schiedsrichter/innen einladen und Tischen zuteilen.",
-        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in",
+        "todo": "Schiedsrichter/innen einladen.",
         "done": "keine Schiedsrichter/innen | 1 Schiedsrichter/in | {count} Schiedsrichter/innen"
+      },
+      "tables": {
+        "title": "Tische",
+        "todo": "Auf der Zuteilungstafel Tische für jede Kategorie anlegen und die Schiedsrichter/innen zuteilen.",
+        "missing": "Ohne aktiven Tisch: {codes}",
+        "done": "keine aktiven Tische | 1 aktiver Tisch | {count} aktive Tische",
+        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in"
       },
       "schedule": {
         "title": "Zeitplan",

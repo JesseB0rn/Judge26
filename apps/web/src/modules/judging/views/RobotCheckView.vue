@@ -25,9 +25,10 @@ import { backTarget, useQueryRefs } from '@/shared/composables/useQueryRefs'
 import type { TeamDocumentRecord } from '@/shared/types/records'
 import { documentKind, documentUrl, listTeamDocuments } from '@/modules/teams/documents'
 import { listAssignments } from '../api'
-import { cachedAssignments, finishedChecks, setCheckFinished } from '../drafts'
+import { cacheAssignments, cachedAssignments, finishedChecks, setCheckFinished } from '../drafts'
 import { isCheckDone, robotChecks, timeRange, type RobotCheckBlock } from '../lib'
 import type { Assignment } from '../types'
+import ProgramNameField from '../components/ProgramNameField.vue'
 
 /**
  * Guided robot check (M5-15): steps through the teams of one round at the judge's table in
@@ -86,6 +87,17 @@ const when = computed(() => {
   const day = check.day ? check.day.label || check.day.date : ''
   return [day, timeRange(check.starts_at, check.duration_minutes)].filter(Boolean).join(' · ')
 })
+
+/** Keeps the recorded program in the team list and the device copy of the games (M9-06). */
+function programSaved(value: string) {
+  const team = current.value
+  if (!team) return
+  team.program_name = value
+  rows.value = rows.value.map((r) =>
+    r.team.id === team.id && r.round.id === props.roundId ? { ...r, program_name: value } : r,
+  )
+  if (!offline.value) cacheAssignments(userId(), rows.value)
+}
 
 function go(to: number) {
   const team = teams.value[Math.max(0, Math.min(teams.value.length - 1, to))]
@@ -256,6 +268,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             >
           </Button>
         </div>
+
+        <ProgramNameField
+          :key="current.game"
+          :game-id="current.game"
+          :model-value="current.program_name"
+          mode="check"
+          :editable="!offline && block.event.status !== 'archived'"
+          @update:model-value="programSaved"
+        />
 
         <ErrorAlert :error="documentsError" />
         <p

@@ -49,6 +49,9 @@ PocketBase sends verification and password-reset emails. Configure SMTP with env
 variables (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_TLS`,
 `MAIL_SENDER_ADDRESS`, `MAIL_SENDER_NAME`); `APP_URL` sets the frontend URL used in links
 (defaults: `http://127.0.0.1:5173` in development, `http://127.0.0.1:4173` in test).
+With `SMTP_AUTH=oauth2` email goes to the OAuth mail relay instead (`apps/mail-relay`, M9-D;
+`pnpm --filter @judge26/mail-relay start`, with `MAIL_RELAY_HOST=127.0.0.1` for the backend),
+see the [deployment runbook](operations/deployment.md#email-with-oauth-microsoft-365).
 
 Without SMTP in development and test, emails are **not sent**. They are printed to the backend
 console (`[dev mail] link: …`), available at `GET /api/dev/mails?to=<email>` and shown on the

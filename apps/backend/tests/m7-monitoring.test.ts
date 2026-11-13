@@ -185,6 +185,11 @@ describe('M7 monitoring', () => {
   })
 
   it('M7-13: browser errors are logged, validated and rate-limited', async () => {
+    // The limit counts per calendar minute; start early in one so the window cannot roll over
+    // between the first reports and the spam below (the test takes several seconds).
+    const intoMinute = Date.now() % 60000
+    if (intoMinute > 30000) await new Promise((r) => setTimeout(r, 60000 - intoMinute + 100))
+
     const res = await post('/api/app/client-errors', {
       message: 'TypeError: rounds is undefined',
       stack: 'at RankingView.vue:42',
@@ -219,7 +224,7 @@ describe('M7 monitoring', () => {
     }
     expect(statuses.filter((s) => s === 204)).toHaveLength(7)
     expect(statuses.at(-1)).toBe(429)
-  })
+  }, 90_000)
 })
 
 describe('M7 monitoring in production', () => {

@@ -403,9 +403,9 @@ describe('M8-D event templates', () => {
       'days',
       'categories',
       'rounds',
-      'tables',
       'teams',
       'judges',
+      'tables',
       'schedule',
       'publish',
     ])
@@ -430,6 +430,18 @@ describe('M8-D event templates', () => {
       expected: 1,
       timed: 1,
       rounds: 1,
+    })
+
+    // M9-T07: a table without a judge keeps the tables step open, not the judges step.
+    const [table] = await fx.su
+      .collection('tables')
+      .getFullList({ filter: `event = "${event.id}" && active = true` })
+    await fx.su.collection('tables').update(table!.id, { judges: [] })
+    const unjudged = await steps(admin, event.id)
+    expect(done(unjudged)).toContain('judges')
+    expect(unjudged.find((s) => s.key === 'tables')).toMatchObject({
+      done: false,
+      tables_without_judges: 1,
     })
 
     const judge = await fx.user({ roles: [{ role: 'judge', event: empty.id }] })

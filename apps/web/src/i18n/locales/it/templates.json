@@ -72,12 +72,6 @@
         "missing": "Senza manche: {codes}",
         "done": "nessuna manche | 1 manche | {count} manche"
       },
-      "tables": {
-        "title": "Tavoli",
-        "todo": "Crei i tavoli per ogni categoria sulla tavola delle assegnazioni.",
-        "missing": "Senza tavolo attivo: {codes}",
-        "done": "nessun tavolo attivo | 1 tavolo attivo | {count} tavoli attivi"
-      },
       "teams": {
         "title": "Squadre",
         "todo": "Importi le squadre da un file CSV.",
@@ -85,9 +79,15 @@
       },
       "judges": {
         "title": "Giudici",
-        "todo": "Inviti i giudici e li assegni ai tavoli.",
-        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice",
+        "todo": "Inviti i giudici.",
         "done": "nessun giudice | 1 giudice | {count} giudici"
+      },
+      "tables": {
+        "title": "Tavoli",
+        "todo": "Crei i tavoli per ogni categoria sulla tavola delle assegnazioni e vi assegni i giudici.",
+        "missing": "Senza tavolo attivo: {codes}",
+        "done": "nessun tavolo attivo | 1 tavolo attivo | {count} tavoli attivi",
+        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice"
       },
       "schedule": {
         "title": "Programma",

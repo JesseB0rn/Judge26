@@ -76,6 +76,11 @@ competition management
                     feedback          judge invites,    
                                       role switch,      
                                       templates, board  
+
+  M9                Competition       Mulligan runs,    P1
+                    feedback          program check,    
+                                      setup order,      
+                                      SMTP OAuth        
   -----------------------------------------------------------------------
 
 Milestones are dependency-oriented, not fixed calendar commitments. A
@@ -1853,7 +1858,188 @@ admin role switch, with no mention of coaches.
 
 ------------------------------------------------------------------------
 
-## 11. Cross-project quality requirements
+## 11. M9 --- Competition feedback
+
+**Priority:** P1\
+**Objective:** Act on feedback from running competitions: let a head
+judge grant a re-run after a catastrophic failure, verify the robot's
+program before the run, put the setup steps in the order people do them,
+and deliver email through providers that no longer accept passwords.
+
+### Tracking
+
+-   [x] **M9-A** Mulligan run granted by a head judge (M9-01 to M9-05)
+-   [x] **M9-B** Program name recorded at the robot check and shown on
+    the score sheet (M9-06 to M9-09)
+-   [x] **M9-C** Table setup after teams and judges in the setup
+    checklist (M9-10 to M9-11)
+-   [x] **M9-D** SMTP with OAuth 2.0 instead of basic auth (M9-12 to
+    M9-15)
+
+### M9-A --- Mulligan run
+
+**Status:** M9-01 to M9-05 implemented (see `docs/specifications/M5-judging.md#mulligan-m9-a`).
+
+In case of a catastrophic failure (field fault, a hit by a person, a
+power cut at the table), the team can ask the head judge for a re-run.
+The head judge grants it with a reason; the run's result is discarded
+and the table judge scores the re-run on the same game.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M9-01      Grant a mulligan      P1    A reviewer (head judge, event manager,
+                                         admin) can grant a mulligan on a game
+                                         that has a score sheet in any status. A
+                                         reason is required. Table judges cannot
+                                         grant one.
+
+  M9-02      Result discarded      P1    Granting clears the sheet (values, time,
+                                         points, outcome back to completed) and
+                                         returns it to draft. If the game was
+                                         finalized, its result is cleared and it
+                                         stops counting in the ranking until the
+                                         re-run is approved.
+
+  M9-03      Audited               P1    The audit trail records `mulligan` with
+                                         the actor, the reason and the discarded
+                                         result; the score sheet history shows
+                                         it. The sheet counts its mulligans.
+
+  M9-04      Re-run at the table   P1    The score sheet shows that a re-run was
+                                         granted, by whom and why. A device
+                                         draft or stopwatch from the discarded
+                                         run never overwrites the re-run.
+
+  M9-05      Normal workflow       P1    The re-run is submitted, approved,
+                                         returned and corrected like any run.
+  ------------------------------------------------------------------------------
+
+### M9-B --- Program verification at the robot check
+
+**Status:** M9-06 to M9-09 implemented (see `docs/specifications/M5-judging.md`).
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M9-06      Program name input    P1    During the guided robot check, the
+                                         judge enters the name of the program
+                                         the team plans to run, per team and
+                                         round. It is saved on the team's game
+                                         of that round at that table.
+
+  M9-07      On the score sheet    P1    The score sheet shows the program name
+                                         prominently at the top, above the
+                                         stopwatch, so the judge verifies it
+                                         before starting the run. Without a
+                                         name, the sheet says none was recorded.
+
+  M9-08      Who can set it        P1    Table judges and reviewers of the game
+                                         can set and change the name until the
+                                         sheet is submitted; later changes need
+                                         a reviewer. Archived events are
+                                         read-only.
+
+  M9-09      Mulligan keeps it     P2    A mulligan keeps the recorded program
+                                         name.
+  ------------------------------------------------------------------------------
+
+### M9-C --- Setup order
+
+**Status:** M9-10 and M9-11 implemented (see `docs/specifications/M8-event-setup.md`). The tables
+step now also needs the judges step.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M9-10      Tables after teams    P1    The setup checklist (M8-20) lists
+             and judges                  tables after teams and judges: days,
+                                         categories, rounds, teams, judges,
+                                         tables, schedule, publish.
+
+  M9-11      Judges on tables      P1    "Every active table has a judge" moves
+                                         from the judges step to the tables
+                                         step, which is where it is fixed (the
+                                         board). The judges step is done once
+                                         judges are invited.
+  ------------------------------------------------------------------------------
+
+### M9-D --- SMTP with OAuth 2.0
+
+Microsoft 365 and Google Workspace are retiring password (basic)
+authentication for SMTP. The mail service (M7-01) must be able to
+authenticate with OAuth 2.0 instead.
+
+**Status:** M9-12 to M9-15 implemented for Microsoft 365 (see
+`docs/operations/deployment.md#email-with-oauth-microsoft-365`). Decision: PocketBase's SMTP client
+only supports password authentication, so an OAuth relay sidecar (`apps/mail-relay`, compose
+profile `mail-oauth`) delivers with XOAUTH2 and client credentials. Google Workspace is not
+covered yet. Verified end to end against a real Microsoft 365 tenant (2026-11-13).
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M9-12      OAuth configuration   P1    Environment variables select OAuth 2.0
+                                         and give the token endpoint, client id,
+                                         client secret and scope (or refresh
+                                         token). Basic auth keeps working when
+                                         they are not set.
+
+  M9-13      Token handling        P1    Access tokens are fetched and renewed
+                                         automatically before they expire;
+                                         secrets never appear in logs or the
+                                         UI.
+
+  M9-14      Same delivery         P1    Account emails and the outbox (M7-02,
+                                         retries) work unchanged with OAuth; a
+                                         token error is recorded like a mail
+                                         server error and retried.
+
+  M9-15      Documentation         P1    The deployment guide explains the
+                                         Microsoft 365 and Google setup.
+  ------------------------------------------------------------------------------
+
+### Tests
+
+  ------------------------------------------------------------------------------
+  Test ID    Scenario                         Expected result
+  ---------  -------------------------------  ----------------------------------
+  M9-T01     Head judge grants a mulligan     Sheet back to draft and empty;
+             on a finalized game with a       game result cleared; audit entry
+             reason                           with reason and old result
+
+  M9-T02     Grant a mulligan without a       400 `reason: required`
+             reason
+
+  M9-T03     Table judge tries to grant a     403
+             mulligan
+
+  M9-T04     An outdated device draft syncs   Refused as stale; re-run sheet
+             after the mulligan               kept
+
+  M9-T05     Judge enters a program name at   Name shown above the stopwatch
+             the robot check, then opens the  on the score sheet
+             score sheet
+
+  M9-T06     Judge changes the program name   409; a reviewer can change it
+             after submitting
+
+  M9-T07     Setup checklist order            Tables listed after teams and
+                                              judges; table without a judge
+                                              keeps the tables step open
+
+  M9-T08     Send an email with OAuth         Token fetched once and reused;
+             configured (mock provider)       message delivered
+
+  M9-T09     Token endpoint fails             Outbox message stays pending
+                                              with the error and is retried
+  ------------------------------------------------------------------------------
+
+**Exit criteria:** All P1 requirements and M9 tests pass.
+
+------------------------------------------------------------------------
+
+## 12. Cross-project quality requirements
 
 These requirements apply to every milestone.
 
@@ -1902,7 +2088,7 @@ The following properties must be continuously checked:
 
 ------------------------------------------------------------------------
 
-## 12. Definition of Done
+## 13. Definition of Done
 
 A task may only be marked complete when all applicable conditions are
 satisfied.
@@ -1923,7 +2109,7 @@ acceptance tests must also pass.
 
 ------------------------------------------------------------------------
 
-## 13. Project tracking model
+## 14. Project tracking model
 
 Track progress at three levels:
 
@@ -1973,7 +2159,7 @@ Track progress at three levels:
 
 ------------------------------------------------------------------------
 
-## 14. Suggested repository structure
+## 15. Suggested repository structure
 
 Keep business logic independent of the user interface.
 
@@ -2018,7 +2204,7 @@ wro-platform/
 
 ------------------------------------------------------------------------
 
-## 15. Recommended implementation order
+## 16. Recommended implementation order
 
 Do not begin by building the full dashboard or registration experience.
 First validate the three riskiest parts of the application with vertical
@@ -2054,7 +2240,7 @@ investment in the complete user interface.
 
 ------------------------------------------------------------------------
 
-## 16. Key architectural decisions to resolve
+## 17. Key architectural decisions to resolve
 
 The following questions should be settled before or during the relevant
 implementation milestone:
@@ -2078,7 +2264,7 @@ implementation milestone:
 Make these behaviours configurable where practical, while keeping the
 initial implementation straightforward.
 
-## 17. Primary implementation recommendation
+## 18. Primary implementation recommendation
 
 Build and thoroughly test the scoring and ranking engines before
 implementing the complete administration interface. They contain the
