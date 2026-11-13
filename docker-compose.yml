@@ -5,6 +5,7 @@
 #   docker compose up -d --build
 #
 # With HTTPS (Caddy, automatic certificates): add -f docker-compose.caddy.yml.
+# Email with OAuth for Microsoft 365 (M9-D): SMTP_AUTH=oauth2 and COMPOSE_PROFILES=mail-oauth.
 name: judge26
 
 services:
@@ -32,6 +33,8 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_TLS: ${SMTP_TLS:-false}
+      # "oauth2": send through the mail-relay service below instead of SMTP_HOST (M9-D).
+      SMTP_AUTH: ${SMTP_AUTH:-basic}
       # Automatic backups (docs/operations/backup-and-restore.md); "off" disables them.
       BACKUP_CRON: '${BACKUP_CRON:-30 3 * * *}'
       BACKUP_MAX_KEEP: ${BACKUP_MAX_KEEP:-14}
@@ -42,9 +45,41 @@ services:
       TZ: ${TZ:-Europe/Zurich}
     volumes:
       - pb_data:/pb/pb_data
+    depends_on:
+      mail-relay:
+        condition: service_healthy
+        # Only when the mail-oauth profile is enabled.
+        required: false
     restart: unless-stopped
     # Let PocketBase finish running requests and close the database cleanly.
     stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '5'
+
+  # Delivers the app's email to Microsoft 365 with OAuth 2.0 (M9-D). Reachable by the app only.
+  mail-relay:
+    profiles: ['mail-oauth']
+    image: ${JUDGE26_MAIL_RELAY_IMAGE:-judge26-mail-relay:local}
+    build:
+      context: .
+      dockerfile: docker/mail-relay.Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    expose:
+      - '2525'
+    environment:
+      SMTP_OAUTH_TENANT_ID: ${SMTP_OAUTH_TENANT_ID:-}
+      SMTP_OAUTH_CLIENT_ID: ${SMTP_OAUTH_CLIENT_ID:-}
+      SMTP_OAUTH_CLIENT_SECRET: ${SMTP_OAUTH_CLIENT_SECRET:-}
+      # Mailbox to send as; MAIL_SENDER_ADDRESS when empty.
+      SMTP_OAUTH_USER: ${SMTP_OAUTH_USER:-}
+      MAIL_SENDER_ADDRESS: ${MAIL_SENDER_ADDRESS:-}
+      TZ: ${TZ:-Europe/Zurich}
+    restart: unless-stopped
     logging:
       driver: json-file
       options:

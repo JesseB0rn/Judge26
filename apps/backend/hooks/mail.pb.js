@@ -6,6 +6,10 @@
 // SMTP_TLS and MAIL_SENDER_ADDRESS / MAIL_SENDER_NAME. APP_URL sets the frontend URL
 // used in email links.
 //
+// M9-D: with SMTP_AUTH=oauth2, email goes to the mail relay (MAIL_RELAY_HOST:MAIL_RELAY_PORT,
+// default mail-relay:2525, apps/mail-relay), which delivers it to Microsoft 365 with OAuth 2.0.
+// PocketBase's own SMTP client only knows password authentication.
+//
 // Development/test without SMTP: emails are not sent. They are logged and kept in
 // memory, available via GET /api/dev/mails (non-production only).
 //
@@ -27,7 +31,23 @@ onBootstrap((e) => {
   set(settings.meta, 'appURL', env('APP_URL'))
   set(settings.meta, 'senderAddress', env('MAIL_SENDER_ADDRESS'))
   set(settings.meta, 'senderName', env('MAIL_SENDER_NAME'))
-  if (env('SMTP_HOST')) {
+  if (env('SMTP_AUTH') === 'oauth2') {
+    // The relay is only reachable inside the compose network: no login, no TLS.
+    const relay = {
+      enabled: true,
+      host: env('MAIL_RELAY_HOST') || 'mail-relay',
+      port: parseInt(env('MAIL_RELAY_PORT') || '2525', 10),
+      username: '',
+      password: '',
+      tls: false,
+    }
+    Object.keys(relay).forEach((key) => {
+      if (settings.smtp[key] !== relay[key]) {
+        settings.smtp[key] = relay[key]
+        changed = true
+      }
+    })
+  } else if (env('SMTP_HOST')) {
     set(settings.smtp, 'enabled', true)
     set(settings.smtp, 'host', env('SMTP_HOST'))
     set(settings.smtp, 'port', parseInt(env('SMTP_PORT') || '587', 10))

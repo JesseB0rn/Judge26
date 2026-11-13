@@ -1873,7 +1873,7 @@ and deliver email through providers that no longer accept passwords.
     the score sheet (M9-06 to M9-09)
 -   [x] **M9-C** Table setup after teams and judges in the setup
     checklist (M9-10 to M9-11)
--   [ ] **M9-D** SMTP with OAuth 2.0 instead of basic auth (M9-12 to
+-   [x] **M9-D** SMTP with OAuth 2.0 instead of basic auth (M9-12 to
     M9-15)
 
 ### M9-A --- Mulligan run
@@ -1969,6 +1969,12 @@ step now also needs the judges step.
 Microsoft 365 and Google Workspace are retiring password (basic)
 authentication for SMTP. The mail service (M7-01) must be able to
 authenticate with OAuth 2.0 instead.
+
+**Status:** M9-12 to M9-15 implemented for Microsoft 365 (see
+`docs/operations/deployment.md#email-with-oauth-microsoft-365`). Decision: PocketBase's SMTP client
+only supports password authentication, so an OAuth relay sidecar (`apps/mail-relay`, compose
+profile `mail-oauth`) delivers with XOAUTH2 and client credentials. Google Workspace is not
+covered yet.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria
