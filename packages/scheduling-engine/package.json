@@ -1,6 +1,7 @@
 {
   "name": "@judge26/scheduling-engine",
   "private": true,
+  "license": "BUSL-1.1",
   "type": "module",
   "description": "Framework-independent table, time slot and conflict engine for scheduling (M4).",
   "exports": {

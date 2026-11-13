@@ -1,6 +1,7 @@
 {
   "name": "@judge26/e2e",
   "private": true,
+  "license": "BUSL-1.1",
   "type": "module",
   "scripts": {
     "test": "playwright test",

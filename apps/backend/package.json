@@ -1,6 +1,7 @@
 {
   "name": "@judge26/backend",
   "private": true,
+  "license": "BUSL-1.1",
   "type": "module",
   "scripts": {
     "install-pocketbase": "node scripts/install-pocketbase.mjs",
