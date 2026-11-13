@@ -781,19 +781,16 @@ function setupStatus(app, eventId) {
       count: rounds,
       missing: withoutRounds,
     },
+    // M9-C: tables come after teams and judges, the order events are set up in: the board
+    // creates the tables and puts the invited judges on them.
+    { key: 'teams', done: teams > 0, needs: ['categories'], count: teams },
+    { key: 'judges', done: judges > 0, needs: [], count: judges },
     {
       key: 'tables',
-      done: hasCategories && !withoutTables.length,
-      needs: ['categories'],
+      done: hasCategories && !withoutTables.length && tablesWithoutJudges === 0,
+      needs: ['categories', 'judges'],
       count: tables.length,
       missing: withoutTables,
-    },
-    { key: 'teams', done: teams > 0, needs: ['categories'], count: teams },
-    {
-      key: 'judges',
-      done: judges > 0 && tables.length > 0 && tablesWithoutJudges === 0,
-      needs: [],
-      count: judges,
       tables_without_judges: tablesWithoutJudges,
     },
     {

@@ -72,12 +72,6 @@
         "missing": "Without rounds: {codes}",
         "done": "no rounds | 1 round | {count} rounds"
       },
-      "tables": {
-        "title": "Tables",
-        "todo": "Create tables for each category on the assignment board.",
-        "missing": "Without an active table: {codes}",
-        "done": "no active tables | 1 active table | {count} active tables"
-      },
       "teams": {
         "title": "Teams",
         "todo": "Import the teams from a CSV file.",
@@ -85,9 +79,15 @@
       },
       "judges": {
         "title": "Judges",
-        "todo": "Invite the judges and assign them to tables.",
-        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge",
+        "todo": "Invite the judges.",
         "done": "no judges | 1 judge | {count} judges"
+      },
+      "tables": {
+        "title": "Tables",
+        "todo": "Create tables for each category on the assignment board and put the judges on them.",
+        "missing": "Without an active table: {codes}",
+        "done": "no active tables | 1 active table | {count} active tables",
+        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge"
       },
       "schedule": {
         "title": "Schedule",

@@ -182,9 +182,15 @@ describe('setup checklist (M8-20)', () => {
         { key: 'days', done: true, needs: [], count: 2 },
         { key: 'categories', done: false, needs: [], count: 2, missing: ['RME'] },
         { key: 'rounds', done: false, needs: ['categories'], count: 0, missing: ['RMJ', 'RME'] },
-        { key: 'tables', done: false, needs: ['categories'], count: 0, missing: ['RMJ', 'RME'] },
         { key: 'teams', done: true, needs: ['categories'], count: 12 },
-        { key: 'judges', done: false, needs: [], count: 3, tables_without_judges: 1 },
+        { key: 'judges', done: true, needs: [], count: 3 },
+        {
+          key: 'tables',
+          done: false,
+          needs: ['categories', 'judges'],
+          count: 2,
+          tables_without_judges: 1,
+        },
         {
           key: 'schedule',
           done: false,
@@ -202,13 +208,26 @@ describe('setup checklist (M8-20)', () => {
       session: { roles: [makeRole('event_manager', 'event1')] },
     })
     const step = (key: string) => wrapper.get(`[data-step=${key}]`)
-    expect(wrapper.get('[data-testid=setup-progress]').text()).toBe('2 of 8 steps done')
+    expect(wrapper.get('[data-testid=setup-progress]').text()).toBe('3 of 8 steps done')
+    // M9-C: tables come after teams and judges.
+    expect(wrapper.findAll('[data-step]').map((s) => s.attributes('data-step'))).toEqual([
+      'days',
+      'categories',
+      'rounds',
+      'teams',
+      'judges',
+      'tables',
+      'schedule',
+      'publish',
+    ])
     expect(step('days').attributes('data-done')).toBe('true')
     expect(step('days').text()).toContain('2 days')
     expect(step('categories').text()).toContain('Without a published ruleset: RME')
     expect(step('rounds').text()).toContain('Needs Categories and rulesets first.')
     expect(step('teams').text()).not.toContain('Needs')
-    expect(step('judges').text()).toContain('1 table without a judge')
+    expect(step('tables').text()).toContain('1 table without a judge')
+    expect(step('tables').text()).toContain('Needs Categories and rulesets first.')
+    expect(step('judges').text()).toContain('3 judges')
     expect(step('schedule').text()).toContain('4 of 36 games placed · 0 of 3 rounds timed')
     // Days and teams are done, so the schedule only waits for rounds and tables.
     expect(step('schedule').text()).toContain('Needs Rounds, Tables first.')

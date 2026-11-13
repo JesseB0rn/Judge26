@@ -25,12 +25,12 @@ The flow from creation to a published schedule:
 1. **Create** the event (empty, or from a template: name, first day, optional season and venue).
    The new event opens on its **Setup** tab.
 2. **Days** (overview tab) → **Categories and rulesets** → **Rounds** (categories tab).
-3. **Tables** on the assignment board (Assignments tab).
-4. **Teams** by CSV import (Teams tab), **Judges** by invitation (Staff tab) and onto tables (board).
+3. **Teams** by CSV import (Teams tab), **Judges** by invitation (Staff tab).
+4. **Tables** on the assignment board (Assignments tab), with the judges put on them (M9-C).
 5. **Schedule**: place every team on a table (board or generator) and time every round (planner).
 6. **Publish** the event.
 
-With a template, steps 2, 3 and the planner timing are already done; teams and judges remain.
+With a template, steps 2 and 4 (tables) and the planner timing are already done; teams, judges and putting the judges on the tables remain.
 
 ## Setup checklist (M8-20)
 
@@ -41,9 +41,9 @@ The **Setup** tab (event managers and admins) lists the steps from `GET /api/eve
 | `days`       | the event has a day                                                    | –                           | Overview             |
 | `categories` | there is a category and each game rule of each has a published ruleset | –                           | Categories           |
 | `rounds`     | every category has a round                                             | categories                  | Categories           |
-| `tables`     | every category has an active table                                     | categories                  | Assignments          |
 | `teams`      | there is an active team                                                | categories                  | Teams                |
-| `judges`     | there is a judge or head judge and every active table has a judge      | –                           | Staff                |
+| `judges`     | there is a judge or head judge                                         | –                           | Staff                |
+| `tables`     | every category has an active table and every active table has a judge  | categories, judges          | Assignments          |
 | `schedule`   | every active team has a placed game for every round, every round timed | days, rounds, tables, teams | Assignments, Planner |
 | `publish`    | the event is no longer a draft                                         | schedule                    | (the Publish button) |
 

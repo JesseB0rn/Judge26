@@ -63,8 +63,8 @@ function summary(step: SetupStep): string {
       : t('templates.setup.steps.publish.todo')
   }
   if (codes) return t(`${key}.missing` as MessageKey, { codes })
-  if (step.key === 'judges' && step.count && step.tables_without_judges) {
-    return t('templates.setup.steps.judges.withoutJudges', step.tables_without_judges)
+  if (step.key === 'tables' && step.count && step.tables_without_judges) {
+    return t('templates.setup.steps.tables.withoutJudges', step.tables_without_judges)
   }
   if (!step.count) return t(`${key}.todo` as MessageKey)
   return t(`${key}.done` as MessageKey, step.count)
