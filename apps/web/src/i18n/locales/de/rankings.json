@@ -150,7 +150,7 @@
     "keyHint": "Wird in der Ranglistenkonfiguration verwendet, z. B. R1.",
     "name": "Name der Runde",
     "gameHint": "Der Bewertungsbogen, den die Schiedsrichter in dieser Runde verwenden.",
-    "day": "Wettkampftag",
+    "day": "Wettbewerbstag",
     "dayHint": "Schiedsrichter filtern ihre Läufe nach Tag.",
     "testing": "Unterhalt / Test (Minuten)",
     "scoring": "Bewertungsphase (Minuten)",

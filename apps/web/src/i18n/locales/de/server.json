@@ -76,7 +76,7 @@
   "invalid_category": "Wählen Sie eine Kategorie dieses Anlasses.",
   "invalid_column": "Wählen Sie Spalten dieses Anlasses.",
   "invalid_date": "Muss ein gültiges Datum sein (JJJJ-MM-TT).",
-  "invalid_day": "Wählen Sie einen Wettkampftag dieses Anlasses.",
+  "invalid_day": "Wählen Sie einen Wettbewerbstag dieses Anlasses.",
   "crosses_midnight": "Ein Block muss bis Mitternacht enden.",
   "invalid_judge": "Der zugewiesene Schiedsrichter muss zum Personal dieses Anlasses gehören.",
   "unknown_template": "Unbekannte Vorlage.",

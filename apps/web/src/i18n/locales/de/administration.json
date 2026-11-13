@@ -2,7 +2,7 @@
   "audit": {
     "areas": {
       "events": "Anlässe",
-      "competition_days": "Wettkampftage",
+      "competition_days": "Wettbewerbstage",
       "categories": "Kategorien",
       "teams": "Teams",
       "team_documents": "Teamdokumente",

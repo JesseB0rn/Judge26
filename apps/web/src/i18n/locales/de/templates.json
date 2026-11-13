@@ -56,7 +56,7 @@
     "needs": "Braucht zuerst: {steps}.",
     "steps": {
       "days": {
-        "title": "Wettkampftage",
+        "title": "Wettbewerbstage",
         "todo": "Die Tage des Anlasses und ihre Zeiten erfassen.",
         "done": "keine Tage | 1 Tag | {count} Tage"
       },

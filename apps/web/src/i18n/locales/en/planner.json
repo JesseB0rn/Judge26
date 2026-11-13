@@ -1,13 +1,13 @@
 {
   "phase": {
-    "maintenance": "Maintenance / practice",
+    "maintenance": "Practice Time",
     "check": "Robot check",
-    "scoring": "Scoring run"
+    "scoring": "Robot Round"
   },
   "phaseShort": {
-    "maintenance": "Maintenance",
-    "check": "Robot check",
-    "scoring": "Scoring"
+    "maintenance": "Practice",
+    "check": "Check",
+    "scoring": "Round"
   },
   "issues": {
     "outside_day": "Outside the hours of this day.",

@@ -1,12 +1,12 @@
 {
   "phase": {
-    "maintenance": "Unterhalt / Training",
-    "check": "Roboterkontrolle",
+    "maintenance": "Testphase",
+    "check": "Roboter-Check",
     "scoring": "Wertungslauf"
   },
   "phaseShort": {
-    "maintenance": "Unterhalt",
-    "check": "Roboterkontrolle",
+    "maintenance": "Test",
+    "check": "Check",
     "scoring": "Wertung"
   },
   "issues": {
@@ -70,7 +70,7 @@
   "board": {
     "unplaced": "Noch nicht platziert",
     "trayHint": "In die Spalte der Runde ziehen oder zum Platzieren öffnen.",
-    "noDays": "Noch keine Wettkampftage. Fügen Sie Tage in der Übersicht des Anlasses hinzu.",
+    "noDays": "Noch keine Wettbewerbstage. Fügen Sie Tage in der Übersicht des Anlasses hinzu.",
     "customColumn": "eigene Spalte",
     "resizeColumn": "Spaltenbreite {column} anpassen",
     "resizeHint": "Ziehen zum Anpassen, Doppelklick zum Zurücksetzen. Tastatur: Pfeiltasten."
