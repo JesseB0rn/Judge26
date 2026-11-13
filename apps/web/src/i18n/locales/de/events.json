@@ -8,18 +8,18 @@
     "archived": "Archiviert"
   },
   "days": {
-    "title": "Wettkampftage",
+    "title": "Wettbewerbstage",
     "hoursSaved": "Zeiten gespeichert.",
     "startOf": "Beginn am {day}",
     "endOf": "Ende am {day}",
-    "empty": "Noch keine Wettkampftage.",
+    "empty": "Noch keine Wettbewerbstage.",
     "labelPlaceholder": "z. B. Tag 1",
     "add": "Tag hinzufügen"
   },
   "form": {
     "editTitle": "Anlass bearbeiten",
     "newTitle": "Neuer Anlass",
-    "description": "Wettkampftage und Kategorien werden auf der Seite des Anlasses verwaltet."
+    "description": "Wettbewerbstage und Kategorien werden auf der Seite des Anlasses verwaltet."
   },
   "detail": {
     "updated": "Anlass aktualisiert.",
