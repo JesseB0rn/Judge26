@@ -125,8 +125,9 @@ monitoring, the [monitoring runbook](docs/operations/monitoring.md).
 ## License
 
 Judge26 is source-available under the [Business Source License 1.1](LICENSE). You may read,
-modify and redistribute the code, and run it in production for your own events, **except** the
-World Robot Olympiad Association and WRO national or regional organizers (and anyone running it
-for them), who need a separate paid commercial license. Each version converts to the
+modify and redistribute the code, and run it in production for free, including for regional
+events and qualifiers. Running **national or international events** (national finals, national
+team selection, multi-country competitions) requires a separate paid commercial license,
+whoever organizes them. Each version converts to the
 GNU AGPL v3.0 or later four years after its release. For commercial licensing, contact
 Jesse Born <jesse.born@gmx.ch>.
