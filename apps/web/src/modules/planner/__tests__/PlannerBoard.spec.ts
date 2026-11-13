@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
 import PlannerBoard from '../components/PlannerBoard.vue'
 import { gridColumns } from '../lib'
 import type { MoveRequest, PlannerData } from '../types'
@@ -68,7 +68,7 @@ describe('PlannerBoard', () => {
     expect(wrapper.text()).toContain('RoboMission')
     expect(wrapper.text()).toContain('Future Engineers')
     const phase = wrapper.get('[data-item="phase:m1"]')
-    expect(phase.text()).toContain('R1 · Maintenance')
+    expect(phase.text()).toContain('R1 · Practice')
     expect(phase.text()).toContain('09:00–09:30')
     // The event-wide lunch spans both columns and shows its warning.
     const lunch = wrapper.get('[data-item^="block:b1"]')

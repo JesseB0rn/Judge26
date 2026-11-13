@@ -147,7 +147,7 @@ test.describe('Schedule planner', () => {
 
     await item(page, `phase:${phases.scoring!.id}`).click()
     const dialog = page.getByRole('dialog')
-    await expect(dialog).toContainText('Scoring run')
+    await expect(dialog).toContainText('Scoring Run')
     await expect(dialog).toContainText('10:00–11:00')
     await expect(dialog.getByRole('button', { name: 'Save' })).toHaveCount(0)
   })
