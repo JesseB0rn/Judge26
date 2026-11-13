@@ -1,6 +1,7 @@
 {
   "name": "@judge26/scoring-engine",
   "private": true,
+  "license": "BUSL-1.1",
   "type": "module",
   "description": "Framework-independent, deterministic scoring engine for WRO rulesets (M2).",
   "exports": {

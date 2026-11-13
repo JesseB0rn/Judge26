@@ -121,3 +121,12 @@ volume. Tagged releases are published to `ghcr.io/jesseb0rn/judge26`. See the
 [deployment runbook](docs/operations/deployment.md) and the
 [backup and restore runbook](docs/operations/backup-and-restore.md); for alerts and uptime
 monitoring, the [monitoring runbook](docs/operations/monitoring.md).
+
+## License
+
+Judge26 is source-available under the [Business Source License 1.1](LICENSE). You may read,
+modify and redistribute the code, and run it in production for your own events, **except** the
+World Robot Olympiad Association and WRO national or regional organizers (and anyone running it
+for them), who need a separate paid commercial license. Each version converts to the
+GNU AGPL v3.0 or later four years after its release. For commercial licensing, contact
+Jesse Born <jesse.born@gmx.ch>.
