@@ -20,6 +20,8 @@ export interface LocalDraft {
   savedAt: number
   /** The server has this version. */
   synced: boolean
+  /** Re-runs granted when the draft was started (M9-04); absent in drafts made before M9. */
+  mulligans?: number
 }
 
 const PREFIX = 'judge26:judging:'
@@ -126,7 +128,7 @@ async function doSync(gameId: string): Promise<SyncResult> {
   const draft = readDraft(gameId)
   if (!draft || draft.synced) return { status: 'nothing' }
   try {
-    const { sheet, stale } = await saveDraft(gameId, draft.input, draft.savedAt)
+    const { sheet, stale } = await saveDraft(gameId, draft.input, draft.savedAt, draft.mulligans)
     // Only mark as synced if nothing changed while the request was running.
     const latest = readDraft(gameId)
     if (latest && latest.savedAt === draft.savedAt) writeDraft({ ...latest, synced: true })

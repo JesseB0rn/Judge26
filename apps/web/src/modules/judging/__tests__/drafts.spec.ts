@@ -35,7 +35,7 @@ describe('local drafts (M5-09, M5-14)', () => {
     expect(pendingDraftIds()).toEqual(['g1'])
     const result = await syncDraft('g1')
     expect(result.status).toBe('synced')
-    expect(mocked.saveDraft).toHaveBeenCalledWith('g1', draft('g1').input, 1000)
+    expect(mocked.saveDraft).toHaveBeenCalledWith('g1', draft('g1').input, 1000, undefined)
     expect(readDraft('g1')?.synced).toBe(true)
     expect(pendingDraftIds()).toEqual([])
   })

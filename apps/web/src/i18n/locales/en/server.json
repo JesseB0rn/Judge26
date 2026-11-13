@@ -163,5 +163,7 @@
   "template_not_found": "The template was not found.",
   "templates_admin_only": "Only admins can manage event templates.",
   "template_not_allowed": "Only event managers and admins can export this event.",
-  "setup_not_allowed": "Only event managers and admins can set up this event."
+  "setup_not_allowed": "Only event managers and admins can set up this event.",
+  "mulligan_not_allowed": "Only head judges and event managers can grant a re-run.",
+  "mulligan_no_run": "This game has no scored run to replace."
 }

@@ -51,7 +51,7 @@ routerAdd(
   $apis.requireAuth('users', '_superusers'),
 )
 
-// POST /api/games/{id}/sheet/{action} with action = submit | approve | reject | correct
+// POST /api/games/{id}/sheet/{action} with action = submit | approve | reject | correct | mulligan
 routerAdd(
   'POST',
   '/api/games/{id}/sheet/{action}',
@@ -78,6 +78,22 @@ routerAdd(
           event: audit.eventOf(e.app, 'games', game),
           summary: `Corrected a finalized score: ${body.reason || ''}`,
           changes: { points: game.getFloat('points'), time_ms: game.getInt('time_ms') },
+          ip: audit.requestIp(e),
+        })
+        return e.json(200, result)
+      }
+      case 'mulligan': {
+        // M9-A: a re-run granted by a head judge after a catastrophic failure.
+        const result = judging.mulligan(e.app, e.auth, id, body)
+        const audit = require(`${__hooks}/lib/audit.js`)
+        const game = e.app.findRecordById('games', id)
+        audit.log(e.app, {
+          auth: e.auth,
+          action: 'score.mulligan',
+          collection: 'games',
+          record: id,
+          event: audit.eventOf(e.app, 'games', game),
+          summary: `Granted a re-run: ${body.reason || ''}`,
           ip: audit.requestIp(e),
         })
         return e.json(200, result)

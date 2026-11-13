@@ -63,7 +63,8 @@
       "approved": "Approvata",
       "rejected": "Rimandata al giudice",
       "corrected": "Corretta",
-      "manual_edit": "Risultato modificato"
+      "manual_edit": "Risultato modificato",
+      "mulligan": "Ripetizione concessa"
     },
     "system": "Sistema",
     "empty": "Ancora nessuna modifica."
@@ -151,6 +152,13 @@
     "returnTitle": "Rimanda al giudice",
     "returnDescription": "Il giudice vede il motivo e può correggere e inviare di nuovo il foglio.",
     "returnConfirm": "Rimanda il foglio",
-    "correctionDescription": "I valori vecchi e nuovi e il suo motivo vengono registrati nella cronologia."
+    "correctionDescription": "I valori vecchi e nuovi e il suo motivo vengono registrati nella cronologia.",
+    "mulligan": "Concedi ripetizione",
+    "mulliganTitle": "Concedi una ripetizione (mulligan)",
+    "mulliganDescription": "Solo dopo un guasto grave di cui la squadra non è responsabile. La prova valutata viene scartata: il foglio viene svuotato e il giudice di tavolo valuta la ripetizione. Il vecchio risultato e il tuo motivo restano nella cronologia.",
+    "mulliganConfirm": "Scarta la prova e consenti la ripetizione",
+    "mulliganGranted": "{team}: ripetizione concessa.",
+    "mulliganBy": "Ripetizione concessa da {name}",
+    "mulliganMeanwhile": "Nel frattempo è stata concessa una ripetizione. Le modifiche salvate su questo dispositivo appartenevano alla prova scartata e non sono state applicate."
   }
 }

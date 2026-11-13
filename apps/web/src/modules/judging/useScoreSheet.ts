@@ -128,11 +128,20 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     return emptyInput()
   }
 
+  /** Re-runs granted on the server copy (M9-A). */
+  const mulligans = () => payload.value?.sheet?.mulligans ?? 0
+
   function apply(p: SheetPayload) {
     payload.value = p
     correcting.value = false
-    const local = readDraft(gameId)
+    let local = readDraft(gameId)
     const serverSavedAt = p.sheet?.client_saved_at ?? 0
+    if (local && (local.mulligans ?? 0) < (p.sheet?.mulligans ?? 0)) {
+      // The device draft and stopwatch belong to a run discarded by a mulligan (M9-04).
+      if (!local.synced) notice.value = t('judging.sheet.mulliganMeanwhile')
+      removeDraft(gameId)
+      local = null
+    }
     if (local && p.permissions.canEdit && local.savedAt >= serverSavedAt) {
       // The device has the same or a newer version (e.g. entered offline): keep it.
       input.value = local.input
@@ -188,6 +197,7 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
       stopwatch: stopwatch.value,
       savedAt,
       synced: false,
+      mulligans: mulligans(),
     }
     writeDraft(draft)
     saveState.value = 'saving'
@@ -200,7 +210,14 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     const local = readDraft(gameId)
     if (local) writeDraft({ ...local, stopwatch: stopwatch.value })
     else if (payload.value?.permissions.canEdit) {
-      writeDraft({ gameId, input: input.value, stopwatch: stopwatch.value, savedAt, synced: true })
+      writeDraft({
+        gameId,
+        input: input.value,
+        stopwatch: stopwatch.value,
+        savedAt,
+        synced: true,
+        mulligans: mulligans(),
+      })
     }
   }
 
@@ -219,7 +236,10 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
         }
         break
       case 'stale':
-        // Another device stored a newer draft: reload it.
+        // Another device stored a newer draft, or a re-run was granted: reload.
+        if ((outcome.sheet.mulligans ?? 0) > (readDraft(gameId)?.mulligans ?? 0)) {
+          notice.value = t('judging.sheet.mulliganMeanwhile')
+        }
         removeDraft(gameId)
         await load()
         break
@@ -369,6 +389,15 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
       ),
     )
 
+  /** Discards the scored run so the team can re-run (M9-A). */
+  const mulligan = (reason: string) =>
+    run(async () => {
+      clearTimeout(timer)
+      await api.mulliganSheet(gameId, reason)
+      removeDraft(gameId)
+      await load()
+    })
+
   // Keep the stopwatch display ticking.
   const tick = ref(now())
   let frame: ReturnType<typeof setInterval> | undefined
@@ -421,6 +450,7 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     startCorrection,
     cancelCorrection,
     correct,
+    mulligan,
   }
 }
 

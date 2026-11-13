@@ -71,6 +71,9 @@ interface SheetResponse {
     time_ms: number
     review_note: string
     corrections: number
+    mulligans: number
+    mulligan_reason: string
+    values: Record<string, unknown>
   }
   stale?: boolean
 }
@@ -142,7 +145,12 @@ describe('M5 judge interface and scoring workflow', () => {
       ruleset: { id: string; version: number }
       sheet: SheetResponse['sheet'] | null
       history: { action: string; reason: string; before: unknown; after: unknown }[]
-      permissions: { canEdit: boolean; canReview: boolean; canCorrect: boolean }
+      permissions: {
+        canEdit: boolean
+        canReview: boolean
+        canCorrect: boolean
+        canMulligan: boolean
+      }
     }>(sheetUrl(ctx), { method: 'GET' })
 
   const saveDraft = (user: TestUser, ctx: Ctx, body: Record<string, unknown>) =>
@@ -201,7 +209,12 @@ describe('M5 judge interface and scoring workflow', () => {
     expect(payload.day.label).toBe('Saturday')
     expect(payload.ruleset).toMatchObject({ id: ctx.ruleset.id, version: 1 })
     expect(payload.sheet).toBeNull()
-    expect(payload.permissions).toEqual({ canEdit: true, canReview: false, canCorrect: false })
+    expect(payload.permissions).toEqual({
+      canEdit: true,
+      canReview: false,
+      canCorrect: false,
+      canMulligan: false,
+    })
   })
 
   it('M5-T03: a judge of another table cannot open or score the game', async () => {
@@ -462,5 +475,79 @@ describe('M5 judge interface and scoring workflow', () => {
       'day',
       'invalid_day',
     )
+  })
+
+  describe('M9-A mulligan runs', () => {
+    it('M9-T01 / M9-01 – M9-03: a head judge grants a re-run of a finalized game with a reason', async () => {
+      const ctx = await setup()
+      await finalized(ctx)
+      expect((await getSheet(ctx.headJudge, ctx)).permissions.canMulligan).toBe(true)
+      const res = await post(ctx.headJudge, ctx, 'mulligan', { reason: 'Field power cut.' })
+      expect(res.sheet).toMatchObject({
+        status: 'draft',
+        values: {},
+        time_ms: 0,
+        mulligans: 1,
+        mulligan_reason: 'Field power cut.',
+      })
+
+      // The discarded run no longer counts.
+      const game = await ctx.manager.pb.collection('games').getOne(ctx.game.id)
+      expect(game).toMatchObject({ status: 'scheduled', points: 0, time_ms: 0 })
+
+      const payload = await getSheet(ctx.judge, ctx)
+      expect(payload.permissions).toMatchObject({ canEdit: true, canMulligan: false })
+      expect(payload.history[0]).toMatchObject({
+        action: 'mulligan',
+        reason: 'Field power cut.',
+        before: { status: 'finalized', points: 40, values: COMPLETE, time_ms: 95_370 },
+      })
+
+      // M9-05: the re-run goes through the normal workflow.
+      await post(ctx.judge, ctx, 'submit', { values: { ...COMPLETE, blocks: 1 }, time_ms: 80_000 })
+      await post(ctx.headJudge, ctx, 'approve')
+      const rerun = await ctx.manager.pb.collection('games').getOne(ctx.game.id)
+      expect(rerun).toMatchObject({ status: 'completed', points: 30, time_ms: 80_000 })
+    })
+
+    it('M9-T02: a mulligan needs a reason', async () => {
+      const ctx = await setup()
+      await submitted(ctx)
+      await expectFieldError(post(ctx.headJudge, ctx, 'mulligan', { reason: ' ' }), 'reason')
+    })
+
+    it('M9-T03: table judges cannot grant a mulligan; a game without a run has none to replace', async () => {
+      const ctx = await setup()
+      await expectStatus(post(ctx.headJudge, ctx, 'mulligan', { reason: 'x' }), 409)
+      await submitted(ctx)
+      expect((await getSheet(ctx.judge, ctx)).permissions.canMulligan).toBe(false)
+      await expectStatus(post(ctx.judge, ctx, 'mulligan', { reason: 'Robot fell.' }), 403)
+      await expectStatus(post(ctx.otherJudge, ctx, 'mulligan', { reason: 'Robot fell.' }), 403)
+      expect(
+        (await post(ctx.manager, ctx, 'mulligan', { reason: 'Robot fell.' })).sheet.status,
+      ).toBe('draft')
+    })
+
+    it('M9-T04: a draft of the discarded run does not overwrite the re-run', async () => {
+      const ctx = await setup()
+      await saveDraft(ctx.judge, ctx, { values: { flag: true }, client_saved_at: 1000 })
+      await post(ctx.headJudge, ctx, 'mulligan', { reason: 'Table bumped.' })
+      // A device that loaded the sheet before the mulligan (mulligans: 0), with a newer clock.
+      const old = await saveDraft(ctx.judge, ctx, {
+        values: { flag: true, blocks: 6 },
+        client_saved_at: Date.now() + 60_000,
+        mulligans: 0,
+      })
+      expect(old.stale).toBe(true)
+      expect(old.sheet.values).toEqual({})
+      // A device that knows about the re-run saves normally.
+      const fresh = await saveDraft(ctx.judge, ctx, {
+        values: { flag: true },
+        client_saved_at: Date.now() + 120_000,
+        mulligans: 1,
+      })
+      expect(fresh.stale).toBe(false)
+      expect(fresh.sheet.values).toEqual({ flag: true })
+    })
   })
 })

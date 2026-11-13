@@ -136,6 +136,7 @@ describe('ScoreGameView', () => {
       'game1',
       expect.objectContaining({ values: { flag: true } }),
       expect.any(Number),
+      0,
     )
     expect(readDraft('game1')?.synced).toBe(true)
     expect(wrapper.get('[data-testid=save-state]').text()).toContain('Saved')
@@ -404,5 +405,68 @@ describe('ScoreGameView', () => {
       buttonByText('Submit score', document.querySelector('[role=dialog]') as HTMLElement),
     )
     expect(wrapper.get('[data-testid=action-bar]').text()).toContain('Flag raised is required.')
+  })
+
+  describe('M9-A mulligan', () => {
+    it('M9-01: a head judge grants a re-run with a reason; the sheet stays open', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({
+          sheet: makeSheet({ status: 'finalized', values: COMPLETE, points: 40 }),
+          permissions: { canEdit: false, canReview: false, canCorrect: true, canMulligan: true },
+        }),
+      )
+      const { wrapper } = await mountGame(headJudge)
+      await click(buttonByText('Grant re-run'))
+      const dialog = document.querySelector('[role=dialog]') as HTMLElement
+      expect(buttonByText('Discard run and allow re-run', dialog).disabled).toBe(true)
+      await fill('#reason', 'Field power cut')
+
+      mocked.mulliganSheet.mockResolvedValue({ sheet: makeSheet() })
+      const rerun = makeSheet({
+        mulligans: 1,
+        mulligan_reason: 'Field power cut',
+        mulligan_by: { id: 'hj', name: 'Grace' },
+      })
+      mocked.getSheet.mockResolvedValue(makePayload({ sheet: rerun }))
+      await click(buttonByText('Discard run and allow re-run', dialog))
+      expect(mocked.mulliganSheet).toHaveBeenCalledWith('game1', 'Field power cut')
+      expect(wrapper.get('[data-testid=mulligan-note]').text()).toContain('Re-run granted by Grace')
+      expect(wrapper.get('[data-testid=mulligan-note]').text()).toContain('Field power cut')
+      expect(total(wrapper)).toBe('0')
+    })
+
+    it('M9-T03: table judges see no mulligan action', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ sheet: makeSheet({ status: 'submitted', values: COMPLETE }) }),
+      )
+      const { wrapper } = await mountGame()
+      expect(wrapper.find('[data-testid=mulligan]').exists()).toBe(false)
+    })
+
+    it('M9-04: a device draft and stopwatch of the discarded run are dropped', async () => {
+      writeDraft({
+        gameId: 'game1',
+        input: { outcome: 'completed', values: COMPLETE, time_ms: 95_000, points: null },
+        stopwatch: { startedAt: Date.now() - 5000, elapsedMs: 0 },
+        // Newer than the server copy, but made before the mulligan.
+        savedAt: Date.now() + 60_000,
+        synced: false,
+        mulligans: 0,
+      })
+      mocked.getSheet.mockResolvedValue(
+        makePayload({
+          sheet: makeSheet({ mulligans: 1, mulligan_reason: 'Robot hit', client_saved_at: 5 }),
+        }),
+      )
+      const { wrapper } = await mountGame()
+      expect(wrapper.get('[data-testid=sync-notice]').text()).toContain('re-run was granted')
+      expect(total(wrapper)).toBe('0')
+      expect(readDraft('game1')).toBeNull()
+      expect(mocked.saveDraft).not.toHaveBeenCalled()
+
+      // New entries are saved for the re-run.
+      await choice(wrapper, 'flag', 'Yes').trigger('click')
+      expect(readDraft('game1')?.mulligans).toBe(1)
+    })
   })
 })

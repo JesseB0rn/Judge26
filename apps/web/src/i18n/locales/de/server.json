@@ -163,5 +163,7 @@
   "template_not_found": "Die Vorlage wurde nicht gefunden.",
   "templates_admin_only": "Nur Admins können Anlassvorlagen verwalten.",
   "template_not_allowed": "Nur die Anlassleitung und Admins können diesen Anlass exportieren.",
-  "setup_not_allowed": "Nur die Anlassleitung und Admins können diesen Anlass einrichten."
+  "setup_not_allowed": "Nur die Anlassleitung und Admins können diesen Anlass einrichten.",
+  "mulligan_not_allowed": "Nur Oberschiedsrichter/innen und die Anlassleitung können eine Wiederholung gewähren.",
+  "mulligan_no_run": "Dieses Spiel hat keinen bewerteten Lauf, der ersetzt werden könnte."
 }

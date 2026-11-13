@@ -76,6 +76,11 @@ export interface ScoreSheet {
   reviewed_by: NamedRef
   review_note: string
   corrections: number
+  /** Re-runs granted by a head judge (M9-A); the last one's reason, reviewer and time. */
+  mulligans: number
+  mulligan_reason: string
+  mulligan_at: string
+  mulligan_by: NamedRef
   updated: string
 }
 
@@ -85,11 +90,13 @@ export interface ScoreSnapshot {
   time_ms: number
   points: number | null
   ruleset: string
+  /** Sheet status of the discarded run (only on `mulligan` entries). */
+  status?: string
 }
 
 export interface AuditEntry {
   id: string
-  action: 'submitted' | 'approved' | 'rejected' | 'corrected' | 'manual_edit'
+  action: 'submitted' | 'approved' | 'rejected' | 'corrected' | 'manual_edit' | 'mulligan'
   actor: NamedRef
   reason: string
   before: ScoreSnapshot | null
@@ -123,7 +130,13 @@ export interface SheetPayload {
   } | null
   sheet: ScoreSheet | null
   history: AuditEntry[]
-  permissions: { canEdit: boolean; canReview: boolean; canCorrect: boolean }
+  permissions: {
+    canEdit: boolean
+    canReview: boolean
+    canCorrect: boolean
+    /** May grant a re-run (M9-A); absent in pages cached before M9. */
+    canMulligan?: boolean
+  }
 }
 
 /** The scored fields a judge edits. */

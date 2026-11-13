@@ -63,7 +63,8 @@
       "approved": "Genehmigt",
       "rejected": "An Schiedsrichter zurückgewiesen",
       "corrected": "Korrigiert",
-      "manual_edit": "Resultat bearbeitet"
+      "manual_edit": "Resultat bearbeitet",
+      "mulligan": "Wiederholung gewährt"
     },
     "system": "System",
     "empty": "Noch keine Änderungen."
@@ -151,6 +152,13 @@
     "returnTitle": "An den Schiedsrichter zurückweisen",
     "returnDescription": "Der Schiedsrichter sieht die Begründung und kann den Bogen korrigieren und erneut einreichen.",
     "returnConfirm": "Bogen zurückweisen",
-    "correctionDescription": "Alte und neue Werte sowie Ihre Begründung werden im Verlauf festgehalten."
+    "correctionDescription": "Alte und neue Werte sowie Ihre Begründung werden im Verlauf festgehalten.",
+    "mulligan": "Wiederholung gewähren",
+    "mulliganTitle": "Wiederholungslauf gewähren (Mulligan)",
+    "mulliganDescription": "Nur nach einem schwerwiegenden Ausfall, für den das Team nicht verantwortlich ist. Der bewertete Lauf wird verworfen: Das Bewertungsblatt wird geleert und die Tischjury bewertet den Wiederholungslauf. Das alte Resultat und deine Begründung bleiben im Verlauf.",
+    "mulliganConfirm": "Lauf verwerfen und Wiederholung erlauben",
+    "mulliganGranted": "{team}: Wiederholung gewährt.",
+    "mulliganBy": "Wiederholung gewährt von {name}",
+    "mulliganMeanwhile": "Inzwischen wurde eine Wiederholung gewährt. Die auf diesem Gerät gespeicherten Änderungen gehörten zum verworfenen Lauf und wurden nicht übernommen."
   }
 }

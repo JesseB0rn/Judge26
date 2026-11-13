@@ -163,5 +163,7 @@
   "template_not_found": "Le modèle est introuvable.",
   "templates_admin_only": "Seuls les admins peuvent gérer les modèles d’événement.",
   "template_not_allowed": "Seuls les responsables de l’événement et les admins peuvent exporter cet événement.",
-  "setup_not_allowed": "Seuls les responsables de l’événement et les admins peuvent configurer cet événement."
+  "setup_not_allowed": "Seuls les responsables de l’événement et les admins peuvent configurer cet événement.",
+  "mulligan_not_allowed": "Seuls les juges principaux et les responsables d’événement peuvent accorder un nouvel essai.",
+  "mulligan_no_run": "Ce match n’a pas de passage noté à remplacer."
 }

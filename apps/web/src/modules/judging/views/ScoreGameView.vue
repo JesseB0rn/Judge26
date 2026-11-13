@@ -10,6 +10,7 @@ import {
   CloudOffIcon,
   HistoryIcon,
   PencilIcon,
+  RotateCcwIcon,
   SendIcon,
   Undo2Icon,
 } from '@lucide/vue'
@@ -58,6 +59,7 @@ const back = computed(() => {
 const submitOpen = ref(false)
 const rejectOpen = ref(false)
 const correctOpen = ref(false)
+const mulliganOpen = ref(false)
 const showMissing = ref(false)
 
 onMounted(() => {
@@ -148,6 +150,16 @@ async function correct(reason: string) {
   if (await s.correct(reason)) {
     correctOpen.value = false
     toast.success(t('judging.sheet.corrected'))
+  }
+}
+
+// M9-A: a re-run after a catastrophic failure. The head judge usually stays with the table while
+// the team re-runs, so the sheet stays open.
+async function mulligan(reason: string) {
+  const team = p.value?.team.name
+  if (await s.mulligan(reason)) {
+    mulliganOpen.value = false
+    toast.success(t('judging.sheet.mulliganGranted', { team: team ?? '' }))
   }
 }
 
@@ -266,6 +278,19 @@ function setManualPoints(raw: string | number) {
           >. {{ t('judging.sheet.counts') }}
         </AlertDescription>
       </Alert>
+      <Alert
+        v-if="sheet?.mulligans && sheet.mulligan_reason"
+        class="border-orange-300 bg-orange-50 text-orange-950"
+        data-testid="mulligan-note"
+      >
+        <RotateCcwIcon />
+        <AlertTitle>{{
+          t('judging.sheet.mulliganBy', {
+            name: sheet.mulligan_by.name || t('judging.sheet.theHeadJudge'),
+          })
+        }}</AlertTitle>
+        <AlertDescription>{{ sheet.mulligan_reason }}</AlertDescription>
+      </Alert>
       <Alert v-if="p.event.status === 'archived'">
         <AlertDescription>{{ t('judging.sheet.archived') }}</AlertDescription>
       </Alert>
@@ -323,6 +348,19 @@ function setManualPoints(raw: string | number) {
             : t('judging.sheet.noSheetDisqualified')
         }}
       </p>
+
+      <div v-if="p.permissions.canMulligan && !s.correcting.value" class="flex justify-end">
+        <Button
+          variant="outline"
+          size="touch"
+          class="border-orange-300 text-orange-900 hover:bg-orange-50"
+          :disabled="s.busy.value"
+          data-testid="mulligan"
+          @click="mulliganOpen = true"
+        >
+          <RotateCcwIcon /> {{ t('judging.sheet.mulligan') }}
+        </Button>
+      </div>
 
       <details class="group rounded-lg border p-3" data-testid="history">
         <summary class="flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium">
@@ -448,6 +486,16 @@ function setManualPoints(raw: string | number) {
         :busy="s.busy.value"
         :error="s.actionError.value"
         @confirm="correct"
+      />
+      <ReasonDialog
+        v-model:open="mulliganOpen"
+        :title="t('judging.sheet.mulliganTitle')"
+        :description="t('judging.sheet.mulliganDescription')"
+        :confirm-label="t('judging.sheet.mulliganConfirm')"
+        destructive
+        :busy="s.busy.value"
+        :error="s.actionError.value"
+        @confirm="mulligan"
       />
     </template>
   </div>
