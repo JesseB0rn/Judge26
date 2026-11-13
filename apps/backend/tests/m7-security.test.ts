@@ -72,6 +72,7 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'GET', path: '/api/games/{id}/sheet', access: 'auth' },
   { method: 'PUT', path: '/api/games/{id}/sheet', access: 'auth' },
   { method: 'POST', path: '/api/games/{id}/sheet/{action}', access: 'auth' },
+  { method: 'PUT', path: '/api/games/{id}/program', access: 'auth' },
   { method: 'POST', path: '/api/mail/outbox/{id}/retry', access: 'auth' },
   { method: 'GET', path: '/api/mail/templates/variables', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/notifications/schedule', access: 'auth' },
