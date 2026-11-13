@@ -120,6 +120,15 @@ delivery errors show under _Emails_ and are retried like any mail-server error (
 6. **Check**: `docker compose logs mail-relay` shows `OAuth token obtained.`; send a test message
    (e.g. a judge invitation) and look under _Emails_.
 
+Errors in `docker compose logs mail-relay`:
+
+| Error                                                                          | Cause and fix                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AADSTS700016: Application … was not found in the directory`                   | `SMTP_OAUTH_CLIENT_ID` is not the _Application (client) ID_ of an app in that tenant (often the Object ID was copied instead)                                                                              |
+| `AADSTS7000215: Invalid client secret`                                         | `SMTP_OAUTH_CLIENT_SECRET` is the secret's ID, or the secret expired: use the secret's _Value_                                                                                                             |
+| `535 5.7.3 Authentication unsuccessful`                                        | The token was accepted but Exchange refuses it: `SMTP.SendAsApp` (application permission, Office 365 Exchange Online) missing or not consented, or step 3 not done or not yet in effect (up to 30 minutes) |
+| `Connection closed unexpectedly`, `TLS handshake timed out`, no `220` greeting | The network blocks or interferes with outgoing port 587 (check with `nc smtp.office365.com 587`); not an OAuth problem                                                                                     |
+
 The client secret expires (at most 24 months): renew it in Entra ID, update `.env` and
 `docker compose up -d`. The relay never logs the secret or the token. To go back to a password,
 set `SMTP_AUTH=basic` and the `SMTP_*` settings, then run the installer again.

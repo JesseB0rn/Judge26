@@ -1974,7 +1974,7 @@ authenticate with OAuth 2.0 instead.
 `docs/operations/deployment.md#email-with-oauth-microsoft-365`). Decision: PocketBase's SMTP client
 only supports password authentication, so an OAuth relay sidecar (`apps/mail-relay`, compose
 profile `mail-oauth`) delivers with XOAUTH2 and client credentials. Google Workspace is not
-covered yet.
+covered yet. Verified end to end against a real Microsoft 365 tenant (2026-11-13).
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria
