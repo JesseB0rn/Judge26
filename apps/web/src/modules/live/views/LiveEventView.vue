@@ -249,6 +249,7 @@ const shownRound = computed(() =>
           :data="planner"
           :days="timetableDays"
           :columns="timetableColumns"
+          :storage-key="props.id"
           @open="shownItem = $event"
         />
         <BlockDialog

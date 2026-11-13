@@ -71,13 +71,18 @@
     "unplaced": "Non ancora posizionati",
     "trayHint": "Trascini nella colonna del turno, o apra per posizionare.",
     "noDays": "Ancora nessun giorno di gara. Aggiunga i giorni nella panoramica dell’evento.",
-    "customColumn": "colonna personalizzata"
+    "customColumn": "colonna personalizzata",
+    "resizeColumn": "Ridimensiona la colonna {column}",
+    "resizeHint": "Trascina per ridimensionare, doppio clic per ripristinare. Tastiera: frecce."
   },
   "view": {
     "linkGone": "Il blocco collegato non esiste più.",
     "conflict": "Qualcun altro ha modificato questo blocco nel frattempo. Il pianificatore è stato ricaricato.",
     "title": "Pianificatore del programma",
     "print": "Stampa",
+    "printHint": "Un giorno per pagina A4",
+    "printLandscape": "Orizzontale",
+    "printPortrait": "Verticale",
     "shownColumns": "Colonne mostrate",
     "showAll": "Mostra tutto",
     "days": "Giorni",

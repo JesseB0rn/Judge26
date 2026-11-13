@@ -218,4 +218,50 @@ test.describe('Schedule planner', () => {
     ])
     await expect(page.getByTestId('planner-grid')).toContainText('Open house')
   })
+
+  test('M4-14-31: printing puts each day on one page and fits small blocks', async ({ page }) => {
+    const { event } = await createEvent()
+    const manager = await createUser({ roles: [{ role: 'event_manager', event: event.id }] })
+    const day1 = await createDay(event.id, '2026-06-01', 'Day 1')
+    const day2 = await createDay(event.id, '2026-06-02', 'Day 2')
+    const judges = await createColumn(event.id, 'Judges and referees')
+    await createBlock(event.id, {
+      day: day1.id,
+      starts_at: '09:00',
+      duration_minutes: 10,
+      title: 'Briefing',
+      place: 'Room 101',
+      columns: [judges.id],
+    })
+    await createBlock(event.id, { day: day2.id, starts_at: '12:00', title: 'Lunch' })
+
+    // The test drives the layout itself; the browser's print dialog would block.
+    await page.addInitScript('window.print = () => {}')
+    await login(page, manager.email, manager.password)
+    await page.goto(`/events/${event.id}/planner`)
+    await expect(page.locator('section[data-day]')).toHaveCount(2)
+
+    // Widening a column with the keyboard (remembered for this event in the browser).
+    const header = page.locator(`section[data-day="${day1.id}"] [data-column="${judges.id}"]`)
+    const before = (await header.boundingBox())!.width
+    await header.locator('[role=separator]').press('ArrowRight')
+    await expect.poll(async () => (await header.boundingBox())!.width).toBe(before + 16)
+
+    for (const orientation of ['Portrait', 'Landscape']) {
+      await page.getByRole('button', { name: 'Print' }).click()
+      await page.getByRole('menuitem', { name: orientation }).click()
+      await expect(page.getByRole('menu')).toBeHidden()
+      await page.emulateMedia({ media: 'print' })
+      // The 10-minute briefing shows all its text, shrunk to fit.
+      const briefing = page.locator('[data-item^="block:"]', { hasText: 'Briefing' })
+      await expect(briefing).toContainText('09:00–09:10')
+      await expect(briefing).toContainText('Room 101')
+      const fits = await briefing.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)
+      expect(fits).toBe(true)
+      const pdf = await page.pdf({ preferCSSPageSize: true })
+      expect(pdf.toString('latin1').match(/\/Count (\d+)/)?.[1]).toBe('2')
+      await page.emulateMedia({ media: 'screen' })
+      await page.evaluate("window.dispatchEvent(new Event('afterprint'))")
+    }
+  })
 })
