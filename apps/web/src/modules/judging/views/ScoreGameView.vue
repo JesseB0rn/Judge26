@@ -23,10 +23,11 @@ import ScoreSheet from '@/modules/scoring/components/ScoreSheet.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { backTarget } from '@/shared/composables/useQueryRefs'
 import { formatDay } from '@/shared/format'
-import { installAutoSync } from '../drafts'
+import { cachePage, installAutoSync } from '../drafts'
 import { formatTime, scoreState } from '../lib'
 import { useScoreSheet } from '../useScoreSheet'
 import OutcomePicker from '../components/OutcomePicker.vue'
+import ProgramNameField from '../components/ProgramNameField.vue'
 import ReasonDialog from '../components/ReasonDialog.vue'
 import SaveIndicator from '../components/SaveIndicator.vue'
 import ScoreHistory from '../components/ScoreHistory.vue'
@@ -163,6 +164,23 @@ async function mulligan(reason: string) {
   }
 }
 
+// M9-B: the program can be changed by the table judge until submission, by reviewers at any time.
+const programEditable = computed(
+  () =>
+    !!p.value &&
+    !s.fromCache.value &&
+    (!!p.value.permissions.canEdit ||
+      !!p.value.permissions.canReview ||
+      !!p.value.permissions.canCorrect ||
+      !!p.value.permissions.canMulligan),
+)
+function programSaved(value: string) {
+  const current = s.payload.value
+  if (!current) return
+  s.payload.value = { ...current, game: { ...current.game, program_name: value } }
+  cachePage(s.payload.value)
+}
+
 function setManualPoints(raw: string | number) {
   const n = raw === '' ? null : Number(raw)
   s.setPoints(n === null || Number.isNaN(n) ? null : n)
@@ -230,6 +248,15 @@ function setManualPoints(raw: string | number) {
           </div>
         </div>
       </header>
+
+      <!-- M9-B: verify the program before the start, above the stopwatch. -->
+      <ProgramNameField
+        :game-id="p.game.id"
+        :model-value="p.game.program_name ?? ''"
+        mode="sheet"
+        :editable="programEditable"
+        @update:model-value="programSaved"
+      />
 
       <!-- What is going on with this sheet. -->
       <Alert v-if="s.notice.value" role="alert" class="border-amber-300 bg-amber-50 text-amber-950">

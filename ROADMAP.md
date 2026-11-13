@@ -1869,7 +1869,7 @@ and deliver email through providers that no longer accept passwords.
 ### Tracking
 
 -   [x] **M9-A** Mulligan run granted by a head judge (M9-01 to M9-05)
--   [ ] **M9-B** Program name recorded at the robot check and shown on
+-   [x] **M9-B** Program name recorded at the robot check and shown on
     the score sheet (M9-06 to M9-09)
 -   [ ] **M9-C** Table setup after teams and judges in the setup
     checklist (M9-10 to M9-11)
@@ -1916,6 +1916,8 @@ and the table judge scores the re-run on the same game.
   ------------------------------------------------------------------------------
 
 ### M9-B --- Program verification at the robot check
+
+**Status:** M9-06 to M9-09 implemented (see `docs/specifications/M5-judging.md`).
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria

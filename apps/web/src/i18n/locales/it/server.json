@@ -165,5 +165,6 @@
   "template_not_allowed": "Solo i responsabili dell’evento e gli admin possono esportare questo evento.",
   "setup_not_allowed": "Solo i responsabili dell’evento e gli admin possono configurare questo evento.",
   "mulligan_not_allowed": "Solo i giudici capo e i responsabili dell’evento possono concedere una ripetizione.",
-  "mulligan_no_run": "Questa partita non ha una prova valutata da sostituire."
+  "mulligan_no_run": "Questa partita non ha una prova valutata da sostituire.",
+  "program_locked": "Il punteggio è stato inviato; solo un giudice capo può ancora modificare il programma."
 }

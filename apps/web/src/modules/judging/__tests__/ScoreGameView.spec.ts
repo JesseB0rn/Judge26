@@ -469,4 +469,40 @@ describe('ScoreGameView', () => {
       expect(readDraft('game1')?.mulligans).toBe(1)
     })
   })
+
+  describe('M9-B program verification', () => {
+    it('M9-T05 / M9-07: shows the recorded program above the stopwatch', async () => {
+      const base = makePayload()
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ game: { ...base.game, program_name: 'mission_v3' } }),
+      )
+      const { wrapper } = await mountGame()
+      const program = wrapper.get('[data-testid=program-value]')
+      expect(program.text()).toBe('mission_v3')
+      const html = wrapper.html()
+      expect(html.indexOf('data-testid="program-name"')).toBeLessThan(html.indexOf('Stopwatch'))
+    })
+
+    it('M9-07: says when no program was recorded and lets the judge enter it', async () => {
+      mocked.setProgram.mockResolvedValue({ program_name: 'final_run' })
+      const { wrapper } = await mountGame()
+      expect(wrapper.find('[data-testid=program-none]').exists()).toBe(true)
+      await click(wrapper.get('[data-testid=program-edit]').element as HTMLElement)
+      await fill('#program-game1', 'final_run')
+      await click(buttonByText('Save', wrapper.get('[data-testid=program-name]').element))
+      expect(mocked.setProgram).toHaveBeenCalledWith('game1', 'final_run')
+      expect(wrapper.get('[data-testid=program-value]').text()).toBe('final_run')
+    })
+
+    it('M9-08: a judge cannot change the program of a submitted sheet', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({
+          sheet: makeSheet({ status: 'submitted', values: COMPLETE }),
+          permissions: { canEdit: false, canReview: false, canCorrect: false },
+        }),
+      )
+      const { wrapper } = await mountGame()
+      expect(wrapper.find('[data-testid=program-edit]').exists()).toBe(false)
+    })
+  })
 })

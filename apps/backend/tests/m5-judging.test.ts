@@ -550,4 +550,59 @@ describe('M5 judge interface and scoring workflow', () => {
       expect(fresh.sheet.values).toEqual({ flag: true })
     })
   })
+
+  describe('M9-B program verification', () => {
+    const setProgram = (user: TestUser, ctx: Ctx, program_name: unknown) =>
+      user.pb.send<{ program_name: string }>(`/api/games/${ctx.game.id}/program`, {
+        method: 'PUT',
+        body: { program_name },
+      })
+
+    it('M9-T05 / M9-06 / M9-07: the judge records the program at the robot check; the sheet shows it', async () => {
+      const ctx = await setup()
+      // A second attempt of the same team in the round gets the name too.
+      const retry = await ctx.manager.pb.collection('games').create({
+        round: ctx.round.id,
+        team: ctx.team.id,
+        status: 'scheduled',
+        attempt: 2,
+      })
+      expect((await setProgram(ctx.judge, ctx, '  mission_v3  ')).program_name).toBe('mission_v3')
+
+      const payload = await ctx.judge.pb.send<{ game: { program_name: string } }>(
+        `/api/games/${ctx.game.id}/sheet`,
+        { method: 'GET' },
+      )
+      expect(payload.game.program_name).toBe('mission_v3')
+      const rows = await ctx.judge.pb.send<{ id: string; program_name: string }[]>(
+        '/api/judging/assignments',
+        { method: 'GET' },
+      )
+      expect(rows.find((r) => r.id === ctx.game.id)?.program_name).toBe('mission_v3')
+      expect((await ctx.manager.pb.collection('games').getOne(retry.id)).program_name).toBe(
+        'mission_v3',
+      )
+
+      await expectFieldError(setProgram(ctx.judge, ctx, 'x'.repeat(201)), 'program_name')
+      await expectStatus(setProgram(ctx.otherJudge, ctx, 'other'), 403)
+    })
+
+    it('M9-T06 / M9-08: after submission only a reviewer can change the program', async () => {
+      const ctx = await setup()
+      await setProgram(ctx.judge, ctx, 'mission_v3')
+      await submitted(ctx)
+      await expectStatus(setProgram(ctx.judge, ctx, 'mission_v4'), 409)
+      expect((await setProgram(ctx.headJudge, ctx, 'mission_v4')).program_name).toBe('mission_v4')
+    })
+
+    it('M9-09: a mulligan keeps the recorded program', async () => {
+      const ctx = await setup()
+      await setProgram(ctx.judge, ctx, 'mission_v3')
+      await finalized(ctx)
+      await post(ctx.headJudge, ctx, 'mulligan', { reason: 'Field fault.' })
+      expect((await ctx.manager.pb.collection('games').getOne(ctx.game.id)).program_name).toBe(
+        'mission_v3',
+      )
+    })
+  })
 })

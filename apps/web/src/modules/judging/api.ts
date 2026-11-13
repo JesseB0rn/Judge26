@@ -69,3 +69,11 @@ export function mulliganSheet(gameId: string, reason: string) {
     body: { reason },
   })
 }
+
+/** The program the team plans to run, recorded at the robot check (M9-B). */
+export function setProgram(gameId: string, programName: string) {
+  return pb.send<{ program_name: string }>(`/api/games/${gameId}/program`, {
+    method: 'PUT',
+    body: { program_name: programName },
+  })
+}

@@ -155,10 +155,18 @@
     "correctionDescription": "Les anciennes et nouvelles valeurs ainsi que votre motif sont consignés dans l’historique.",
     "mulligan": "Accorder un nouvel essai",
     "mulliganTitle": "Accorder un nouvel essai (mulligan)",
-    "mulliganDescription": "Uniquement après une défaillance grave dont l’équipe n’est pas responsable. Le passage noté est annulé : la feuille est vidée et le juge de table note le nouvel essai. L’ancien résultat et ta raison restent dans l’historique.",
+    "mulliganDescription": "Uniquement après une défaillance grave dont l’équipe n’est pas responsable. Le passage noté est annulé : la feuille est vidée et le juge de table note le nouvel essai. L’ancien résultat et votre motif restent dans l’historique.",
     "mulliganConfirm": "Annuler le passage et autoriser un nouvel essai",
     "mulliganGranted": "{team} : nouvel essai accordé.",
     "mulliganBy": "Nouvel essai accordé par {name}",
     "mulliganMeanwhile": "Un nouvel essai a été accordé entre-temps. Les modifications enregistrées sur cet appareil concernaient le passage annulé et n’ont pas été appliquées."
+  },
+  "program": {
+    "label": "Programme",
+    "placeholder": "Nom du programme sur le robot",
+    "none": "Aucun programme saisi lors du contrôle du robot.",
+    "edit": "Modifier le programme",
+    "verify": "Vérifier que ce programme est sélectionné sur le robot avant le départ.",
+    "checkHint": "Saisir le programme que l’équipe va lancer. Il est affiché sur la feuille de score pour être vérifié avant le départ."
   }
 }

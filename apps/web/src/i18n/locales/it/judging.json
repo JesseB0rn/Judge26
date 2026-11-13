@@ -155,10 +155,18 @@
     "correctionDescription": "I valori vecchi e nuovi e il suo motivo vengono registrati nella cronologia.",
     "mulligan": "Concedi ripetizione",
     "mulliganTitle": "Concedi una ripetizione (mulligan)",
-    "mulliganDescription": "Solo dopo un guasto grave di cui la squadra non è responsabile. La prova valutata viene scartata: il foglio viene svuotato e il giudice di tavolo valuta la ripetizione. Il vecchio risultato e il tuo motivo restano nella cronologia.",
+    "mulliganDescription": "Solo dopo un guasto grave di cui la squadra non è responsabile. La prova valutata viene scartata: il foglio viene svuotato e il giudice di tavolo valuta la ripetizione. Il vecchio risultato e il suo motivo restano nella cronologia.",
     "mulliganConfirm": "Scarta la prova e consenti la ripetizione",
     "mulliganGranted": "{team}: ripetizione concessa.",
     "mulliganBy": "Ripetizione concessa da {name}",
     "mulliganMeanwhile": "Nel frattempo è stata concessa una ripetizione. Le modifiche salvate su questo dispositivo appartenevano alla prova scartata e non sono state applicate."
+  },
+  "program": {
+    "label": "Programma",
+    "placeholder": "Nome del programma sul robot",
+    "none": "Nessun programma registrato al controllo del robot.",
+    "edit": "Modifica programma",
+    "verify": "Prima della partenza, verificare che questo programma sia selezionato sul robot.",
+    "checkHint": "Inserire il programma che la squadra eseguirà. Viene mostrato sul foglio di punteggio per verificarlo prima della partenza."
   }
 }

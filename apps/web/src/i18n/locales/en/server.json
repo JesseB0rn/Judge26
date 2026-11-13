@@ -165,5 +165,6 @@
   "template_not_allowed": "Only event managers and admins can export this event.",
   "setup_not_allowed": "Only event managers and admins can set up this event.",
   "mulligan_not_allowed": "Only head judges and event managers can grant a re-run.",
-  "mulligan_no_run": "This game has no scored run to replace."
+  "mulligan_no_run": "This game has no scored run to replace.",
+  "program_locked": "The score was submitted; only a head judge can change the program now."
 }

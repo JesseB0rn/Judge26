@@ -129,8 +129,14 @@ in milliseconds.
     the URL. Offline, the teams come from the list saved on the device; documents need a
     connection. Per-team check results are not recorded, and finishing a check is stored on the
     device only.
+  - **Program (M9-B):** for each team the judge enters the name of the program the team plans to
+    run (saved when the field loses focus or on _Save_; needs a connection). It is stored in
+    `games.program_name` on every game of the team in that round (all attempts) and survives a
+    mulligan.
 - **Score sheet** (`/judging/games/{id}`): a sticky header with team, category, round, table,
-  sequence and day, the status, the save state and a large live **total**; result choice
+  sequence and day, the status, the save state and a large live **total**; directly below it the
+  **program** recorded at the robot check, large and above the stopwatch, so the judge verifies it
+  on the robot before the start (or a note that none was recorded; it can be entered there too); result choice
   (Scored / Disqualified / Absent); stopwatch; the sheet generated from the ruleset with large touch
   targets (≥ 48 px); history. A fixed action bar holds the single next action: _Submit score_ (with
   the missing criteria listed, tap to jump; missing criteria are highlighted), _Approve / Return_,
@@ -152,6 +158,7 @@ in milliseconds.
 | POST   | `/api/games/{id}/sheet/submit`   | table judge, reviewers | Same body → `submitted`                                                                                                                             |
 | POST   | `/api/games/{id}/sheet/approve`  | reviewers              | → `finalized`, game updated                                                                                                                         |
 | POST   | `/api/games/{id}/sheet/reject`   | reviewers              | `{ reason }` → `rejected`                                                                                                                           |
+| PUT    | `/api/games/{id}/program`        | table judge, reviewers | `{ program_name }` (≤ 200 characters) → stored on the team's games of the round; after submission reviewers only (`409 program_locked`) (M9-B)      |
 | POST   | `/api/games/{id}/sheet/mulligan` | reviewers              | `{ reason }` on any sheet → empty `draft`, game result cleared (M9-A)                                                                               |
 | POST   | `/api/games/{id}/sheet/correct`  | reviewers              | `{ reason, outcome, values, time_ms, points?, expected_corrections? }` on a finalized score; an outdated `expected_corrections` gets `409` (M7-T10) |
 

@@ -51,6 +51,18 @@ routerAdd(
   $apis.requireAuth('users', '_superusers'),
 )
 
+// PUT /api/games/{id}/program { program_name } -> the program the team plans to run (M9-B)
+routerAdd(
+  'PUT',
+  '/api/games/{id}/program',
+  (e) => {
+    const judging = require(`${__hooks}/lib/judging.js`)
+    const body = e.requestInfo().body || {}
+    return e.json(200, judging.setProgram(e.app, e.auth, e.request.pathValue('id'), body))
+  },
+  $apis.requireAuth('users', '_superusers'),
+)
+
 // POST /api/games/{id}/sheet/{action} with action = submit | approve | reject | correct | mulligan
 routerAdd(
   'POST',

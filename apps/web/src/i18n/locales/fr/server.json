@@ -165,5 +165,6 @@
   "template_not_allowed": "Seuls les responsables de l’événement et les admins peuvent exporter cet événement.",
   "setup_not_allowed": "Seuls les responsables de l’événement et les admins peuvent configurer cet événement.",
   "mulligan_not_allowed": "Seuls les juges principaux et les responsables d’événement peuvent accorder un nouvel essai.",
-  "mulligan_no_run": "Ce match n’a pas de passage noté à remplacer."
+  "mulligan_no_run": "Ce match n’a pas de passage noté à remplacer.",
+  "program_locked": "Le score a été soumis ; seul un juge principal peut encore modifier le programme."
 }

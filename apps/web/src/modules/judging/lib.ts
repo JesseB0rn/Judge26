@@ -186,7 +186,7 @@ export interface RobotCheckBlock {
   check: RoundCheck
   /** Day of the round's games (the scoring run), which places the check in the timeline. */
   gameDay: Assignment['day']
-  teams: { id: string; name: string; sequence: number; game: string }[]
+  teams: { id: string; name: string; sequence: number; game: string; program_name: string }[]
 }
 
 /** "08:30" + 15 → "08:30–08:45"; "" when the check is not placed. */
@@ -228,10 +228,12 @@ export function robotChecks(rows: Assignment[]): RobotCheckBlock[] {
         name: row.team.name,
         sequence: row.sequence,
         game: row.id,
+        program_name: row.program_name ?? '',
       })
     } else if (row.sequence < known.sequence) {
       known.sequence = row.sequence
       known.game = row.id
+      known.program_name = row.program_name || known.program_name
     }
   }
   const list = [...blocks.values()]

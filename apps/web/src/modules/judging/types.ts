@@ -43,6 +43,8 @@ export interface Assignment {
   sequence: number
   points: number
   time_ms: number
+  /** Program the team plans to run, recorded at the robot check (M9-B). */
+  program_name?: string
   team: NamedRef
   round: RoundRef
   /** The round's robot check, or null/absent if it has none (M5-15). */
@@ -113,6 +115,8 @@ export interface SheetPayload {
     sequence: number
     points: number
     time_ms: number
+    /** Program the team plans to run, recorded at the robot check (M9-B). */
+    program_name?: string
     updated: string
   }
   team: NamedRef & { organization: string; country: string }

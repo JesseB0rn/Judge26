@@ -222,6 +222,7 @@ function serializeContext(ctx) {
       sequence: game.getInt('sequence'),
       points: game.getFloat('points'),
       time_ms: game.getInt('time_ms'),
+      program_name: game.getString('program_name'),
       updated: game.getString('updated'),
     },
     team: {
@@ -633,6 +634,44 @@ function mulligan(app, auth, gameId, body) {
   return { sheet: serializeSheet(app, result) }
 }
 
+/**
+ * PUT /api/games/{id}/program { program_name }: the program the team plans to run, recorded at
+ * the robot check (M9-06 – M9-08). Stored on every game of the team in that round (all
+ * attempts). Table judges can change it until the sheet is submitted; reviewers at any time.
+ */
+function setProgram(app, auth, gameId, body) {
+  const ctx = loadContext(app, gameId)
+  const p = requireView(app, auth, ctx)
+  if (!p.canScore)
+    throw new BadRequestError('Archived events are read-only.', {
+      _error: new ValidationError('event_archived', 'Archived events are read-only.'),
+    })
+  const raw = body.program_name === undefined || body.program_name === null ? '' : body.program_name
+  if (typeof raw !== 'string') badRequest('program_name', 'invalid_type', 'Enter a text.')
+  const name = raw.trim()
+  if (name.length > 200) badRequest('program_name', 'too_long', 'The program name is too long.')
+  const sheet = sheetFor(app, gameId)
+  const status = sheet ? sheet.getString('status') : ''
+  if (!p.canReview && (status === 'submitted' || status === 'finalized')) {
+    conflict(
+      'The score was submitted; only a head judge can change the program now.',
+      status,
+      'program_locked',
+    )
+  }
+  app.runInTransaction((tx) => {
+    tx.findRecordsByFilter('games', 'round = {:round} && team = {:team}', '', 0, 0, {
+      round: ctx.round.id,
+      team: ctx.team.id,
+    }).forEach((game) => {
+      if (game.getString('program_name') === name) return
+      game.set('program_name', name)
+      tx.save(game)
+    })
+  })
+  return { program_name: name }
+}
+
 function roundCheck(app, roundId, cache) {
   const key = `check:${roundId}`
   if (!(key in cache)) cache[key] = require(`${__hooks}/lib/planner.js`).robotCheck(app, roundId)
@@ -667,6 +706,7 @@ function summary(app, game, cache) {
     sequence: game.getInt('sequence'),
     points: game.getFloat('points'),
     time_ms: game.getInt('time_ms'),
+    program_name: game.getString('program_name'),
     team: { id: team.id, name: team.getString('name') },
     round: {
       id: round.id,
@@ -783,6 +823,7 @@ module.exports = {
   reject,
   correct,
   mulligan,
+  setProgram,
   assignments,
   eventGames,
   guardDirectEdit,
