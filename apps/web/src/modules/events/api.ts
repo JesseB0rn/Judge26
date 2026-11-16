@@ -1,7 +1,8 @@
 import { pb } from '@/shared/api/pocketbase'
 import type { CompetitionDayRecord, EventRecord } from '@/shared/types/records'
 
-export type EventInput = Pick<EventRecord, 'name' | 'season' | 'venue' | 'description' | 'status'>
+export type EventInput = Pick<EventRecord, 'name' | 'season' | 'venue' | 'description' | 'status'> &
+  Pick<Partial<EventRecord>, 'time_decimals'>
 
 const events = () => pb.collection<EventRecord>('events')
 const days = () => pb.collection<CompetitionDayRecord>('competition_days')

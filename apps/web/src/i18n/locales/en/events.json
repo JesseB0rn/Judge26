@@ -19,7 +19,15 @@
   "form": {
     "editTitle": "Edit event",
     "newTitle": "New event",
-    "description": "Competition days and categories are managed on the event page."
+    "description": "Competition days and categories are managed on the event page.",
+    "timeDecimals": "Run times",
+    "timeDecimalsHint": "How precisely run times are shown and ranked: times are cut, not rounded. Measured times are kept to the millisecond.",
+    "timeDecimalsOption": {
+      "0": "Whole seconds (1:35)",
+      "1": "Tenths (1:35.3)",
+      "2": "Hundredths (1:35.37)",
+      "3": "Thousandths (1:35.379)"
+    }
   },
   "detail": {
     "updated": "Event updated.",

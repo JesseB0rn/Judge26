@@ -62,7 +62,8 @@ test.describe('M3 rounds and ranking', () => {
     await enterResult(page, bravo, 'Round 1', '80', '100')
     await enterResult(page, bravo, 'Round 2', '70', '95.5')
     await expect(page.locator(`[data-team="${alpha}"] [data-round="R1"]`)).toContainText(
-      '100 / 120.000 s',
+      // Times as m:ss with the event's precision (whole seconds by default, M10-19).
+      '100 / 2:00',
     )
 
     // M3-13 / M3-14: equal totals (150), decided by total time (210 s vs 195.5 s).
@@ -85,7 +86,7 @@ test.describe('M3 rounds and ranking', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Save result' }).click()
     await expect(page.getByRole('dialog')).toBeHidden()
     await expect(page.locator(`[data-team="${alpha}"] [data-round="R2"]`)).toContainText(
-      '60 / 90.000 s',
+      '60 / 1:30',
     )
     await page.getByRole('tab', { name: 'Ranking' }).click()
     await expect(rankingRows(page).nth(0)).toHaveAttribute('data-team', alpha)

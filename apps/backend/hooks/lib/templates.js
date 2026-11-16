@@ -6,7 +6,7 @@
 // A template file is plain JSON:
 //
 //   { format: "judge26.event-template", version: 1, name, description, exported_at, source,
-//     event:      { venue, description, table_labels? },
+//     event:      { venue, description, table_labels?, time_decimals? },
 //     days:       [{ offset, label, starts_at, ends_at }]           offset = days after the first day
 //     categories: [{ code, name, description, min_age, max_age, min_team_size, max_team_size,
 //                    max_teams, judges_per_table, settings, ranking,
@@ -137,6 +137,7 @@ function exportEvent(app, eventId, meta) {
       venue: event.getString('venue'),
       description: event.getString('description'),
       table_labels: event.getString('table_labels') || 'table_number',
+      time_decimals: event.getInt('time_decimals'),
     },
     days: days.map((d) => ({
       offset: offsetOf[d.id],
@@ -299,6 +300,8 @@ function validate(data) {
       description: text(event.description, 'event.description', { max: 5000 }),
       // M10-25; optional, so files exported before it still load.
       table_labels: tableLabels(event.table_labels),
+      // M10-19; optional.
+      time_decimals: int(event.time_decimals, 'event.time_decimals', 0, 3, 0),
     },
     days: [],
     categories: [],
@@ -551,6 +554,7 @@ function createEvent(tx, template, input, auth) {
   )
   event.set('description', template.event.description)
   event.set('table_labels', template.event.table_labels)
+  event.set('time_decimals', template.event.time_decimals)
   event.set('status', 'draft')
   tx.save(event)
 

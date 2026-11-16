@@ -505,4 +505,70 @@ describe('ScoreGameView', () => {
       expect(wrapper.find('[data-testid=program-edit]').exists()).toBe(false)
     })
   })
+
+  describe('M10-C run times', () => {
+    const ZERO_RULE = {
+      schemaVersion: 1 as const,
+      zeroPointsTimeMs: 120_000,
+      root: {
+        id: 'root',
+        label: 'Total',
+        type: 'group' as const,
+        aggregate: 'sum' as const,
+        children: [{ id: 'flag', label: 'Flag raised', type: 'boolean' as const, points: 10 }],
+      },
+    }
+    const mountWith = async (decimals: number, definition: object = ZERO_RULE) => {
+      const base = makePayload()
+      mocked.getSheet.mockResolvedValue(
+        makePayload({
+          event: { ...base.event, time_decimals: decimals },
+          ruleset: {
+            id: 'rs1',
+            version: 1,
+            definition: definition as NonNullable<typeof base.ruleset>['definition'],
+          },
+        } as Partial<typeof base>),
+      )
+      return mountGame()
+    }
+
+    it('M10-19: the stopwatch shows the event’s decimals, cut not rounded', async () => {
+      const { wrapper } = await mountWith(1)
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '1:35.379')
+      await click(buttonByText('Set time'))
+      expect(wrapper.get('[data-testid=stopwatch-display]').text()).toBe('1:35.3')
+      // The full measured value is kept.
+      expect(readDraft('game1')?.input.time_ms).toBe(95_379)
+    })
+
+    it('M10-T27/T28: a zero-point run says it counts as 120 s; with points it does not', async () => {
+      const { wrapper } = await mountWith(0)
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '0:43')
+      await click(buttonByText('Set time'))
+      await choice(wrapper, 'flag', 'No').trigger('click')
+      expect(total(wrapper)).toBe('0')
+      expect(wrapper.get('[data-testid=zero-points-time]').text()).toContain('counts as 2:00')
+
+      await click(buttonByText('Submit score'))
+      const summary = document.querySelector('[data-testid=submit-summary]')!
+      expect(summary.textContent).toContain('2:00')
+      expect(summary.textContent).toContain('measured 0:43')
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      await flushPromises()
+
+      await choice(wrapper, 'flag', 'Yes').trigger('click')
+      expect(total(wrapper)).toBe('10')
+      expect(wrapper.find('[data-testid=zero-points-time]').exists()).toBe(false)
+    })
+
+    it('M10-18: without the option a zero-point run keeps its measured time', async () => {
+      const { zeroPointsTimeMs: _, ...off } = ZERO_RULE
+      const { wrapper } = await mountWith(0, off)
+      await choice(wrapper, 'flag', 'No').trigger('click')
+      expect(wrapper.find('[data-testid=zero-points-time]').exists()).toBe(false)
+    })
+  })
 })

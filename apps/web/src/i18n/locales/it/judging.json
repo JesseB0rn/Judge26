@@ -96,7 +96,8 @@
     "game": "Manche",
     "noTime": "non registrato",
     "back": "Torna al foglio",
-    "submit": "Invia il punteggio"
+    "submit": "Invia il punteggio",
+    "countedTime": "vale per 0 punti; misurato {measured}"
   },
   "dashboard": {
     "description": "Le manche al suo tavolo, nell’ordine di gara.",
@@ -159,7 +160,8 @@
     "mulliganConfirm": "Scarta la prova e consenti la ripetizione",
     "mulliganGranted": "{team}: ripetizione concessa.",
     "mulliganBy": "Ripetizione concessa da {name}",
-    "mulliganMeanwhile": "Nel frattempo è stata concessa una ripetizione. Le modifiche salvate su questo dispositivo appartenevano alla prova scartata e non sono state applicate."
+    "mulliganMeanwhile": "Nel frattempo è stata concessa una ripetizione. Le modifiche salvate su questo dispositivo appartenevano alla prova scartata e non sono state applicate.",
+    "zeroPointsTime": "0 punti: questa manche conta come {time} (regola del regolamento). Il tempo misurato resta sul foglio."
   },
   "program": {
     "label": "Programma",

@@ -37,8 +37,9 @@ describe('ranking export', () => {
       'Rank,Shared,Team,Organization,Country,Best,Time of best (s),Total,' +
         'Round 1 points,Round 1 time (s),Round 1 status,Round 2 points,Round 2 time (s),Round 2 status,' +
         'Round 3 points,Round 3 time (s),Round 3 status,Provisional,Decided by',
-      '1,,"Bravo, ""B""",School B,DE,120,50.000,320,120,50.000,,80,40.000,,120,50.000,,,',
-      '2,,Alpha,School A,CH,120,55.000,220,100,60.000,,120,55.000,,0,,absent,,Time of best',
+      // EXAMPLE_RANKING_CONFIG ranks times to 10 ms: exported with 2 decimals (M10-19).
+      '1,,"Bravo, ""B""",School B,DE,120,50.00,320,120,50.00,,80,40.00,,120,50.00,,,',
+      '2,,Alpha,School A,CH,120,55.00,220,100,60.00,,120,55.00,,0,,absent,,Time of best',
       '3,,Charlie,,,0,,0,0,,missing,0,,missing,0,,missing,yes,Best',
     ])
   })
@@ -47,12 +48,29 @@ describe('ranking export', () => {
     const lines = toCsv(resultsTable(context())).trimEnd().split('\r\n')
     expect(lines).toEqual([
       'Team,Round,Attempt,Status,Points,Time (s)',
-      'Alpha,Round 1,1,Completed,100,60.000',
-      'Alpha,Round 2,1,Completed,120,55.000',
+      'Alpha,Round 1,1,Completed,100,60.00',
+      'Alpha,Round 2,1,Completed,120,55.00',
       'Alpha,Round 3,1,Absent,,',
-      '"Bravo, ""B""",Round 1,1,Completed,120,50.000',
-      '"Bravo, ""B""",Round 2,1,Completed,80,40.000',
-      '"Bravo, ""B""",Round 3,1,Completed,120,50.000',
+      '"Bravo, ""B""",Round 1,1,Completed,120,50.00',
+      '"Bravo, ""B""",Round 2,1,Completed,80,40.00',
+      '"Bravo, ""B""",Round 3,1,Completed,120,50.00',
+    ])
+  })
+
+  it('M10-T30: exported times follow the event’s precision, cut not rounded', () => {
+    const odd = [game('alpha', 'R1', 100, 95_379)]
+    const inputs = toTeamInputs(teams.slice(0, 1), odd, rounds)
+    const line = (decimals: number) => {
+      const config = parseRankingConfig(JSON.stringify(EXAMPLE_RANKING_CONFIG), decimals).config!
+      const data = { ranking: rank(config, inputs), config: config.config, inputs, teams, rounds }
+      return toCsv(resultsTable(data)).trimEnd().split('\r\n')[1]
+    }
+    // The configuration's own 10 ms is finer than whole seconds and tenths, coarser than ms.
+    expect([0, 1, 2, 3].map(line)).toEqual([
+      'Alpha,Round 1,1,Completed,100,95',
+      'Alpha,Round 1,1,Completed,100,95.3',
+      'Alpha,Round 1,1,Completed,100,95.37',
+      'Alpha,Round 1,1,Completed,100,95.37',
     ])
   })
 
@@ -75,7 +93,7 @@ describe('ranking export', () => {
       'G:Time of best (s)',
       'H:Total',
     ])
-    // Precision 0 → whole-number points; times as seconds with 3 decimals.
+    // Precision 0 → whole-number points; times as seconds with the ranking's 2 decimals.
     const styles = parts['xl/styles.xml']!
     const formatOf = (ref: string) => {
       const style = Number(new RegExp(`<c r="${ref}" s="(\\d+)"`).exec(sheet)![1])
@@ -84,7 +102,7 @@ describe('ranking export', () => {
       return new RegExp(`numFmtId="${id}" formatCode="([^"]+)"`).exec(styles)?.[1]
     }
     expect(formatOf('F2')).toBe('0')
-    expect(formatOf('G2')).toBe('0.000')
+    expect(formatOf('G2')).toBe('0.00')
     expect(sheet).toContain('<c r="G2" s="3"><v>50</v></c>')
     expect(sheet).toContain(
       '<c r="C2" t="inlineStr"><is><t xml:space="preserve">Bravo, &quot;B&quot;</t>',

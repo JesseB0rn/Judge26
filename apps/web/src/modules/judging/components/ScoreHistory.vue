@@ -6,7 +6,12 @@ import { formatTime } from '../lib'
 import type { AuditEntry, ScoreSnapshot } from '../types'
 
 /** Audit trail of a game's score (M5-13): who changed what, when and why. */
-const props = defineProps<{ entries: AuditEntry[]; definition?: RulesetDefinition | null }>()
+const props = defineProps<{
+  entries: AuditEntry[]
+  definition?: RulesetDefinition | null
+  /** Decimals of the event's run times (M10-19). */
+  decimals?: number
+}>()
 
 const ACTIONS = translatedLabels<AuditEntry['action']>(
   ['submitted', 'approved', 'rejected', 'corrected', 'manual_edit', 'mulligan'],
@@ -37,7 +42,8 @@ const outcomeLabel = (outcome: string) => {
 }
 const points = (s: ScoreSnapshot | null) =>
   !s ? '–' : s.outcome !== 'completed' ? outcomeLabel(s.outcome) : String(s.points ?? '–')
-const time = (s: ScoreSnapshot | null) => (s && s.time_ms > 0 ? formatTime(s.time_ms) : '–')
+const time = (s: ScoreSnapshot | null) =>
+  s && s.time_ms > 0 ? formatTime(s.time_ms, props.decimals ?? 2) : '–'
 
 /** Criteria whose value differs between before and after. */
 function changes(entry: AuditEntry) {

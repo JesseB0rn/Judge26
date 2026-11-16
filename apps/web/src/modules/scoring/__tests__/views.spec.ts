@@ -232,7 +232,13 @@ describe('RulesetsView', () => {
     const { wrapper } = await mountView(RulesetsView, { props: { id: 'cat1' }, session: manager })
     expect(wrapper.text()).toContain('No scoring ruleset yet')
     await click(buttonByText('Create first draft'))
-    expect(mocked.createDraft).toHaveBeenCalledWith('cat1', EXAMPLE_RULESET, '', '')
+    // M10-18: a first ruleset counts zero-point runs as 120 s.
+    expect(mocked.createDraft).toHaveBeenCalledWith(
+      'cat1',
+      { ...EXAMPLE_RULESET, zeroPointsTimeMs: 120_000 },
+      '',
+      '',
+    )
   })
 
   it('a slow earlier list load does not hide a just-created draft', async () => {

@@ -96,7 +96,8 @@
     "game": "Manche",
     "noTime": "non enregistré",
     "back": "Retour à la feuille",
-    "submit": "Soumettre le score"
+    "submit": "Soumettre le score",
+    "countedTime": "compte pour 0 point ; mesuré {measured}"
   },
   "dashboard": {
     "description": "Les manches de votre table, dans l’ordre de passage.",
@@ -159,7 +160,8 @@
     "mulliganConfirm": "Annuler le passage et autoriser un nouvel essai",
     "mulliganGranted": "{team} : nouvel essai accordé.",
     "mulliganBy": "Nouvel essai accordé par {name}",
-    "mulliganMeanwhile": "Un nouvel essai a été accordé entre-temps. Les modifications enregistrées sur cet appareil concernaient le passage annulé et n’ont pas été appliquées."
+    "mulliganMeanwhile": "Un nouvel essai a été accordé entre-temps. Les modifications enregistrées sur cet appareil concernaient le passage annulé et n’ont pas été appliquées.",
+    "zeroPointsTime": "0 point : cette manche compte pour {time} (règle du règlement). Le temps mesuré reste sur la feuille."
   },
   "program": {
     "label": "Programme",

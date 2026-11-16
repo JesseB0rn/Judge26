@@ -2057,7 +2057,7 @@ with a certificate instead of a client secret.
 
 -   [ ] **M10-A** Judge workflow at the table (M10-01 to M10-07)
 -   [ ] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
--   [ ] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
+-   [x] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
 -   [x] **M10-D** Planner editing (M10-21 to M10-24)
 -   [x] **M10-E** Board and drag and drop (M10-25 to M10-29)
 -   [ ] **M10-F** Setup, print center and live (M10-30 to M10-36)
@@ -2230,6 +2230,15 @@ to the server) and M4-14 (the robot check phase exists by default; new block
 type). M9-06 to M9-09 are unchanged.
 
 ### M10-C --- Zero-point time and time precision
+
+**Status:** M10-18 to M10-20 implemented (see `docs/specifications/M10-times.md` and
+`docs/test-plans/M10-times.md`). Decisions: the zero-point time is a ruleset property
+(`zeroPointsTimeMs`); "on by default" means a category's first ruleset starts with 120 s, while
+existing rulesets and new versions keep their behaviour (M2-14). The game carries the counted
+time, the score sheet the measured one. Times are cut, not rounded; the ranking uses the coarser
+of the ranking configuration's own resolution and the event's precision. Exports write seconds
+as numbers with the event's decimals (95.3) rather than m:ss, so spreadsheets can compute with
+them.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria
@@ -2576,8 +2585,8 @@ with migration tests.
                         earlier ruleset version
 
   M10-T30    M10-19     95 379 ms at each precision  1:35, 1:35.3, 1:35.37 and
-                        on sheet, ranking, live,     1:35.379 everywhere
-                        TV, export and print
+                        on sheet, ranking, live,     1:35.379 everywhere;
+                        TV, export and print         exports 95 to 95.379 s
 
   M10-T31    M10-20     Equal points, 95 100 ms and  Tied on time (next key
                         95 900 ms, precision none,   decides); then ranked apart

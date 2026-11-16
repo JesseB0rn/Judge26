@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { ChevronDownIcon, ChevronRightIcon } from '@lucide/vue'
-import type { Ranking, RankingConfig } from '@judge26/ranking-engine'
+import { decimalsOfResolution, type Ranking, type RankingConfig } from '@judge26/ranking-engine'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -18,6 +18,8 @@ import ResultTree from './ResultTree.vue'
 
 /** Ranking with key values, tie-break information and per-team explanations. */
 const props = defineProps<{ ranking: Ranking; config: RankingConfig }>()
+// Times as precise as the ranking used them (the event's precision, M10-19/M10-20).
+const decimals = computed(() => decimalsOfResolution(props.config.timeResolutionMs))
 const expanded = ref(new Set<string>())
 
 function toggle(team: string) {
@@ -73,7 +75,7 @@ const decided = (d: number | 'name' | null) =>
             >
           </TableCell>
           <TableCell v-for="(value, i) in entry.values" :key="i" class="text-right tabular-nums">
-            {{ formatValue(value, ranking.keys[i]!.field) }}
+            {{ formatValue(value, ranking.keys[i]!.field, decimals) }}
           </TableCell>
           <TableCell class="hidden text-muted-foreground md:table-cell">{{
             decided(entry.decidedBy)
@@ -94,7 +96,12 @@ const decided = (d: number | 'name' | null) =>
         <TableRow v-if="expanded.has(entry.team)">
           <TableCell :colspan="ranking.keys.length + 4" class="bg-muted/30 whitespace-normal">
             <ul class="flex flex-col gap-2 text-sm" :data-testid="`explain-${entry.name}`">
-              <ResultTree v-for="id in sources()" :key="id" :result="entry.results[id]!" />
+              <ResultTree
+                v-for="id in sources()"
+                :key="id"
+                :result="entry.results[id]!"
+                :decimals="decimals"
+              />
             </ul>
           </TableCell>
         </TableRow>

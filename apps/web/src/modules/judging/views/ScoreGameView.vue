@@ -14,7 +14,7 @@ import {
   SendIcon,
   Undo2Icon,
 } from '@lucide/vue'
-import type { ScoreValues } from '@judge26/scoring-engine'
+import { usesZeroPointsTime, type ScoreValues } from '@judge26/scoring-engine'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,6 +43,15 @@ import SubmitDialog from '../components/SubmitDialog.vue'
 const props = defineProps<{ id: string }>()
 const s = useScoreSheet(props.id)
 const p = computed(() => s.payload.value)
+/** Decimals of the event's run times (M10-19). */
+const decimals = computed(() => p.value?.event.time_decimals ?? 0)
+/** The time a zero-point run counts with instead of the measured one (M10-18), or null. */
+const countedMs = computed(() => {
+  const definition = p.value?.ruleset?.definition
+  if (s.input.value.outcome !== 'completed' || !usesZeroPointsTime(definition, s.total.value))
+    return null
+  return definition!.zeroPointsTimeMs!
+})
 const route = useRoute()
 const router = useRouter()
 
@@ -336,6 +345,7 @@ function setManualPoints(raw: string | number) {
           :phase="s.watchPhase.value"
           :elapsed-ms="s.watchElapsed.value"
           :time-ms="s.input.value.time_ms"
+          :decimals="decimals"
           :disabled="!s.editable.value"
           @start="s.startWatch"
           @pause="s.pauseWatch"
@@ -343,6 +353,13 @@ function setManualPoints(raw: string | number) {
           @reset="s.resetWatch"
           @set-time="s.setTime"
         />
+        <p
+          v-if="countedMs !== null"
+          class="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
+          data-testid="zero-points-time"
+        >
+          {{ t('judging.sheet.zeroPointsTime', { time: formatTime(countedMs, decimals) }) }}
+        </p>
 
         <ScoreSheet
           v-if="s.ruleset.value && s.result.value"
@@ -394,7 +411,11 @@ function setManualPoints(raw: string | number) {
           <HistoryIcon class="size-4" /> {{ t('judging.sheet.history') }} ({{ p.history.length }})
         </summary>
         <div class="mt-3">
-          <ScoreHistory :entries="p.history" :definition="p.ruleset?.definition" />
+          <ScoreHistory
+            :entries="p.history"
+            :definition="p.ruleset?.definition"
+            :decimals="decimals"
+          />
         </div>
       </details>
 
@@ -462,7 +483,7 @@ function setManualPoints(raw: string | number) {
             </template>
             <template v-else-if="p.permissions.canCorrect">
               <span class="flex-1 text-sm text-muted-foreground"
-                >{{ formatTime(s.input.value.time_ms) }} ·
+                >{{ formatTime(countedMs ?? s.input.value.time_ms, decimals) }} ·
                 {{ t('judging.sheet.points', { points: s.total.value ?? '–' }) }}</span
               >
               <Button size="touch" variant="outline" @click="s.startCorrection">
@@ -492,6 +513,8 @@ function setManualPoints(raw: string | number) {
         :outcome="s.input.value.outcome"
         :total="s.total.value"
         :time-ms="s.input.value.time_ms"
+        :decimals="decimals"
+        :counted-ms="countedMs"
         :busy="s.busy.value"
         @confirm="confirmSubmit"
       />

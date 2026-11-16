@@ -1,4 +1,5 @@
 import { strToU8, zipSync, type Zippable } from 'fflate'
+import { seconds } from './csv'
 import { parseDate, type Cell, type ExportColumn, type ExportTable } from './table'
 
 // Minimal Office Open XML spreadsheet writer (M7-06): one sheet per table, a bold header row that
@@ -84,12 +85,13 @@ class Styles {
     const type = column.type ?? 'text'
     if (type === 'text') return 0
     if (type === 'number' && column.decimals === undefined) return 0
+    const fixed = (decimals: number) => (decimals === 0 ? '0' : `0.${'0'.repeat(decimals)}`)
     const code =
       type === 'number'
-        ? column.decimals === 0
-          ? '0'
-          : `0.${'0'.repeat(column.decimals!)}`
-        : FORMATS[type]
+        ? fixed(column.decimals!)
+        : type === 'duration'
+          ? fixed(column.decimals ?? 3)
+          : FORMATS[type]
     let fmt = this.formats.indexOf(code)
     if (fmt === -1) fmt = this.formats.push(code) - 1
     const numFmtId = 164 + fmt
@@ -134,7 +136,9 @@ function numericValue(value: Cell, column: ExportColumn): number | undefined {
     case 'number':
       return typeof value === 'number' && isFinite(value) ? value : undefined
     case 'duration':
-      return typeof value === 'number' && isFinite(value) ? value / 1000 : undefined
+      return typeof value === 'number' && isFinite(value)
+        ? seconds(value, column.decimals ?? 3)
+        : undefined
     case 'date':
     case 'datetime': {
       const date = parseDate(value)

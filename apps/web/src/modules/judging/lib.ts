@@ -1,3 +1,4 @@
+import { formatRunTime } from '@judge26/ranking-engine'
 import { t, translatedLabels } from '@/i18n'
 import type { Assignment, NamedRef, RoundCheck, RoundRef, SheetStatus } from './types'
 
@@ -45,13 +46,12 @@ export function stop(
 // Times
 // ---------------------------------------------------------------------------
 
-/** 95370 → "1:35.37" (minutes:seconds.hundredths). */
-export function formatTime(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 10))
-  const hundredths = total % 100
-  const seconds = Math.floor(total / 100) % 60
-  const minutes = Math.floor(total / 6000)
-  return `${minutes}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`
+/**
+ * A run time as minutes:seconds with the event's decimals (M10-19), cut not rounded: 95370 at
+ * 2 decimals → "1:35.37", at 0 → "1:35".
+ */
+export function formatTime(ms: number, decimals = 2): string {
+  return formatRunTime(ms, decimals)
 }
 
 /**

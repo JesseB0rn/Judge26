@@ -4,6 +4,9 @@
  * Validates a game and derives its points (M3-02, M3-03). When a published
  * ruleset of the game's category is attached, points are computed from the
  * score sheet values by the scoring engine; manual points are then ignored.
+ * If that ruleset sets a time for zero-point runs (M10-18), a run with 0 points
+ * counts with it: `time_ms` of the game is the counted time, the score sheet
+ * keeps the measured one.
  */
 function prepareGame(app, game) {
   const { fieldError } = require(`${__hooks}/lib/errors.js`)
@@ -39,7 +42,8 @@ function prepareGame(app, game) {
     fieldError('ruleset', 'invalid_ruleset', 'Use a published ruleset of this category.')
   }
   const engine = require(`${__hooks}/lib/scoring-engine.js`)
-  const compiled = engine.compileRuleset(JSON.parse(ruleset.getString('definition')))
+  const definition = JSON.parse(ruleset.getString('definition'))
+  const compiled = engine.compileRuleset(definition)
   const values = JSON.parse(game.getString('values') || '{}') || {}
   const result = engine.evaluate(compiled, values, { mode: 'final' })
   if (!result.valid) {
@@ -53,6 +57,7 @@ function prepareGame(app, game) {
     )
   }
   game.set('points', result.total)
+  game.set('time_ms', engine.countedTimeMs(definition, result.total, game.getInt('time_ms')))
 }
 
 module.exports = { prepareGame }

@@ -1,5 +1,10 @@
 import { t, te } from '@/i18n'
-import type { Ranking, RankingConfig, TeamInput } from '@judge26/ranking-engine'
+import {
+  decimalsOfResolution,
+  type Ranking,
+  type RankingConfig,
+  type TeamInput,
+} from '@judge26/ranking-engine'
 import type { ExportColumn, ExportTable } from '@/shared/export/table'
 import type { RoundRecord, TeamRecord } from '@/shared/types/records'
 
@@ -44,6 +49,8 @@ function roundLabel(data: RankingExport, key: string) {
 export function rankingTable(data: RankingExport): ExportTable {
   const { ranking, config } = data
   const decimals = config.precision ?? 2
+  // Times as precise as the ranking used them (M10-19/M10-20).
+  const time = decimalsOfResolution(config.timeResolutionMs)
   const teams = new Map(data.teams.map((t) => [t.id, t]))
   const rounds = config.rounds.map((r) => r.key)
 
@@ -55,14 +62,18 @@ export function rankingTable(data: RankingExport): ExportTable {
     { header: t('teams.country') },
     ...ranking.keys.map((k): ExportColumn =>
       k.field === 'time'
-        ? { header: `${k.label} (s)`, type: 'duration' }
+        ? { header: `${k.label} (s)`, type: 'duration', decimals: time }
         : { header: k.label, type: 'number', decimals },
     ),
     ...rounds.flatMap((key): ExportColumn[] => {
       const label = roundLabel(data, key)
       return [
         { header: t('rankings.export.roundPoints', { round: label }), type: 'number', decimals },
-        { header: t('rankings.export.roundTime', { round: label }), type: 'duration' },
+        {
+          header: t('rankings.export.roundTime', { round: label }),
+          type: 'duration',
+          decimals: time,
+        },
         { header: t('rankings.export.roundStatus', { round: label }) },
       ]
     }),
@@ -132,7 +143,11 @@ export function resultsTable(data: RankingExport): ExportTable {
       { header: t('scheduling.export.attempt'), type: 'number', decimals: 0 },
       { header: t('common.status') },
       { header: t('scheduling.export.points'), type: 'number', decimals },
-      { header: t('scheduling.export.time'), type: 'duration' },
+      {
+        header: t('scheduling.export.time'),
+        type: 'duration',
+        decimals: decimalsOfResolution(data.config.timeResolutionMs),
+      },
     ],
     rows,
   }

@@ -42,12 +42,17 @@ describe('event views', () => {
     const { router } = await mountView(EventListView, { session: { roles: [makeRole('admin')] } })
     await click(buttonByText('New event'))
     await fill('[role=dialog] input[required]', 'Swiss Final')
+    // M10-19: run times in whole seconds by default; tenths chosen here.
+    const decimals = 'select[data-testid=time-decimals]'
+    expect(document.querySelector<HTMLSelectElement>(decimals)!.value).toBe('0')
+    await fill(decimals, '1')
     await click(buttonByText('Save'))
     expect(mocked.createEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Swiss Final',
         status: 'draft',
         season: new Date().getFullYear(),
+        time_decimals: 1,
       }),
     )
     expect(router.currentRoute.value.name).toBe('event')
