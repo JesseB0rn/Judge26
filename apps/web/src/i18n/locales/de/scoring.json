@@ -125,7 +125,10 @@
     "rule": "Regel",
     "rawHint": "Diese Bedingung verschachtelt und/oder tiefer, als das Formular zeigt. Bearbeiten Sie sie hier als JSON.",
     "rawCondition": "Bedingung (JSON)",
-    "options": "Optionen"
+    "options": "Optionen",
+    "zeroPointsTime": "Läufe mit 0 Punkten mit fester Zeit werten",
+    "zeroPointsSeconds": "Zeit bei 0 Punkten (s)",
+    "zeroPointsHint": "Ein abgeschlossener Lauf mit 0 Punkten wird gewertet, als hätte er so lange gedauert; die gemessene Zeit bleibt auf dem Bewertungsbogen."
   },
   "view": {
     "draftSaved": "Entwurf gespeichert.",

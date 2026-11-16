@@ -125,7 +125,10 @@
     "rule": "Regola",
     "rawHint": "Questa condizione annida e/o più in profondità di quanto mostri il modulo. La modifichi qui come JSON.",
     "rawCondition": "Condizione (JSON)",
-    "options": "Opzioni"
+    "options": "Opzioni",
+    "zeroPointsTime": "Conta le manche a 0 punti con un tempo fisso",
+    "zeroPointsSeconds": "Tempo per 0 punti (s)",
+    "zeroPointsHint": "Una manche completata con 0 punti viene classificata come se fosse durata così; il tempo misurato resta sul foglio."
   },
   "view": {
     "draftSaved": "Bozza salvata.",

@@ -43,14 +43,14 @@ category, round, table and position. Points and time only for completed games.
 
 **CSV (M7-05):** RFC 4180, comma separated, CRLF line ends, UTF-8 with byte order mark (so Excel
 reads umlauts correctly). Numbers are exact (no rounding) with `.` as decimal separator; times in
-seconds with three decimals; dates `YYYY-MM-DD` and date-times `YYYY-MM-DD HH:MM` in local time.
+seconds with the event's run time decimals (as ranked, cut not rounded; M10-19); dates `YYYY-MM-DD` and date-times `YYYY-MM-DD HH:MM` in local time.
 Text starting with `=`, `+`, `-`, `@`, tab or carriage return is prefixed with `'` so spreadsheet
 programs never run it as a formula (CSV injection).
 
 **Excel (M7-06):** `.xlsx` (Office Open XML) with one sheet per table. Bold, shaded header row that
 stays visible when scrolling, with filters; column widths from the content. Cells are typed:
-points with the ranking's precision (`config.precision` decimals), times as seconds with three
-decimals, dates and date-times as real dates. Written by `apps/web/src/shared/export/xlsx.ts`
+points with the ranking's precision (`config.precision` decimals), times as seconds with the
+ranking's time decimals (M10-19), dates and date-times as real dates. Written by `apps/web/src/shared/export/xlsx.ts`
 (zipped with `fflate`).
 
 **PDF (M7-07):** _PDF_ opens the printable report `/categories/{id}/ranking/report` (live ranking)

@@ -196,6 +196,19 @@ export async function recordResult(gameId: string, points: number, timeMs = 0) {
   return pb.collection('games').update(gameId, { status: 'completed', points, time_ms: timeMs })
 }
 
+/** Records a final result scored with a ruleset: points come from `values` (M3-03, M10-18). */
+export async function recordScoredResult(
+  gameId: string,
+  rulesetId: string,
+  values: Record<string, unknown>,
+  timeMs: number,
+) {
+  const pb = await superuser()
+  return pb
+    .collection('games')
+    .update(gameId, { status: 'completed', ruleset: rulesetId, values, time_ms: timeMs })
+}
+
 /** Sets the category's public results (M6-10). */
 export async function setPublication(
   categoryId: string,

@@ -4,8 +4,8 @@
 /**
  * - text: as is
  * - number: `decimals` fixes the displayed decimal places in spreadsheets
- * - duration: milliseconds, written as seconds with 3 decimals (as shown in the app); name the
- *   column accordingly, e.g. "Time (s)"
+ * - duration: milliseconds, written as seconds with `decimals` decimals (default 3; the event's
+ *   run time precision, M10-19), cut not rounded; name the column accordingly, e.g. "Time (s)"
  * - date / datetime: ISO or PocketBase date strings, shown in local time
  */
 export type ColumnType = 'text' | 'number' | 'duration' | 'date' | 'datetime'

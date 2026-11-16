@@ -2,7 +2,12 @@
 import { t } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon, XIcon } from '@lucide/vue'
-import type { Condition, ScoringNode, SelectOption } from '@judge26/scoring-engine'
+import {
+  DEFAULT_ZERO_POINTS_TIME_MS,
+  type Condition,
+  type ScoringNode,
+  type SelectOption,
+} from '@judge26/scoring-engine'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Textarea } from '@/components/ui/textarea'
@@ -184,6 +189,14 @@ function toggleIn(i: number, option: string, on: boolean) {
 }
 
 const precision = computed(() => props.def.precision as number | undefined)
+/** Time counted for zero-point runs, in ms, or undefined when off (M10-18). */
+const zeroTime = computed(() => props.def.zeroPointsTimeMs as number | undefined)
+function setZeroTime(ms: number | undefined) {
+  const next = { ...props.def } as Draft & { zeroPointsTimeMs?: number }
+  if (ms === undefined) delete next.zeroPointsTimeMs
+  else next.zeroPointsTimeMs = ms
+  emit('apply', next as Draft)
+}
 </script>
 
 <template>
@@ -432,6 +445,34 @@ const precision = computed(() => props.def.precision as number | undefined)
           :model-value="precision"
           placeholder="2"
           @commit="emit('apply', { ...def, precision: $event } as Draft)"
+        />
+        <label class="flex items-center gap-2 text-sm" data-testid="zero-points-toggle">
+          <input
+            type="checkbox"
+            class="size-4 accent-primary"
+            :checked="zeroTime !== undefined"
+            @change="
+              setZeroTime(
+                ($event.target as HTMLInputElement).checked
+                  ? DEFAULT_ZERO_POINTS_TIME_MS
+                  : undefined,
+              )
+            "
+          />
+          {{ t('scoring.inspector.zeroPointsTime') }}
+        </label>
+        <InspectorField
+          v-if="zeroTime !== undefined"
+          data-testid="zero-points-seconds"
+          :label="t('scoring.inspector.zeroPointsSeconds')"
+          type="number"
+          :model-value="zeroTime / 1000"
+          :hint="t('scoring.inspector.zeroPointsHint')"
+          @commit="
+            setZeroTime(
+              typeof $event === 'number' && $event >= 0 ? Math.round($event * 1000) : zeroTime,
+            )
+          "
         />
       </template>
 

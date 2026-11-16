@@ -244,7 +244,13 @@ function serializeContext(ctx) {
       name: category.getString('name'),
       code: category.getString('code'),
     },
-    event: { id: event.id, name: event.getString('name'), status: event.getString('status') },
+    event: {
+      id: event.id,
+      name: event.getString('name'),
+      status: event.getString('status'),
+      // Decimals of run times (M10-19).
+      time_decimals: event.getInt('time_decimals'),
+    },
     table: table ? { id: table.id, name: table.getString('name') } : null,
     day: day ? { id: day.id, date: day.getString('date'), label: day.getString('label') } : null,
   }
@@ -723,7 +729,13 @@ function summary(app, game, cache) {
       name: category.getString('name'),
       code: category.getString('code'),
     },
-    event: { id: event.id, name: event.getString('name'), status: event.getString('status') },
+    event: {
+      id: event.id,
+      name: event.getString('name'),
+      status: event.getString('status'),
+      // Decimals of run times (M10-19).
+      time_decimals: event.getInt('time_decimals'),
+    },
     table: table ? { id: table.id, name: table.getString('name') } : null,
     day: day ? { id: day.id, date: day.getString('date'), label: day.getString('label') } : null,
     sheet: sheet

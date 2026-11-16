@@ -31,6 +31,10 @@ export interface EventRecord extends BaseRecord {
   /** PocketBase datetime string ("YYYY-MM-DD HH:mm:ss.SSSZ") or "". */
   registration_opens_at: string
   registration_closes_at: string
+  /** Decimals of run times, 0–3; empty (0) = whole seconds (M10-19). */
+  time_decimals?: number
+  /** How new tables are named (M10-25). */
+  table_labels?: '' | 'table_number' | 'number' | 'table_letter' | 'letter'
 }
 
 /** Contents of a template file (apps/backend/hooks/lib/templates.js). Only what the app shows is typed. */

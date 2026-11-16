@@ -50,7 +50,8 @@ export interface Assignment {
   /** The round's robot check, or null/absent if it has none (M5-15). */
   check?: RoundCheck | null
   category: { id: string; name: string; code: string }
-  event: { id: string; name: string; status: string }
+  /** `time_decimals`: decimals of run times (M10-19). */
+  event: { id: string; name: string; status: string; time_decimals?: number }
   table: NamedRef | null
   day: DayRef | null
   sheet: {
@@ -122,7 +123,8 @@ export interface SheetPayload {
   team: NamedRef & { organization: string; country: string }
   round: RoundRef & { testing_minutes: number; scoring_minutes: number }
   category: { id: string; name: string; code: string }
-  event: { id: string; name: string; status: string }
+  /** `time_decimals`: decimals of run times (M10-19). */
+  event: { id: string; name: string; status: string; time_decimals?: number }
   table: NamedRef | null
   day: DayRef | null
   ruleset: {

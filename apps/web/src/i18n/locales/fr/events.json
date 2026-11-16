@@ -19,7 +19,15 @@
   "form": {
     "editTitle": "Modifier l’événement",
     "newTitle": "Nouvel événement",
-    "description": "Les jours de compétition et les catégories se gèrent sur la page de l’événement."
+    "description": "Les jours de compétition et les catégories se gèrent sur la page de l’événement.",
+    "timeDecimals": "Temps des manches",
+    "timeDecimalsHint": "Précision d’affichage et de classement des temps : ils sont tronqués, pas arrondis. Les temps mesurés sont conservés à la milliseconde.",
+    "timeDecimalsOption": {
+      "0": "Secondes entières (1:35)",
+      "1": "Dixièmes (1:35.3)",
+      "2": "Centièmes (1:35.37)",
+      "3": "Millièmes (1:35.379)"
+    }
   },
   "detail": {
     "updated": "Événement mis à jour.",

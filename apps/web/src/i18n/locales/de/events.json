@@ -19,7 +19,15 @@
   "form": {
     "editTitle": "Anlass bearbeiten",
     "newTitle": "Neuer Anlass",
-    "description": "Wettbewerbstage und Kategorien werden auf der Seite des Anlasses verwaltet."
+    "description": "Wettbewerbstage und Kategorien werden auf der Seite des Anlasses verwaltet.",
+    "timeDecimals": "Laufzeiten",
+    "timeDecimalsHint": "Wie genau Laufzeiten angezeigt und gewertet werden: Zeiten werden abgeschnitten, nicht gerundet. Gemessene Zeiten bleiben auf die Millisekunde erhalten.",
+    "timeDecimalsOption": {
+      "0": "Ganze Sekunden (1:35)",
+      "1": "Zehntel (1:35.3)",
+      "2": "Hundertstel (1:35.37)",
+      "3": "Tausendstel (1:35.379)"
+    }
   },
   "detail": {
     "updated": "Anlass aktualisiert.",

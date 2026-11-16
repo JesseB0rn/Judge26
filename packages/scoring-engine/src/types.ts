@@ -82,8 +82,19 @@ export interface RulesetDefinition {
   schemaVersion: typeof SCHEMA_VERSION
   /** Decimal places of all scores (0–4). Default 2. */
   precision?: number
+  /**
+   * Time counted for a completed run with zero points, in milliseconds (M10-18), e.g. 120000:
+   * such a run ranks as if it took this long; the measured time stays on the score sheet.
+   * Absent: the measured time counts. New rulesets get `DEFAULT_ZERO_POINTS_TIME_MS`.
+   */
+  zeroPointsTimeMs?: number
   root: Group
 }
+
+/** The time new rulesets count for zero-point runs (M10-18): 120 s. */
+export const DEFAULT_ZERO_POINTS_TIME_MS = 120_000
+/** Upper bound of `zeroPointsTimeMs`: one hour. */
+export const MAX_ZERO_POINTS_TIME_MS = 3_600_000
 
 /** Values entered on a score sheet, keyed by criterion id. Select values are option ids. */
 export type ScoreValue = boolean | number | string | null

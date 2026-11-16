@@ -96,7 +96,8 @@
     "game": "Lauf",
     "noTime": "nicht erfasst",
     "back": "Zurück zum Bogen",
-    "submit": "Punkte einreichen"
+    "submit": "Punkte einreichen",
+    "countedTime": "zählt bei 0 Punkten; gemessen {measured}"
   },
   "dashboard": {
     "description": "Läufe an Ihrem Tisch, in Spielreihenfolge.",
@@ -159,7 +160,8 @@
     "mulliganConfirm": "Lauf verwerfen und Wiederholung erlauben",
     "mulliganGranted": "{team}: Wiederholung gewährt.",
     "mulliganBy": "Wiederholung gewährt von {name}",
-    "mulliganMeanwhile": "Inzwischen wurde eine Wiederholung gewährt. Die auf diesem Gerät gespeicherten Änderungen gehörten zum verworfenen Lauf und wurden nicht übernommen."
+    "mulliganMeanwhile": "Inzwischen wurde eine Wiederholung gewährt. Die auf diesem Gerät gespeicherten Änderungen gehörten zum verworfenen Lauf und wurden nicht übernommen.",
+    "zeroPointsTime": "0 Punkte: Dieser Lauf zählt mit {time} (Regel des Regelwerks). Die gemessene Zeit bleibt auf dem Bogen."
   },
   "program": {
     "label": "Programm",

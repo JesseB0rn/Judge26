@@ -95,7 +95,8 @@ describe('RankingView', () => {
       ['Bravo', '1'],
       ['Alpha', '2'],
     ])
-    expect(wrapper.get('[data-team=Alpha]').text()).toContain('110.000 s')
+    // The event ranks in whole seconds (no precision set, M10-19/M10-20).
+    expect(wrapper.get('[data-team=Alpha]').text()).toContain('1:50')
     expect(wrapper.get('[data-team=Alpha]').text()).toContain('by Time of best')
     expect(wrapper.text()).toContain('(provisional)')
 
@@ -241,7 +242,7 @@ describe('RankingView', () => {
     mocked.saveGame.mockResolvedValue(makeGame())
     const { wrapper } = await mountView(RankingView, { props: { id: 'cat1' }, session: manager })
     await openTab(wrapper, 'Results')
-    expect(wrapper.get('[data-team=Alpha] [data-round=R3]').text()).toContain('100 / 110.000 s')
+    expect(wrapper.get('[data-team=Alpha] [data-round=R3]').text()).toContain('100 / 1:50')
 
     // Bravo has no R2 result yet: score with the ruleset (default when one is published).
     await click(

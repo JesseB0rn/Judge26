@@ -3,7 +3,13 @@ import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ArrowLeftIcon, PrinterIcon } from '@lucide/vue'
-import { rank, type Ranking, type RankingConfig, type TeamInput } from '@judge26/ranking-engine'
+import {
+  decimalsOfResolution,
+  rank,
+  type Ranking,
+  type RankingConfig,
+  type TeamInput,
+} from '@judge26/ranking-engine'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -62,6 +68,7 @@ async function load() {
     }
     const parsed = parseRankingConfig(
       category.value.ranking ? JSON.stringify(category.value.ranking) : '',
+      category.value.expand?.event?.time_decimals ?? 0,
     )
     if (!parsed.config) {
       missing.value = t('rankings.report.notConfigured')
@@ -72,7 +79,7 @@ async function load() {
     openGames.value = games.filter((g) => g.status === 'scheduled').length
     shown.value = {
       ranking: rank(parsed.config, inputs),
-      config: parsed.definition as RankingConfig,
+      config: parsed.config.config,
       inputs,
     }
   } catch (e) {
@@ -159,7 +166,13 @@ onMounted(load)
               :key="i"
               class="py-1 pl-2 text-right tabular-nums"
             >
-              {{ formatValue(value, shown.ranking.keys[i]!.field) }}
+              {{
+                formatValue(
+                  value,
+                  shown.ranking.keys[i]!.field,
+                  decimalsOfResolution(shown.config.timeResolutionMs),
+                )
+              }}
             </td>
           </tr>
         </tbody>

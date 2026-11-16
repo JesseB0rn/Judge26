@@ -125,7 +125,10 @@
     "rule": "Règle",
     "rawHint": "Cette condition imbrique et/ou plus profondément que le formulaire ne le montre. Modifiez-la ici en JSON.",
     "rawCondition": "Condition (JSON)",
-    "options": "Options"
+    "options": "Options",
+    "zeroPointsTime": "Compter les manches à 0 point avec un temps fixe",
+    "zeroPointsSeconds": "Temps pour 0 point (s)",
+    "zeroPointsHint": "Une manche terminée avec 0 point est classée comme si elle avait duré ce temps ; le temps mesuré reste sur la feuille."
   },
   "view": {
     "draftSaved": "Brouillon enregistré.",

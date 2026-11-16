@@ -310,8 +310,10 @@ function rankingPayload(app, categoryId) {
   let live = null
   if (pub.live) {
     const engine = require(`${__hooks}/lib/ranking-engine.js`)
-    const config = JSON.parse(category.getString('ranking'))
-    const inputs = require(`${__hooks}/lib/ranking.js`).loadInputs(app, categoryId)
+    const ranking = require(`${__hooks}/lib/ranking.js`)
+    // With the event's time precision (M10-20), which the shown times follow too.
+    const config = ranking.effectiveConfig(app, category, JSON.parse(category.getString('ranking')))
+    const inputs = ranking.loadInputs(app, categoryId)
     // Only the ranking is public; inputs (game records) stay private.
     live = { config, result: engine.rank(engine.compileRankingConfig(config), inputs) }
   }

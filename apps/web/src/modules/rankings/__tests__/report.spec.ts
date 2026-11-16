@@ -65,8 +65,8 @@ describe('ranking report (M7-07)', () => {
     expect(wrapper.get('[data-testid=report-title]').text()).toBe('Live ranking (provisional)')
     expect(wrapper.get('[data-testid=report-provisional]').text()).toContain('one game has')
     expect(reportRows()).toEqual([
-      ['1', 'Bravo *', 'School B', '120', '50.000 s', '120'],
-      ['2', 'Alpha *', 'School A', '100', '60.000 s', '100'],
+      ['1', 'Bravo *', 'School B', '120', '0:50', '120'],
+      ['2', 'Alpha *', 'School A', '100', '1:00', '100'],
     ])
     await click(buttonByText('Print / save as PDF'))
     expect(print).toHaveBeenCalledOnce()
