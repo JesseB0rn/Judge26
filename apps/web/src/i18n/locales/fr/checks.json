@@ -67,6 +67,9 @@
     "remove": "Supprimer le fichier du tour",
     "confirmRemove": "Supprimer le fichier du tour ?",
     "failed": "Le fichier du tour n’a pas pu être chargé.",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "hidden": "Le fichier du tour est masqué.",
     "hint": "Image ou PDF, jusqu’à 10 Mo. Les juges le voient dès que le contrôle du robot est confirmé ; il n’est jamais public."
   }
 }

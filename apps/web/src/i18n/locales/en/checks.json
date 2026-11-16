@@ -67,6 +67,9 @@
     "remove": "Remove the round file",
     "confirmRemove": "Remove the round file?",
     "failed": "The round file could not be loaded.",
+    "hide": "Hide",
+    "show": "Show",
+    "hidden": "The round file is hidden.",
     "hint": "Image or PDF, up to 10 MB. Judges see it once the robot check is confirmed; it is never public."
   }
 }

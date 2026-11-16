@@ -67,6 +67,9 @@
     "remove": "Rundendatei entfernen",
     "confirmRemove": "Rundendatei entfernen?",
     "failed": "Die Rundendatei konnte nicht geladen werden.",
+    "hide": "Ausblenden",
+    "show": "Einblenden",
+    "hidden": "Die Rundendatei ist ausgeblendet.",
     "hint": "Bild oder PDF, bis 10 MB. Schiedsrichter sehen sie, sobald die Roboterkontrolle bestätigt ist; sie ist nie öffentlich."
   }
 }
