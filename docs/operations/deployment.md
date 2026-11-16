@@ -66,19 +66,19 @@ applied from the environment on every start), sign in to the app with an account
 
 All settings come from `.env` (template: `.env.example`).
 
-| Variable                                        | Purpose                                                                |
-| ----------------------------------------------- | ---------------------------------------------------------------------- |
-| `APP_URL`                                       | Public URL, used in email links                                        |
-| `PB_SUPERUSER_EMAIL`, `PB_SUPERUSER_PASSWORD`   | Superuser created (or password reset) on every start                   |
-| `PB_ENCRYPTION_KEY`                             | 32 characters; encrypts stored SMTP/S3 secrets. Set once, never change |
-| `SMTP_*`, `MAIL_SENDER_*`                       | Email delivery (M7-01)                                                 |
-| `SMTP_AUTH`, `SMTP_OAUTH_*`, `COMPOSE_PROFILES` | Email with OAuth for Microsoft 365 (M9-D, see below)                   |
-| `JUDGE26_MAIL_RELAY_IMAGE`                      | Mail relay image (set by the installer)                                |
-| `BACKUP_CRON`, `BACKUP_MAX_KEEP`                | Automatic backups ([runbook](backup-and-restore.md))                   |
-| `MONITORING_*`                                  | Alert emails and thresholds ([monitoring runbook](monitoring.md))      |
-| `DOMAIN`, `ACME_EMAIL`                          | HTTPS with Caddy                                                       |
-| `JUDGE26_IMAGE`, `APP_VERSION`, `GIT_COMMIT`    | Image to run and the version it reports (`/api/app/info`, status page) |
-| `JUDGE26_PORT`, `TZ`                            | Published port (without Caddy), time zone (backup schedule, logs)      |
+| Variable                                        | Purpose                                                                                            |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `APP_URL`                                       | Public URL, used in email links                                                                    |
+| `PB_SUPERUSER_EMAIL`, `PB_SUPERUSER_PASSWORD`   | Superuser created (or password reset) on every start                                               |
+| `PB_ENCRYPTION_KEY`                             | 32 characters; encrypts stored SMTP/S3 secrets. Set once, never change                             |
+| `SMTP_*`, `MAIL_SENDER_*`                       | Email delivery (M7-01)                                                                             |
+| `SMTP_AUTH`, `SMTP_OAUTH_*`, `COMPOSE_PROFILES` | Email with OAuth for Microsoft 365, with a client secret or a certificate (M9-D, M10-G, see below) |
+| `JUDGE26_MAIL_RELAY_IMAGE`                      | Mail relay image (set by the installer)                                                            |
+| `BACKUP_CRON`, `BACKUP_MAX_KEEP`                | Automatic backups ([runbook](backup-and-restore.md))                                               |
+| `MONITORING_*`                                  | Alert emails and thresholds ([monitoring runbook](monitoring.md))                                  |
+| `DOMAIN`, `ACME_EMAIL`                          | HTTPS with Caddy                                                                                   |
+| `JUDGE26_IMAGE`, `APP_VERSION`, `GIT_COMMIT`    | Image to run and the version it reports (`/api/app/info`, status page)                             |
+| `JUDGE26_PORT`, `TZ`                            | Published port (without Caddy), time zone (backup schedule, logs)                                  |
 
 ### Email with OAuth (Microsoft 365)
 
@@ -91,7 +91,8 @@ with SMTP AUTH XOAUTH2. A message counts as sent only once Microsoft 365 accepte
 delivery errors show under _Emails_ and are retried like any mail-server error (M7-02).
 
 1. **Register an app** in Microsoft Entra ID (App registrations → New registration). Note the
-   _Directory (tenant) ID_ and _Application (client) ID_; create a **client secret**.
+   _Directory (tenant) ID_ and _Application (client) ID_; create a **client secret**, or use a
+   [certificate instead](#certificate-instead-of-a-client-secret).
 2. **API permissions** → Add → _APIs my organization uses_ → **Office 365 Exchange Online** →
    Application permissions → **`SMTP.SendAsApp`** → grant admin consent.
 3. **Allow the app to send as the mailbox** (Exchange Online PowerShell, as an Exchange admin):
@@ -132,6 +133,52 @@ Errors in `docker compose logs mail-relay`:
 The client secret expires (at most 24 months): renew it in Entra ID, update `.env` and
 `docker compose up -d`. The relay never logs the secret or the token. To go back to a password,
 set `SMTP_AUTH=basic` and the `SMTP_*` settings, then run the installer again.
+
+### Certificate instead of a client secret
+
+Where policies forbid client secrets, or to avoid renewing one, the relay can authenticate with a
+**certificate credential** (M10-G): for every token request it signs a short-lived client
+assertion (a JWT, PS256, valid 10 minutes, with the certificate's SHA-256 thumbprint) with the
+certificate's private key. Only the public certificate goes to Entra ID; the key stays on the
+server. Delivery (XOAUTH2, outbox, retries) is unchanged.
+
+1. **Create the certificate** (RSA, here valid two years) next to `.env`:
+
+   ```sh
+   mkdir -p mail-relay-certificate && cd mail-relay-certificate
+   openssl req -x509 -newkey rsa:2048 -sha256 -days 730 -nodes \
+     -subj "/CN=judge26-mail-relay" -keyout relay.key -out relay.crt
+   # The relay runs as uid 1000; only it may read the key.
+   sudo chown 1000:1000 relay.key relay.crt && sudo chmod 600 relay.key
+   ```
+
+2. **Upload** `relay.crt` (never the key) in Entra ID: the app registration → _Certificates &
+   secrets_ → _Certificates_ → _Upload certificate_. Delete the client secret if one exists.
+3. **Configure** `.env`: leave `SMTP_OAUTH_CLIENT_SECRET` empty and set (paths inside the
+   container; `mail-relay-certificate/` is mounted read-only at `/certificate`, see
+   `SMTP_OAUTH_CERTIFICATE_DIR`):
+
+   ```sh
+   SMTP_OAUTH_CERTIFICATE_FILE=/certificate/relay.crt
+   SMTP_OAUTH_PRIVATE_KEY_FILE=/certificate/relay.key
+   # SMTP_OAUTH_PRIVATE_KEY_PASSPHRASE=   only for an encrypted key
+   ```
+
+4. **Apply** with `docker compose up -d mail-relay`; the log says `OAuth with a certificate` and
+   `OAuth token obtained.`
+
+At start the relay checks the files: a missing or unreadable file, a key that is not RSA or does
+not belong to the certificate, an expired or not yet valid certificate stop it with a message that
+names the setting; both a secret and a certificate set is an error too. From 30 days before the
+certificate expires the log warns at every start: create a new one, upload it (both can be
+registered at the same time), switch the files and restart. The key and the assertions are never
+logged.
+
+| Error                                                               | Cause and fix                                                                                |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `AADSTS700027: … certificate … is not registered on application`    | `relay.crt` was not uploaded to this app registration, or a different certificate is mounted |
+| `AADSTS700024: Client assertion is not within its valid time range` | The server clock is wrong; set up time synchronization (NTP)                                 |
+| `SMTP_OAUTH_PRIVATE_KEY_FILE: cannot read … (EACCES)`               | The key is not readable by uid 1000: `chown 1000:1000 relay.key`                             |
 
 ## Verify a deployment
 

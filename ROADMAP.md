@@ -2061,7 +2061,7 @@ with a certificate instead of a client secret.
 -   [x] **M10-D** Planner editing (M10-21 to M10-24)
 -   [x] **M10-E** Board and drag and drop (M10-25 to M10-29)
 -   [ ] **M10-F** Setup, print center and live (M10-30 to M10-36)
--   [ ] **M10-G** OAuth for the mail relay with a certificate credential
+-   [x] **M10-G** OAuth for the mail relay with a certificate credential
     (M10-37 to M10-40)
 
 Suggested order: M10-E and M10-D first (fixes, no data model change), then
@@ -2423,6 +2423,15 @@ scroll jump: while a write ran, the board removed its edit controls, which narro
   ------------------------------------------------------------------------------
 
 ### M10-G --- OAuth with a certificate credential
+
+**Status:** M10-37 to M10-40 implemented (see
+`docs/operations/deployment.md#certificate-instead-of-a-client-secret`; tests in
+`apps/mail-relay/tests/relay.test.ts`). Decisions: the assertion is signed with PS256 and names
+the certificate by `x5t#S256`, the form Microsoft Entra ID recommends; only RSA keys are accepted
+(Entra ID certificate credentials are RSA); an encrypted key needs
+`SMTP_OAUTH_PRIVATE_KEY_PASSPHRASE`; the files are mounted read-only into the relay container
+(`SMTP_OAUTH_CERTIFICATE_DIR`, default `./mail-relay-certificate`). The expiry warning is logged at
+every start of the relay.
 
 The mail relay (M9-D) authenticates to the token endpoint with a client
 secret. Secrets expire and some tenants' policies forbid them; Microsoft
