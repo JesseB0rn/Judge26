@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { onBeforeUnmount, ref, watch } from 'vue'
-import { DownloadIcon, ExternalLinkIcon, ShuffleIcon } from '@lucide/vue'
+import { DownloadIcon, ExternalLinkIcon, EyeIcon, EyeOffIcon, ShuffleIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { roundFileUrl } from '../api'
 import type { RoundFile } from '../types'
@@ -9,8 +9,37 @@ import type { RoundFile } from '../types'
 /**
  * The randomization file of a round (M10-17), shown on the robot check and the score sheet once
  * the check is confirmed. The file needs the sign-in, so it is loaded into a local object URL.
+ *
+ * Once the table is set up the judge can hide the preview. That choice is remembered on this
+ * device for the round, until the file is replaced.
  */
 const props = defineProps<{ roundId: string; file: RoundFile }>()
+
+const hiddenKey = (roundId: string) => `judge26:judging:roundFileHidden:${roundId}`
+
+function readHidden(): boolean {
+  try {
+    return localStorage.getItem(hiddenKey(props.roundId)) === props.file.updated
+  } catch {
+    return false
+  }
+}
+
+const hidden = ref(readHidden())
+watch(
+  () => `${props.roundId}:${props.file.updated}`,
+  () => (hidden.value = readHidden()),
+)
+
+function toggleHidden() {
+  hidden.value = !hidden.value
+  try {
+    if (hidden.value) localStorage.setItem(hiddenKey(props.roundId), props.file.updated)
+    else localStorage.removeItem(hiddenKey(props.roundId))
+  } catch {
+    // Not persisted (private mode); the toggle still works for this page.
+  }
+}
 
 const url = ref('')
 const failed = ref(false)
@@ -68,8 +97,20 @@ onBeforeUnmount(revoke)
           /></a>
         </Button>
       </template>
+      <Button
+        size="touch"
+        variant="outline"
+        :aria-expanded="!hidden"
+        data-testid="round-file-toggle"
+        @click="toggleHidden"
+      >
+        <EyeIcon v-if="hidden" aria-hidden="true" />
+        <EyeOffIcon v-else aria-hidden="true" />
+        {{ hidden ? t('checks.file.show') : t('checks.file.hide') }}
+      </Button>
     </div>
-    <p v-if="failed" class="text-sm text-destructive">{{ t('checks.file.failed') }}</p>
+    <p v-if="hidden" class="sr-only">{{ t('checks.file.hidden') }}</p>
+    <p v-else-if="failed" class="text-sm text-destructive">{{ t('checks.file.failed') }}</p>
     <template v-else-if="url">
       <img
         v-if="file.kind === 'image'"

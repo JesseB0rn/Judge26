@@ -67,6 +67,9 @@
     "remove": "Rimuovi il file del turno",
     "confirmRemove": "Rimuovere il file del turno?",
     "failed": "Non è stato possibile caricare il file del turno.",
+    "hide": "Nascondi",
+    "show": "Mostra",
+    "hidden": "Il file del turno è nascosto.",
     "hint": "Immagine o PDF, fino a 10 MB. I giudici lo vedono non appena il controllo del robot è confermato; non è mai pubblico."
   }
 }
