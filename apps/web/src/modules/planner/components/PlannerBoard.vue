@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { AlertTriangleIcon, EyeOffIcon, GripVerticalIcon } from '@lucide/vue'
+import { AlertTriangleIcon, EyeOffIcon, GripVerticalIcon, PencilIcon } from '@lucide/vue'
 import { formatDay } from '@/shared/format'
+import { beginDrag, endDrag } from '@/shared/dragSelection'
 import { localDate } from '@/modules/live/lib'
 import {
   axisRange,
@@ -30,6 +31,7 @@ import {
   issueText,
 } from '../lib'
 import type {
+  Coverage,
   CreateRequest,
   ItemRef,
   MoveRequest,
@@ -44,7 +46,9 @@ import { fitText } from '../fitText'
 /**
  * The planner grid (M4-14-05): all days next to one another, one column per category, rows are
  * time of day. Editors move blocks by drag (or keyboard), resize them at the lower edge, create
- * blocks on empty space and place phases from the tray. The parent stores the changes.
+ * blocks by double-clicking empty space or dragging across it (over several columns: one block
+ * covering all of them, M10-22/M10-23), place phases from the tray and edit a day's times from
+ * its header (M10-21). The parent stores the changes.
  */
 const props = withDefaults(
   defineProps<{
@@ -87,6 +91,7 @@ const emit = defineEmits<{
   move: [request: MoveRequest]
   resize: [ref: ItemRef, duration: number]
   create: [request: CreateRequest]
+  editDay: [day: PlannerDay]
 }>()
 
 const COL_W = 168
@@ -210,15 +215,17 @@ function onColDown(event: PointerEvent, column: GridColumn) {
   window.addEventListener('pointermove', onColMove)
   window.addEventListener('pointerup', onColUp)
   window.addEventListener('pointercancel', onColUp)
-  document.body.style.userSelect = 'none'
+  beginDrag()
 }
 function onColMove(event: PointerEvent) {
   if (resizing) setWidth(resizing.id, resizing.width + event.clientX - resizing.startX)
 }
 function onColUp() {
-  if (resizing) saveWidths()
+  if (resizing) {
+    saveWidths()
+    endDrag()
+  }
   resizing = null
-  document.body.style.userSelect = ''
   window.removeEventListener('pointermove', onColMove)
   window.removeEventListener('pointerup', onColUp)
   window.removeEventListener('pointercancel', onColUp)
@@ -500,7 +507,7 @@ function onMove(event: PointerEvent) {
   if (!d.active) {
     if (Math.hypot(event.clientX - d.startX, event.clientY - d.startY) < 4) return
     d.active = true
-    document.body.style.userSelect = 'none'
+    beginDrag()
   }
   autoScroll(event)
   const target = hit(event.clientX, event.clientY)
@@ -522,13 +529,16 @@ function onMove(event: PointerEvent) {
     const current = clamp(snap(target.minute), 0, DAY_MINUTES)
     const start = Math.min(d.start, current)
     const end = Math.max(d.start + SNAP_MINUTES, current)
+    // Across columns: one block covering every column from the first to the last (M10-22).
+    const col = target.day === d.day ? Math.min(d.col, target.col) : d.col
+    const span = target.day === d.day ? Math.abs(target.col - d.col) + 1 : 1
     preview.value = {
       day: d.day,
-      col: d.col,
-      span: 1,
+      col,
+      span,
       start,
       end,
-      label: `${formatTime(start)}–${formatTime(end)}`,
+      label: `${formatTime(start)}–${formatTime(end)}${span > 1 ? ` · ${t('planner.board.columnsCount', { count: span })}` : ''}`,
     }
     return
   }
@@ -551,9 +561,9 @@ function onMove(event: PointerEvent) {
 }
 
 function finish() {
+  if (drag.value?.active) endDrag()
   drag.value = null
   preview.value = null
-  document.body.style.userSelect = ''
   window.removeEventListener('pointermove', onMove)
   window.removeEventListener('pointerup', onUp)
   window.removeEventListener('pointercancel', cancel)
@@ -570,23 +580,14 @@ function onUp(event: PointerEvent) {
   if (!d) return
   if (!d.active) {
     if (d.ref && (d.mode === 'move' || d.mode === 'place')) emit('open', d.ref)
-    if (d.mode === 'create') {
-      emit('create', {
-        day: d.day,
-        column: props.columns[d.col]?.id ?? '',
-        custom: !!props.columns[d.col]?.custom,
-        starts_at: formatTime(d.start),
-        duration_minutes: 30,
-      })
-    }
+    // A single click on empty space does nothing; a double click opens the dialog (M10-23).
     return
   }
   if (!p) return
   if (d.mode === 'create') {
     emit('create', {
       day: p.day,
-      column: props.columns[p.col]?.id ?? '',
-      custom: !!props.columns[p.col]?.custom,
+      coverage: coverageOfRange(p.col, p.span),
       starts_at: formatTime(p.start),
       duration_minutes: Math.max(MIN_DRAG_MINUTES, p.end - p.start),
     })
@@ -611,6 +612,29 @@ function coverageOf(column: GridColumn) {
   return column.custom
     ? { categories: [], columns: [column.id] }
     : { categories: [column.id], columns: [] }
+}
+
+/** Coverage of the shown columns `col` … `col + span - 1`. */
+function coverageOfRange(col: number, span: number): Coverage {
+  const range = props.columns.slice(col, col + span)
+  return {
+    categories: range.filter((c) => !c.custom).map((c) => c.id),
+    columns: range.filter((c) => c.custom).map((c) => c.id),
+  }
+}
+
+/** Double click on empty space: a new block of 30 minutes in that column (M10-23). */
+function onBodyDoubleClick(event: MouseEvent, day: PlannerDay) {
+  if (!props.editable || (event.target as HTMLElement).closest('[data-item]')) return
+  const target = hit(event.clientX, event.clientY)
+  if (!target) return
+  const start = clampStart(Math.floor(target.minute / SNAP_MINUTES) * SNAP_MINUTES, 30)
+  emit('create', {
+    day: day.id,
+    coverage: coverageOfRange(target.col, 1),
+    starts_at: formatTime(start),
+    duration_minutes: 30,
+  })
 }
 
 // --- Keyboard (M4-14-17) ---------------------------------------------------------
@@ -814,7 +838,19 @@ function dayShade(day: PlannerDay) {
                   <span v-if="day.label" class="min-w-0 truncate text-xs text-muted-foreground">{{
                     formatDay(day.date)
                   }}</span>
-                  <span class="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground"
+                  <button
+                    v-if="editable"
+                    type="button"
+                    class="ml-auto flex shrink-0 items-center gap-1 rounded px-1 text-xs tabular-nums text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    :title="t('planner.dayTimes.edit', { day: dayName(day) })"
+                    :aria-label="t('planner.dayTimes.edit', { day: dayName(day) })"
+                    data-testid="planner-day-times"
+                    @click="emit('editDay', day)"
+                  >
+                    {{ day.starts_at }}–{{ day.ends_at }}
+                    <PencilIcon class="size-3 print:hidden" aria-hidden="true" />
+                  </button>
+                  <span v-else class="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground"
                     >{{ day.starts_at }}–{{ day.ends_at }}</span
                   >
                 </div>
@@ -855,13 +891,14 @@ function dayShade(day: PlannerDay) {
 
               <div
                 :ref="(el) => setBody(day.id, el)"
-                class="planner-body relative"
+                class="planner-body relative select-none"
                 :class="{ 'cursor-crosshair': editable }"
                 :style="{
                   width: px(gridWidth),
                   height: h(axis.end - axis.start),
                 }"
                 @pointerdown="onBodyDown($event, day)"
+                @dblclick="onBodyDoubleClick($event, day)"
               >
                 <!-- Outside the day's hours -->
                 <div

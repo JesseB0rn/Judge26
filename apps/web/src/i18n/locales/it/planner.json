@@ -73,7 +73,8 @@
     "noDays": "Ancora nessun giorno di gara. Aggiunga i giorni nella panoramica dell’evento.",
     "customColumn": "colonna personalizzata",
     "resizeColumn": "Ridimensiona la colonna {column}",
-    "resizeHint": "Trascina per ridimensionare, doppio clic per ripristinare. Tastiera: frecce."
+    "resizeHint": "Trascina per ridimensionare, doppio clic per ripristinare. Tastiera: frecce.",
+    "columnsCount": "{count} colonne"
   },
   "view": {
     "linkGone": "Il blocco collegato non esiste più.",
@@ -87,11 +88,19 @@
     "showAll": "Mostra tutto",
     "days": "Giorni",
     "shownDays": "Giorni mostrati",
-    "moveLater": "Sposta anche le fasi successive",
-    "moveLaterHint": "(o tenga premuto Maiusc mentre rilascia)",
+    "moveLater": "Sposta anche i blocchi successivi",
+    "moveLaterHint": "(il resto della colonna; o tenga premuto Maiusc mentre rilascia)",
     "undoTitle": "Annulla (Ctrl+Z)",
     "warnings": "nessun avviso | un avviso | {count} avvisi",
     "narrow": "La modifica è disponibile su tablet e schermi più grandi.",
-    "help": "Trascini i blocchi per spostarli, il bordo inferiore per ridimensionarli e uno spazio vuoto per creare un blocco. Con la tastiera: le frecce spostano (Maiusc: 15 min, sinistra/destra: giorno), Alt+frecce ridimensionano, Invio apre."
+    "help": "Trascini i blocchi per spostarli, il bordo inferiore per ridimensionarli. Faccia doppio clic su uno spazio vuoto per aggiungere un blocco, o lo trascini (su più colonne per un blocco che le copre). Clicchi sugli orari di una giornata per modificarli. Con la tastiera: le frecce spostano (Maiusc: 15 min, sinistra/destra: giorno), Alt+frecce ridimensionano, Invio apre.",
+    "shiftOutside": "Nulla è stato spostato: «{item}» uscirebbe dalla sua giornata."
+  },
+  "dayTimes": {
+    "edit": "Modifichi gli orari di {day}",
+    "title": "Orari di {day}",
+    "description": "I blocchi fuori dai nuovi orari non vengono spostati; il pianificatore li segnala.",
+    "start": "Inizio",
+    "end": "Fine"
   }
 }

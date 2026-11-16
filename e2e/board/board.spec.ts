@@ -35,6 +35,8 @@ test.describe('M8-E assignment board', () => {
 
   /** Drags with real pointer events, in steps (like a hand would). */
   async function drag(page: Page, source: Locator, target: Locator, offset = 0.5) {
+    // Category groups wrap (M10-27): on tablets a divider can start below the fold.
+    await source.scrollIntoViewIfNeeded()
     const from = (await source.boundingBox())!
     const to = (await target.boundingBox())!
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)

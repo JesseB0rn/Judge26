@@ -2,7 +2,7 @@
 import { t } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { toast } from 'vue-sonner'
-import { RefreshCwIcon } from '@lucide/vue'
+import { RefreshCwIcon, TagIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,16 +14,20 @@ import {
   deleteTable,
   isConflict,
   loadBoard,
+  LABEL_SCHEMES,
   moveJudge,
   moveTeam,
+  moveTeams,
   setJudgesPerTable,
+  setLabels,
   setTableCategory,
   subscribeBoard,
   updateTable,
   type Board,
   type BoardTable,
+  type LabelScheme,
 } from '../api'
-import { categoryRounds, expectedForMove, roundCount, type Scope } from '../lib'
+import { categoryRounds, expectedForMove, expectedForMoves, roundCount, type Scope } from '../lib'
 
 /**
  * Assignment board of an event (M8-E), in the event's Schedule tab: managers create tables and
@@ -81,6 +85,49 @@ function onMoveTeam(team: string, table: string, index: number) {
       index,
       ...(round ? { round: round.id } : {}),
       expected: expectedForMove(current, team, table, scope.value),
+    }),
+  )
+}
+
+/** Places several tray teams on one table, as one write (M10-28). */
+function onMoveTeams(teams: string[], table: string, index: number) {
+  const current = board.value!
+  const category = current.teams.find((x) => x.id === teams[0])?.category ?? ''
+  const round = scope.value === 'all' ? undefined : categoryRounds(current, category)[scope.value]
+  void write(() =>
+    moveTeams(props.eventId, {
+      teams,
+      table,
+      index,
+      ...(round ? { round: round.id } : {}),
+      expected: expectedForMoves(current, teams, table, scope.value),
+    }),
+  )
+}
+
+// --- Table labels (M10-25) -------------------------------------------------------------
+
+/** The scheme's first labels, e.g. "Table 1, Table 2, …". */
+function labelExample(scheme: LabelScheme) {
+  return t(`board.labels.${scheme}`)
+}
+
+function onSetScheme(value: string) {
+  const scheme = value as LabelScheme
+  if (!board.value || scheme === board.value.table_labels) return
+  void write(() => setLabels(props.eventId, { scheme }))
+}
+
+function onRelabel() {
+  const current = board.value!
+  if (!current.tables.length) return
+  const example = labelExample(current.table_labels)
+  if (!confirm(t('board.confirmRelabel', { count: current.tables.length, example }))) return
+  void write(() =>
+    setLabels(props.eventId, {
+      scheme: current.table_labels,
+      relabel: true,
+      expected: Object.fromEntries(current.tables.map((x) => [x.id, x.updated])),
     }),
   )
 }
@@ -196,6 +243,30 @@ defineExpose({ reload })
       <span v-if="board" class="text-sm text-muted-foreground">{{
         scope === 'all' ? t('board.allRoundsHint') : t('board.roundOnlyHint')
       }}</span>
+      <label v-if="board" class="flex items-center gap-2 text-sm">
+        <TagIcon class="size-4 text-muted-foreground" aria-hidden="true" />
+        {{ t('board.labels.label') }}
+        <NativeSelect
+          :model-value="board.table_labels"
+          :disabled="!editable || busy"
+          data-testid="board-labels"
+          @update:model-value="onSetScheme(String($event))"
+        >
+          <NativeSelectOption v-for="scheme in LABEL_SCHEMES" :key="scheme" :value="scheme">{{
+            labelExample(scheme)
+          }}</NativeSelectOption>
+        </NativeSelect>
+      </label>
+      <Button
+        v-if="board && editable"
+        variant="outline"
+        size="sm"
+        :disabled="busy || !board.tables.length"
+        data-testid="board-relabel"
+        @click="onRelabel"
+      >
+        {{ t('board.labels.relabel') }}
+      </Button>
       <Button variant="outline" size="sm" class="ml-auto" :disabled="busy" @click="reload()">
         <RefreshCwIcon /> {{ t('board.reload') }}
       </Button>
@@ -206,8 +277,10 @@ defineExpose({ reload })
       v-if="board"
       :board="board"
       :scope="scope"
-      :editable="editable && !busy"
+      :editable="editable"
+      :busy="busy"
       @move-team="onMoveTeam"
+      @move-teams="onMoveTeams"
       @move-judge="onMoveJudge"
       @move-tables="onMoveTables"
       @add-table="onAddTable"

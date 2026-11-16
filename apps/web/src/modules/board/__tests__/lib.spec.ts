@@ -43,6 +43,7 @@ const game = (
 
 function makeBoard(): Board {
   return {
+    table_labels: 'table_number',
     categories: [
       { id: 'rmj', name: 'Junior', code: 'RMJ', judges_per_table: 2 },
       { id: 'rme', name: 'Elementary', code: 'RME', judges_per_table: 3 },

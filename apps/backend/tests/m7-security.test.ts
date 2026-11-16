@@ -100,6 +100,8 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/events/{id}/board/judges', access: 'auth' },
   { method: 'POST', path: '/api/events/{id}/board/tables', access: 'auth' },
   { method: 'POST', path: '/api/events/{id}/board/tables/{table}/category', access: 'auth' },
+  // M10-25: table label scheme.
+  { method: 'POST', path: '/api/events/{id}/board/labels', access: 'auth' },
   // M8-D: setup checklist and event templates.
   { method: 'GET', path: '/api/events/{id}/setup', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/template', access: 'auth' },

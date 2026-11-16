@@ -81,6 +81,11 @@ competition management
                     feedback          program check,    
                                       setup order,      
                                       SMTP OAuth        
+
+  M10               Trial run         Judge workflow,   P1
+                    feedback          robot and parts   
+                                      check, planner,   
+                                      board, printouts  
   -----------------------------------------------------------------------
 
 Milestones are dependency-oriented, not fixed calendar commitments. A
@@ -2039,7 +2044,677 @@ covered yet. Verified end to end against a real Microsoft 365 tenant (2026-11-13
 
 ------------------------------------------------------------------------
 
-## 12. Cross-project quality requirements
+## 12. M10 --- Trial run feedback
+
+**Priority:** P1\
+**Objective:** Act on the feedback from the trial run: keep judges oriented
+at their table, make the robot check and the parts check steps the head
+judge can see and control, fix the planner and board interactions that got
+in the way, add printouts for the venue, and let the mail relay authenticate
+with a certificate instead of a client secret.
+
+### Tracking
+
+-   [ ] **M10-A** Judge workflow at the table (M10-01 to M10-07)
+-   [ ] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
+-   [ ] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
+-   [x] **M10-D** Planner editing (M10-21 to M10-24)
+-   [x] **M10-E** Board and drag and drop (M10-25 to M10-29)
+-   [ ] **M10-F** Setup, print center and live (M10-30 to M10-36)
+-   [ ] **M10-G** OAuth for the mail relay with a certificate credential
+    (M10-37 to M10-40)
+
+Suggested order: M10-E and M10-D first (fixes, no data model change), then
+M10-C (M10-19 is needed by M10-03 and the printouts), M10-B (largest; new
+collections and API gates), M10-A, M10-F and M10-G. Each epic gets a
+specification in `docs/specifications` (new `M10-*.md` or a section in the
+M4, M5 and M8 specifications it changes) before implementation.
+
+### M10-A --- Judge workflow at the table
+
+Judges lost track of where they were and what came next. The score sheet
+also gains a one-criterion-per-screen view and a team sign-off.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-01     Assigned table shown  P1    The judge dashboard names the table
+                                         (and its category) the judge is
+                                         assigned to on the selected day. The
+                                         robot check and the score sheet show
+                                         the table in their header. A judge
+                                         without a table sees that none is
+                                         assigned.
+
+  M10-02     Back to the           P1    After a table judge confirms a run's
+             dashboard                   score, the app opens the judge
+                                         dashboard with the next open item
+                                         marked, however the sheet was opened.
+                                         Reviewers return to the review queue as
+                                         before.
+
+  M10-03     Run time in the       P1    The score sheet header shows the
+             header                      recorded run time next to the points,
+                                         in the event's time precision (M10-19).
+                                         It appears when the stopwatch stops or
+                                         a time is entered, follows later edits,
+                                         and stays visible while scrolling.
+
+  M10-04     Full team name        P1    On the judge dashboard, the robot check
+                                         and the score sheet the team name is
+                                         never cut off: badges in the row shrink
+                                         or wrap first, then the name wraps.
+                                         Where one line is fixed, the name
+                                         scrolls (marquee); with reduced motion
+                                         it wraps instead.
+
+  M10-05     Step-by-step sheet    P2    The score sheet has a second view that
+                                         shows one criterion per full screen
+                                         with next, back, swipe and a position
+                                         indicator, ending in a summary before
+                                         submit. Both views edit the same draft;
+                                         the chosen view is remembered per
+                                         device. Works by keyboard.
+
+  M10-06     Team slide to         P1    Before submit, the sheet shows the
+             confirm                     final verdict (points, time, outcome)
+                                         and the team confirms it with a slide
+                                         control; releasing early does not
+                                         confirm. The time of confirmation is
+                                         stored on the sheet. Submit needs it.
+                                         If the event allows refusals (event
+                                         setting, off by default), the judge can
+                                         instead record that the team refused,
+                                         with a reason; otherwise the API
+                                         rejects a refusal. A mulligan clears
+                                         both. A keyboard alternative exists.
+
+  M10-07     Head judge at a       P1    A head judge has a judge view: a launch
+             table                       screen lists the event's tables with
+                                         category, judges and progress; choosing
+                                         one opens the same dashboard the judges
+                                         of that table see, with robot check and
+                                         scoring. Sheets record the head judge
+                                         as author. The board assignment (M8-29)
+                                         is not changed and the table can be
+                                         switched at any time.
+  ------------------------------------------------------------------------------
+
+### M10-B --- Robot check, parts check and round file
+
+Today a finished robot check is only remembered on the judge's device
+(M5-15), so the head judge cannot see progress and nothing can depend on it.
+M10-B stores it and lets it gate the run.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-08     Robot check by        P1    New rounds have a robot check. An event
+             default                     manager can turn it off per round.
+                                         Existing rounds keep what they have.
+                                         Event templates (M8-21) carry the
+                                         setting and the mode.
+
+  M10-09     Check mode per round  P1    A round with a robot check runs it in
+                                         synchronous (default) or asynchronous
+                                         mode, set by the event manager or head
+                                         judge until the round's first check is
+                                         recorded.
+
+  M10-10     Checks stored         P1    Each checked team is stored on the
+                                         server per round and table, with judge
+                                         and time, and each table's completion.
+                                         Another device shows the same state;
+                                         offline entries sync like score drafts
+                                         (M5). A check can be reopened until
+                                         scoring of that team starts.
+
+  M10-11     Synchronous mode      P1    Every table confirms its check as
+                                         complete (ready for the run). The head
+                                         judge then releases the round for
+                                         scoring. Until the release, score
+                                         sheets of that round cannot be started
+                                         or submitted (API and UI). Releasing
+                                         while a table is not ready needs a
+                                         reason and is audited. Table judges
+                                         cannot release.
+
+  M10-12     Asynchronous mode     P1    A team's score sheet unlocks as soon as
+                                         that team's check is confirmed, without
+                                         a release. An unchecked team's sheet is
+                                         blocked and links to the check.
+
+  M10-13     Head judge progress   P1    The head judge sees, per round and
+                                         table, teams checked of total, the
+                                         ready state and the release state,
+                                         updated live.
+
+  M10-14     Round without check   P1    A round whose robot check is off shows
+                                         no check on the judge timeline and its
+                                         scoring is not gated.
+
+  M10-15     Parts check block     P1    The planner offers a parts check block
+                                         type. It is placed on a day for
+                                         categories like any block and belongs
+                                         to no round. Placing it after the day's
+                                         first scoring phase gives a planner
+                                         warning.
+
+  M10-16     Parts check           P1    Each table's judge confirms the parts
+             completion                  check for the table; the head judge
+                                         sees the tables and marks the block
+                                         completed. Completing with tables still
+                                         open asks for confirmation and is
+                                         audited. With the block's option
+                                         "blocks the first round" on (default),
+                                         robot check and scoring of that day's
+                                         first round in the covered categories
+                                         are refused until it is completed. Days
+                                         without the block are not gated.
+
+  M10-17     Randomization file    P1    A head judge uploads one image or PDF
+                                         (up to 10 MB) to a round, and can
+                                         replace or remove it. Judges of that
+                                         round see it on the robot check and the
+                                         score sheet only once the check is
+                                         confirmed: after the release in
+                                         synchronous mode, after their table's
+                                         check is complete in asynchronous mode,
+                                         at once if the round has no check.
+                                         Before that the API does not return it.
+                                         It is never public.
+  ------------------------------------------------------------------------------
+
+**Affected earlier requirements:** M5-15 (check state moves from the device
+to the server) and M4-14 (the robot check phase exists by default; new block
+type). M9-06 to M9-09 are unchanged.
+
+### M10-C --- Zero-point time and time precision
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-18     Time for zero points  P1    A ruleset has the option "time for a
+                                         run with zero points", on by default
+                                         with 120 s; the value is editable. When
+                                         on, a run that scores 0 points counts
+                                         with that time. The sheet says so and
+                                         keeps the measured time in its history.
+                                         Results under earlier ruleset versions
+                                         do not change (M2-14).
+
+  M10-19     Time precision        P1    An event sets the decimals of run
+                                         times: none (default), tenths,
+                                         hundredths or thousandths. The score
+                                         sheet, stopwatch, ranking, live and TV
+                                         views, exports (M7-05 to M7-07) and
+                                         printouts all show times in it.
+
+  M10-20     Precision in ranking  P1    Times are cut (not rounded) to the
+                                         event's precision before ranking, so
+                                         times shown as equal rank as equal. The
+                                         measured milliseconds stay stored;
+                                         changing the precision recalculates
+                                         live rankings and leaves published
+                                         snapshots as they are.
+  ------------------------------------------------------------------------------
+
+### M10-D --- Planner editing
+
+**Status:** M10-21 to M10-24 implemented (see
+`docs/specifications/M4-tables-and-scheduling.md#interface` and
+`docs/test-plans/M10-board-and-planner.md`). Decisions: a completed drag still opens the dialog
+prefilled; "leaving its day" means starting before 00:00 or ending after 24:00 (items outside the
+day's hours are only flagged); a block spanning into another column brings that column's items
+from the block's own start on; a multi-item shift is saved with PocketBase's batch API (one
+transaction).
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-21     Day times in planner  P1    The start and end time of a competition
+                                         day can be edited from its header in
+                                         the planner. Items now outside the day
+                                         are flagged as out-of-window issues,
+                                         not moved. The write is versioned like
+                                         other planner edits (M4-14-19).
+
+  M10-22     Block over            P1    Dragging over empty planner space
+             categories                  across several adjacent columns creates
+                                         one custom block that covers all of
+                                         them (categories and custom columns).
+
+  M10-23     Dialog on double      P1    A single click on empty planner space
+                                         does nothing. A double click opens the
+                                         new block dialog for that day, column
+                                         and time. A completed drag (M10-22)
+                                         still opens it prefilled.
+
+  M10-24     Fix: move later       P1    With "move later" on (or Shift held),
+                                         moving an item shifts every placed
+                                         phase and block that starts at or after
+                                         it in the same column(s) by the same
+                                         amount, keeping gaps. A shifted block
+                                         that spans several columns also shifts
+                                         the later items of those columns.
+                                         Earlier items do not move. If any item
+                                         would leave its day, nothing moves and
+                                         the reason is shown. The whole shift is
+                                         one write and one undo step.
+  ------------------------------------------------------------------------------
+
+**Affected earlier requirements:** M10-24 replaces the current "move later"
+behaviour, which only moves the later phases of the same round.
+
+### M10-E --- Board and drag and drop
+
+**Status:** M10-25 to M10-29 implemented (see `docs/specifications/M8-board.md` and
+`docs/test-plans/M10-board-and-planner.md`). Decisions: labels count through the whole event in
+board order; the word "Table" is in the language of the manager who creates or relabels ("Tisch 1",
+"Tavolo 1"); the board has no undo, so M10-28 guarantees one write (not an undo step). Cause of the
+scroll jump: while a write ran, the board removed its edit controls, which narrowed each group.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-25     Table label scheme    P1    An event chooses how tables are
+                                         labelled: "Table 1", "1", "Table A" or
+                                         "A". New tables get the next label;
+                                         letters continue with AA after Z.
+                                         "Relabel all" renames every table in
+                                         board order after confirmation. Tables
+                                         can still be renamed by hand. Templates
+                                         carry the scheme.
+
+  M10-26     Fix: board scroll     P1    Assigning or moving a team or judge,
+                                         and updates from other users, leave the
+                                         board's scroll position where it was.
+
+  M10-27     Wrapping categories   P1    Category groups wrap onto further rows
+                                         when they do not fit the width; a group
+                                         is only scrolled sideways when it is
+                                         wider than the board by itself.
+                                         Category dividers (M8-27) and keyboard
+                                         editing (M8-33) keep working.
+
+  M10-28     Multi-select teams    P1    In the not-yet-placed tray, a click
+                                         selects a team, Shift+click a range and
+                                         Ctrl/Cmd+click toggles one. Dragging a
+                                         selected team places all selected teams
+                                         from the drop position in tray order,
+                                         as one write. If any
+                                         does not belong to the table's
+                                         category, nothing is placed. Escape
+                                         clears the selection; the menu action
+                                         (M8-33) works on the selection.
+
+  M10-29     Fix: text selection   P1    After any drag and drop in the app
+                                         (board, planner, dividers, lists),
+                                         dropped or cancelled, no text is left
+                                         selected. Text in inputs stays
+                                         selectable.
+  ------------------------------------------------------------------------------
+
+### M10-F --- Setup, print center and live
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-30     Publish in checklist  P1    The publish row at the bottom of the
+                                         setup checklist (M8-20) has its own
+                                         publish button, with the same state and
+                                         rules as the one in the header.
+
+  M10-31     Print center          P1    An event has a print center for event
+                                         managers, head judges and admins: it
+                                         lists the printouts below, filters by
+                                         category and day, previews, and prints
+                                         or saves as PDF from the browser, like
+                                         the reports of M7-07. Every printout is
+                                         one A4 page per record (team, table);
+                                         printing a selection gives one page
+                                         each.
+
+  M10-32     Robot parking label   P1    One A4 page per team for its robot
+                                         parking spot: team name, category and
+                                         organization, readable from 2 m.
+
+  M10-33     Workplace sheet       P1    One A4 page per team for its workplace:
+                                         team name, category, the team's
+                                         schedule (every phase and game with
+                                         day, time and table), its game table
+                                         and the names of that table's judges.
+
+  M10-34     Table assignment      P1    One A4 page per table for a chosen
+                                         round, in three variants: teams only,
+                                         judges only, or both. Teams are in
+                                         playing order.
+
+  M10-35     QR code to ranking    P2    The live event page (staff) and the TV
+                                         view show a QR code of the event's
+                                         public live ranking address; the print
+                                         center offers it as a poster. It can be
+                                         hidden on the TV view. It is generated
+                                         in the browser and only shown while the
+                                         event is public.
+
+  M10-36     Progress per round    P1    The day's progress bar is divided into
+                                         one segment per round, as wide as its
+                                         share of the day's games and filled by
+                                         its own finished games. Each segment is
+                                         named with its counts, also for screen
+                                         readers.
+  ------------------------------------------------------------------------------
+
+### M10-G --- OAuth with a certificate credential
+
+The mail relay (M9-D) authenticates to the token endpoint with a client
+secret. Secrets expire and some tenants' policies forbid them; Microsoft
+Entra ID accepts a certificate credential instead, where the relay proves
+its identity with an assertion signed by the certificate's private key. The
+rest of the OAuth flow stays as it is.
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M10-37     Certificate           P1    Environment variables give an X.509
+             credential                  certificate and its private key (PEM
+                                         files) in place of the client secret.
+                                         The relay then requests tokens with a
+                                         signed client assertion (JWT per RFC
+                                         7523, signed with the key, carrying the
+                                         certificate's SHA-256 thumbprint)
+                                         instead of client_secret. Setting both
+                                         a secret and a certificate is a
+                                         configuration error.
+
+  M10-38     Assertion handling    P1    Each token request uses a new assertion
+                                         (unique id, lifetime of at most 10
+                                         minutes, audience the token endpoint).
+                                         Tokens are cached and renewed as in
+                                         M9-13; delivery with XOAUTH2 is
+                                         unchanged.
+
+  M10-39     Certificate checks    P1    A missing or unreadable file, a key
+                                         that does not match the certificate, or
+                                         an expired certificate stops the relay
+                                         at start with a message that names the
+                                         setting. A certificate expiring within
+                                         30 days is logged as a warning. The key
+                                         and assertions never appear in logs.
+
+  M10-40     Same delivery         P1    Outbox, retries and error recording
+                                         (M7-02, M9-14) work unchanged; a token
+                                         endpoint that rejects the assertion is
+                                         recorded like a mail server error and
+                                         retried. Secret mode (M9-D) and basic
+                                         auth keep working. The deployment guide
+                                         explains creating the certificate and
+                                         adding it to the Microsoft Entra app
+                                         registration.
+  ------------------------------------------------------------------------------
+
+### Tests
+
+API rules and gates are tested in `apps/backend/tests/m10-*.test.ts`,
+calculations and components in unit tests next to the code (ranking and
+scoring engines, planner `lib`, judging, board), the relay in `apps/mail-
+relay`, and the flows marked by a UI scenario in `e2e`. Schema changes come
+with migration tests.
+
+  ------------------------------------------------------------------------------
+  Test ID    Covers     Scenario                     Expected result
+  ---------  ---------  ---------------------------  ---------------------------
+  M10-T01    M10-01     Judge of table 3 opens the   Table 3 and its category
+                        dashboard, the robot check   shown on all three
+                        and a score sheet
+
+  M10-T02    M10-02     Judge confirms a score on a  Judge dashboard shown; next
+                        sheet opened by direct link  open item marked
+
+  M10-T03    M10-03     Stop the stopwatch at 95.37  Header shows 1:35.3 beside
+                        s with precision tenths,     the points and follows the
+                        then edit the time           edit
+
+  M10-T04    M10-04     60-character team name at    Whole name readable, no
+                        360 px width on dashboard,   ellipsis; no animation with
+                        check and sheet              reduced motion
+
+  M10-T05    M10-05     Enter values in the step     Same values in both; one
+                        view, switch to the list     draft; view remembered
+                        view, reload
+
+  M10-T06    M10-05     Step through to the last     Summary shown; normal
+                        criterion and submit         submit flow
+
+  M10-T07    M10-06     Submit without team          Button disabled; API 400
+                        confirmation or refusal      `team_confirmation:
+                                                     required`
+
+  M10-T08    M10-06     Release the slider halfway,  Not confirmed; confirmed
+                        slide to the end, then       with the time stored;
+                        grant a mulligan             cleared by the mulligan
+
+  M10-T09    M10-06     Refusals off: record a       400 `refusal: not_allowed`;
+                        refusal. Refusals on:        400 `reason: required`;
+                        record one without, then     then submit allowed
+                        with a reason
+
+  M10-T10    M10-07     Head judge picks a table on  Sheet saved with the head
+                        the launch screen and        judge as author; board
+                        scores a game                unchanged
+
+  M10-T11    M10-07     Head judge of another        403
+                        event, or a judge, requests
+                        the table list
+
+  M10-T12    M10-08,    Create a round; run the      New round: check on,
+             M10-09     migration on rounds with     synchronous; old rounds
+                        and without a check          unchanged
+
+  M10-T13    M10-10     Check two teams on one       Both shown as checked with
+                        device, open the check on    judge and time
+                        another
+
+  M10-T14    M10-11     Synchronous round: start a   409 `round: not_released`;
+                        score sheet before the       sheet locked in the UI
+                        release
+
+  M10-T15    M10-11     All tables ready; head       Sheets unlock on every
+                        judge releases the round     table without reload
+
+  M10-T16    M10-11     Release while one table is   Refused; then released with
+                        not ready, without and with  an audit entry
+                        a reason
+
+  M10-T17    M10-11     Table judge calls the        403
+                        release
+
+  M10-T18    M10-12     Asynchronous round: open     Blocked with a link to the
+                        the sheet of an unchecked    check; then unlocked
+                        team, then confirm its
+                        check
+
+  M10-T19    M10-13     Head judge watches a round   Counts and ready states
+                        while two tables check       update live
+                        teams
+
+  M10-T20    M10-14     Turn the robot check off     No check on the judge
+                        for a round                  timeline; scoring open
+
+  M10-T21    M10-15     Place a parts check block    Block stored without a
+                        after the first scoring      round; planner warning
+                        phase
+
+  M10-T22    M10-16     Parts check open: start      409 `parts_check: open` for
+                        robot check and scoring of   covered categories only
+                        the day's first round
+
+  M10-T23    M10-16     All tables confirm; head     First round unlocks;
+                        judge completes the block    completion audited
+
+  M10-T24    M10-16     Head judge completes with    Confirmation names the
+                        one table open; a day        table, then audited; day
+                        without the block            not gated
+
+  M10-T25    M10-17     Judge requests the round     Not returned before; shown
+                        file before and after the    on check and sheet after
+                        check is confirmed (both
+                        modes)
+
+  M10-T26    M10-17     Upload a 12 MB file or a     Rejected with a reason;
+                        .zip; table judge uploads;   403; not found
+                        anonymous request
+
+  M10-T27    M10-18     Run with 0 points and 43 s   Counts with 120 s; 43 s
+                        measured, option on          kept in the history
+
+  M10-T28    M10-18     Same run with the option     Measured time counts
+                        off; a run with 5 points
+
+  M10-T29    M10-18     Finalized result under an    Unchanged
+                        earlier ruleset version
+
+  M10-T30    M10-19     95 379 ms at each precision  1:35, 1:35.3, 1:35.37 and
+                        on sheet, ranking, live,     1:35.379 everywhere
+                        TV, export and print
+
+  M10-T31    M10-20     Equal points, 95 100 ms and  Tied on time (next key
+                        95 900 ms, precision none,   decides); then ranked apart
+                        then tenths
+
+  M10-T32    M10-20     Change the precision after   Live ranking recalculated;
+                        results exist                snapshots unchanged
+
+  M10-T33    M10-21     Move a day's start later     Saved, item flagged out of
+                        than its first item; stale   window; 409 and reload
+                        write
+
+  M10-T34    M10-22     Drag over empty space        One block covering the
+                        across three category        three categories
+                        columns
+
+  M10-T35    M10-23     Single click, then double    Nothing; dialog with that
+                        click on empty planner       day, column and time
+                        space
+
+  M10-T36    M10-24     Move later: move the second  Items 2 to 4 shift 15 min,
+                        of four items in a column    gaps kept; item 1 stays
+                        by 15 min
+
+  M10-T37    M10-24     A later block spans columns  Later items of B shift too;
+                        A and B                      earlier items of B stay
+
+  M10-T38    M10-24     A shift would push the last  Nothing moves, reason
+                        item past the day's end;     shown; undo restores all in
+                        undo a valid shift           one step
+
+  M10-T39    M10-25     Scheme "A": add three        A, B, C; Table 1 to 3 in
+                        tables; relabel all as       board order; AA
+                        "Table 1"; add a 27th
+                        lettered table
+
+  M10-T40    M10-26     Scroll the board to the      Scroll position unchanged
+                        right, assign a team;        both times
+                        another user moves a team
+
+  M10-T41    M10-27     Three categories at 1024     Groups wrap, no page
+                        px; drag a divider between   scroll; table changes
+                        wrapped groups               category
+
+  M10-T42    M10-28     Shift-select three teams     Three placed in tray order
+                        and drop them on a table     with one write
+
+  M10-T43    M10-28     Selection with a team of     Drop refused; nothing
+                        another category dropped on  placed
+                        a table
+
+  M10-T44    M10-29     Drag and drop, and cancel a  Selection empty afterwards;
+                        drag, on the board and the   input text still selectable
+                        planner
+
+  M10-T45    M10-30     Checklist incomplete, then   Button follows the header
+                        complete; publish from the   button; event published
+                        bottom button
+
+  M10-T46    M10-31,    Print parking labels for     One A4 page per team of it
+             M10-32     one category; a judge opens  with name and category;
+                        the print center             denied
+
+  M10-T47    M10-33     Workplace sheet of a team    All its phases and games
+                        with games on two days       with time and table; judges
+                                                     named
+
+  M10-T48    M10-34     Table assignment of a round  One A4 page per table;
+                        in the three variants        teams only, judges only,
+                                                     both; playing order
+
+  M10-T49    M10-35     Decode the QR code on the    Public live ranking
+                        TV view; open the TV view    address; no code
+                        of a non-public event
+
+  M10-T50    M10-36     Day with rounds of 8 and 4   Two segments 2:1; first
+                        games, 6 and 0 finished      filled to 75 %; counts in
+                                                     text
+
+  M10-T51    M10-37,    Send an email with a         Request has a
+             M10-38     certificate configured       client_assertion verifiable
+                        (mock token endpoint)        with the certificate, no
+                                                     client_secret; token
+                                                     reused; delivered
+
+  M10-T52    M10-38     Two token requests after     Different assertion ids;
+                        expiry                       lifetime at most 10 min
+
+  M10-T53    M10-37,    Start with a missing key, a  Start fails naming the
+             M10-39     mismatched key, an expired   setting; key not in logs
+                        certificate, and both
+                        secret and certificate set
+
+  M10-T54    M10-40     Token endpoint rejects the   Message pending with the
+                        assertion; rerun M9-T08 and  error and retried; both
+                        M9-T09                       pass
+  ------------------------------------------------------------------------------
+
+### Open questions
+
+Open items have a working assumption, already written into the criteria
+above; work proceeds on it unless decided otherwise.
+
+1.  **Certificate (M10-G):** Is the certificate a TLS client certificate for
+    a provider SMTP relay, or a credential that replaces the client secret
+    in the OAuth token request? *Settled: it replaces the client secret
+    (M10-37).*
+2.  **Scored time (M10-03):** Is it the run's recorded time or the time of
+    day the run was scored? *Settled: the recorded run time.*
+3.  **Default check mode (M10-09):** Synchronous or asynchronous? *Settled:
+    synchronous.*
+4.  **Round file release (M10-17):** In synchronous mode, is the file shown
+    at the head judge's release or as soon as a table's own check is
+    complete? *Settled: at the release.*
+5.  **Team refusal (M10-06):** May a judge submit when the team refuses to
+    confirm? *Settled: only if the event allows refusals (event setting),
+    with a reason.*
+6.  **New block dialog (M10-23):** Does a completed drag still open the
+    dialog (assumed), or should it create the block at once?
+7.  **Table labels (M10-25):** Do labels count through the whole event
+    (assumed) or restart per category?
+8.  **Time precision (M10-20):** Are times cut (assumed, as the stopwatch
+    shows them) or rounded?
+9.  **Zero-point time (M10-18):** Is 120 s a fixed default (assumed) or
+    should it follow the ruleset's maximum run time?
+10. **Printouts (M10-32 to M10-34):** One A4 page per team or table, or
+    several labels per page? *Settled: one A4 page per record (M10-31).*
+
+**Exit criteria:** All P1 requirements and M10 tests pass. In a rehearsal, a
+head judge completes the parts check, releases a synchronous round after the
+robot check, steps in at a table, and a team signs its score sheet; the
+manager prints the venue sheets and no planner or board interaction from the
+trial run feedback reproduces.
+
+------------------------------------------------------------------------
+
+## 13. Cross-project quality requirements
 
 These requirements apply to every milestone.
 
@@ -2088,7 +2763,7 @@ The following properties must be continuously checked:
 
 ------------------------------------------------------------------------
 
-## 13. Definition of Done
+## 14. Definition of Done
 
 A task may only be marked complete when all applicable conditions are
 satisfied.
@@ -2109,7 +2784,7 @@ acceptance tests must also pass.
 
 ------------------------------------------------------------------------
 
-## 14. Project tracking model
+## 15. Project tracking model
 
 Track progress at three levels:
 
@@ -2159,7 +2834,7 @@ Track progress at three levels:
 
 ------------------------------------------------------------------------
 
-## 15. Suggested repository structure
+## 16. Suggested repository structure
 
 Keep business logic independent of the user interface.
 
@@ -2204,7 +2879,7 @@ wro-platform/
 
 ------------------------------------------------------------------------
 
-## 16. Recommended implementation order
+## 17. Recommended implementation order
 
 Do not begin by building the full dashboard or registration experience.
 First validate the three riskiest parts of the application with vertical
@@ -2240,7 +2915,7 @@ investment in the complete user interface.
 
 ------------------------------------------------------------------------
 
-## 17. Key architectural decisions to resolve
+## 18. Key architectural decisions to resolve
 
 The following questions should be settled before or during the relevant
 implementation milestone:
@@ -2264,7 +2939,7 @@ implementation milestone:
 Make these behaviours configurable where practical, while keeping the
 initial implementation straightforward.
 
-## 18. Primary implementation recommendation
+## 19. Primary implementation recommendation
 
 Build and thoroughly test the scoring and ranking engines before
 implementing the complete administration interface. They contain the

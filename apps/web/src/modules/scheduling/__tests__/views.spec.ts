@@ -9,6 +9,7 @@ const mocked = vi.mocked(api)
 vi.mock('@/modules/board/api', async (original) => ({
   ...(await original<typeof import('@/modules/board/api')>()),
   loadBoard: vi.fn<typeof import('@/modules/board/api').loadBoard>(async () => ({
+    table_labels: 'table_number' as const,
     categories: [],
     rounds: [],
     tables: [],

@@ -5,7 +5,8 @@ import {
   clampStart,
   formatTime,
   issuesByItem,
-  laterPhases,
+  itemColumns,
+  laterItems,
   layoutDay,
   parseRef,
   shiftPlacement,
@@ -162,27 +163,15 @@ describe('layoutDay', () => {
 
 describe('phase helpers', () => {
   const days = [day('d1', '2026-06-01'), day('d2', '2026-06-02')]
-  const phases = [
-    phase({ id: 'm', phase: 'maintenance', starts_at: '08:00', duration_minutes: 30 }),
-    phase({ id: 'c', phase: 'check', starts_at: '09:00', duration_minutes: 10 }),
-    phase({ id: 's', phase: 'scoring', starts_at: '10:00' }),
-    phase({ id: 'other', round: 'r2', phase: 'scoring' }),
-  ]
 
-  it('M4-14-11: later phases of the same round', () => {
-    expect(laterPhases(phases, phases[0]!).map((p) => p.id)).toEqual(['c', 's'])
-    expect(laterPhases(phases, phases[2]!)).toEqual([])
-  })
-
-  it('shifts placements by days and minutes within the day', () => {
+  it('M10-24: shifts placements by days and minutes; never past midnight', () => {
     expect(shiftPlacement(days, { day: 'd1', starts_at: '10:00' }, 60, 1, 30)).toEqual({
       day: 'd2',
       starts_at: '10:30',
     })
-    expect(shiftPlacement(days, { day: 'd1', starts_at: '23:00' }, 60, 0, 30)).toEqual({
-      day: 'd1',
-      starts_at: '23:00',
-    })
+    // Would end after midnight or start before it: refused, not squeezed.
+    expect(shiftPlacement(days, { day: 'd1', starts_at: '23:00' }, 60, 0, 30)).toBeNull()
+    expect(shiftPlacement(days, { day: 'd1', starts_at: '00:10' }, 30, 0, -15)).toBeNull()
     expect(shiftPlacement(days, { day: 'd2', starts_at: '10:00' }, 60, 1, 0)).toBeNull()
   })
 
@@ -259,5 +248,82 @@ describe('custom columns (M4-14-33)', () => {
       ['block:b1:2', 2, 1],
       ['block:b2:1', 1, 2],
     ])
+  })
+})
+
+describe('M10-24 move later', () => {
+  // Columns c1, c2 (categories) and k1 (custom column). Day d1, plus one item on d2.
+  const plan = (phases: PlannerPhase[], blocks: PlannerBlock[]): PlannerData => ({
+    days: [day('d1', '2026-06-01'), day('d2', '2026-06-02')],
+    categories: [
+      { id: 'c1', name: 'One', code: 'C1' },
+      { id: 'c2', name: 'Two', code: 'C2' },
+    ],
+    columns: [{ id: 'k1', name: 'Judges', position: 0, public: false }],
+    rounds,
+    phases,
+    blocks,
+    issues: [],
+  })
+  const keys = (refs: { kind: string; id: string }[]) => refs.map((r) => `${r.kind}:${r.id}`).sort()
+
+  it('columns of phases and blocks; a block without coverage spans every column', () => {
+    const d = plan(
+      [phase({ id: 'p1', round: 'r2' })],
+      [block({ id: 'b1', categories: ['c1'], columns: ['k1'] }), block({ id: 'all' })],
+    )
+    expect(itemColumns(d, { kind: 'phase', id: 'p1' })).toEqual(['c2'])
+    expect(itemColumns(d, { kind: 'block', id: 'b1' })).toEqual(['c1', 'k1'])
+    expect(itemColumns(d, { kind: 'block', id: 'all' })).toEqual(['c1', 'c2', 'k1'])
+  })
+
+  it('M10-T36: the rest of the column moves; earlier items, other columns and days stay', () => {
+    const d = plan(
+      [
+        phase({ id: 'm', phase: 'maintenance', starts_at: '08:00', duration_minutes: 30 }),
+        phase({ id: 'c', phase: 'check', starts_at: '09:00', duration_minutes: 10 }),
+        phase({ id: 's', phase: 'scoring', starts_at: '10:00' }),
+        phase({ id: 'x', round: 'r2', starts_at: '11:00' }),
+        phase({ id: 'next-day', day: 'd2', starts_at: '12:00' }),
+      ],
+      [block({ id: 'lunch', categories: ['c1'], starts_at: '12:00' })],
+    )
+    expect(keys(laterItems(d, { kind: 'phase', id: 'c' }))).toEqual(['block:lunch', 'phase:s'])
+    expect(laterItems(d, { kind: 'block', id: 'lunch' })).toEqual([])
+  })
+
+  it('M10-T37: a later block spanning columns brings the later items of those columns', () => {
+    const d = plan(
+      [
+        phase({ id: 'a1', starts_at: '09:00' }),
+        phase({ id: 'b-early', round: 'r2', starts_at: '09:30' }),
+        phase({ id: 'b-late', round: 'r2', starts_at: '13:00' }),
+      ],
+      [
+        block({ id: 'wide', categories: ['c1', 'c2'], starts_at: '11:00' }),
+        block({ id: 'judges', columns: ['k1'], starts_at: '14:00' }),
+      ],
+    )
+    expect(keys(laterItems(d, { kind: 'phase', id: 'a1' }))).toEqual(['block:wide', 'phase:b-late'])
+    // A block covering every column pulls the custom column in, too.
+    const all = plan(
+      [phase({ id: 'a1', starts_at: '09:00' })],
+      [
+        block({ id: 'ceremony', starts_at: '10:00' }),
+        block({ id: 'judges', columns: ['k1'], starts_at: '14:00' }),
+      ],
+    )
+    expect(keys(laterItems(all, { kind: 'phase', id: 'a1' }))).toEqual([
+      'block:ceremony',
+      'block:judges',
+    ])
+  })
+
+  it('items starting at the same time in the column move too', () => {
+    const d = plan(
+      [phase({ id: 'a', starts_at: '09:00' })],
+      [block({ id: 'parallel', categories: ['c1'], starts_at: '09:00' })],
+    )
+    expect(keys(laterItems(d, { kind: 'phase', id: 'a' }))).toEqual(['block:parallel'])
   })
 })

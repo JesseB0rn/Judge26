@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import PlannerBoard from '../components/PlannerBoard.vue'
 import { gridColumns } from '../lib'
-import type { MoveRequest, PlannerData } from '../types'
+import type { CreateRequest, MoveRequest, PlannerData } from '../types'
 
 const data = (): PlannerData => ({
   days: [
@@ -200,5 +200,95 @@ describe('PlannerBoard', () => {
     expect(body.attributes('style')).toContain('height: 628px')
     expect(wrapper.findAll('[data-testid=planner-print-title]')).toHaveLength(2)
     wrapper.unmount()
+  })
+
+  describe('M10-D creating blocks and editing days', () => {
+    // Axis 08:00–18:00, 1.6 px per minute, columns 168 px wide: x 10 is RoboMission (c1),
+    // x 200 Future Engineers (c2); y 192 is 10:00.
+    function grid() {
+      const wrapper = render(true)
+      const bodies = wrapper.findAll('.planner-body')
+      bodies.forEach((body, i) => {
+        vi.spyOn(body.element, 'getBoundingClientRect').mockReturnValue({
+          left: i * 10_000,
+          right: i * 10_000 + 336,
+          top: 0,
+          bottom: 1000,
+          width: 336,
+          height: 1000,
+        } as DOMRect)
+      })
+      return { wrapper, body: bodies[0]!.element }
+    }
+    const fire = (type: string, target: EventTarget, x: number, y: number) =>
+      target.dispatchEvent(
+        new MouseEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          clientX: x,
+          clientY: y,
+        }),
+      )
+
+    it('M10-T35: a single click on empty space does nothing; a double click opens the dialog', async () => {
+      const { wrapper, body } = grid()
+      fire('pointerdown', body, 10, 192)
+      fire('pointerup', window, 10, 192)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.emitted('create')).toBeUndefined()
+
+      fire('dblclick', body, 10, 192)
+      expect(wrapper.emitted('create')).toEqual([
+        [
+          {
+            day: 'd1',
+            coverage: { categories: ['c1'], columns: [] },
+            starts_at: '10:00',
+            duration_minutes: 30,
+          } satisfies CreateRequest,
+        ],
+      ])
+      // A double click on a block opens nothing new.
+      fire('dblclick', wrapper.get('[data-item="phase:m1"]').element, 10, 100)
+      expect(wrapper.emitted('create')).toHaveLength(1)
+      wrapper.unmount()
+    })
+
+    it('M10-T34: dragging across columns creates one block covering all of them', async () => {
+      const { wrapper, body } = grid()
+      fire('pointerdown', body, 10, 192)
+      fire('pointermove', window, 200, 288)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.get('[data-testid=planner-preview]').text()).toContain('2 columns')
+      expect(document.documentElement.style.userSelect).toBe('none')
+      fire('pointerup', window, 200, 288)
+      expect(wrapper.emitted('create')).toEqual([
+        [
+          {
+            day: 'd1',
+            coverage: { categories: ['c1', 'c2'], columns: [] },
+            starts_at: '10:00',
+            duration_minutes: 60,
+          },
+        ],
+      ])
+      // M10-29: selection is back on after the drag.
+      expect(document.documentElement.style.userSelect).toBe('')
+      wrapper.unmount()
+    })
+
+    it('M10-21: editors open a day’s times from its header; viewers only read them', async () => {
+      const { wrapper } = grid()
+      const buttons = wrapper.findAll('[data-testid=planner-day-times]')
+      expect(buttons.map((b) => b.text())).toEqual(['08:00–18:00', '09:00–15:00'])
+      await buttons[1]!.trigger('click')
+      expect(wrapper.emitted('editDay')?.[0]?.[0]).toMatchObject({ id: 'd2' })
+      wrapper.unmount()
+      const viewer = render(false)
+      expect(viewer.find('[data-testid=planner-day-times]').exists()).toBe(false)
+      expect(viewer.text()).toContain('09:00–15:00')
+      viewer.unmount()
+    })
   })
 })

@@ -5,9 +5,11 @@
 //
 // GET  /api/events/{id}/board
 // POST /api/events/{id}/board/teams                   { team, table, index, round?, expected }
+//                                                     or { teams: [id], table, index, … } (M10-28)
 // POST /api/events/{id}/board/judges                  { judge, from, to, expected }
 // POST /api/events/{id}/board/tables                  { category, name? }
 // POST /api/events/{id}/board/tables/{table}/category { category, confirm?, expected_updated }
+// POST /api/events/{id}/board/labels                  { scheme, relabel?, expected? } (M10-25)
 // Every write returns the whole board again.
 
 routerAdd(
@@ -27,14 +29,33 @@ routerAdd(
     const board = require(`${__hooks}/lib/board.js`)
     const eventId = board.requireManager(e, true)
     const body = e.requestInfo().body || {}
+    const several = Array.isArray(body.teams)
     let result
     e.app.runInTransaction((tx) => {
-      result = board.moveTeam(tx, eventId, body)
+      result = several ? board.moveTeams(tx, eventId, body) : board.moveTeam(tx, eventId, body)
     })
     const audit = require(`${__hooks}/lib/audit.js`)
-    const team = e.app.findRecordById('teams', body.team)
     const table = result.to ? e.app.findRecordById('tables', result.to).getString('name') : ''
     const scope = body.round ? 'one round' : 'all rounds'
+    if (several) {
+      audit.log(e.app, {
+        auth: e.auth,
+        action: 'board.move_team',
+        collection: 'games',
+        record: result.teams[0],
+        event: eventId,
+        summary: `Placed ${result.teams.length} teams on table ${table} (${scope})`,
+        changes: {
+          teams: result.teams,
+          table: ['', result.to],
+          index: body.index,
+          round: body.round || '',
+        },
+        ip: audit.requestIp(e),
+      })
+      return e.json(200, board.load(e.app, eventId))
+    }
+    const team = e.app.findRecordById('teams', body.team)
     audit.log(e.app, {
       auth: e.auth,
       action: 'board.move_team',
@@ -115,7 +136,7 @@ routerAdd(
     const body = e.requestInfo().body || {}
     let table
     e.app.runInTransaction((tx) => {
-      table = board.createTable(tx, eventId, body)
+      table = board.createTable(tx, eventId, body, board.languageOfAuth(e.auth))
     })
     const audit = require(`${__hooks}/lib/audit.js`)
     audit.log(e.app, {
@@ -126,6 +147,35 @@ routerAdd(
       event: eventId,
       summary: `Created table “${table.getString('name')}”`,
       changes: { name: table.getString('name'), categories: body.category },
+      ip: audit.requestIp(e),
+    })
+    return e.json(200, board.load(e.app, eventId))
+  },
+  $apis.requireAuth('users', '_superusers'),
+)
+
+routerAdd(
+  'POST',
+  '/api/events/{id}/board/labels',
+  (e) => {
+    const board = require(`${__hooks}/lib/board.js`)
+    const eventId = board.requireManager(e, true)
+    const body = e.requestInfo().body || {}
+    let result
+    e.app.runInTransaction((tx) => {
+      result = board.setLabels(tx, eventId, body, board.languageOfAuth(e.auth))
+    })
+    const audit = require(`${__hooks}/lib/audit.js`)
+    audit.log(e.app, {
+      auth: e.auth,
+      action: 'board.table_labels',
+      collection: 'events',
+      record: eventId,
+      event: eventId,
+      summary: body.relabel
+        ? `Relabelled ${result.renamed} table(s) as “${board.tableLabel(body.scheme, 1)}”, …`
+        : `Set the table labels to “${board.tableLabel(body.scheme, 1)}”, …`,
+      changes: { table_labels: body.scheme, renamed: result.renamed },
       ip: audit.requestIp(e),
     })
     return e.json(200, board.load(e.app, eventId))

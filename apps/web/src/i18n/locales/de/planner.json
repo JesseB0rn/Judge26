@@ -73,7 +73,8 @@
     "noDays": "Noch keine Wettbewerbstage. Fügen Sie Tage in der Übersicht des Anlasses hinzu.",
     "customColumn": "eigene Spalte",
     "resizeColumn": "Spaltenbreite {column} anpassen",
-    "resizeHint": "Ziehen zum Anpassen, Doppelklick zum Zurücksetzen. Tastatur: Pfeiltasten."
+    "resizeHint": "Ziehen zum Anpassen, Doppelklick zum Zurücksetzen. Tastatur: Pfeiltasten.",
+    "columnsCount": "{count} Spalten"
   },
   "view": {
     "linkGone": "Der verlinkte Block existiert nicht mehr.",
@@ -87,11 +88,19 @@
     "showAll": "Alle anzeigen",
     "days": "Tage",
     "shownDays": "Angezeigte Tage",
-    "moveLater": "Spätere Phasen mitverschieben",
-    "moveLaterHint": "(oder beim Ablegen die Umschalttaste halten)",
+    "moveLater": "Spätere Blöcke mitverschieben",
+    "moveLaterHint": "(den Rest der Spalte; oder beim Ablegen die Umschalttaste halten)",
     "undoTitle": "Rückgängig (Ctrl+Z)",
     "warnings": "keine Warnungen | eine Warnung | {count} Warnungen",
     "narrow": "Bearbeiten ist auf Tablets und grösseren Bildschirmen möglich.",
-    "help": "Ziehen Sie Blöcke, um sie zu verschieben, ziehen Sie den unteren Rand, um die Grösse zu ändern, und ziehen Sie auf freier Fläche, um einen Block zu erstellen. Mit der Tastatur: Pfeiltasten verschieben (Umschalt: 15 Min., links/rechts: Tag), Alt+Pfeile ändern die Grösse, Enter öffnet."
+    "help": "Ziehen Sie Blöcke, um sie zu verschieben, ziehen Sie den unteren Rand, um die Grösse zu ändern. Doppelklicken Sie auf freie Fläche, um einen Block hinzuzufügen, oder ziehen Sie darüber (über mehrere Spalten für einen Block, der alle abdeckt). Klicken Sie auf die Zeiten eines Tages, um sie zu ändern. Mit der Tastatur: Pfeiltasten verschieben (Umschalt: 15 Min., links/rechts: Tag), Alt+Pfeile ändern die Grösse, Enter öffnet.",
+    "shiftOutside": "Nichts wurde verschoben: «{item}» würde aus seinem Tag fallen."
+  },
+  "dayTimes": {
+    "edit": "Zeiten von {day} bearbeiten",
+    "title": "Zeiten von {day}",
+    "description": "Blöcke ausserhalb der neuen Zeiten werden nicht verschoben; der Planer markiert sie.",
+    "start": "Beginn",
+    "end": "Ende"
   }
 }

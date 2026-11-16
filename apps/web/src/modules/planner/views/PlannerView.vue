@@ -37,12 +37,12 @@ import { localDate } from '@/modules/live/lib'
 import LiveIndicator from '@/modules/live/components/LiveIndicator.vue'
 import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import type { EventRecord } from '@/shared/types/records'
-import { getPlanner, isConflict, updateBlock, updatePhase } from '../api'
+import { getPlanner, isConflict, saveChanges, updateBlock, updatePhase } from '../api'
 import {
   dayOffset,
   findItem,
   gridColumns,
-  laterPhases,
+  laterItems,
   parseRef,
   PHASE_SHORT,
   refKey,
@@ -58,12 +58,14 @@ import type {
   MoveRequest,
   PlannerBlock,
   PlannerData,
+  PlannerDay,
   PlannerPhase,
 } from '../types'
 import PlannerBoard from '../components/PlannerBoard.vue'
 import BlockDialog from '../components/BlockDialog.vue'
 import PhaseDialog from '../components/PhaseDialog.vue'
 import ColumnsDialog from '../components/ColumnsDialog.vue'
+import DayTimesDialog from '../components/DayTimesDialog.vue'
 
 /** Schedule planner of an event (M4-14): editor for managers, read-only for everyone else. */
 const props = defineProps<{ id: string }>()
@@ -146,6 +148,15 @@ const toggleDay = (id: string, on: boolean) =>
 
 const moveLater = ref(false)
 
+// --- Day times (M10-21) ------------------------------------------------------------
+
+const dayOpen = ref(false)
+const editedDay = ref<PlannerDay | null>(null)
+function editDay(day: PlannerDay) {
+  editedDay.value = day
+  dayOpen.value = true
+}
+
 // --- Deep links (M4-14-16): ?item=phase:<id> | block:<id> ----------------------------
 
 const selected = computed(() => parseRef(route.query.item))
@@ -227,8 +238,8 @@ function newBlock(request?: CreateRequest) {
         day: request.day,
         starts_at: request.starts_at,
         duration_minutes: request.duration_minutes,
-        categories: request.column && !request.custom ? [request.column] : [],
-        columns: request.column && request.custom ? [request.column] : [],
+        categories: [...request.coverage.categories],
+        columns: [...request.coverage.columns],
       }
     : {
         day: firstDay!.id,
@@ -277,14 +288,31 @@ async function apply(changes: Change[], options: { undoable?: boolean } = {}) {
   }
   saving.value = true
   try {
-    for (const change of changes) {
+    if (changes.length === 1) {
+      const change = changes[0]!
       const record = findItem(data.value, change.ref)
-      if (!record) continue
-      const saved =
-        change.ref.kind === 'phase'
-          ? await updatePhase(record as PlannerPhase, change.data)
-          : await updateBlock(record as PlannerBlock, change.data)
-      record.updated = saved.updated
+      if (record) {
+        const saved =
+          change.ref.kind === 'phase'
+            ? await updatePhase(record as PlannerPhase, change.data)
+            : await updateBlock(record as PlannerBlock, change.data)
+        record.updated = saved.updated
+      }
+    } else {
+      // Several items (a "move later" shift, its undo): one write, all or nothing (M10-24).
+      const d = data.value
+      const updated = await saveChanges(
+        changes.map((change) => ({
+          kind: change.ref.kind,
+          id: change.ref.id,
+          updated: findItem(d, change.ref)?.updated,
+          data: change.data,
+        })) as Parameters<typeof saveChanges>[0],
+      )
+      changes.forEach((change, i) => {
+        const record = findItem(d, change.ref)
+        if (record && updated[i]) record.updated = updated[i]
+      })
     }
     if (options.undoable !== false) {
       undoStack.value = [...undoStack.value.slice(-19), before]
@@ -302,36 +330,38 @@ async function apply(changes: Change[], options: { undoable?: boolean } = {}) {
 }
 
 function onMove(request: MoveRequest) {
-  if (!data.value) return
-  const record = findItem(data.value, request.ref)
+  const d = data.value
+  if (!d) return
+  const record = findItem(d, request.ref)
   if (!record) return
-  const changes: Change[] = []
-  if (request.ref.kind === 'phase') {
-    const phase = record as PlannerPhase
-    changes.push({ ref: { kind: 'phase', id: phase.id }, data: { ...request.placement } })
-    if (request.later && phase.day && toMinutes(phase.starts_at) !== null) {
-      // Later phases keep their gaps: same day offset and minute delta.
-      const offset = dayOffset(days.value, phase.day, request.placement.day)
-      const minutes = toMinutes(request.placement.starts_at)! - toMinutes(phase.starts_at)!
-      for (const later of laterPhases(data.value.phases, phase)) {
-        const placement = shiftPlacement(
-          days.value,
-          { day: later.day, starts_at: later.starts_at },
-          later.duration_minutes,
-          offset,
-          minutes,
-        )
-        if (placement) changes.push({ ref: { kind: 'phase', id: later.id }, data: placement })
+  const changes: Change[] = [
+    request.ref.kind === 'phase'
+      ? { ref: { kind: 'phase', id: record.id }, data: { ...request.placement } }
+      : {
+          ref: { kind: 'block', id: record.id },
+          data: { ...request.placement, ...request.coverage },
+        },
+  ]
+  if (request.later && record.day && toMinutes(record.starts_at) !== null) {
+    // Every later item of the same column(s) moves by the same amount, keeping the gaps
+    // (M10-24). If one would leave its day, nothing moves.
+    const offset = dayOffset(days.value, record.day, request.placement.day)
+    const minutes = toMinutes(request.placement.starts_at)! - toMinutes(record.starts_at)!
+    for (const later of laterItems(d, request.ref)) {
+      const item = findItem(d, later)!
+      const placement = shiftPlacement(
+        days.value,
+        { day: item.day, starts_at: item.starts_at },
+        item.duration_minutes,
+        offset,
+        minutes,
+      )
+      if (!placement) {
+        toast.error(t('planner.view.shiftOutside', { item: itemName(d, later) }))
+        return
       }
+      changes.push({ ref: later, data: placement } as Change)
     }
-  } else {
-    changes.push({
-      ref: { kind: 'block', id: record.id },
-      data: {
-        ...request.placement,
-        ...request.coverage,
-      },
-    })
   }
   void apply(changes)
 }
@@ -365,16 +395,19 @@ function onConflict() {
 
 // --- Issues ------------------------------------------------------------------------
 
+/** Short name of an item, e.g. "R1 Scoring" or a block's title. */
+function itemName(d: PlannerData, item: ItemRef) {
+  if (item.kind === 'block') return d.blocks.find((b) => b.id === item.id)?.title ?? 'Block'
+  const phase = d.phases.find((p) => p.id === item.id)
+  const round = phase && d.rounds.find((r) => r.id === phase.round)
+  return round && phase ? `${round.key} ${PHASE_SHORT[phase.phase]}` : 'Phase'
+}
+
 const issueList = computed(() => {
   const d = data.value
   if (!d) return []
   return d.issues.map((issue, index) => {
-    const names = issue.items.map((item) => {
-      if (item.kind === 'block') return d.blocks.find((b) => b.id === item.id)?.title ?? 'Block'
-      const phase = d.phases.find((p) => p.id === item.id)
-      const round = phase && d.rounds.find((r) => r.id === phase.round)
-      return round && phase ? `${round.key} ${PHASE_SHORT[phase.phase]}` : 'Phase'
-    })
+    const names = issue.items.map((item) => itemName(d, item))
     return { key: `${issue.code}-${index}`, issue, names }
   })
 })
@@ -638,7 +671,10 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
       @move="onMove"
       @resize="onResize"
       @create="newBlock"
+      @edit-day="editDay"
     />
+
+    <DayTimesDialog v-model:open="dayOpen" :day="editedDay" @saved="load" @conflict="onConflict" />
 
     <BlockDialog
       v-model:open="blockOpen"

@@ -26,6 +26,8 @@ export interface PlannerDay {
   /** HH:MM, defaults already applied by the server. */
   starts_at: string
   ends_at: string
+  /** Version for editing the day times from the planner (staff only, M10-21). */
+  updated?: string
 }
 
 export interface PlannerCategory {
@@ -126,7 +128,7 @@ export interface MoveRequest {
   placement: Placement
   /** New coverage of a single-column custom block moved to another column. */
   coverage?: Coverage
-  /** Also move the round's later phases, keeping their gaps. */
+  /** Also move every later item of the same column(s), keeping the gaps (M10-24). */
   later: boolean
 }
 
@@ -136,12 +138,11 @@ export interface Coverage {
   columns: string[]
 }
 
-/** Empty space clicked or dragged on the board. */
+/** Empty space double-clicked or dragged on the board (M10-22, M10-23). */
 export interface CreateRequest {
   day: string
-  /** Clicked column (category or custom column id), or "". */
-  column: string
-  custom: boolean
+  /** The columns the new block covers: one, or all columns a drag went across. */
+  coverage: Coverage
   starts_at: string
   duration_minutes: number
 }

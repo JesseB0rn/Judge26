@@ -6,7 +6,7 @@
 // A template file is plain JSON:
 //
 //   { format: "judge26.event-template", version: 1, name, description, exported_at, source,
-//     event:      { venue, description },
+//     event:      { venue, description, table_labels? },
 //     days:       [{ offset, label, starts_at, ends_at }]           offset = days after the first day
 //     categories: [{ code, name, description, min_age, max_age, min_team_size, max_team_size,
 //                    max_teams, judges_per_table, settings, ranking,
@@ -55,6 +55,17 @@ function invalid(path, detail) {
 }
 
 // --- Helpers ------------------------------------------------------------------
+
+const TABLE_LABELS = ['table_number', 'number', 'table_letter', 'letter']
+
+/** The table label scheme of a template (M10-25); missing means the default. */
+function tableLabels(value) {
+  if (value === undefined || value === null || value === '') return 'table_number'
+  if (TABLE_LABELS.indexOf(value) === -1) {
+    throw invalid('event.table_labels', `must be one of ${TABLE_LABELS.join(', ')}`)
+  }
+  return value
+}
 
 function findById(app, collection, id) {
   if (!id) return null
@@ -125,6 +136,7 @@ function exportEvent(app, eventId, meta) {
     event: {
       venue: event.getString('venue'),
       description: event.getString('description'),
+      table_labels: event.getString('table_labels') || 'table_number',
     },
     days: days.map((d) => ({
       offset: offsetOf[d.id],
@@ -285,6 +297,8 @@ function validate(data) {
     event: {
       venue: text(event.venue, 'event.venue', { max: 200 }),
       description: text(event.description, 'event.description', { max: 5000 }),
+      // M10-25; optional, so files exported before it still load.
+      table_labels: tableLabels(event.table_labels),
     },
     days: [],
     categories: [],
@@ -536,6 +550,7 @@ function createEvent(tx, template, input, auth) {
     input.venue !== undefined && input.venue !== '' ? input.venue : template.event.venue,
   )
   event.set('description', template.event.description)
+  event.set('table_labels', template.event.table_labels)
   event.set('status', 'draft')
   tx.save(event)
 

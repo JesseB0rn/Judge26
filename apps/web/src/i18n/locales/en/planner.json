@@ -73,7 +73,8 @@
     "noDays": "No competition days yet. Add days on the event's overview.",
     "customColumn": "custom column",
     "resizeColumn": "Resize column {column}",
-    "resizeHint": "Drag to resize, double-click to reset. Keyboard: arrow keys."
+    "resizeHint": "Drag to resize, double-click to reset. Keyboard: arrow keys.",
+    "columnsCount": "{count} columns"
   },
   "view": {
     "linkGone": "The linked block no longer exists.",
@@ -87,11 +88,19 @@
     "showAll": "Show all",
     "days": "Days",
     "shownDays": "Shown days",
-    "moveLater": "Move later phases too",
-    "moveLaterHint": "(or hold Shift while dropping)",
+    "moveLater": "Move later items too",
+    "moveLaterHint": "(the rest of the column; or hold Shift while dropping)",
     "undoTitle": "Undo (Ctrl+Z)",
     "warnings": "no warnings | one warning | {count} warnings",
     "narrow": "Editing is available on tablets and larger screens.",
-    "help": "Drag blocks to move them, drag their lower edge to resize, and drag on empty space to create a block. With the keyboard: arrow keys move (Shift: 15 min, left/right: day), Alt+arrows resize, Enter opens."
+    "help": "Drag blocks to move them, drag their lower edge to resize. Double-click empty space to add a block, or drag across it (over several columns for one block covering them). Click a day’s times to change them. With the keyboard: arrow keys move (Shift: 15 min, left/right: day), Alt+arrows resize, Enter opens.",
+    "shiftOutside": "Nothing was moved: “{item}” would leave its day."
+  },
+  "dayTimes": {
+    "edit": "Edit the times of {day}",
+    "title": "Times of {day}",
+    "description": "Blocks outside the new times are not moved; the planner flags them.",
+    "start": "Starts",
+    "end": "Ends"
   }
 }

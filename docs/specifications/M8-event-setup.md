@@ -64,6 +64,7 @@ documented at the top of `hooks/lib/templates.js`.
 | Rounds with game rule, durations and placed phases (maintenance, check, scoring) | Publication state, documents, emails |
 | Tables (name, position, active, categories)                                      | Record ids                           |
 | Planner custom columns and blocks                                                |                                      |
+| The table label scheme (`event.table_labels`, M10-25; optional, default Table 1) |                                      |
 
 References are by value: days by offset, categories by code, game rules by key, columns by name,
 so a file works on any installation. Open question 4 is settled: rulesets are **copied**, not
