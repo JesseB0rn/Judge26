@@ -44,5 +44,19 @@
   "cannotDrop": "Non possibile qui",
   "heading": "Tavoli, giudici e squadre",
   "delete": "Elimina",
-  "confirmDelete": "Eliminare il tavolo {table}?"
+  "confirmDelete": "Eliminare il tavolo {table}?",
+  "teamsSelected": "{count} squadre",
+  "selectedCount": "{count} selezionate",
+  "clearSelection": "Annulla",
+  "selectHint": "Maiusc+clic seleziona un intervallo, Ctrl/Cmd+clic più squadre; trascinale insieme.",
+  "placeSelectedOn": "Posiziona {count} squadre selezionate sul tavolo",
+  "confirmRelabel": "Rinominare tutti i {count} tavoli nell’ordine della bacheca ({example})? I nomi assegnati a mano saranno sostituiti.",
+  "labels": {
+    "label": "Nomi dei tavoli",
+    "relabel": "Rinomina tutti",
+    "table_number": "Tavolo 1, Tavolo 2, …",
+    "number": "1, 2, …",
+    "table_letter": "Tavolo A, Tavolo B, …",
+    "letter": "A, B, …"
+  }
 }

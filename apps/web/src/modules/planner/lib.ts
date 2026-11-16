@@ -135,17 +135,78 @@ export function unplacedPhases(data: PlannerData): PlannerPhase[] {
     })
 }
 
-/** Placed phases of the same round that come after `phase` (for "move with later phases"). */
-export function laterPhases(phases: PlannerPhase[], phase: PlannerPhase): PlannerPhase[] {
-  const index = PHASE_ORDER.indexOf(phase.phase)
-  return phases.filter(
-    (p) => p.round === phase.round && PHASE_ORDER.indexOf(p.phase) > index && isPlaced(p),
-  )
+// --- "Move later" (M10-24) ---------------------------------------------------------
+
+/**
+ * The grid columns an item occupies: a phase its round's category; a block the categories and
+ * custom columns it covers, or every column when it covers none.
+ */
+export function itemColumns(
+  data: Pick<PlannerData, 'rounds' | 'phases' | 'blocks' | 'categories' | 'columns'>,
+  ref: ItemRef,
+): string[] {
+  if (ref.kind === 'phase') {
+    const phase = data.phases.find((p) => p.id === ref.id)
+    const category = phase && data.rounds.find((r) => r.id === phase.round)?.category
+    return category ? [category] : []
+  }
+  const block = data.blocks.find((b) => b.id === ref.id)
+  if (!block) return []
+  const covered = [...block.categories, ...(block.columns ?? [])]
+  return covered.length
+    ? covered
+    : [...data.categories.map((c) => c.id), ...(data.columns ?? []).map((c) => c.id)]
 }
 
 /**
- * Moves a placement by whole days (in date order) and minutes, keeping it within the day.
- * Returns null if the target day does not exist.
+ * Items that move with `ref` when "move later" is on: every placed phase and block of the same
+ * day that starts at or after it in one of its columns. A moving block that spans more columns
+ * brings the items of those columns that start at or after the block (repeated until nothing new
+ * is found). Earlier items and other days never move.
+ */
+export function laterItems(
+  data: Pick<PlannerData, 'rounds' | 'phases' | 'blocks' | 'categories' | 'columns'>,
+  ref: ItemRef,
+): ItemRef[] {
+  const record = findItem(data, ref)
+  const from = record ? toMinutes(record.starts_at) : null
+  if (!record || !record.day || from === null) return []
+  const candidates = [
+    ...data.phases.map((p) => ({ item: p, ref: { kind: 'phase' as const, id: p.id } })),
+    ...data.blocks.map((b) => ({ item: b, ref: { kind: 'block' as const, id: b.id } })),
+  ]
+    .map(({ item, ref: r }) => ({ ref: r, start: toMinutes(item.starts_at) }))
+    .filter(
+      (c): c is { ref: ItemRef; start: number } =>
+        findItem(data, c.ref)?.day === record.day &&
+        c.start !== null &&
+        c.start >= from &&
+        refKey(c.ref) !== refKey(ref),
+    )
+
+  // Per column: the time from which its items move.
+  const since = new Map<string, number>(itemColumns(data, ref).map((c) => [c, from]))
+  const chosen = new Map<string, ItemRef>()
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const candidate of candidates) {
+      const key = refKey(candidate.ref)
+      if (chosen.has(key)) continue
+      const own = itemColumns(data, candidate.ref)
+      if (!own.some((c) => since.has(c) && candidate.start >= since.get(c)!)) continue
+      chosen.set(key, candidate.ref)
+      for (const c of own) since.set(c, Math.min(since.get(c) ?? candidate.start, candidate.start))
+      grew = true
+    }
+  }
+  return [...chosen.values()]
+}
+
+/**
+ * Moves a placement by whole days (in date order) and minutes. Returns null when it would leave
+ * its day (start before midnight or end after it) or the target day does not exist: a shift
+ * never squeezes items (M10-24).
  */
 export function shiftPlacement(
   days: PlannerDay[],
@@ -159,7 +220,9 @@ export function shiftPlacement(
   const target = ordered[index + dayOffset]
   const start = toMinutes(placement.starts_at)
   if (index < 0 || !target || start === null) return null
-  return { day: target.id, starts_at: formatTime(clampStart(start + minutes, duration)) }
+  const moved = start + minutes
+  if (moved < 0 || moved + duration > DAY_MINUTES) return null
+  return { day: target.id, starts_at: formatTime(moved) }
 }
 
 export function dayOffset(days: PlannerDay[], from: string, to: string): number {

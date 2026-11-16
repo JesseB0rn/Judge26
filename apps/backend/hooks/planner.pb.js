@@ -9,6 +9,16 @@ onRecordValidate((e) => {
   e.next()
 }, 'competition_days')
 
+// M10-21: the planner edits day times with the version it loaded; a stale write gets 409. Other
+// editors (the event's day list) send no version and are not checked.
+onRecordUpdateRequest((e) => {
+  require(`${__hooks}/lib/concurrency.js`).versionedUpdate(
+    e,
+    (body) => 'expected_updated' in body,
+    'This day was changed by someone else. Reload and try again.',
+  )
+}, 'competition_days')
+
 // --- Round phases ------------------------------------------------------------
 
 onRecordValidate((e) => {

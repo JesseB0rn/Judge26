@@ -52,7 +52,7 @@ All errors use PocketBase's format:
 | POST     | `/api/invitations/{id}/resend\|revoke`    | event managers         | Send an invitation again / revoke it (M8-09)                                                        |
 | GET/POST | `/api/invitations/lookup`, `…/accept`     | public                 | Inspect / accept an invitation link (M8-10)                                                         |
 | GET      | `/api/events/{id}/board`                  | event managers         | Assignment board data ([M8 spec](../specifications/M8-board.md#api))                                |
-| POST     | `/api/events/{id}/board/…`                | event managers         | Move teams, judges and tables on the board; create tables (M8-E)                                    |
+| POST     | `/api/events/{id}/board/…`                | event managers         | Move teams (one or several), judges and tables; create and label tables (M8-E, M10-E)               |
 | GET      | `/api/events/{id}/setup`                  | event managers         | Setup checklist ([M8 spec](../specifications/M8-event-setup.md#api))                                |
 | GET/POST | `/api/events/{id}/template`               | event managers/admins  | Download the event as a template / save it to the library (M8-21)                                   |
 | POST     | `/api/event-templates[/{id}/events]`      | admins                 | Upload a template file / create an event from a template (M8-22, M8-23)                             |

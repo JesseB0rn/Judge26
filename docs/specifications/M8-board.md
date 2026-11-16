@@ -1,6 +1,6 @@
 # M8-E – Assignment board
 
-Refines roadmap requirements M8-25 – M8-33. The board is the top of the event's **Assignments** tab
+Refines roadmap requirements M8-25 – M8-33 and the board fixes of M10-E (M10-25 – M10-29). The board is the top of the event's **Assignments** tab
 (for event managers and admins; `/events/{id}/board` redirects there). It is where tables are
 created and judges and teams are assigned. Below it, the generator fills gaps and the game list
 shows every attempt with its table and sequence; the planner (M4-14) stays responsible for time.
@@ -17,6 +17,24 @@ shows every attempt with its table and sequence; the planner (M4-14) stays respo
   judges without a table.
 - A **+** at the end of each group, or the divider's menu, adds a table (M8-26); a table's menu
   renames, deactivates, deletes (only while no games are on it) or moves it to another category.
+- **Groups wrap** onto further rows when they do not fit the width (M10-27); a group scrolls
+  sideways only when it is wider than the board by itself. Dividers can be dragged across rows.
+- **Scroll position** (M10-26): a write or a live update never moves the view. While a write runs,
+  editing pauses (controls are disabled, not removed, so nothing shifts), and each group's
+  horizontal scroll and the page's vertical scroll are kept when the new board arrives.
+
+## Table labels (M10-25)
+
+The event's `table_labels` scheme names new tables: **Table 1** (`table_number`, default), **1**
+(`number`), **Table A** (`table_letter`) or **A** (`letter`). Letters continue AA, AB … after Z. A
+new table gets the scheme's _n_-th label (_n_ = number of tables + 1, skipping names in use). The
+word "Table" is in the language of the manager who creates or relabels (Tisch, Table, Tavolo), as
+table names are event data, not interface text.
+
+**Relabel all** (after a confirmation) renames every table in board order: 1, 2, 3 … of the
+scheme. The request names every table's version; if any was renamed meanwhile, it gets 409.
+Tables can still be renamed by hand. Event templates carry the scheme (`event.table_labels`,
+optional in the file).
 
 ## Rounds (M8-31)
 
@@ -43,6 +61,18 @@ free sequence numbers around them. Missing games of a team are created when it i
 Every drag can also be done from the item's menu (keyboard accessible), and drags use pointer
 events, so they work with touch on tablets (M8-33).
 
+**Several teams at once (M10-28).** In the unassigned tray a click selects a team, Shift+click a
+range and Ctrl/⌘+click toggles one (Space on a focused card works like a click); Escape or _Clear_
+empties the selection. Dragging a selected card, or its menu's _Place … on table_, places all
+selected teams from the drop position in tray order, as **one write**
+(`POST /board/teams { teams: [...] }`): the versions are checked once for all of them, and if one
+team does not belong to the table's category the drop is refused and nothing is placed.
+
+**No text selection after drags (M10-29).** Every pointer drag in the app (board, planner, column
+resizing, the ruleset diagram) uses `shared/dragSelection.ts`: text selection is off for the page
+while dragging and cleared when the drag starts and ends, dropped or cancelled. Draggable cards
+are `select-none`, so Shift+click does not select text either; inputs keep their own selection.
+
 ## Several judges per table
 
 `tables.judge` became `tables.judges`. **Every judge of a table scores its games** (M5); the
@@ -65,19 +95,24 @@ automatic generation still only uses tables with judges.
 | `tables.judges`               | Replaces `tables.judge`; access rules test `game.table.judges.id`        |
 | `categories.judges_per_table` | 1–10, empty = 2; copied with the category                                |
 | Table positions               | Renumbered in board order after board changes, so groups stay contiguous |
+| `events.table_labels`         | `table_number` (empty), `number`, `table_letter`, `letter` (M10-25)      |
 
-Migration `1764700000_m8_board.js` (copies each table's judge into `judges`).
+Migrations `1764700000_m8_board.js` (copies each table's judge into `judges`) and
+`1765100000_m10_table_labels.js`.
 
 ## API
 
-| Method | Path                                             | Body                                               |
-| ------ | ------------------------------------------------ | -------------------------------------------------- |
-| GET    | `/api/events/{id}/board`                         | → categories, rounds, tables, teams, games, judges |
-| POST   | `/api/events/{id}/board/teams`                   | `{ team, table, index, round?, expected }`         |
-| POST   | `/api/events/{id}/board/judges`                  | `{ judge, from, to, expected }`                    |
-| POST   | `/api/events/{id}/board/tables`                  | `{ category, name? }`                              |
-| POST   | `/api/events/{id}/board/tables/{table}/category` | `{ category, confirm?, expected_updated }`         |
+| Method | Path                                             | Body                                                                         |
+| ------ | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Method | Path                                             | Body                                                                         |
+| ------ | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| GET    | `/api/events/{id}/board`                         | → table_labels, categories, rounds, tables, teams, games, judges             |
+| POST   | `/api/events/{id}/board/teams`                   | `{ team, table, index, round?, expected }` or `{ teams: [...], table, … }`   |
+| POST   | `/api/events/{id}/board/judges`                  | `{ judge, from, to, expected }`                                              |
+| POST   | `/api/events/{id}/board/tables`                  | `{ category, name? }`                                                        |
+| POST   | `/api/events/{id}/board/tables/{table}/category` | `{ category, confirm?, expected_updated }`                                   |
+| POST   | `/api/events/{id}/board/labels`                  | `{ scheme, relabel?, expected? }` (`expected`: every table's `updated`)      |
 
 Event managers and admins; writes refuse archived events. Every write returns the whole board and
-is recorded in the audit log (`board.move_team`, `board.move_judge`, `board.table_category`, table
-creation).
+is recorded in the audit log (`board.move_team`, `board.move_judge`, `board.table_category`,
+`board.table_labels`, table creation).

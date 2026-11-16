@@ -73,7 +73,8 @@
     "noDays": "Aucun jour de compétition pour l’instant. Ajoutez des jours dans l’aperçu de l’événement.",
     "customColumn": "colonne personnalisée",
     "resizeColumn": "Redimensionner la colonne {column}",
-    "resizeHint": "Faire glisser pour redimensionner, double-clic pour réinitialiser. Clavier : flèches."
+    "resizeHint": "Faire glisser pour redimensionner, double-clic pour réinitialiser. Clavier : flèches.",
+    "columnsCount": "{count} colonnes"
   },
   "view": {
     "linkGone": "Le bloc lié n’existe plus.",
@@ -87,11 +88,19 @@
     "showAll": "Tout afficher",
     "days": "Jours",
     "shownDays": "Jours affichés",
-    "moveLater": "Déplacer aussi les phases suivantes",
-    "moveLaterHint": "(ou maintenir Maj en déposant)",
+    "moveLater": "Déplacer aussi les blocs suivants",
+    "moveLaterHint": "(le reste de la colonne ; ou maintenir Maj en déposant)",
     "undoTitle": "Annuler (Ctrl+Z)",
     "warnings": "aucun avertissement | un avertissement | {count} avertissements",
     "narrow": "La modification est possible sur tablette et sur les écrans plus grands.",
-    "help": "Faites glisser les blocs pour les déplacer, leur bord inférieur pour les redimensionner, et un espace vide pour créer un bloc. Au clavier : les flèches déplacent (Maj : 15 min, gauche/droite : jour), Alt+flèches redimensionnent, Entrée ouvre."
+    "help": "Faites glisser les blocs pour les déplacer, leur bord inférieur pour les redimensionner. Double-cliquez sur un espace vide pour ajouter un bloc, ou faites-le glisser (sur plusieurs colonnes pour un bloc qui les couvre). Cliquez sur les horaires d’une journée pour les modifier. Au clavier : les flèches déplacent (Maj : 15 min, gauche/droite : jour), Alt+flèches redimensionnent, Entrée ouvre.",
+    "shiftOutside": "Rien n’a été déplacé : « {item} » sortirait de sa journée."
+  },
+  "dayTimes": {
+    "edit": "Modifier les horaires de {day}",
+    "title": "Horaires de {day}",
+    "description": "Les blocs hors des nouveaux horaires ne sont pas déplacés ; le planificateur les signale.",
+    "start": "Début",
+    "end": "Fin"
   }
 }

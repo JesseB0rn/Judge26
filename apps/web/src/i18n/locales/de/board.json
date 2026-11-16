@@ -44,5 +44,19 @@
   "cannotDrop": "Hier nicht möglich",
   "heading": "Tische, Schiedsrichter/innen und Teams",
   "delete": "Löschen",
-  "confirmDelete": "Tisch {table} löschen?"
+  "confirmDelete": "Tisch {table} löschen?",
+  "teamsSelected": "{count} Teams",
+  "selectedCount": "{count} ausgewählt",
+  "clearSelection": "Aufheben",
+  "selectHint": "Umschalt+Klick wählt einen Bereich, Strg/Cmd+Klick mehrere; gemeinsam ziehen.",
+  "placeSelectedOn": "{count} ausgewählte Teams auf Tisch setzen",
+  "confirmRelabel": "Alle {count} Tische in Board-Reihenfolge umbenennen ({example})? Von Hand vergebene Namen werden ersetzt.",
+  "labels": {
+    "label": "Tischnamen",
+    "relabel": "Alle umbenennen",
+    "table_number": "Tisch 1, Tisch 2, …",
+    "number": "1, 2, …",
+    "table_letter": "Tisch A, Tisch B, …",
+    "letter": "A, B, …"
+  }
 }

@@ -4,6 +4,7 @@ import type { Board } from '../api'
 import AssignmentBoard from '../components/AssignmentBoard.vue'
 
 const board: Board = {
+  table_labels: 'table_number',
   categories: [
     { id: 'rmj', name: 'Junior', code: 'RMJ', judges_per_table: 2 },
     { id: 'rme', name: 'Elementary', code: 'RME', judges_per_table: 2 },
@@ -168,6 +169,139 @@ describe('AssignmentBoard (M8-E)', () => {
     })
     expect(wrapper.find('[aria-label^="Actions for"]').exists()).toBe(false)
     expect(wrapper.find('.cursor-grab').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('M10-26: while saving, editing pauses but the layout stays the same', async () => {
+    const wrapper = mount(AssignmentBoard, {
+      props: { board, scope: 'all', editable: true, busy: true },
+      attachTo: document.body,
+    })
+    // Controls are still there (disabled), so nothing shifts and the scroll position holds.
+    const add = wrapper.findAll('button[aria-label^="Add a table to"]')
+    expect(add).toHaveLength(2)
+    expect(add.every((b) => b.attributes('disabled') !== undefined)).toBe(true)
+    expect(wrapper.find('[aria-label="Actions for team Two"]').attributes('disabled')).toBeDefined()
+    // No drag starts.
+    const ghost = await dragTo(
+      wrapper.get('[data-testid=team-tray] [data-team=Two]').element,
+      wrapper.get('[data-testid=teams-B]').element,
+    )
+    expect(ghost).toBe('')
+    expect(wrapper.emitted('moveTeam')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('M10-27: category groups wrap; each scrolls sideways only by itself', () => {
+    const wrapper = mountBoard()
+    expect(wrapper.get('[data-testid=board-groups]').classes()).toContain('flex-wrap')
+    const groups = wrapper.findAll('[data-testid=category-group]')
+    expect(groups.map((g) => g.attributes('data-group'))).toEqual(['rmj', 'rme'])
+    expect(groups.every((g) => g.classes().includes('overflow-x-auto'))).toBe(true)
+    expect(groups[0]!.find('[data-column=A]').exists()).toBe(true)
+    expect(groups[1]!.find('[data-column=C]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  describe('M10-28 several teams at once', () => {
+    const crowded: Board = {
+      ...board,
+      teams: [
+        ...board.teams,
+        { id: 't3', name: 'Three', category: 'rmj' },
+        { id: 't4', name: 'Four', category: 'rmj' },
+        { id: 't5', name: 'Five', category: 'rme' },
+      ],
+    }
+    const mountCrowded = () =>
+      mount(AssignmentBoard, {
+        props: { board: crowded, scope: 'all', editable: true },
+        attachTo: document.body,
+      })
+    const card = (wrapper: ReturnType<typeof mountCrowded>, name: string) =>
+      wrapper.get(`[data-testid=team-tray] [data-team=${name}]`)
+    const selectedNames = (wrapper: ReturnType<typeof mountCrowded>) =>
+      wrapper
+        .findAll('[data-testid=team-tray] [data-selected]')
+        .map((c) => c.attributes('data-team'))
+
+    it('click, Shift+click and Ctrl+click select teams in tray order; Escape clears', async () => {
+      const wrapper = mountCrowded()
+      await card(wrapper, 'Two').trigger('click')
+      await card(wrapper, 'Three').trigger('click', { shiftKey: true })
+      expect(selectedNames(wrapper)).toEqual(['Two', 'Three'])
+      await card(wrapper, 'Five').trigger('click', { ctrlKey: true })
+      // Always in tray order: Two, Three, Four, Five.
+      expect(selectedNames(wrapper)).toEqual(['Two', 'Three', 'Five'])
+      expect(wrapper.get('[data-testid=tray-selection]').text()).toContain('3 selected')
+      await card(wrapper, 'Four').trigger('click')
+      expect(selectedNames(wrapper)).toEqual(['Four'])
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      await flushPromises()
+      expect(selectedNames(wrapper)).toEqual([])
+      wrapper.unmount()
+    })
+
+    it('M10-T42: dragging a selected team places the whole selection, in tray order', async () => {
+      const wrapper = mountCrowded()
+      // Selected from the bottom up; placed in tray order (Two, Three, Four).
+      await card(wrapper, 'Four').trigger('click')
+      await card(wrapper, 'Two').trigger('click', { shiftKey: true })
+      const ghost = await dragTo(
+        card(wrapper, 'Three').element,
+        wrapper.get('[data-testid=teams-B]').element,
+      )
+      expect(ghost).toContain('3 teams')
+      expect(wrapper.emitted('moveTeams')).toEqual([[['t2', 't3', 't4'], 'b', 0]])
+      expect(wrapper.emitted('moveTeam')).toBeUndefined()
+      wrapper.unmount()
+    })
+
+    it('M10-T43: a selection with a team of another category is refused as a whole', async () => {
+      const wrapper = mountCrowded()
+      await card(wrapper, 'Five').trigger('click')
+      await card(wrapper, 'Four').trigger('click', { shiftKey: true })
+      const ghost = await dragTo(
+        card(wrapper, 'Four').element,
+        wrapper.get('[data-testid=teams-B]').element,
+      )
+      expect(ghost).toContain('Only tables of the team’s category')
+      expect(wrapper.emitted('moveTeams')).toBeUndefined()
+      wrapper.unmount()
+    })
+
+    it('a drag does not change the selection afterwards', async () => {
+      const wrapper = mountCrowded()
+      await card(wrapper, 'Three').trigger('click')
+      await card(wrapper, 'Four').trigger('click', { shiftKey: true })
+      const three = card(wrapper, 'Three').element
+      pointerOver(wrapper.get('[data-testid=teams-C]').element)
+      pointer('pointerdown', three, 10, 10)
+      pointer('pointermove', window, 40, 40)
+      await flushPromises()
+      pointer('pointerup', window, 40, 40)
+      // The browser fires the click right after the release; it must not reselect one card.
+      three.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      await flushPromises()
+      expect(selectedNames(wrapper)).toEqual(['Three', 'Four'])
+      wrapper.unmount()
+    })
+  })
+
+  it('M10-T44: after a drop or a cancelled drag no text stays selected', async () => {
+    const wrapper = mountBoard()
+    const two = wrapper.get('[data-testid=team-tray] [data-team=Two]').element
+    pointerOver(wrapper.get('[data-testid=teams-B]').element)
+    pointer('pointerdown', two, 10, 10)
+    pointer('pointermove', window, 40, 40)
+    await flushPromises()
+    expect(document.documentElement.style.userSelect).toBe('none')
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await flushPromises()
+    expect(document.documentElement.style.userSelect).toBe('')
+    expect(window.getSelection()?.rangeCount ?? 0).toBe(0)
+    await dragTo(two, wrapper.get('[data-testid=teams-B]').element)
+    expect(document.documentElement.style.userSelect).toBe('')
     wrapper.unmount()
   })
 })

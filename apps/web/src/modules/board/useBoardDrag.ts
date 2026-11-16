@@ -1,4 +1,5 @@
 import { onBeforeUnmount, ref } from 'vue'
+import { beginDrag, endDrag } from '@/shared/dragSelection'
 
 /**
  * Pointer drag for the assignment board (M8-28, M8-29, M8-27): works with mouse, pen and touch.
@@ -11,7 +12,8 @@ import { onBeforeUnmount, ref } from 'vue'
  */
 
 export type DragPayload =
-  | { kind: 'team'; team: string; from: string }
+  /** `teams`: several teams from the tray, dragged together (M10-28); `team` is the one grabbed. */
+  | { kind: 'team'; team: string; from: string; teams?: string[] }
   | { kind: 'judge'; judge: string; from: string }
   | { kind: 'divider'; group: number }
 
@@ -90,6 +92,7 @@ export function useBoardDrag(onDrop: (payload: DragPayload, target: DropTarget) 
     d.x = event.clientX
     d.y = event.clientY
     if (!d.active && Math.hypot(d.x - d.startX, d.y - d.startY) < THRESHOLD) return
+    if (!d.active) beginDrag()
     d.active = true
     event.preventDefault()
     d.target = hitTest(d.x, d.y, d.payload.kind)
@@ -98,7 +101,16 @@ export function useBoardDrag(onDrop: (payload: DragPayload, target: DropTarget) 
   function up() {
     const d = drag.value
     cancel()
-    if (d?.active && d.target) onDrop(d.payload, d.target)
+    if (!d?.active) return
+    // The release after a drag is no click (it would e.g. change the tray selection).
+    window.addEventListener('click', swallow, { capture: true, once: true })
+    setTimeout(() => window.removeEventListener('click', swallow, { capture: true }))
+    if (d.target) onDrop(d.payload, d.target)
+  }
+
+  function swallow(event: Event) {
+    event.stopPropagation()
+    event.preventDefault()
   }
 
   function onKey(event: KeyboardEvent) {
@@ -106,6 +118,7 @@ export function useBoardDrag(onDrop: (payload: DragPayload, target: DropTarget) 
   }
 
   function cancel() {
+    if (drag.value?.active) endDrag()
     drag.value = null
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)

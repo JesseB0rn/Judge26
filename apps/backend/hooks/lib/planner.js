@@ -424,6 +424,8 @@ function payload(app, eventId, internal) {
       date: d.getString('date'),
       label: d.getString('label'),
       ...dayWindow(d),
+      // M10-21: day times are edited from the planner, versioned like its other edits.
+      ...(internal ? { updated: d.getString('updated') } : {}),
     })),
     categories: data.categories.map((c) => ({
       id: c.id,

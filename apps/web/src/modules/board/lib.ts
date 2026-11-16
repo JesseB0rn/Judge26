@@ -96,6 +96,45 @@ export function expectedForMove(
   )
 }
 
+/** The versions the server checks when several teams are placed at once (M10-28). */
+export function expectedForMoves(
+  board: Board,
+  teamIds: string[],
+  targetId: string,
+  scope: Scope,
+): Record<string, string> {
+  return Object.assign({}, ...teamIds.map((id) => expectedForMove(board, id, targetId, scope)))
+}
+
+/**
+ * Tray selection after a click (M10-28): a plain click selects only `id`, Ctrl/Cmd toggles it,
+ * Shift selects the range from `anchor` to `id` in tray order. Returns the selection (in tray
+ * order) and the new anchor.
+ */
+export function selectInTray(
+  order: string[],
+  selected: string[],
+  anchor: string,
+  id: string,
+  modifiers: { shift?: boolean; toggle?: boolean },
+): { selected: string[]; anchor: string } {
+  const inOrder = (ids: Set<string>) => order.filter((x) => ids.has(x))
+  if (modifiers.shift && order.includes(anchor)) {
+    const from = order.indexOf(anchor)
+    const to = order.indexOf(id)
+    const range = order.slice(Math.min(from, to), Math.max(from, to) + 1)
+    const keep = modifiers.toggle ? selected : []
+    return { selected: inOrder(new Set([...keep, ...range])), anchor }
+  }
+  if (modifiers.toggle) {
+    const next = new Set(selected)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return { selected: inOrder(next), anchor: id }
+  }
+  return { selected: [id], anchor: id }
+}
+
 /** Judges assigned to more than one active table (M8-29: shown as a conflict). */
 export function judgeConflicts(board: Board): Set<string> {
   const count = new Map<string, number>()

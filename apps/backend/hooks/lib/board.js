@@ -51,6 +51,49 @@ function isLocked(game) {
   return game.getString('status') !== 'scheduled'
 }
 
+// --- Table labels (M10-25) -----------------------------------------------------
+
+const LABEL_SCHEMES = ['table_number', 'number', 'table_letter', 'letter']
+
+/** 1 → A, 26 → Z, 27 → AA, 28 → AB … (like spreadsheet columns). */
+function letters(n) {
+  let result = ''
+  let rest = n
+  while (rest > 0) {
+    rest--
+    result = String.fromCharCode(65 + (rest % 26)) + result
+    rest = Math.floor(rest / 26)
+  }
+  return result
+}
+
+/**
+ * The n-th label (1-based) of a scheme: "Table 1", "1", "Table A" or "A". The word is in `lang`,
+ * the language of the manager who names the tables ("Tisch 1", "Tavolo 1"; default English).
+ */
+function tableLabel(scheme, n, lang) {
+  const word = (label) => require(`${__hooks}/lib/i18n.js`).t(lang, 'tableName', { label })
+  if (scheme === 'number') return String(n)
+  if (scheme === 'table_letter') return word(letters(n))
+  if (scheme === 'letter') return letters(n)
+  return word(String(n))
+}
+
+/** The language of the signed-in user, for table names. */
+function languageOfAuth(auth) {
+  const i18n = require(`${__hooks}/lib/i18n.js`)
+  try {
+    return i18n.language(auth && auth.getString('language'))
+  } catch (_) {
+    return i18n.FALLBACK
+  }
+}
+
+function labelScheme(event) {
+  const scheme = event ? event.getString('table_labels') : ''
+  return LABEL_SCHEMES.indexOf(scheme) !== -1 ? scheme : 'table_number'
+}
+
 /** GET /api/events/{id}/board */
 function load(app, eventId) {
   const schedule = require(`${__hooks}/lib/schedule.js`)
@@ -119,6 +162,7 @@ function load(app, eventId) {
       judges[id] = { id, name: user.getString('name') || user.email(), role }
     })
   return {
+    table_labels: labelScheme(findIn(app, 'events', eventId)),
     categories,
     rounds,
     tables,
@@ -193,7 +237,57 @@ function relevantGames(games, scopeRounds, tables, teamId) {
  * Moves a team to `table` (or off the tables when empty) at `index` of the order, in every round
  * of its category or only in `round`. Runs in a transaction.
  */
-function moveTeam(app, eventId, body) {
+function moveTeam(app, eventId, body, options) {
+  const context = moveContext(app, eventId, body)
+  if (!(options && options.checked)) {
+    checkExpected(
+      relevantGames(context.all, context.scope, context.tables, context.team.id),
+      body.expected,
+    )
+  }
+  return applyMove(app, body, context)
+}
+
+/**
+ * POST /api/events/{id}/board/teams { teams: [id], table, index, round?, expected } (M10-28).
+ * Places several teams on one table from `index` on, in the given order, as one write: the
+ * versions are checked once for all of them, and if any team cannot go to the table nothing is
+ * placed (the route runs in a transaction).
+ */
+function moveTeams(app, eventId, body) {
+  const ids = (Array.isArray(body.teams) ? body.teams : []).filter(
+    (id, i, list) => typeof id === 'string' && id && list.indexOf(id) === i,
+  )
+  if (!ids.length) badRequest('teams_required', 'Choose the teams to place.')
+  if (ids.length > 200) badRequest('too_many_teams', 'Place at most 200 teams at once.')
+  if (!body.table) badRequest('invalid_table', 'Choose the table to place the teams on.')
+  const seen = {}
+  const relevant = []
+  ids.forEach((id) => {
+    const c = moveContext(app, eventId, Object.assign({}, body, { team: id }))
+    relevantGames(c.all, c.scope, c.tables, id).forEach((g) => {
+      if (seen[g.id]) return
+      seen[g.id] = true
+      relevant.push(g)
+    })
+  })
+  checkExpected(relevant, body.expected)
+  const start = Math.max(0, parseInt(body.index, 10) || 0)
+  const results = ids.map((id, i) =>
+    moveTeam(app, eventId, Object.assign({}, body, { team: id, index: start + i }), {
+      checked: true,
+    }),
+  )
+  return {
+    moved: results.reduce((n, r) => n + r.moved, 0),
+    teams: ids,
+    to: results[0].to,
+    rounds: results[0].rounds,
+  }
+}
+
+/** Validates a move and loads what it works on. */
+function moveContext(app, eventId, body) {
   const team = findIn(app, 'teams', body.team)
   if (!team || team.getString('event') !== eventId)
     badRequest('team_not_found', 'The team was not found.')
@@ -232,9 +326,12 @@ function moveTeam(app, eventId, body) {
   const placed = baseGames.filter((g) => g.getString('table'))[0]
   const sourceId = placed ? placed.getString('table') : ''
   const tables = [sourceId, targetId].filter((id, i, list) => id && list.indexOf(id) === i)
+  return { team, categoryId, roundIds, scope, baseRound, targetId, all, index, sourceId, tables }
+}
 
-  checkExpected(relevantGames(all, scope, tables, team.id), body.expected)
-
+/** Changes the games of one team move (already validated and version-checked). */
+function applyMove(app, body, context) {
+  const { team, roundIds, scope, baseRound, targetId, all, index, sourceId, tables } = context
   const position = Math.max(0, parseInt(body.index, 10) || 0)
   const edit = (lists) => {
     Object.keys(lists).forEach((id) => (lists[id] = lists[id].filter((t) => t !== team.id)))
@@ -461,7 +558,7 @@ function renumber(app, eventId) {
  * POST /api/events/{id}/board/tables { category, name? }: a new active table at the end of the
  * category's group (M8-26). Without a name it is called after the next free number.
  */
-function createTable(app, eventId, body) {
+function createTable(app, eventId, body, lang) {
   const category = findIn(app, 'categories', body.category)
   if (!category || category.getString('event') !== eventId) {
     badRequest('invalid_category', 'Choose a category of the event.')
@@ -470,9 +567,11 @@ function createTable(app, eventId, body) {
   const names = tables.map((t) => t.getString('name').toLowerCase())
   let name = typeof body.name === 'string' ? body.name.trim() : ''
   if (!name) {
+    // The next free label of the event's scheme (M10-25).
+    const scheme = labelScheme(findIn(app, 'events', eventId))
     let n = tables.length + 1
-    while (names.indexOf(`table ${n}`) !== -1) n++
-    name = `Table ${n}`
+    while (names.indexOf(tableLabel(scheme, n, lang).toLowerCase()) !== -1) n++
+    name = tableLabel(scheme, n, lang)
   }
   const inGroup = tables.filter((t) => tableCategory(t) === category.id)
   const after = inGroup.length
@@ -486,11 +585,58 @@ function createTable(app, eventId, body) {
   table.set('name', name)
   table.set('active', true)
   table.set('categories', [category.id])
-  // Just after the group's last table; renumbering then closes the order.
-  table.set('position', after)
+  // Just after the group's last table (not tied with it: ties sort by name, and "Table 10" or
+  // "Table AA" would then come first); renumbering then closes the order.
+  table.set('position', after + 1)
   app.save(table)
   renumber(app, eventId)
   return table
+}
+
+/**
+ * POST /api/events/{id}/board/labels { scheme, relabel?, expected? } (M10-25).
+ * Stores the event's table label scheme. With `relabel`, renames every table in board order
+ * (1, 2, 3 … of the scheme); `expected` ({ table: updated }) must then name every table of the
+ * event at the version the client saw, so a rename made meanwhile is not overwritten.
+ */
+function setLabels(app, eventId, body, lang) {
+  const scheme = typeof body.scheme === 'string' ? body.scheme : ''
+  if (LABEL_SCHEMES.indexOf(scheme) === -1) {
+    badRequest('invalid_scheme', 'Choose “Table 1”, “1”, “Table A” or “A”.')
+  }
+  const event = app.findRecordById('events', eventId)
+  if (event.getString('table_labels') !== scheme) {
+    event.set('table_labels', scheme)
+    app.save(event)
+  }
+  if (!body.relabel) return { renamed: 0 }
+
+  const tables = boardOrder(
+    app,
+    eventId,
+    app.findRecordsByFilter('tables', 'event = {:e}', '', 0, 0, { e: eventId }),
+  )
+  const expected = body.expected && typeof body.expected === 'object' ? body.expected : {}
+  if (Object.keys(expected).length !== tables.length) conflict()
+  tables.forEach((table) => {
+    if (expected[table.id] !== table.getString('updated')) conflict()
+  })
+  const renamed = {}
+  tables.forEach((table, i) => {
+    if (table.getString('name') !== tableLabel(scheme, i + 1, lang)) renamed[table.id] = true
+  })
+  // Names are unique per event: free them first, so "Table 2" can become "Table 1" and back.
+  tables.forEach((table) => {
+    if (!renamed[table.id]) return
+    table.set('name', `~relabel~${table.id}`)
+    app.save(table)
+  })
+  tables.forEach((table, i) => {
+    if (!renamed[table.id]) return
+    table.set('name', tableLabel(scheme, i + 1, lang))
+    app.save(table)
+  })
+  return { renamed: Object.keys(renamed).length }
 }
 
 /** Route guard: event managers and admins; writes also need a writable event. */
@@ -516,9 +662,13 @@ function requireManager(e, write) {
 module.exports = {
   requireManager,
   createTable,
+  setLabels,
+  tableLabel,
+  languageOfAuth,
   renumber,
   load,
   moveTeam,
+  moveTeams,
   moveJudge,
   setTableCategory,
   rotate,

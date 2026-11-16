@@ -44,5 +44,19 @@
   "cannotDrop": "Impossible ici",
   "heading": "Tables, juges et équipes",
   "delete": "Supprimer",
-  "confirmDelete": "Supprimer la table {table} ?"
+  "confirmDelete": "Supprimer la table {table} ?",
+  "teamsSelected": "{count} équipes",
+  "selectedCount": "{count} sélectionnée(s)",
+  "clearSelection": "Effacer",
+  "selectHint": "Maj+clic sélectionne une plage, Ctrl/Cmd+clic plusieurs ; glissez-les ensemble.",
+  "placeSelectedOn": "Placer {count} équipes sélectionnées sur la table",
+  "confirmRelabel": "Renommer les {count} tables dans l’ordre du tableau ({example}) ? Les noms donnés à la main seront remplacés.",
+  "labels": {
+    "label": "Noms des tables",
+    "relabel": "Tout renommer",
+    "table_number": "Table 1, Table 2, …",
+    "number": "1, 2, …",
+    "table_letter": "Table A, Table B, …",
+    "letter": "A, B, …"
+  }
 }

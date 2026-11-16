@@ -123,7 +123,11 @@ Validation: a start needs a day (`required`), the day must belong to the round's
 end by midnight (`crosses_midnight`), and block columns must belong to the event
 (`invalid_column`). A custom column with blocks cannot be deleted over the API (move or delete its
 blocks first); deleting the event removes its columns. Updates that change placement fields must send
-`expected_updated`; a stale write returns `409` (M4-14-19).
+`expected_updated`; a stale write returns `409` (M4-14-19). Day times edited from the planner send
+the day's `expected_updated` too (M10-21; the planner returns `days[].updated` to staff); other
+editors of the day, which send no version, are not checked. A change of several items at once (a
+"move later" shift and its undo) goes through PocketBase's batch API as one transaction: if one
+item changed meanwhile, nothing is saved (M10-24).
 
 ### Warnings (M4-14-20 – M4-14-24)
 
@@ -145,11 +149,23 @@ Custom blocks never cause warnings.
 
 - **Editing** (managers on tablets and larger screens): drag a block to move it (5-minute snap);
   phases stay in their category column, a custom block in one column can change column, and any
-  block can be dropped on another day. Holding Shift while dropping (or _Move later phases too_)
-  also moves the round's later phases, keeping their gaps. Drag the lower edge to resize; drag or
-  click on empty space to create a custom block there. Unplaced phases wait in the tray and are
-  dragged into their column. Keyboard: arrows move (Shift: 15 minutes, left/right: day),
-  Alt+arrows resize, Enter opens. _Undo_ (Ctrl/⌘+Z) reverts recent moves and resizes.
+  block can be dropped on another day. Drag the lower edge to resize. Unplaced phases wait in the
+  tray and are dragged into their column. Keyboard: arrows move (Shift: 15 minutes, left/right:
+  day), Alt+arrows resize, Enter opens. _Undo_ (Ctrl/⌘+Z) reverts recent moves and resizes; a
+  shift of several items is one undo step.
+- **New blocks** (M10-22, M10-23): a single click on empty space does nothing. A **double click**
+  opens the new block dialog for that day, column and time (30 minutes). **Dragging** over empty
+  space opens it with the dragged time; dragging across several columns of the day gives one block
+  covering all of them (categories and custom columns).
+- **Move later** (M10-24): with _Move later items too_ on, or Shift held while dropping, moving an
+  item shifts every placed phase and block of the same day that starts at or after it in its
+  column(s), by the same days and minutes, keeping the gaps. A shifted block that spans more
+  columns also shifts the items of those columns that start at or after it (repeated until
+  nothing new is found); earlier items never move. If any shifted item would leave its day (start
+  before 00:00 or end after 24:00), nothing moves and the planner names that item. The whole
+  shift is one write and one undo step.
+- **Day times** (M10-21): editors click a day's hours in its header to change its start and end.
+  Items outside the new hours are not moved; they get the `outside_day` warning.
 - **Custom columns** (managers): add, rename, reorder, make public or internal, and delete in the
   _Custom columns_ dialog. Their headers are italic and their columns tinted. A single-column
   custom block can be dragged between category and custom columns.

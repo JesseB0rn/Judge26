@@ -44,5 +44,19 @@
   "cannotDrop": "Cannot drop here",
   "heading": "Tables, judges and teams",
   "delete": "Delete",
-  "confirmDelete": "Delete table {table}?"
+  "confirmDelete": "Delete table {table}?",
+  "teamsSelected": "{count} teams",
+  "selectedCount": "{count} selected",
+  "clearSelection": "Clear",
+  "selectHint": "Shift+click selects a range, Ctrl/Cmd+click several; drag them together.",
+  "placeSelectedOn": "Place {count} selected teams on table",
+  "confirmRelabel": "Rename all {count} tables in board order ({example})? Names given by hand are replaced.",
+  "labels": {
+    "label": "Table names",
+    "relabel": "Relabel all",
+    "table_number": "Table 1, Table 2, …",
+    "number": "1, 2, …",
+    "table_letter": "Table A, Table B, …",
+    "letter": "A, B, …"
+  }
 }

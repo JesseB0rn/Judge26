@@ -19,6 +19,7 @@ const MESSAGES = {
     role_judge: 'judge',
     role_head_judge: 'head judge',
     role_event_manager: 'event manager',
+    tableName: 'Table {label}',
   },
   de: {
     attempt: '{round} (Versuch {attempt})',
@@ -31,6 +32,7 @@ const MESSAGES = {
     role_judge: 'Schiedsrichter/in',
     role_head_judge: 'Oberschiedsrichter/in',
     role_event_manager: 'Anlassleitung',
+    tableName: 'Tisch {label}',
   },
   fr: {
     attempt: '{round} (essai {attempt})',
@@ -43,6 +45,7 @@ const MESSAGES = {
     role_judge: 'juge',
     role_head_judge: 'juge principal·e',
     role_event_manager: 'responsable de l’événement',
+    tableName: 'Table {label}',
   },
   it: {
     attempt: '{round} (tentativo {attempt})',
@@ -55,6 +58,7 @@ const MESSAGES = {
     role_judge: 'giudice',
     role_head_judge: 'giudice capo',
     role_event_manager: 'responsabile dell’evento',
+    tableName: 'Tavolo {label}',
   },
 }
 

@@ -49,7 +49,12 @@ export interface BoardJudge {
   name: string
   role: 'judge' | 'head_judge'
 }
+/** How new tables are named (M10-25): "Table 1", "1", "Table A" or "A". */
+export type LabelScheme = 'table_number' | 'number' | 'table_letter' | 'letter'
+export const LABEL_SCHEMES: LabelScheme[] = ['table_number', 'number', 'table_letter', 'letter']
+
 export interface Board {
+  table_labels: LabelScheme
   categories: BoardCategory[]
   rounds: BoardRound[]
   tables: BoardTable[]
@@ -75,6 +80,28 @@ export function moveTeam(
   },
 ) {
   return pb.send<Board>(`${base(eventId)}/teams`, { method: 'POST', body })
+}
+
+/** Places several teams on one table from `index` on, as one write (M10-28). */
+export function moveTeams(
+  eventId: string,
+  body: {
+    teams: string[]
+    table: string
+    index: number
+    round?: string
+    expected: Record<string, string>
+  },
+) {
+  return pb.send<Board>(`${base(eventId)}/teams`, { method: 'POST', body })
+}
+
+/** Sets the label scheme; with `relabel`, renames every table in board order (M10-25). */
+export function setLabels(
+  eventId: string,
+  body: { scheme: LabelScheme; relabel?: boolean; expected?: Record<string, string> },
+) {
+  return pb.send<Board>(`${base(eventId)}/labels`, { method: 'POST', body })
 }
 
 export function moveJudge(

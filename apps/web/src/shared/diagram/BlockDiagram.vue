@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { beginDrag, endDrag } from '@/shared/dragSelection'
 import { MaximizeIcon, MinusIcon, PlusIcon } from '@lucide/vue'
 import {
   inputPoint,
@@ -81,6 +82,7 @@ function onNodeDown(e: PointerEvent, node: DiagramNode) {
     sy: e.clientY,
     moved: false,
   }
+  beginDrag()
   capture(e)
 }
 
@@ -90,12 +92,14 @@ function onOutputDown(e: PointerEvent, node: DiagramNode) {
   const p = toWorld(e.clientX, e.clientY)
   drag.value = { mode: 'wire', from: node.id, x: p.x, y: p.y }
   emit('select', node.id)
+  beginDrag()
   capture(e)
 }
 
 function onBackgroundDown(e: PointerEvent) {
   if (e.button !== 0) return
   drag.value = { mode: 'pan', sx: e.clientX, sy: e.clientY, ox: view.x, oy: view.y, moved: false }
+  beginDrag()
   capture(e)
 }
 
@@ -125,6 +129,7 @@ function onUp(e: PointerEvent) {
   drag.value = null
   hoverPort.value = null
   if (!d) return
+  endDrag()
   if (d.mode === 'pan' && !d.moved) emit('select', null)
   if (d.mode === 'node' && !d.moved) emit('select', d.id)
   if (d.mode === 'wire') {
@@ -132,6 +137,11 @@ function onUp(e: PointerEvent) {
     if (target && target.node !== d.from) emit('connect', d.from, target.node, target.port)
   }
 }
+
+// M10-29: never leave the page's text selection switched off.
+onBeforeUnmount(() => {
+  if (drag.value) endDrag()
+})
 
 function onWheel(e: WheelEvent) {
   e.preventDefault()

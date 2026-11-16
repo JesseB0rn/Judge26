@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   AlertTriangleIcon,
   CheckIcon,
@@ -31,6 +31,7 @@ import {
   isLocked,
   judgeConflicts,
   judgeSlots,
+  selectInTray,
   shownRound,
   teamsOn,
   unassignedJudges,
@@ -42,11 +43,16 @@ import { useBoardDrag, type DragPayload, type DropTarget } from '../useBoardDrag
 /**
  * The assignment board (M8-25 – M8-30, M8-33): tables as columns grouped by category, each with
  * judge slots and its teams in sequence order; unassigned teams and judges in trays. Everything
- * that can be dragged can also be done from the item's menu.
+ * that can be dragged can also be done from the item's menu. Category groups wrap onto further
+ * rows (M10-27); several unassigned teams can be selected and placed together (M10-28).
+ *
+ * `busy` (a write is running) pauses editing without changing the layout: removing controls
+ * while saving shifted the board and made its scroll position jump (M10-26).
  */
-const props = defineProps<{ board: Board; scope: Scope; editable: boolean }>()
+const props = defineProps<{ board: Board; scope: Scope; editable: boolean; busy?: boolean }>()
 const emit = defineEmits<{
   moveTeam: [team: string, table: string, index: number]
+  moveTeams: [teams: string[], table: string, index: number]
   moveJudge: [judge: string, from: string, to: string]
   moveTables: [tables: BoardTable[], category: string]
   addTable: [category: string]
@@ -79,13 +85,80 @@ function tableOf(id: string) {
   return props.board.tables.find((t) => t.id === id)
 }
 
+/** Editing is possible right now (not while a write is running). */
+const canEdit = computed(() => props.editable && !props.busy)
+
+// --- Tray selection (M10-28) -------------------------------------------------------------
+
+const selection = ref<string[]>([])
+const anchor = ref('')
+const selected = computed(() => new Set(selection.value))
+// Teams that left the tray (placed, or filtered out) leave the selection.
+watch(freeTeams, (teams) => {
+  const free = new Set(teams.map((team) => team.id))
+  if (selection.value.some((id) => !free.has(id))) {
+    selection.value = selection.value.filter((id) => free.has(id))
+  }
+})
+
+function onTrayClick(event: MouseEvent | KeyboardEvent, team: string) {
+  if (!props.editable) return
+  const next = selectInTray(
+    freeTeams.value.map((x) => x.id),
+    selection.value,
+    anchor.value,
+    team,
+    {
+      shift: event.shiftKey,
+      // A plain click on the only selected team clears it again.
+      toggle:
+        event.ctrlKey ||
+        event.metaKey ||
+        (selection.value.length === 1 && selection.value[0] === team && !event.shiftKey),
+    },
+  )
+  selection.value = next.selected
+  anchor.value = next.anchor
+}
+
+function clearSelection() {
+  selection.value = []
+  anchor.value = ''
+}
+
+function onWindowKey(event: KeyboardEvent) {
+  if (event.key === 'Escape' && selection.value.length && !drag.value) clearSelection()
+}
+onMounted(() => window.addEventListener('keydown', onWindowKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onWindowKey))
+
+/** The teams a tray card's drag or menu acts on: the selection if the card is part of it. */
+function trayGroup(team: string): string[] {
+  return selected.value.has(team) && selection.value.length > 1 ? selection.value : [team]
+}
+
+/** Tables every one of these teams may go to. */
+function tablesForAll(teams: string[]) {
+  const [first, ...rest] = teams
+  if (!first) return []
+  return tablesFor(first).filter((table) =>
+    rest.every((id) => tablesFor(id).some((t) => t.id === table.id)),
+  )
+}
+
+function placeGroup(teams: string[], table: string, index: number) {
+  if (teams.length > 1) emit('moveTeams', teams, table, index)
+  else emit('moveTeam', teams[0]!, table, index)
+}
+
 // --- Drag and drop -------------------------------------------------------------------------
 
 function valid(payload: DragPayload, target: DropTarget): boolean {
   if (payload.kind === 'team') {
     if (target.kind === 'team-tray') return !!payload.from
     if (target.kind !== 'teams') return false
-    return tablesFor(payload.team).some((t) => t.id === target.table)
+    // Several teams: every one of them must fit the table, or none is placed (M10-28).
+    return tablesForAll(payload.teams ?? [payload.team]).some((t) => t.id === target.table)
   }
   if (payload.kind === 'judge') {
     if (target.kind === 'judge-tray') return !!payload.from
@@ -99,7 +172,9 @@ function valid(payload: DragPayload, target: DropTarget): boolean {
 function onDrop(payload: DragPayload, target: DropTarget) {
   if (!valid(payload, target)) return
   if (payload.kind === 'team') {
-    if (target.kind === 'teams') {
+    if (target.kind === 'teams' && payload.teams && payload.teams.length > 1) {
+      emit('moveTeams', payload.teams, target.table, target.index)
+    } else if (target.kind === 'teams') {
       // Moving down within the same table: the index counts the card itself.
       const current = payload.from === target.table ? order(target.table).indexOf(payload.team) : -1
       const index = current !== -1 && current < target.index ? target.index - 1 : target.index
@@ -120,15 +195,22 @@ const dropOk = computed(() =>
 )
 
 function startTeam(event: PointerEvent, team: string, from: string, table?: BoardTable) {
-  if (!props.editable || (table && isLocked(props.board, team, table, props.scope))) return
-  start(event, { kind: 'team', team, from }, teamsById.value.get(team)?.name ?? '')
+  if (!canEdit.value || (table && isLocked(props.board, team, table, props.scope))) return
+  const teams = from ? [team] : trayGroup(team)
+  start(
+    event,
+    { kind: 'team', team, from, ...(teams.length > 1 ? { teams } : {}) },
+    teams.length > 1
+      ? t('board.teamsSelected', { count: teams.length })
+      : (teamsById.value.get(team)?.name ?? ''),
+  )
 }
 function startJudge(event: PointerEvent, judge: string, from: string) {
-  if (!props.editable) return
+  if (!canEdit.value) return
   start(event, { kind: 'judge', judge, from }, judgesById.value.get(judge)?.name ?? '')
 }
 function startDivider(event: PointerEvent, group: number) {
-  if (!props.editable) return
+  if (!canEdit.value) return
   start(event, { kind: 'divider', group }, groups.value[group]?.category?.name ?? '')
 }
 
@@ -152,6 +234,45 @@ function insertAt(tableId: string): number {
   return d.target.index
 }
 
+/** Whether a card is part of the dragged teams. */
+function isDragged(team: string) {
+  const d = drag.value
+  if (!d?.active || d.payload.kind !== 'team') return false
+  return d.payload.team === team || !!d.payload.teams?.includes(team)
+}
+
+// --- Scroll position (M10-26) ---------------------------------------------------------
+// A new board (after a write or a live update) must not move what the manager looks at: keep
+// each group's horizontal scroll and the page's vertical scroll.
+
+const root = ref<HTMLElement>()
+let kept: { groups: Map<string, number>; pageY: number } | null = null
+watch(
+  () => props.board,
+  () => {
+    const groups = new Map<string, number>()
+    root.value
+      ?.querySelectorAll<HTMLElement>('[data-group]')
+      .forEach((el) => groups.set(el.dataset.group!, el.scrollLeft))
+    kept = { groups, pageY: window.scrollY }
+  },
+  { flush: 'pre' },
+)
+watch(
+  () => props.board,
+  () => {
+    if (!kept) return
+    const { groups, pageY } = kept
+    kept = null
+    root.value?.querySelectorAll<HTMLElement>('[data-group]').forEach((el) => {
+      const left = groups.get(el.dataset.group!)
+      if (left !== undefined && el.scrollLeft !== left) el.scrollLeft = left
+    })
+    if (window.scrollY !== pageY) window.scrollTo({ top: pageY })
+  },
+  { flush: 'post' },
+)
+
 function nextOf(groupIndex: number, tableIndex: number) {
   const group = groups.value[groupIndex]!
   const next = group.tables[tableIndex + 1]
@@ -161,8 +282,10 @@ function nextOf(groupIndex: number, tableIndex: number) {
 
 <template>
   <div
+    ref="root"
     class="flex flex-col gap-4 lg:flex-row lg:items-start"
     :class="{ 'select-none': drag?.active }"
+    :aria-busy="busy || undefined"
     data-testid="assignment-board"
   >
     <!-- Trays (M8-30) -->
@@ -176,6 +299,19 @@ function nextOf(groupIndex: number, tableIndex: number) {
         <h2 class="mb-2 text-sm font-semibold">
           {{ t('board.unassignedTeams', { count: freeTeams.length }) }}
         </h2>
+        <p
+          v-if="editable && selection.length"
+          class="mb-2 flex items-center gap-2 text-xs text-muted-foreground"
+          data-testid="tray-selection"
+        >
+          {{ t('board.selectedCount', { count: selection.length }) }}
+          <button type="button" class="underline underline-offset-2" @click="clearSelection">
+            {{ t('board.clearSelection') }}
+          </button>
+        </p>
+        <p v-else-if="editable && freeTeams.length > 1" class="mb-2 text-xs text-muted-foreground">
+          {{ t('board.selectHint') }}
+        </p>
         <FilterChips
           v-if="board.categories.length > 1"
           v-model="trayCategory"
@@ -183,14 +319,29 @@ function nextOf(groupIndex: number, tableIndex: number) {
           :label="t('board.category')"
           :options="board.categories.map((c) => ({ value: c.id, label: c.code || c.name }))"
         />
-        <ul class="flex max-h-[50vh] flex-col gap-1 overflow-y-auto">
+        <ul
+          class="flex max-h-[50vh] flex-col gap-1 overflow-y-auto"
+          role="listbox"
+          aria-multiselectable="true"
+          :aria-label="t('board.unassignedTeams', { count: freeTeams.length })"
+        >
           <li
             v-for="team in freeTeams"
             :key="team.id"
-            class="flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-sm"
-            :class="editable ? 'cursor-grab touch-none' : ''"
+            class="flex items-center gap-1 rounded-md border px-2 py-1 text-sm select-none outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            :class="[
+              editable ? 'cursor-grab touch-none' : '',
+              selected.has(team.id) ? 'border-ring bg-ring/15' : 'bg-background',
+              isDragged(team.id) ? 'opacity-40' : '',
+            ]"
+            role="option"
+            :tabindex="editable ? 0 : -1"
+            :aria-selected="selected.has(team.id)"
             :data-team="team.name"
+            :data-selected="selected.has(team.id) || undefined"
             @pointerdown="startTeam($event, team.id, '')"
+            @click="onTrayClick($event, team.id)"
+            @keydown.space.prevent="onTrayClick($event, team.id)"
           >
             <span class="min-w-0 flex-1 truncate">{{ team.name }}</span>
             <span class="text-xs text-muted-foreground">{{
@@ -201,20 +352,26 @@ function nextOf(groupIndex: number, tableIndex: number) {
                 <Button
                   variant="ghost"
                   size="icon-xs"
+                  :disabled="busy"
                   :aria-label="t('board.teamActions', { team: team.name })"
                   @pointerdown.stop
+                  @click.stop
                   ><EllipsisVerticalIcon
                 /></Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>{{ t('board.placeOn') }}</DropdownMenuLabel>
+                <DropdownMenuLabel>{{
+                  trayGroup(team.id).length > 1
+                    ? t('board.placeSelectedOn', { count: trayGroup(team.id).length })
+                    : t('board.placeOn')
+                }}</DropdownMenuLabel>
                 <DropdownMenuItem
-                  v-for="table in tablesFor(team.id)"
+                  v-for="table in tablesForAll(trayGroup(team.id))"
                   :key="table.id"
-                  @select="emit('moveTeam', team.id, table.id, order(table.id).length)"
+                  @select="placeGroup(trayGroup(team.id), table.id, order(table.id).length)"
                   >{{ table.name }}</DropdownMenuItem
                 >
-                <DropdownMenuItem v-if="!tablesFor(team.id).length" disabled>{{
+                <DropdownMenuItem v-if="!tablesForAll(trayGroup(team.id)).length" disabled>{{
                   t('board.noTable')
                 }}</DropdownMenuItem>
               </DropdownMenuContent>
@@ -239,7 +396,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
           <li
             v-for="judge in freeJudges"
             :key="judge.id"
-            class="flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-sm"
+            class="flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-sm select-none"
             :class="editable ? 'cursor-grab touch-none' : ''"
             :data-judge="judge.name"
             @pointerdown="startJudge($event, judge.id, '')"
@@ -251,6 +408,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
                 <Button
                   variant="ghost"
                   size="icon-xs"
+                  :disabled="busy"
                   :aria-label="t('board.judgeActions', { judge: judge.name })"
                   @pointerdown.stop
                   ><EllipsisVerticalIcon
@@ -274,15 +432,21 @@ function nextOf(groupIndex: number, tableIndex: number) {
       </section>
     </aside>
 
-    <!-- Board (M8-25) -->
-    <div class="min-w-0 flex-1 overflow-x-auto pb-2">
-      <div class="flex items-stretch gap-2">
-        <template v-for="(group, g) in groups" :key="group.category?.id ?? 'unsorted'">
+    <!-- Board (M8-25); category groups wrap onto further rows (M10-27) -->
+    <div class="min-w-0 flex-1 pb-2">
+      <div class="flex flex-wrap items-stretch gap-x-3 gap-y-4" data-testid="board-groups">
+        <div
+          v-for="(group, g) in groups"
+          :key="group.category?.id ?? 'unsorted'"
+          class="flex max-w-full min-w-0 items-stretch gap-2 overflow-x-auto pb-1"
+          :data-group="group.category?.id ?? 'unsorted'"
+          data-testid="category-group"
+        >
           <!-- Category divider (M8-27) -->
           <div
             class="flex w-10 shrink-0 flex-col items-center gap-2 rounded-md bg-muted py-2"
             :class="[
-              editable && g > 0 ? 'cursor-grab touch-none' : '',
+              editable && g > 0 ? 'cursor-grab touch-none select-none' : '',
               drag?.active && drag.payload.kind === 'divider' && drag.payload.group === g
                 ? 'opacity-50'
                 : '',
@@ -303,6 +467,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
                   variant="ghost"
                   size="icon-xs"
                   class="mt-auto"
+                  :disabled="busy"
                   :aria-label="t('board.categoryActions', { category: group.category.name })"
                   @pointerdown.stop
                   ><EllipsisVerticalIcon
@@ -352,6 +517,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
                   <Button
                     variant="ghost"
                     size="icon-xs"
+                    :disabled="busy"
                     :aria-label="t('board.tableActions', { table: table.name })"
                     ><EllipsisVerticalIcon
                   /></Button>
@@ -395,7 +561,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
               <li
                 v-for="judgeId in table.judges"
                 :key="judgeId"
-                class="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm"
+                class="flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm select-none"
                 :class="[
                   editable ? 'cursor-grab touch-none' : '',
                   conflicts.has(judgeId)
@@ -420,6 +586,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
                     <Button
                       variant="ghost"
                       size="icon-xs"
+                      :disabled="busy"
                       :aria-label="
                         t('board.judgeActions', { judge: judgesById.get(judgeId)?.name ?? '' })
                       "
@@ -464,14 +631,12 @@ function nextOf(groupIndex: number, tableIndex: number) {
               <template v-for="(teamId, slot) in order(table.id)" :key="teamId">
                 <li v-if="insertAt(table.id) === slot" class="h-0.5 rounded bg-ring" />
                 <li
-                  class="flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-sm"
+                  class="flex items-center gap-1 rounded-md border bg-background px-2 py-1 text-sm select-none"
                   :class="[
                     editable && !isLocked(board, teamId, table, scope)
                       ? 'cursor-grab touch-none'
                       : '',
-                    drag?.active && drag.payload.kind === 'team' && drag.payload.team === teamId
-                      ? 'opacity-40'
-                      : '',
+                    isDragged(teamId) ? 'opacity-40' : '',
                   ]"
                   data-team-slot
                   :data-team="teamsById.get(teamId)?.name"
@@ -491,6 +656,7 @@ function nextOf(groupIndex: number, tableIndex: number) {
                       <Button
                         variant="ghost"
                         size="icon-xs"
+                        :disabled="busy"
                         :aria-label="
                           t('board.teamActions', { team: teamsById.get(teamId)?.name ?? '' })
                         "
@@ -545,14 +711,15 @@ function nextOf(groupIndex: number, tableIndex: number) {
           <button
             v-if="editable && group.category"
             type="button"
-            class="flex w-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground hover:bg-muted"
+            class="flex w-10 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground hover:bg-muted disabled:opacity-50"
+            :disabled="busy"
             :aria-label="t('board.addTableTo', { category: group.category.name })"
             :title="t('board.addTableTo', { category: group.category.name })"
             @click="emit('addTable', group.category.id)"
           >
             <PlusIcon class="size-4" />
           </button>
-        </template>
+        </div>
         <p v-if="!board.categories.length" class="text-sm text-muted-foreground">
           {{ t('board.noCategories') }}
         </p>
