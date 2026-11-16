@@ -257,12 +257,38 @@ export function checkWhen(block: RobotCheckBlock) {
 }
 
 /** Route of the guided check of a block; `from` is the page to return to. */
-export function checkRoute(block: RobotCheckBlock, from?: string) {
+/** The robot check of a block; `seat`: the table a head judge stepped in at (M10-07). */
+export function checkRoute(block: RobotCheckBlock, from?: string, seat?: string) {
+  // A head judge's table travels with the dashboard address it came from.
+  if (!seat && from) seat = new URL(from, 'http://local').searchParams.get('seat') ?? undefined
   return {
     name: 'judging-check',
     params: { roundId: block.round.id },
-    query: { ...(block.table ? { table: block.table.id } : {}), ...(from ? { from } : {}) },
+    query: {
+      ...(block.table ? { table: block.table.id } : {}),
+      ...(from ? { from } : {}),
+      ...(seat ? { seat } : {}),
+    },
   }
+}
+
+/**
+ * The tables (and their categories) of the shown games, for "you are at table …" (M10-01):
+ * one entry per table, in order of appearance.
+ */
+export function myTables(rows: Assignment[]) {
+  const seen = new Map<string, { id: string; name: string; categories: string[] }>()
+  for (const row of rows) {
+    if (!row.table) continue
+    const entry = seen.get(row.table.id) ?? {
+      id: row.table.id,
+      name: row.table.name,
+      categories: [],
+    }
+    if (!entry.categories.includes(row.category.name)) entry.categories.push(row.category.name)
+    seen.set(row.table.id, entry)
+  }
+  return [...seen.values()]
 }
 
 /** Dashboard filters applied to robot check blocks (the check's own day). */

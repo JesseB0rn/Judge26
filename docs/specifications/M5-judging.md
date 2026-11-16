@@ -151,11 +151,12 @@ in milliseconds.
 
 | Method | Path                             | Who                    | Body / result                                                                                                                                       |
 | ------ | -------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/judging/assignments`       | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹                                                                               |
+| GET    | `/api/judging/assignments`       | any verified user      | Games on the user's tables (non-archived events), with `round.check`¹; `?table=` the games of one table, for head judges of its event (M10-07)      |
+| GET    | `/api/judging/tables`            | head judges, admins    | Active tables of the user's events with category, judges and progress (`{ done, total }`) (M10-07)                                                  |
 | GET    | `/api/events/{id}/judging`       | reviewers              | All games of the event with their score status                                                                                                      |
 | GET    | `/api/games/{id}/sheet`          | table judge, reviewers | Context, ruleset, sheet, history, permissions                                                                                                       |
 | PUT    | `/api/games/{id}/sheet`          | table judge, reviewers | `{ outcome, values, time_ms, points?, client_saved_at, mulligans? }` → draft                                                                        |
-| POST   | `/api/games/{id}/sheet/submit`   | table judge, reviewers | Same body → `submitted`                                                                                                                             |
+| POST   | `/api/games/{id}/sheet/submit`   | table judge, reviewers | Same body plus `team_confirmation` (`confirmed` \| `refused`) and `refusal_reason` → `submitted` (M10-06)                                           |
 | POST   | `/api/games/{id}/sheet/approve`  | reviewers              | → `finalized`, game updated                                                                                                                         |
 | POST   | `/api/games/{id}/sheet/reject`   | reviewers              | `{ reason }` → `rejected`                                                                                                                           |
 | PUT    | `/api/games/{id}/program`        | table judge, reviewers | `{ program_name }` (≤ 200 characters) → stored on the team's games of the round; after submission reviewers only (`409 program_locked`) (M9-B)      |
@@ -167,4 +168,37 @@ in milliseconds.
 empty while unplaced).
 
 Errors: `403` not assigned / not a reviewer; `400` field errors (`values: invalid_score_sheet`,
-`reason: required`, `points: required`); `409` wrong status (`data.status.code`).
+`reason: required`, `points: required`, `team_confirmation: required`, `refusal: not_allowed`);
+`409` wrong status (`data.status.code`).
+
+## Judge workflow at the table (M10-A)
+
+- **Where am I (M10-01):** the dashboard names the table (and category) the judge is at on the
+  shown day; the score sheet and the robot check show the table as a badge in their header. A
+  judge without a table is told so.
+- **Back to the dashboard (M10-02):** after submitting, a table judge returns to the dashboard
+  the sheet came from (its filters, or a head judge's table), else `/judging`; the next open item
+  is marked there. A reviewer who came from the review queue stays, as before.
+- **Run time in the header (M10-03):** next to the total, in the event's precision, as soon as a
+  time is recorded or entered; the header is sticky.
+- **Full team names (M10-04):** names wrap (`break-words`, hyphenation) on the dashboard, the
+  list, the score sheet and the robot check. The robot check's one-line team chips use
+  `MarqueeText`: a name that does not fit scrolls back and forth; with reduced motion it wraps.
+- **Step by step (M10-05):** the score sheet has a second view with one top-level criterion or
+  group per screen (back, next, swipe, arrow keys, position dots), ending in a summary with the
+  points per step, missing answers and the total, which leads to the submit dialog. Both views
+  edit the same draft; the chosen view is remembered on the device
+  (`judge26.judging.sheetView`).
+- **Team sign-off (M10-06):** the submit dialog shows the verdict and the team confirms it with
+  a slide control (releasing before the end springs back; keyboard: arrow keys in quarters, End
+  confirms). `score_sheets.team_confirmed_at` stores the time (server time at submission). If
+  the event allows refusals (`events.allow_team_refusal`, off by default, in the event form and
+  templates), the judge can instead record that the team refused, with a reason
+  (`team_refused_at`, `team_refusal_reason`). A completed or disqualified run needs one of the
+  two; an absent team needs neither. A mulligan or a returned sheet clears them, so the team
+  signs again.
+- **Head judge at a table (M10-07):** _Judge at a table_ (`/judging/tables`) lists the tables of
+  the head judge's events with category, judges and progress. Choosing one opens the dashboard
+  of that table (`/judging?seat=<table>`), with robot check and scoring like its judges; sheets
+  record the head judge as judge and submitter. The board is not changed; _Switch table_ leads
+  back to the list. Admins can step in too.

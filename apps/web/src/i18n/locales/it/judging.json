@@ -110,8 +110,11 @@
     "show": "Mostra",
     "todo": "Da fare",
     "progress": "{done} di {total} valutate",
-    "empty": "Al suo tavolo non è ancora assegnata nessuna manche.",
-    "toReview": "Vai alla coda di verifica"
+    "empty": "Non è ancora assegnato/a a nessun tavolo.",
+    "toReview": "Vai alla coda di verifica",
+    "yourTable": "Lei è al",
+    "steppingIn": "Sta giudicando al",
+    "emptyTable": "A questo tavolo non sono ancora assegnate manche."
   },
   "sheet": {
     "enterPoints": "Inserisca i punti.",
@@ -161,7 +164,8 @@
     "mulliganGranted": "{team}: ripetizione concessa.",
     "mulliganBy": "Ripetizione concessa da {name}",
     "mulliganMeanwhile": "Nel frattempo è stata concessa una ripetizione. Le modifiche salvate su questo dispositivo appartenevano alla prova scartata e non sono state applicate.",
-    "zeroPointsTime": "0 punti: questa manche conta come {time} (regola del regolamento). Il tempo misurato resta sul foglio."
+    "zeroPointsTime": "0 punti: questa manche conta come {time} (regola del regolamento). Il tempo misurato resta sul foglio.",
+    "submittedTeam": "Punteggio di {team} inviato."
   },
   "program": {
     "label": "Programma",
@@ -170,5 +174,33 @@
     "edit": "Modifica programma",
     "verify": "Prima della partenza, verificare che questo programma sia selezionato sul robot.",
     "checkHint": "Inserire il programma che la squadra eseguirà. Viene mostrato sul foglio di punteggio per verificarlo prima della partenza."
+  },
+  "confirm": {
+    "slide": "{team}: scorri per confermare",
+    "confirmed": "Confermato dalla squadra",
+    "refuses": "La squadra rifiuta di confermare",
+    "refusalReason": "Perché la squadra rifiuta?",
+    "backToSlide": "Torna alla conferma"
+  },
+  "steps": {
+    "position": "Passo {n} di {total}",
+    "summary": "Riepilogo",
+    "missing": "Ancora mancante",
+    "toSubmit": "Controlla e invia",
+    "back": "Indietro",
+    "next": "Avanti",
+    "view": "Vista del foglio di punteggio",
+    "views": {
+      "list": "Elenco",
+      "steps": "Passo per passo"
+    }
+  },
+  "tables": {
+    "title": "Giudicare a un tavolo",
+    "description": "Scelga un tavolo a cui giudicare. I suoi giudici restano assegnati; può cambiare in qualsiasi momento.",
+    "empty": "Non è giudice capo di nessun evento con tavoli.",
+    "noJudges": "Nessun giudice assegnato",
+    "open": "Giudicare a un tavolo",
+    "switch": "Cambia tavolo"
   }
 }

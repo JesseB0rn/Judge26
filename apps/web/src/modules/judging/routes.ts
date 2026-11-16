@@ -7,6 +7,12 @@ export const judgingRoutes: RouteRecordRaw[] = [
     component: () => import('./views/JudgeDashboardView.vue'),
   },
   {
+    // M10-07: a head judge chooses a table to judge at.
+    path: '/judging/tables',
+    name: 'judging-tables',
+    component: () => import('./views/HeadJudgeTablesView.vue'),
+  },
+  {
     path: '/review',
     name: 'review',
     component: () => import('./views/ReviewView.vue'),

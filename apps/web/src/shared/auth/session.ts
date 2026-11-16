@@ -44,6 +44,10 @@ export const useSessionStore = defineStore('session', () => {
       isAdmin.value ||
       roles.value.some((r) => r.role === 'head_judge' || r.role === 'event_manager'),
   )
+  /** Head judges (and admins) can step in at any table of their events (M10-07). */
+  const canStepIn = computed(
+    () => isAdmin.value || roles.value.some((r) => r.role === 'head_judge'),
+  )
   /** Events whose score sheets this user reviews through an event role. */
   const reviewEvents = computed(() => {
     const seen = new Map<string, string>()
@@ -222,6 +226,7 @@ export const useSessionStore = defineStore('session', () => {
     isStaff,
     isJudge,
     canReview,
+    canStepIn,
     reviewEvents,
     rolesFor,
     canManageEvent,

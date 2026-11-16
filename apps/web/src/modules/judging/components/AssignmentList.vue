@@ -79,7 +79,10 @@ function time(row: Assignment) {
                 {{ row.sequence || '–' }}
               </span>
               <span class="min-w-0 flex-1">
-                <span class="block truncate text-base font-semibold">{{ row.team.name }}</span>
+                <!-- M10-04: the whole name; it wraps instead of being cut off. -->
+                <span class="block text-base font-semibold break-words hyphens-auto">{{
+                  row.team.name
+                }}</span>
                 <span class="block truncate text-sm text-muted-foreground">
                   <template v-if="showTable"
                     >{{ row.table?.name ?? t('judging.noTable') }} · </template

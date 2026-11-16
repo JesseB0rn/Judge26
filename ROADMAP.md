@@ -2055,7 +2055,7 @@ with a certificate instead of a client secret.
 
 ### Tracking
 
--   [ ] **M10-A** Judge workflow at the table (M10-01 to M10-07)
+-   [x] **M10-A** Judge workflow at the table (M10-01 to M10-07)
 -   [ ] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
 -   [x] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
 -   [x] **M10-D** Planner editing (M10-21 to M10-24)
@@ -2071,6 +2071,13 @@ specification in `docs/specifications` (new `M10-*.md` or a section in the
 M4, M5 and M8 specifications it changes) before implementation.
 
 ### M10-A --- Judge workflow at the table
+
+**Status:** M10-01 to M10-07 implemented (see `docs/specifications/M5-judging.md#judge-workflow-at-the-table-m10-a`
+and `docs/test-plans/M10-judge-workflow.md`). Decisions: an absent team needs no sign-off (it
+cannot sign), a disqualified one does; the confirmation time is the server time at submission;
+a returned sheet clears the sign-off like a mulligan; refusals are off by default and templates
+carry the setting; a step is a top-level criterion or group of the ruleset; admins can step in
+at tables like head judges.
 
 Judges lost track of where they were and what came next. The score sheet
 also gains a one-criterion-per-screen view and a team sign-off.

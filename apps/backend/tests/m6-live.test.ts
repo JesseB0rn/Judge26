@@ -163,7 +163,13 @@ describe('M6 live competition and public interface', () => {
     pb.send<PublicRanking>(`/api/public/categories/${ctx.category.id}/ranking`, { method: 'GET' })
 
   async function score(ctx: Ctx, game: RecordModel, points: number) {
-    const body = { outcome: 'completed', values: {}, time_ms: 0, points }
+    const body = {
+      outcome: 'completed',
+      values: {},
+      time_ms: 0,
+      points,
+      team_confirmation: 'confirmed',
+    }
     await ctx.judge.pb.send(`/api/games/${game.id}/sheet/submit`, { method: 'POST', body })
   }
   async function approve(ctx: Ctx, game: RecordModel) {

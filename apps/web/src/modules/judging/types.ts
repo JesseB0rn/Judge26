@@ -51,7 +51,14 @@ export interface Assignment {
   check?: RoundCheck | null
   category: { id: string; name: string; code: string }
   /** `time_decimals`: decimals of run times (M10-19). */
-  event: { id: string; name: string; status: string; time_decimals?: number }
+  event: {
+    id: string
+    name: string
+    status: string
+    time_decimals?: number
+    /** Whether a team may refuse to confirm a score sheet (M10-06). */
+    allow_team_refusal?: boolean
+  }
   table: NamedRef | null
   day: DayRef | null
   sheet: {
@@ -83,6 +90,10 @@ export interface ScoreSheet {
   mulligans: number
   mulligan_reason: string
   mulligan_at: string
+  /** M10-06: when the team confirmed, or refused (with the reason). */
+  team_confirmed_at?: string
+  team_refused_at?: string
+  team_refusal_reason?: string
   mulligan_by: NamedRef
   updated: string
 }
@@ -124,7 +135,14 @@ export interface SheetPayload {
   round: RoundRef & { testing_minutes: number; scoring_minutes: number }
   category: { id: string; name: string; code: string }
   /** `time_decimals`: decimals of run times (M10-19). */
-  event: { id: string; name: string; status: string; time_decimals?: number }
+  event: {
+    id: string
+    name: string
+    status: string
+    time_decimals?: number
+    /** Whether a team may refuse to confirm a score sheet (M10-06). */
+    allow_team_refusal?: boolean
+  }
   table: NamedRef | null
   day: DayRef | null
   ruleset: {
@@ -152,4 +170,18 @@ export interface SheetInput {
   time_ms: number
   /** Only used when the category has no published ruleset. */
   points: number | null
+}
+
+/** The team's sign-off of the verdict, sent with a submission (M10-06). */
+export type TeamSignOff =
+  { team_confirmation: 'confirmed' } | { team_confirmation: 'refused'; refusal_reason: string }
+
+/** A table a head judge can step in at (M10-07). */
+export interface HeadJudgeTable {
+  id: string
+  name: string
+  event: { id: string; name: string }
+  category: { id: string; name: string; code: string } | null
+  judges: NamedRef[]
+  progress: { done: number; total: number }
 }

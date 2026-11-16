@@ -171,7 +171,12 @@ describe('M1 events and competition days', () => {
     })
     await judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
       method: 'POST',
-      body: { outcome: 'completed', values: { flag: true }, time_ms: 1000 },
+      body: {
+        outcome: 'completed',
+        values: { flag: true },
+        time_ms: 1000,
+        team_confirmation: 'confirmed',
+      },
     })
     await headJudge.pb.send(`/api/games/${game.id}/sheet/approve`, { method: 'POST', body: {} })
     expect((await fx.su.collection('games').getOne(game.id)).status).toBe('completed')

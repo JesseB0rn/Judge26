@@ -672,4 +672,5 @@ module.exports = {
   moveJudge,
   setTableCategory,
   rotate,
+  orderTables: boardOrder,
 }

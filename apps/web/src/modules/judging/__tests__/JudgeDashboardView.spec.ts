@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ClientResponseError } from 'pocketbase'
+import { flushPromises } from '@vue/test-utils'
 import { buttonByText, click, makeRole, mountView } from '@/test/utils'
 import * as api from '../api'
 import { cacheAssignments, writeDraft } from '../drafts'
@@ -89,7 +90,8 @@ describe('JudgeDashboardView', () => {
   it('explains an empty assignment list', async () => {
     mocked.listAssignments.mockResolvedValue([])
     const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
-    expect(wrapper.get('[data-testid=no-assignments]').text()).toContain('No games')
+    // M10-01: a judge without a table is told so.
+    expect(wrapper.get('[data-testid=no-assignments]').text()).toContain('not assigned to a table')
   })
 
   it('M5-T13: offline it shows the list saved on the device and pending drafts', async () => {
@@ -136,5 +138,40 @@ describe('JudgeDashboardView', () => {
     const { wrapper } = await mountView(JudgeDashboardView, { session: judge, path: '/?day=sat' })
     const href = wrapper.get('[data-game=g2]').attributes('href')!
     expect(decodeURIComponent(href)).toContain('from=/?day=sat')
+  })
+
+  describe('M10-A', () => {
+    it('M10-T01: names the table and category the judge is at on the shown day', async () => {
+      const { wrapper, router } = await mountView(JudgeDashboardView, { session: judge })
+      // All days: both tables.
+      expect(wrapper.findAll('[data-testid=my-table-name]').map((e) => e.text())).toEqual([
+        expect.stringContaining('Table A'),
+        expect.stringContaining('Table B'),
+      ])
+      await router.push('/?day=sat')
+      await flushPromises()
+      const names = wrapper.findAll('[data-testid=my-table-name]').map((e) => e.text())
+      expect(names).toHaveLength(1)
+      expect(names[0]).toContain('Table A')
+      expect(names[0]).toContain(rows[0]!.category.name)
+    })
+
+    it('M10-07: a head judge at a table loads that table’s games and can switch tables', async () => {
+      const { wrapper } = await mountView(JudgeDashboardView, {
+        session: { roles: [makeRole('head_judge', 'event1')] },
+        path: '/?seat=tA',
+      })
+      expect(mocked.listAssignments).toHaveBeenCalledWith('tA')
+      expect(wrapper.get('[data-testid=my-table]').text()).toContain('You are judging at')
+      expect(wrapper.get('[data-testid=step-in]').text()).toContain('Switch table')
+      // Games link back to this table's dashboard (M10-02 returns here).
+      expect(wrapper.get('[data-testid=up-next]').attributes('href')).toContain('seat=tA')
+    })
+
+    it('judges have no step-in link', async () => {
+      const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
+      expect(mocked.listAssignments).toHaveBeenCalledWith(undefined)
+      expect(wrapper.find('[data-testid=step-in]').exists()).toBe(false)
+    })
   })
 })

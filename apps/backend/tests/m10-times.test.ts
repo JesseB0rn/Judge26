@@ -78,7 +78,12 @@ describe('M10-C run times', () => {
   async function finalize(ctx: Ctx, game: RecordModel, flag: boolean, timeMs: number) {
     await ctx.judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
       method: 'POST',
-      body: { outcome: 'completed', values: { flag }, time_ms: timeMs },
+      body: {
+        outcome: 'completed',
+        values: { flag },
+        time_ms: timeMs,
+        team_confirmation: 'confirmed',
+      },
     })
     await ctx.headJudge.pb.send(`/api/games/${game.id}/sheet/approve`, { method: 'POST', body: {} })
     return fx.su.collection('games').getOne(game.id)
