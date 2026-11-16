@@ -166,5 +166,22 @@
   "setup_not_allowed": "Nur die Anlassleitung und Admins können diesen Anlass einrichten.",
   "mulligan_not_allowed": "Nur Oberschiedsrichter/innen und die Anlassleitung können eine Wiederholung gewähren.",
   "mulligan_no_run": "Dieses Spiel hat keinen bewerteten Lauf, der ersetzt werden könnte.",
-  "program_locked": "Die Punkte wurden eingereicht; nur Oberschiedsrichter/innen können das Programm jetzt noch ändern."
+  "program_locked": "Die Punkte wurden eingereicht; nur Oberschiedsrichter/innen können das Programm jetzt noch ändern.",
+  "head_judges_only": "Nur Oberschiedsrichter und Eventverantwortliche können das tun.",
+  "table_not_assigned": "Dieser Tisch ist dir nicht zugeteilt.",
+  "not_found": "Nicht gefunden.",
+  "round_not_released": "Die Oberschiedsrichterin oder der Oberschiedsrichter hat diese Runde noch nicht zur Wertung freigegeben.",
+  "check_not_confirmed": "Die Roboterkontrolle dieses Teams ist noch nicht bestätigt.",
+  "parts_check_open": "Die Materialkontrolle dieses Tages ist noch nicht abgeschlossen.",
+  "check_off": "Diese Runde hat keine Roboterkontrolle.",
+  "check_scoring_started": "Die Wertung dieses Teams hat begonnen; die Kontrolle kann nicht mehr geöffnet werden.",
+  "round_released": "Die Runde wurde bereits freigegeben.",
+  "round_not_synchronous": "Nur Runden mit synchroner Roboterkontrolle werden freigegeben.",
+  "round_scoring_started": "Die Wertung dieser Runde hat begonnen; die Freigabe kann nicht mehr zurückgenommen werden.",
+  "round_file_hidden": "Die Rundendatei wird angezeigt, sobald die Roboterkontrolle bestätigt ist.",
+  "parts_check_completed": "Die Materialkontrolle wurde bereits abgeschlossen.",
+  "parts_check_tables_open": "Einige Tische haben die Materialkontrolle noch nicht bestätigt.",
+  "check_off_managers_only": "Nur Eventverantwortliche können die Roboterkontrolle ausschalten.",
+  "checks_recorded": "Es wurden bereits Roboterkontrollen erfasst; der Kontrollmodus kann nicht mehr geändert werden.",
+  "read_only": "Dieses Feld wird durch die Freigabe oder den Abschluss gesetzt."
 }

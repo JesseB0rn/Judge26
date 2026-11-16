@@ -185,6 +185,10 @@ export interface RoundRecord extends BaseRecord {
   day?: string
   /** Game rule the round is scored with, or "" (then the category's only game rule). */
   game_rule?: string
+  /** Robot check before scoring (M10-08, M10-09); new rounds default to synchronous. */
+  check_mode?: 'off' | 'synchronous' | 'asynchronous'
+  /** When the head judge released a synchronous round for scoring (M10-11). */
+  released_at?: string
 }
 
 export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'

@@ -166,5 +166,22 @@
   "setup_not_allowed": "Solo i responsabili dell’evento e gli admin possono configurare questo evento.",
   "mulligan_not_allowed": "Solo i giudici capo e i responsabili dell’evento possono concedere una ripetizione.",
   "mulligan_no_run": "Questa partita non ha una prova valutata da sostituire.",
-  "program_locked": "Il punteggio è stato inviato; solo un giudice capo può ancora modificare il programma."
+  "program_locked": "Il punteggio è stato inviato; solo un giudice capo può ancora modificare il programma.",
+  "head_judges_only": "Solo i giudici capo e i responsabili dell’evento possono farlo.",
+  "table_not_assigned": "Questo tavolo non ti è assegnato.",
+  "not_found": "Non trovato.",
+  "round_not_released": "Il giudice capo non ha ancora sbloccato questo turno per la valutazione.",
+  "check_not_confirmed": "Il controllo del robot di questa squadra non è ancora confermato.",
+  "parts_check_open": "Il controllo del materiale di questa giornata non è ancora concluso.",
+  "check_off": "Questo turno non ha un controllo del robot.",
+  "check_scoring_started": "La valutazione di questa squadra è iniziata; il controllo non può più essere riaperto.",
+  "round_released": "Il turno è già stato sbloccato.",
+  "round_not_synchronous": "Si sbloccano solo i turni con un controllo del robot sincrono.",
+  "round_scoring_started": "La valutazione di questo turno è iniziata; lo sblocco non può più essere annullato.",
+  "round_file_hidden": "Il file del turno è mostrato non appena il controllo del robot è confermato.",
+  "parts_check_completed": "Il controllo del materiale è già concluso.",
+  "parts_check_tables_open": "Alcuni tavoli non hanno ancora confermato il controllo del materiale.",
+  "check_off_managers_only": "Solo i responsabili dell’evento possono disattivare il controllo del robot.",
+  "checks_recorded": "Sono già stati registrati controlli del robot; la modalità di controllo non può più cambiare.",
+  "read_only": "Questo campo è impostato dallo sblocco o dalla conclusione."
 }

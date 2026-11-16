@@ -9,6 +9,7 @@ import JudgeDashboardView from '../views/JudgeDashboardView.vue'
 import { makeAssignment, makeSheet } from './fixtures'
 
 vi.mock('../api')
+vi.mock('@/modules/live/useLiveUpdates', () => ({ useLiveUpdates: vi.fn<() => void>() }))
 const mocked = vi.mocked(api)
 
 const sat = { id: 'sat', date: '2026-06-13', label: 'Saturday' }
@@ -48,6 +49,7 @@ beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
   mocked.listAssignments.mockResolvedValue(rows)
+  mocked.listPartsChecks.mockResolvedValue([])
 })
 afterEach(() => document.body.replaceChildren())
 
@@ -172,6 +174,49 @@ describe('JudgeDashboardView', () => {
       const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
       expect(mocked.listAssignments).toHaveBeenCalledWith(undefined)
       expect(wrapper.find('[data-testid=step-in]').exists()).toBe(false)
+    })
+  })
+
+  describe('M10-B', () => {
+    const parts = {
+      id: 'p1',
+      title: 'Parts check',
+      place: '',
+      day: sat,
+      starts_at: '08:00',
+      duration_minutes: 30,
+      blocks_first_round: true,
+      completed_at: '',
+      table: tA,
+      confirmed_at: '',
+      confirmed_by: null,
+    }
+
+    it('M10-16: the parts check comes first and is confirmed for the table', async () => {
+      mocked.listPartsChecks.mockResolvedValue([parts])
+      mocked.confirmPartsCheck.mockResolvedValue({
+        ...parts,
+        confirmed_at: '2026-06-13 08:10:00.000Z',
+        confirmed_by: { id: 'user1', name: 'Judy' },
+      })
+      const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
+      const next = wrapper.get('[data-testid=up-next]')
+      expect(next.text()).toContain('Parts check')
+      await click(next.get('[data-testid=parts-confirm]').element as HTMLElement)
+      expect(mocked.confirmPartsCheck).toHaveBeenCalledWith('p1', 'tA', true)
+      expect(wrapper.get('[data-testid=up-next]').text()).toContain('Bravo')
+      expect(wrapper.get('[data-parts-check=p1]').attributes('data-done')).toBe('true')
+    })
+
+    it('M10-T14: a locked game shows why in the list and up next', async () => {
+      mocked.listAssignments.mockResolvedValue(
+        rows.map((r) => (r.id === 'g2' ? { ...r, gate: 'not_released' as const } : r)),
+      )
+      const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
+      expect(wrapper.get('[data-testid=up-next-locked]').text()).toContain(
+        'Waiting for the release',
+      )
+      expect(wrapper.get('[data-game=g2] [data-gate]').attributes('data-gate')).toBe('not_released')
     })
   })
 })

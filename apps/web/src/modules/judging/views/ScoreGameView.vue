@@ -9,6 +9,7 @@ import {
   CircleAlertIcon,
   CloudOffIcon,
   HistoryIcon,
+  LockIcon,
   MapPinIcon,
   PencilIcon,
   RotateCcwIcon,
@@ -24,12 +25,14 @@ import ScoreSheet from '@/modules/scoring/components/ScoreSheet.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { backTarget } from '@/shared/composables/useQueryRefs'
 import { formatDay } from '@/shared/format'
+import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import { cachePage, installAutoSync } from '../drafts'
-import { formatTime, scoreState } from '../lib'
+import { formatTime, gateExplanation, gateLabel, scoreState } from '../lib'
 import { useScoreSheet } from '../useScoreSheet'
 import OutcomePicker from '../components/OutcomePicker.vue'
 import ProgramNameField from '../components/ProgramNameField.vue'
 import ReasonDialog from '../components/ReasonDialog.vue'
+import RoundFilePanel from '../components/RoundFilePanel.vue'
 import SaveIndicator from '../components/SaveIndicator.vue'
 import ScoreHistory from '../components/ScoreHistory.vue'
 import ScoreStateBadge from '../components/ScoreStateBadge.vue'
@@ -110,6 +113,29 @@ onMounted(() => {
   installAutoSync()
   void s.load()
 })
+
+// A locked sheet unlocks without a reload when the round is released or the check confirmed
+// (M10-T15, M10-T18). An open sheet is not reloaded, so nothing being entered is replaced.
+useLiveUpdates(
+  () => p.value?.event.id,
+  () => (s.locked.value && !s.fromCache.value ? s.load() : undefined),
+)
+
+/** The team's robot check, linked from a sheet locked until that check (M10-12). */
+const checkLink = computed(() =>
+  p.value
+    ? {
+        name: 'judging-check',
+        params: { roundId: p.value.round.id },
+        query: {
+          ...(p.value.table ? { table: p.value.table.id } : {}),
+          team: p.value.team.id,
+          from: route.fullPath,
+          ...(typeof route.query.seat === 'string' ? { seat: route.query.seat } : {}),
+        },
+      }
+    : null,
+)
 
 const context = computed(() => {
   if (!p.value) return ''
@@ -384,6 +410,34 @@ function setManualPoints(raw: string | number) {
         }}</AlertTitle>
         <AlertDescription>{{ sheet.mulligan_reason }}</AlertDescription>
       </Alert>
+      <!-- M10-B: scoring waits for the release, the team's check or the parts check. -->
+      <Alert
+        v-if="s.locked.value && s.status.value !== 'submitted' && s.status.value !== 'finalized'"
+        class="border-amber-300 bg-amber-50 text-amber-950"
+        data-testid="sheet-locked"
+        :data-gate="s.gate.value"
+      >
+        <LockIcon />
+        <AlertTitle>{{ gateLabel(s.gate.value) }}</AlertTitle>
+        <AlertDescription class="flex flex-col items-start gap-2">
+          <span>{{ gateExplanation(s.gate.value, p.robot_check?.parts_check?.title) }}</span>
+          <span v-if="s.gate.value === 'not_confirmed'" class="flex flex-wrap gap-2">
+            <Button v-if="checkLink" as-child size="touch" data-testid="to-check">
+              <RouterLink :to="checkLink">{{ t('checks.toCheck') }}</RouterLink>
+            </Button>
+            <Button
+              v-if="p.permissions.canEdit"
+              variant="outline"
+              size="touch"
+              data-testid="mark-absent"
+              @click="s.markAbsent"
+              >{{ t('checks.markAbsent') }}</Button
+            >
+          </span>
+        </AlertDescription>
+      </Alert>
+      <!-- M10-17: the round's randomization file, once the check is confirmed. -->
+      <RoundFilePanel v-if="p.round_file" :round-id="p.round.id" :file="p.round_file" />
       <Alert v-if="p.event.status === 'archived'">
         <AlertDescription>{{ t('judging.sheet.archived') }}</AlertDescription>
       </Alert>

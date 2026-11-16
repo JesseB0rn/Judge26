@@ -13,6 +13,12 @@ export const judgingRoutes: RouteRecordRaw[] = [
     component: () => import('./views/HeadJudgeTablesView.vue'),
   },
   {
+    // M10-13: robot checks, parts checks and round files of an event, for head judges.
+    path: '/judging/checks',
+    name: 'judging-checks',
+    component: () => import('./views/ChecksView.vue'),
+  },
+  {
     path: '/review',
     name: 'review',
     component: () => import('./views/ReviewView.vue'),

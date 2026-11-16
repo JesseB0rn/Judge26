@@ -46,7 +46,7 @@ describe('M10-A judge workflow', () => {
     const judge = await fx.user({ name: 'Judy', roles: [{ role: 'judge', event: event.id }] })
     const round = await fx.su
       .collection('rounds')
-      .create({ category: category.id, key: 'R1', name: 'Round 1', position: 1 })
+      .create({ check_mode: 'off', category: category.id, key: 'R1', name: 'Round 1', position: 1 })
     await fx.su
       .collection('rulesets')
       .create({ category: category.id, status: 'published', definition: RULESET })

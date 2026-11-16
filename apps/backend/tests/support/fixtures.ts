@@ -94,6 +94,7 @@ export class Fixtures {
     const manager = await this.user({ roles: [{ role: 'event_manager', event: event.id }] })
     const judge = await this.user({ roles: [{ role: 'judge', event: event.id }] })
     const round = await manager.pb.collection('rounds').create({
+      check_mode: 'off',
       category: category.id,
       key: 'R1',
       name: 'Round 1',

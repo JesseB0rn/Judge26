@@ -9,6 +9,7 @@ import ScoreGameView from '../views/ScoreGameView.vue'
 import { makePayload, makeSheet } from './fixtures'
 
 vi.mock('../api')
+vi.mock('@/modules/live/useLiveUpdates', () => ({ useLiveUpdates: vi.fn<() => void>() }))
 const mocked = vi.mocked(api)
 
 const judge = { roles: [makeRole('judge', 'event1')] }
@@ -688,6 +689,55 @@ describe('ScoreGameView', () => {
       expect(document.querySelector('[role=dialog] [data-testid=team-sign-off]')).toBeNull()
       const dialog = document.querySelector('[role=dialog]') as HTMLElement
       expect(buttonByText('Submit score', dialog).disabled).toBe(false)
+    })
+  })
+
+  describe('M10-B scoring gate', () => {
+    const robot = (mode: 'synchronous' | 'asynchronous') => ({
+      mode,
+      released_at: '',
+      checked: false,
+      table_ready: false,
+      parts_check: null,
+    })
+
+    it('M10-T14: before the release the sheet is locked and cannot be submitted', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ gate: 'not_released', robot_check: robot('synchronous') }),
+      )
+      const { wrapper } = await mountGame()
+      expect(wrapper.get('[data-testid=sheet-locked]').text()).toContain('Waiting for the release')
+      expect(wrapper.text()).not.toContain('Submit score')
+      await choice(wrapper, 'flag', 'Yes').trigger('click')
+      expect(pressed(wrapper, 'flag', 'Yes')).toBe(false)
+      expect(readDraft('game1')).toBeNull()
+    })
+
+    it('M10-T18: an unchecked team links to its check, or is recorded as absent', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ gate: 'not_confirmed', robot_check: robot('asynchronous') }),
+      )
+      const { wrapper } = await mountGame()
+      const link = wrapper.get('[data-testid=to-check]')
+      expect(link.attributes('href')).toContain('judging-check')
+      expect(link.attributes('href')).toContain('team=')
+      await click(wrapper.get('[data-testid=mark-absent]').element as HTMLElement)
+      expect(readDraft('game1')?.input.outcome).toBe('absent')
+      expect(wrapper.find('[data-testid=sheet-locked]').exists()).toBe(false)
+      expect(wrapper.text()).toContain('Submit score')
+    })
+
+    it('M10-T25: the round file is shown once released', async () => {
+      mocked.roundFileUrl.mockResolvedValue('blob:round-file')
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ round_file: { name: 'Field R1.png', kind: 'image', updated: 'u1' } }),
+      )
+      const { wrapper } = await mountGame()
+      await flushPromises()
+      expect(wrapper.get('[data-testid=round-file]').text()).toContain('Field R1.png')
+      expect(wrapper.get('[data-testid=round-file-image]').attributes('src')).toBe(
+        'blob:round-file',
+      )
     })
   })
 })

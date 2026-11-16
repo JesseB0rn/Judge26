@@ -1,0 +1,72 @@
+{
+  "title": "Checks",
+  "description": "Parts checks and robot checks per table, release of the rounds and round files.",
+  "rounds": "Robot check per round",
+  "noRounds": "No round has games at tables yet.",
+  "confirmed": "Confirmed",
+  "open": "Open",
+  "checked": "Checked",
+  "readyState": "Table",
+  "ofTotal": "{done} of {total}",
+  "ready": "Ready",
+  "notReady": "Not ready",
+  "release": "Release for scoring",
+  "releasedBy": "Released by {name} at {time}",
+  "withdraw": "Withdraw release",
+  "releaseAnyway": "Release although tables are not ready?",
+  "notReadyTables": "Not ready yet: {tables}. Enter why the round is released anyway; the release is recorded in the audit log.",
+  "toCheck": "Open the robot check",
+  "markAbsent": "Team did not come: record as absent",
+  "mode": {
+    "label": "Robot check",
+    "synchronous": "Synchronous (release by the head judge)",
+    "asynchronous": "Asynchronous (each team after its check)",
+    "off": "No robot check",
+    "hint": "Synchronous: all tables check, then the head judge releases the round. Asynchronous: a team can be scored as soon as its check is confirmed. Fixed once the first check is recorded."
+  },
+  "gate": {
+    "parts_check": "Waiting for the parts check",
+    "not_released": "Waiting for the release",
+    "not_confirmed": "Robot check not confirmed"
+  },
+  "locked": {
+    "parts_check": "The parts check “{title}” is not completed yet. Scoring of this round starts after it.",
+    "not_released": "The score sheet opens when the head judge releases the round, after every table finished its robot check.",
+    "not_confirmed": "Confirm this team’s robot check first; the score sheet opens right after."
+  },
+  "robot": {
+    "confirm": "Confirm check",
+    "checked": "Checked",
+    "queued": "Checked on this device · sent when the connection is back",
+    "ready": "Table ready",
+    "confirmReady": "One team is not checked yet. Mark the table ready anyway? | {count} teams are not checked yet. Mark the table ready anyway?",
+    "readyBy": "The table is ready ({name}).",
+    "partsOpen": "The parts check “{title}” is not completed yet. The robot check of this round starts after it.",
+    "synchronous": "When every table is ready, the head judge releases the round for scoring.",
+    "asynchronous": "Each team can be scored as soon as its check is confirmed.",
+    "released": "The round is released for scoring."
+  },
+  "parts": {
+    "title": "Parts checks",
+    "kind": "Parts check (each table confirms it)",
+    "blocksFirstRound": "blocks the first round",
+    "blocksFirstRoundHint": "Blocks the robot check and scoring of the day’s first round until completed",
+    "confirm": "Confirm parts check",
+    "confirmedBy": "confirmed by {name} at {time}",
+    "complete": "Mark completed",
+    "completed": "completed",
+    "completedBy": "Completed by {name} at {time}",
+    "reopen": "Reopen",
+    "confirmOpen": "Not confirmed yet: {tables}. Complete the parts check anyway? This is recorded in the audit log."
+  },
+  "file": {
+    "title": "Round file",
+    "none": "none",
+    "upload": "Upload",
+    "replace": "Replace",
+    "remove": "Remove the round file",
+    "confirmRemove": "Remove the round file?",
+    "failed": "The round file could not be loaded.",
+    "hint": "Image or PDF, up to 10 MB. Judges see it once the robot check is confirmed; it is never public."
+  }
+}

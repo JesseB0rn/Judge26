@@ -1,0 +1,72 @@
+{
+  "title": "Contrôles",
+  "description": "Contrôles du matériel et du robot par table, libération des tours et fichiers des tours.",
+  "rounds": "Contrôle du robot par tour",
+  "noRounds": "Aucun tour n’a encore de matchs aux tables.",
+  "confirmed": "Confirmé",
+  "open": "Ouvert",
+  "checked": "Contrôlées",
+  "readyState": "Table",
+  "ofTotal": "{done} sur {total}",
+  "ready": "Prête",
+  "notReady": "Pas prête",
+  "release": "Libérer pour l’évaluation",
+  "releasedBy": "Libéré par {name} à {time}",
+  "withdraw": "Annuler la libération",
+  "releaseAnyway": "Libérer alors que des tables ne sont pas prêtes ?",
+  "notReadyTables": "Pas encore prêtes : {tables}. Indique pourquoi le tour est quand même libéré ; la libération est enregistrée dans le journal d’audit.",
+  "toCheck": "Ouvrir le contrôle du robot",
+  "markAbsent": "Équipe non venue : enregistrer comme absente",
+  "mode": {
+    "label": "Contrôle du robot",
+    "synchronous": "Synchrone (libération par le juge principal)",
+    "asynchronous": "Asynchrone (chaque équipe après son contrôle)",
+    "off": "Pas de contrôle du robot",
+    "hint": "Synchrone : toutes les tables contrôlent, puis le juge principal libère le tour. Asynchrone : une équipe peut être évaluée dès que son contrôle est confirmé. Fixé dès le premier contrôle saisi."
+  },
+  "gate": {
+    "parts_check": "En attente du contrôle du matériel",
+    "not_released": "En attente de la libération",
+    "not_confirmed": "Contrôle du robot non confirmé"
+  },
+  "locked": {
+    "parts_check": "Le contrôle du matériel « {title} » n’est pas encore terminé. L’évaluation de ce tour commence ensuite.",
+    "not_released": "La feuille de score s’ouvre quand le juge principal libère le tour, une fois que chaque table a terminé son contrôle du robot.",
+    "not_confirmed": "Confirme d’abord le contrôle du robot de cette équipe ; la feuille de score s’ouvre juste après."
+  },
+  "robot": {
+    "confirm": "Confirmer le contrôle",
+    "checked": "Contrôlée",
+    "queued": "Contrôlée sur cet appareil · envoyé dès le retour de la connexion",
+    "ready": "Table prête",
+    "confirmReady": "Une équipe n’est pas encore contrôlée. Annoncer quand même la table prête ? | {count} équipes ne sont pas encore contrôlées. Annoncer quand même la table prête ?",
+    "readyBy": "La table est prête ({name}).",
+    "partsOpen": "Le contrôle du matériel « {title} » n’est pas encore terminé. Le contrôle du robot de ce tour commence ensuite.",
+    "synchronous": "Quand toutes les tables sont prêtes, le juge principal libère le tour pour l’évaluation.",
+    "asynchronous": "Chaque équipe peut être évaluée dès que son contrôle est confirmé.",
+    "released": "Le tour est libéré pour l’évaluation."
+  },
+  "parts": {
+    "title": "Contrôles du matériel",
+    "kind": "Contrôle du matériel (chaque table le confirme)",
+    "blocksFirstRound": "bloque le premier tour",
+    "blocksFirstRoundHint": "Bloque le contrôle du robot et l’évaluation du premier tour de la journée jusqu’à la clôture",
+    "confirm": "Confirmer le contrôle du matériel",
+    "confirmedBy": "confirmé par {name} à {time}",
+    "complete": "Marquer comme terminé",
+    "completed": "terminé",
+    "completedBy": "Terminé par {name} à {time}",
+    "reopen": "Rouvrir",
+    "confirmOpen": "Pas encore confirmé : {tables}. Terminer quand même le contrôle du matériel ? C’est enregistré dans le journal d’audit."
+  },
+  "file": {
+    "title": "Fichier du tour",
+    "none": "aucun",
+    "upload": "Téléverser",
+    "replace": "Remplacer",
+    "remove": "Supprimer le fichier du tour",
+    "confirmRemove": "Supprimer le fichier du tour ?",
+    "failed": "Le fichier du tour n’a pas pu être chargé.",
+    "hint": "Image ou PDF, jusqu’à 10 Mo. Les juges le voient dès que le contrôle du robot est confirmé ; il n’est jamais public."
+  }
+}

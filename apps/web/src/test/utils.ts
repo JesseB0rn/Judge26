@@ -89,6 +89,7 @@ export async function mountView<C extends Component>(
     'judging-game',
     'judging-check',
     'judging-tables',
+    'judging-checks',
     'review',
     'live',
     'live-event',

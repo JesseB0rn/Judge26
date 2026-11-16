@@ -166,5 +166,22 @@
   "setup_not_allowed": "Seuls les responsables de l’événement et les admins peuvent configurer cet événement.",
   "mulligan_not_allowed": "Seuls les juges principaux et les responsables d’événement peuvent accorder un nouvel essai.",
   "mulligan_no_run": "Ce match n’a pas de passage noté à remplacer.",
-  "program_locked": "Le score a été soumis ; seul un juge principal peut encore modifier le programme."
+  "program_locked": "Le score a été soumis ; seul un juge principal peut encore modifier le programme.",
+  "head_judges_only": "Seuls les juges principaux et les responsables de l’événement peuvent le faire.",
+  "table_not_assigned": "Cette table ne t’est pas attribuée.",
+  "not_found": "Introuvable.",
+  "round_not_released": "Le juge principal n’a pas encore libéré ce tour pour l’évaluation.",
+  "check_not_confirmed": "Le contrôle du robot de cette équipe n’est pas encore confirmé.",
+  "parts_check_open": "Le contrôle du matériel de cette journée n’est pas encore terminé.",
+  "check_off": "Ce tour n’a pas de contrôle du robot.",
+  "check_scoring_started": "L’évaluation de cette équipe a commencé ; le contrôle ne peut plus être rouvert.",
+  "round_released": "Le tour a déjà été libéré.",
+  "round_not_synchronous": "Seuls les tours avec un contrôle du robot synchrone sont libérés.",
+  "round_scoring_started": "L’évaluation de ce tour a commencé ; la libération ne peut plus être annulée.",
+  "round_file_hidden": "Le fichier du tour est affiché dès que le contrôle du robot est confirmé.",
+  "parts_check_completed": "Le contrôle du matériel est déjà terminé.",
+  "parts_check_tables_open": "Certaines tables n’ont pas encore confirmé le contrôle du matériel.",
+  "check_off_managers_only": "Seuls les responsables de l’événement peuvent désactiver le contrôle du robot.",
+  "checks_recorded": "Des contrôles du robot ont déjà été saisis ; le mode de contrôle ne peut plus changer.",
+  "read_only": "Ce champ est défini par la libération ou la clôture."
 }

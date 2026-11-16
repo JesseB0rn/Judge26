@@ -58,6 +58,8 @@ export interface PlannerRound {
   name: string
   position: number
   day: string
+  /** M10-08: the robot check mode; "off" has no check phase. */
+  check_mode?: 'off' | 'synchronous' | 'asynchronous'
 }
 
 export interface PlannerPhase {
@@ -86,6 +88,11 @@ export interface PlannerBlock {
   /** Covered custom columns. Both empty = all columns. */
   columns?: string[]
   public: boolean
+  /** "parts_check" for a parts check (M10-15). */
+  kind?: '' | 'parts_check'
+  blocks_first_round?: boolean
+  /** When the head judge completed the parts check (staff view, M10-16). */
+  completed_at?: string
   updated?: string
 }
 
@@ -97,7 +104,13 @@ export interface ItemRef {
 }
 
 export interface PlannerIssue {
-  code: 'outside_day' | 'phase_order' | 'round_overlap' | 'table_overlap' | 'judge_overlap'
+  code:
+    | 'outside_day'
+    | 'phase_order'
+    | 'round_overlap'
+    | 'table_overlap'
+    | 'judge_overlap'
+    | 'parts_check_late'
   message: string
   items: ItemRef[]
 }

@@ -1,6 +1,6 @@
 import { formatRunTime } from '@judge26/ranking-engine'
 import { t, translatedLabels } from '@/i18n'
-import type { Assignment, NamedRef, RoundCheck, RoundRef, SheetStatus } from './types'
+import type { Assignment, NamedRef, RoundCheck, RoundRef, ScoringGate, SheetStatus } from './types'
 
 // ---------------------------------------------------------------------------
 // Stopwatch (M5-07). Based on wall-clock timestamps, so it survives a reload.
@@ -347,17 +347,33 @@ export function buildTimeline(rows: Assignment[], checks: RobotCheckBlock[]): Ti
 }
 
 /**
- * A robot check is done once the judge finished it (on this device) or as soon as scoring of
- * that round has started at that table.
+ * A robot check is done once its table confirmed it as complete on the server (M10-10), or as
+ * soon as scoring of that round has started at that table. Rows cached before M10-B carry no
+ * server state; for them a check finished on this device counts (`finished`, M5-15).
  */
-export function isCheckDone(block: RobotCheckBlock, rows: Assignment[], finished: string[]) {
-  if (finished.includes(block.key)) return true
-  return rows.some(
-    (row) =>
-      row.round.id === block.round.id &&
-      (row.table?.id ?? '') === (block.table?.id ?? '') &&
-      scoreState(row) !== 'open',
+export function isCheckDone(block: RobotCheckBlock, rows: Assignment[], finished: string[] = []) {
+  const own = rows.filter(
+    (row) => row.round.id === block.round.id && (row.table?.id ?? '') === (block.table?.id ?? ''),
   )
+  if (own.some((row) => scoreState(row) !== 'open')) return true
+  if (own.some((row) => row.robot_check)) return own.some((row) => row.robot_check?.table_ready)
+  return finished.includes(block.key)
+}
+
+/** Why scoring of a row is locked (M10-B), "" when it is open or the row predates M10-B. */
+export function gateOf(row: Pick<Assignment, 'gate'>): ScoringGate {
+  return row.gate ?? ''
+}
+
+/** Short label of a scoring lock, e.g. "Waiting for the release"; "" when open. */
+export function gateLabel(gate: ScoringGate) {
+  return gate ? t(`checks.gate.${gate}`) : ''
+}
+
+/** What a locked score sheet waits for; `title`: the parts check's title. */
+export function gateExplanation(gate: ScoringGate, title = '') {
+  if (gate === 'parts_check') return t('checks.locked.parts_check', { title })
+  return gate ? t(`checks.locked.${gate}`) : ''
 }
 
 export type NextUp = { kind: 'check'; block: RobotCheckBlock } | { kind: 'game'; row: Assignment }

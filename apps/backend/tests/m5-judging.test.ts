@@ -102,6 +102,7 @@ describe('M5 judge interface and scoring workflow', () => {
       .collection('competition_days')
       .create({ event: event.id, date: '2026-06-13', label: 'Saturday' })
     const round = await manager.pb.collection('rounds').create({
+      check_mode: 'off',
       category: category.id,
       key: 'R1',
       name: 'Round 1',

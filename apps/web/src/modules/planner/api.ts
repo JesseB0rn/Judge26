@@ -52,6 +52,10 @@ export interface BlockInput {
   categories: string[]
   columns: string[]
   public: boolean
+  /** "parts_check" for a parts check block (M10-15), else "". */
+  kind?: '' | 'parts_check'
+  /** A parts check gates the day's first round until completed (M10-16). */
+  blocks_first_round?: boolean
 }
 
 export function createBlock(eventId: string, data: BlockInput) {

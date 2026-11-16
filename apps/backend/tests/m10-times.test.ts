@@ -45,12 +45,9 @@ describe('M10-C run times', () => {
     const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
     const headJudge = await fx.user({ roles: [{ role: 'head_judge', event: event.id }] })
     const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
-    const round = await fx.su.collection('rounds').create({
-      category: category.id,
-      key: 'R1',
-      name: 'Round 1',
-      position: 1,
-    })
+    const round = await fx.su
+      .collection('rounds')
+      .create({ check_mode: 'off', category: category.id, key: 'R1', name: 'Round 1', position: 1 })
     const table = await fx.su
       .collection('tables')
       .create({ event: event.id, name: 'A', active: true, position: 1, judges: [judge.id] })

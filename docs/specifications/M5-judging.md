@@ -127,8 +127,8 @@ in milliseconds.
     shown inline (images, PDFs) or as open/download links, _Previous_ / _Next team_ buttons (and
     arrow keys), a jump list and a link to the team's score sheet. The current team is kept in
     the URL. Offline, the teams come from the list saved on the device; documents need a
-    connection. Per-team check results are not recorded, and finishing a check is stored on the
-    device only.
+    connection. Since M10-B each team's check and the table's completion (_Table ready_) are
+    stored on the server and can gate scoring; see [M10-checks](M10-checks.md).
   - **Program (M9-B):** for each team the judge enters the name of the program the team plans to
     run (saved when the field loses focus or on _Save_; needs a connection). It is stored in
     `games.program_name` on every game of the team in that round (all attempts) and survives a

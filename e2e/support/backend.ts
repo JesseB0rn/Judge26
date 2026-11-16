@@ -106,15 +106,20 @@ export async function createApprovedTeam(
   })
 }
 
-/** Creates a round with the given testing and scoring durations. */
+/**
+ * Creates a round with the given testing and scoring durations. Without a robot check unless
+ * `checkMode` says otherwise, so scoring is not gated (M10-B; the app's default is synchronous).
+ */
 export async function createRound(
   categoryId: string,
   key: string,
   testingMinutes = 5,
   scoringMinutes = 10,
+  checkMode: 'off' | 'synchronous' | 'asynchronous' = 'off',
 ) {
   const pb = await superuser()
   return pb.collection('rounds').create({
+    check_mode: checkMode,
     category: categoryId,
     key,
     name: `Round ${key.slice(1)}`,
@@ -302,4 +307,17 @@ export async function createCategoryTable(
   return pb
     .collection('tables')
     .create({ event: eventId, name, active: true, position, categories: [categoryId], judges })
+}
+
+/** Uploads a round's randomization file (M10-17), as a head judge would. */
+export async function uploadRoundFile(
+  roundId: string,
+  name: string,
+  bytes: Uint8Array,
+  type: string,
+) {
+  const pb = await superuser()
+  const form = new FormData()
+  form.append('file', new Blob([bytes], { type }), name)
+  return pb.send(`/api/rounds/${roundId}/file`, { method: 'POST', body: form })
 }

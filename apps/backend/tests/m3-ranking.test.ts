@@ -23,9 +23,13 @@ describe('M3 rounds, games and ranking', () => {
     manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
     rounds = {}
     for (const [i, key] of ['R1', 'R2', 'R3'].entries()) {
-      rounds[key] = await manager.pb
-        .collection('rounds')
-        .create({ category: category.id, key, name: `Round ${i + 1}`, position: i })
+      rounds[key] = await manager.pb.collection('rounds').create({
+        check_mode: 'off',
+        category: category.id,
+        key,
+        name: `Round ${i + 1}`,
+        position: i,
+      })
     }
   })
   afterAll(() => server?.dispose())
@@ -43,19 +47,27 @@ describe('M3 rounds, games and ranking', () => {
   it('M3-01: managers create any number of rounds with unique keys', async () => {
     const cat = await fx.category(event.id)
     for (let i = 1; i <= 5; i++) {
-      await manager.pb
-        .collection('rounds')
-        .create({ category: cat.id, key: `R${i}`, name: `Round ${i}`, position: i })
+      await manager.pb.collection('rounds').create({
+        check_mode: 'off',
+        category: cat.id,
+        key: `R${i}`,
+        name: `Round ${i}`,
+        position: i,
+      })
     }
     expect(
       await manager.pb.collection('rounds').getFullList({ filter: `category = "${cat.id}"` }),
     ).toHaveLength(5)
     await expectDenied(
-      manager.pb.collection('rounds').create({ category: cat.id, key: 'R1', name: 'Again' }),
+      manager.pb
+        .collection('rounds')
+        .create({ check_mode: 'off', category: cat.id, key: 'R1', name: 'Again' }),
     )
     const user = await fx.user()
     await expectDenied(
-      user.pb.collection('rounds').create({ category: cat.id, key: 'X', name: 'X' }),
+      user.pb
+        .collection('rounds')
+        .create({ check_mode: 'off', category: cat.id, key: 'X', name: 'X' }),
     )
     expect(
       await user.pb.collection('rounds').getFullList({ filter: `category = "${cat.id}"` }),
@@ -190,7 +202,9 @@ describe('M3 rounds, games and ranking', () => {
       cat = await fx.category(event.id)
       r = {}
       for (const key of ['R1', 'R2', 'R3'])
-        r[key] = await fx.su.collection('rounds').create({ category: cat.id, key, name: key })
+        r[key] = await fx.su
+          .collection('rounds')
+          .create({ check_mode: 'off', category: cat.id, key, name: key })
       await fx.su.collection('categories').update(cat.id, { ranking: EXAMPLE_RANKING_CONFIG })
       teams = {}
       for (const name of ['Alpha', 'Bravo', 'Charlie', 'Delta'])
@@ -294,7 +308,9 @@ describe('M3 rounds, games and ranking', () => {
   it('copying a category copies its rounds and ranking configuration', async () => {
     const template = await fx.category('', { code: 'TPL-RANK', ranking: EXAMPLE_RANKING_CONFIG })
     for (const key of ['R1', 'R2'])
-      await fx.su.collection('rounds').create({ category: template.id, key, name: key })
+      await fx.su
+        .collection('rounds')
+        .create({ check_mode: 'off', category: template.id, key, name: key })
     const copy = await admin.pb.send<RecordModel>(`/api/categories/${template.id}/copy`, {
       method: 'POST',
       body: { event: event.id, code: 'RANKED' },

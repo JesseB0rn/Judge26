@@ -6,6 +6,8 @@ import {
   ArrowLeftRightIcon,
   ClipboardListIcon,
   CloudOffIcon,
+  ListChecksIcon,
+  LockIcon,
   MapPinIcon,
   PlayIcon,
   RefreshCwIcon,
@@ -19,15 +21,18 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useQueryRefs } from '@/shared/composables/useQueryRefs'
-import { listAssignments } from '../api'
+import { confirmPartsCheck, listAssignments, listPartsChecks } from '../api'
 import {
   cacheAssignments,
   cachedAssignments,
   finishedChecks,
   installAutoSync,
+  pendingChecks,
   pendingDraftIds,
+  syncPendingChecks,
   syncPendingDrafts,
 } from '../drafts'
+import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import {
   buildTimeline,
   checkRoute,
@@ -35,6 +40,8 @@ import {
   dayOptions,
   filterAssignments,
   filterChecks,
+  gateLabel,
+  gateOf,
   isCheckDone,
   isToDo,
   myTables,
@@ -44,8 +51,9 @@ import {
   tableOptions,
   type RobotCheckBlock,
 } from '../lib'
-import type { Assignment } from '../types'
+import type { Assignment, TablePartsCheck } from '../types'
 import AssignmentList from '../components/AssignmentList.vue'
+import PartsCheckRow from '../components/PartsCheckRow.vue'
 import FilterChips from '@/shared/components/FilterChips.vue'
 import ScoreStateBadge from '../components/ScoreStateBadge.vue'
 
@@ -64,6 +72,10 @@ const error = ref<AppError | null>(null)
 const offline = ref(false)
 const pending = ref(0)
 const finished = ref<string[]>([])
+/** Parts checks at my tables (M10-16). */
+const partsChecks = ref<TablePartsCheck[]>([])
+const partsBusy = ref('')
+const partsError = ref<AppError | null>(null)
 
 // Filters live in the URL, so "back" from a game returns to the same view.
 const { day, table, show } = useQueryRefs({ day: '', table: '', show: '' })
@@ -91,6 +103,17 @@ const checkDone = (block: RobotCheckBlock) => isCheckDone(block, rows.value, fin
 const checks = computed(() =>
   show.value === 'todo' ? scopedChecks.value.filter((b) => !checkDone(b)) : scopedChecks.value,
 )
+// Parts checks of the shown day and table, before that day's rounds.
+const shownParts = computed(() =>
+  partsChecks.value.filter(
+    (p) =>
+      (!day.value || (p.day?.id ?? 'none') === day.value) &&
+      (!table.value || p.table.id === table.value) &&
+      (show.value !== 'todo' || (!p.confirmed_at && !p.completed_at)),
+  ),
+)
+/** A parts check still to confirm comes first (M10-16). */
+const nextParts = computed(() => shownParts.value.find((p) => !p.confirmed_at && !p.completed_at))
 const next = computed(() => nextUp(buildTimeline(scoped.value, scopedChecks.value), checkDone))
 const nextGame = computed(() => (next.value?.kind === 'game' ? next.value.row : undefined))
 const nextCheck = computed(() => (next.value?.kind === 'check' ? next.value.block : undefined))
@@ -98,14 +121,34 @@ const highlight = computed(() =>
   nextCheck.value ? `check:${nextCheck.value.key}` : nextGame.value?.id,
 )
 
+async function confirmParts(entry: TablePartsCheck, confirmed: boolean) {
+  partsBusy.value = `${entry.id}:${entry.table.id}`
+  partsError.value = null
+  try {
+    const updated = await confirmPartsCheck(entry.id, entry.table.id, confirmed)
+    partsChecks.value = partsChecks.value.map((p) =>
+      p.id === updated.id && p.table.id === updated.table.id ? updated : p,
+    )
+  } catch (e) {
+    partsError.value = toAppError(e)
+  } finally {
+    partsBusy.value = ''
+  }
+}
+
 async function load() {
   loading.value = true
   error.value = null
   const userId = session.user?.id ?? ''
   finished.value = finishedChecks(userId)
   try {
-    await syncPendingDrafts()
-    rows.value = await listAssignments(seat.value || undefined)
+    await Promise.all([syncPendingDrafts(), syncPendingChecks()])
+    const [loaded, parts] = await Promise.all([
+      listAssignments(seat.value || undefined),
+      listPartsChecks(seat.value || undefined).catch(() => [] as TablePartsCheck[]),
+    ])
+    rows.value = loaded
+    partsChecks.value = parts
     cacheAssignments(cacheKey(), rows.value)
     offline.value = false
   } catch (e) {
@@ -116,7 +159,7 @@ async function load() {
       offline.value = true
     } else error.value = err
   } finally {
-    pending.value = pendingDraftIds().length
+    pending.value = pendingDraftIds().length + pendingChecks().length
     loading.value = false
   }
 }
@@ -129,6 +172,11 @@ onMounted(() => {
 onBeforeUnmount(() => window.removeEventListener('online', load))
 // Switching tables (head judges) loads that table.
 watch(seat, () => void load())
+// A release, a completed parts check or another device's check shows without a reload (M10-T15).
+useLiveUpdates(
+  () => rows.value[0]?.event.id,
+  () => (offline.value ? undefined : load()),
+)
 
 const context = (row: Assignment) =>
   [
@@ -144,6 +192,11 @@ const context = (row: Assignment) =>
 <template>
   <PageHeader :title="t('shell.nav.judging')" :description="t('judging.dashboard.description')">
     <template #actions>
+      <Button v-if="session.canReview" as-child variant="outline" size="touch">
+        <RouterLink :to="{ name: 'judging-checks' }" data-testid="checks-link">
+          <ListChecksIcon /> {{ t('checks.title') }}
+        </RouterLink>
+      </Button>
       <Button v-if="session.canStepIn" as-child variant="outline" size="touch">
         <RouterLink :to="{ name: 'judging-tables' }" data-testid="step-in">
           <ArrowLeftRightIcon />
@@ -195,8 +248,23 @@ const context = (row: Assignment) =>
     </section>
 
     <!-- The one thing a judge needs right now. -->
+    <div
+      v-if="nextParts"
+      class="flex flex-col gap-2 rounded-2xl border-2 border-foreground/80 p-4"
+      data-testid="up-next"
+    >
+      <span class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{{
+        t('judging.dashboard.upNext')
+      }}</span>
+      <PartsCheckRow
+        :entry="nextParts"
+        :busy="partsBusy === `${nextParts.id}:${nextParts.table.id}`"
+        :read-only="offline"
+        @confirm="confirmParts(nextParts, $event)"
+      />
+    </div>
     <RouterLink
-      v-if="nextCheck"
+      v-else-if="nextCheck"
       :to="checkRoute(nextCheck, route.fullPath, seat)"
       class="flex items-center gap-4 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
       data-testid="up-next"
@@ -233,6 +301,12 @@ const context = (row: Assignment) =>
           nextGame.team.name
         }}</span>
         <span class="block truncate text-muted-foreground">{{ context(nextGame) }}</span>
+        <span
+          v-if="gateOf(nextGame) && scoreState(nextGame) === 'open'"
+          class="mt-1 flex items-center gap-1 text-sm font-medium text-amber-800"
+          data-testid="up-next-locked"
+          ><LockIcon class="size-4" /> {{ gateLabel(gateOf(nextGame)) }}</span
+        >
       </span>
       <ScoreStateBadge :state="scoreState(nextGame)" />
       <span
@@ -272,6 +346,20 @@ const context = (row: Assignment) =>
           t('judging.dashboard.progress', { done, total: scoped.length })
         }}</span>
       </div>
+    </div>
+
+    <ErrorAlert :error="partsError" />
+    <div v-if="shownParts.length" class="flex flex-col gap-2" data-testid="parts-checks">
+      <PartsCheckRow
+        v-for="entry in shownParts"
+        :key="`${entry.id}:${entry.table.id}`"
+        :entry="entry"
+        :busy="partsBusy === `${entry.id}:${entry.table.id}`"
+        :read-only="offline"
+        :highlight="entry === nextParts"
+        :show-table="tables.length > 1"
+        @confirm="confirmParts(entry, $event)"
+      />
     </div>
 
     <AssignmentList

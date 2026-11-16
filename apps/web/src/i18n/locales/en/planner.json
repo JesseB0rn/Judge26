@@ -14,7 +14,8 @@
     "phase_order": "Phases must run in the order maintenance, robot check, scoring.",
     "round_overlap": "Overlaps another round of the same category.",
     "table_overlap": "Another round uses the same table at this time.",
-    "judge_overlap": "The same judge is needed on two tables at this time."
+    "judge_overlap": "The same judge is needed on two tables at this time.",
+    "parts_check_late": "The parts check ends after the first scoring run of the day."
   },
   "internal": "Internal (staff only)",
   "done": "Done",

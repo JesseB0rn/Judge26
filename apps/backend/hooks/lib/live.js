@@ -43,6 +43,13 @@ function eventOf(app, collection, record) {
       const category = findById(app, 'categories', record.getString('category'))
       return category ? category.getString('event') : ''
     }
+    case 'parts_check_tables': {
+      const block = findById(app, 'schedule_blocks', record.getString('block'))
+      return block ? block.getString('event') : ''
+    }
+    case 'robot_checks':
+    case 'robot_check_tables':
+    case 'round_files':
     case 'round_phases': {
       const round = findById(app, 'rounds', record.getString('round'))
       const category = round ? findById(app, 'categories', round.getString('category')) : null

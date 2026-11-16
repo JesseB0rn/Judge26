@@ -271,6 +271,8 @@ function sheetPayload(app, auth, gameId) {
   const status = sheet ? sheet.getString('status') : ''
   return {
     ...serializeContext(ctx),
+    // M10-B: robot check state, why scoring is locked, and the round file once it is shown.
+    ...require(`${__hooks}/lib/checks.js`).rowState(app, auth, ctx.round, ctx.event, ctx.game, {}),
     ruleset: ruleset
       ? {
           id: ruleset.id,
@@ -421,7 +423,16 @@ function saveDraft(app, auth, gameId, body) {
     // The draft belongs to a run that was discarded by a mulligan (M9-04, M9-T04).
     return { sheet: serializeSheet(app, sheet), stale: true }
   }
-  if (!sheet) sheet = newSheet(app, gameId)
+  if (!sheet) {
+    // A sheet cannot be started while scoring is locked (M10-11, M10-12, M10-16).
+    require(`${__hooks}/lib/checks.js`).requireScoringOpen(
+      app,
+      ctx.round,
+      ctx.team.id,
+      input.outcome,
+    )
+    sheet = newSheet(app, gameId)
+  }
   const ruleset = rulesetFor(app, ctx, sheet)
   applyInput(sheet, ruleset, input, score(ruleset, input, 'draft'), auth)
   sheet.set('status', 'draft')
@@ -476,6 +487,13 @@ function submit(app, auth, gameId, body) {
     if (sheet && !EDITABLE.includes(sheet.getString('status'))) {
       conflict(STATUS_MESSAGES[sheet.getString('status')], sheet.getString('status'))
     }
+    // No submission while scoring is locked (M10-11, M10-12, M10-16).
+    require(`${__hooks}/lib/checks.js`).requireScoringOpen(
+      tx,
+      ctx.round,
+      ctx.team.id,
+      input.outcome,
+    )
     if (!sheet) sheet = newSheet(tx, gameId)
     const ruleset = rulesetFor(tx, ctx, sheet)
     applyInput(sheet, ruleset, input, score(ruleset, input, 'final'), auth)
@@ -739,7 +757,7 @@ function roundCheck(app, roundId, cache) {
 }
 
 /** Row of a judge's game list (M5-01, M5-03). */
-function summary(app, game, cache) {
+function summary(app, auth, game, cache) {
   const get = (collection, id) => {
     if (!id) return null
     const key = `${collection}:${id}`
@@ -778,6 +796,8 @@ function summary(app, game, cache) {
     },
     // The round's robot check from the schedule planner, or null (M5-15).
     check: roundCheck(app, round.id, cache),
+    // M10-B: its state on the server, why scoring is locked, and the round file once shown.
+    ...require(`${__hooks}/lib/checks.js`).rowState(app, auth, round, event, game, cache),
     category: {
       id: category.id,
       name: category.getString('name'),
@@ -914,7 +934,7 @@ function assignments(app, auth, tableId) {
       .findRecordsByFilter('games', 'table = {:table} && sequence > 0', '', 0, 0, {
         table: table.id,
       })
-      .forEach((game) => rows.push(summary(app, game, cache)))
+      .forEach((game) => rows.push(summary(app, auth, game, cache)))
     return rows.sort(compareSummaries)
   }
   const tables = app.findRecordsByFilter('tables', 'judges.id ?= {:judge}', '', 0, 0, {
@@ -927,7 +947,7 @@ function assignments(app, auth, tableId) {
     const games = app.findRecordsByFilter('games', 'table = {:table} && sequence > 0', '', 0, 0, {
       table: table.id,
     })
-    for (const game of games) rows.push(summary(app, game, cache))
+    for (const game of games) rows.push(summary(app, auth, game, cache))
   }
   return rows.sort(compareSummaries)
 }
@@ -949,7 +969,7 @@ function eventGames(app, auth, eventId) {
   const cache = {}
   return app
     .findRecordsByFilter('games', 'team.event = {:event}', '', 0, 0, { event: eventId })
-    .map((game) => summary(app, game, cache))
+    .map((game) => summary(app, auth, game, cache))
     .sort(compareSummaries)
 }
 

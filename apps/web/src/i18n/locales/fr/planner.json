@@ -14,7 +14,8 @@
     "phase_order": "Les phases doivent se dérouler dans l’ordre maintenance, contrôle du robot, évaluation.",
     "round_overlap": "Chevauche un autre tour de la même catégorie.",
     "table_overlap": "Un autre tour utilise la même table à ce moment.",
-    "judge_overlap": "Le même juge est nécessaire à deux tables au même moment."
+    "judge_overlap": "Le même juge est nécessaire à deux tables au même moment.",
+    "parts_check_late": "Le contrôle du matériel se termine après la première manche évaluée de la journée."
   },
   "internal": "Interne (organisation uniquement)",
   "done": "Terminé",

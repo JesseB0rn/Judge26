@@ -30,6 +30,13 @@ export function formatTime(date: Date, seconds = false): string {
   })
 }
 
+/** The local time of day ("14:05") of a PocketBase datetime, or "" if there is none. */
+export function formatTimeOfDay(value: string | undefined | null): string {
+  if (!value) return ''
+  const date = new Date(value.replace(' ', 'T'))
+  return isNaN(date.getTime()) ? '' : formatTime(date)
+}
+
 /** Formats a number in the current language (de-CH: 1’234.5). */
 export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
   return value.toLocaleString(localeTag(), options)

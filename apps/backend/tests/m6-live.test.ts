@@ -119,6 +119,7 @@ describe('M6 live competition and public interface', () => {
     for (const [i, key] of ['R1', 'R2'].entries()) {
       rounds.push(
         await fx.su.collection('rounds').create({
+          check_mode: 'off',
           category: category.id,
           key,
           name: `Round ${i + 1}`,
@@ -435,6 +436,7 @@ describe('M6 live competition and public interface', () => {
       const manager = await rfx.user({ roles: [{ role: 'event_manager', event: event.id }] })
       const team = await rfx.team(event.id, category.id, { status: 'approved', name: 'Alpha' })
       const r1 = await rfx.su.collection('rounds').create({
+        check_mode: 'off',
         category: category.id,
         key: 'R1',
         name: 'Round 1',
@@ -442,6 +444,7 @@ describe('M6 live competition and public interface', () => {
         scoring_minutes: 5,
       })
       const r2 = await rfx.su.collection('rounds').create({
+        check_mode: 'off',
         category: category.id,
         key: 'R2',
         name: 'Round 2',

@@ -2,8 +2,15 @@
 import { t } from '@/i18n'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ChevronRightIcon } from '@lucide/vue'
-import { buildTimeline, formatTime, scoreState, type RobotCheckBlock } from '../lib'
+import { ChevronRightIcon, LockIcon } from '@lucide/vue'
+import {
+  buildTimeline,
+  formatTime,
+  gateLabel,
+  gateOf,
+  scoreState,
+  type RobotCheckBlock,
+} from '../lib'
 import type { Assignment } from '../types'
 import RobotCheckRow from './RobotCheckRow.vue'
 import ScoreStateBadge from './ScoreStateBadge.vue'
@@ -98,6 +105,14 @@ function time(row: Assignment) {
                   time(row)
                 }}</span>
               </span>
+              <!-- M10-B: scoring of this game is locked until the check, release or parts check. -->
+              <LockIcon
+                v-if="gateOf(row) && scoreState(row) === 'open'"
+                class="size-5 shrink-0 text-amber-700"
+                role="img"
+                :aria-label="gateLabel(gateOf(row))"
+                :data-gate="gateOf(row)"
+              />
               <ScoreStateBadge :state="scoreState(row)" />
               <ChevronRightIcon class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </RouterLink>

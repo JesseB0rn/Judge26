@@ -188,6 +188,7 @@ describe('M5-15 robot check in the judge schedule', () => {
       .collection('competition_days')
       .create({ event: event.id, date: '2026-06-13', label: 'Saturday' })
     const round = await manager.pb.collection('rounds').create({
+      check_mode: 'off',
       category: category.id,
       key: 'R1',
       name: 'Round 1',

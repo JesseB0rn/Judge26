@@ -39,6 +39,16 @@ All errors use PocketBase's format:
 | GET      | `/api/events/{id}/planner`                | verified users         | Schedule planner data; internal blocks and warnings for staff only (M4-14)                          |
 | GET      | `/api/judging/assignments`                | verified users         | Games on the tables the user judges (M5)                                                            |
 | GET      | `/api/events/{id}/judging`                | reviewers              | All games of the event with their score status (M5)                                                 |
+| GET/PUT  | `/api/rounds/{id}/checks`                 | table judge, reviewers | A table's robot check (`?table=`) / check or reopen a team (M10-B)                                  |
+| POST     | `/api/rounds/{id}/checks/ready`           | table judge, reviewers | A table's check is complete (ready for the run) (M10-11)                                            |
+| POST/DEL | `/api/rounds/{id}/release`                | reviewers              | Release a synchronous round (reason if tables are not ready) / withdraw (M10-11)                    |
+| PUT      | `/api/rounds/{id}/check-mode`             | reviewers              | `synchronous`, `asynchronous`; `off` for managers (M10-09)                                          |
+| GET      | `/api/rounds/{id}/file`                   | see spec               | The round's randomization file once shown; 404 for others (M10-17)                                  |
+| POST/DEL | `/api/rounds/{id}/file`                   | reviewers              | Upload or replace (multipart `file`) / remove the round file (M10-17)                               |
+| GET      | `/api/events/{id}/checks`                 | reviewers              | Parts checks and robot checks per round and table (M10-13)                                          |
+| GET      | `/api/judging/parts-checks`               | verified users         | Parts checks of the user's tables (`?table=` for head judges) (M10-16)                              |
+| POST     | `/api/parts-checks/{id}/tables/{table}`   | table judge, reviewers | Confirm (or undo) the parts check for a table (M10-16)                                              |
+| POST/DEL | `/api/parts-checks/{id}/complete`         | reviewers              | Complete (`force` with open tables) / reopen a parts check (M10-16)                                 |
 | GET/PUT  | `/api/games/{id}/sheet`                   | table judge, reviewers | Score sheet page data / autosave a draft (M5)                                                       |
 | POST     | `/api/games/{id}/sheet/{action}`          | see spec               | `submit`, `approve`, `reject`, `correct` ([M5 spec](../specifications/M5-judging.md#api))           |
 | GET      | `/api/public/events`                      | public                 | Published and archived events with their days (M6)                                                  |

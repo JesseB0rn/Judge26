@@ -135,6 +135,7 @@ describe('M1 events and competition days', () => {
       .collection('competition_days')
       .create({ event: event.id, date: '2026-06-13', label: 'Saturday' })
     const round = await manager.pb.collection('rounds').create({
+      check_mode: 'off',
       category: category.id,
       key: 'R2',
       name: 'Round 2',

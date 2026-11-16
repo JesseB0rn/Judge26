@@ -2056,7 +2056,7 @@ with a certificate instead of a client secret.
 ### Tracking
 
 -   [x] **M10-A** Judge workflow at the table (M10-01 to M10-07)
--   [ ] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
+-   [x] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
 -   [x] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
 -   [x] **M10-D** Planner editing (M10-21 to M10-24)
 -   [x] **M10-E** Board and drag and drop (M10-25 to M10-29)
@@ -2148,6 +2148,19 @@ also gains a one-criterion-per-screen view and a team sign-off.
   ------------------------------------------------------------------------------
 
 ### M10-B --- Robot check, parts check and round file
+
+**Status:** M10-08 to M10-17 implemented (see `docs/specifications/M10-checks.md` and
+`docs/test-plans/M10-checks.md`). Decisions: the mode is one round field (`off`, synchronous,
+asynchronous) mirrored by the planner's check phase; switching between synchronous and
+asynchronous is fixed after the first check, turning the check off stays possible for managers;
+head judges choose the mode but cannot turn it off; a table can be marked ready with unchecked
+teams after a confirmation (absent teams are never checked); in asynchronous mode an absent team
+is recorded without a check; every release is audited, and a release can be withdrawn while no
+sheet of the round exists; a reopened check makes its table not ready again; a parts check is
+confirmed by the active tables serving a covered category and can be reopened; the first round of
+a day is the category's lowest-positioned round on that day; head judges and managers see the
+round file at any time, other users get 404; marking a table ready needs a connection, team checks
+are queued offline. Live updates use the event's live revision (M6-01).
 
 Today a finished robot check is only remembered on the judge's device
 (M5-15), so the head judge cannot see progress and nothing can depend on it.

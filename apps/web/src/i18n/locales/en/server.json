@@ -166,5 +166,22 @@
   "setup_not_allowed": "Only event managers and admins can set up this event.",
   "mulligan_not_allowed": "Only head judges and event managers can grant a re-run.",
   "mulligan_no_run": "This game has no scored run to replace.",
-  "program_locked": "The score was submitted; only a head judge can change the program now."
+  "program_locked": "The score was submitted; only a head judge can change the program now.",
+  "head_judges_only": "Only head judges and event managers can do this.",
+  "table_not_assigned": "This table is not assigned to you.",
+  "not_found": "Not found.",
+  "round_not_released": "The head judge has not released this round for scoring yet.",
+  "check_not_confirmed": "The robot check of this team is not confirmed yet.",
+  "parts_check_open": "The parts check of this day is not completed yet.",
+  "check_off": "This round has no robot check.",
+  "check_scoring_started": "Scoring of this team has started; the check can no longer be reopened.",
+  "round_released": "The round was already released.",
+  "round_not_synchronous": "Only rounds with a synchronous robot check are released.",
+  "round_scoring_started": "Scoring of this round has started; the release can no longer be withdrawn.",
+  "round_file_hidden": "The round file is shown once the robot check is confirmed.",
+  "parts_check_completed": "The parts check was already completed.",
+  "parts_check_tables_open": "Some tables have not confirmed the parts check yet.",
+  "check_off_managers_only": "Only event managers can turn the robot check off.",
+  "checks_recorded": "Robot checks were already recorded; the check mode can no longer change.",
+  "read_only": "This field is set by the release or completion action."
 }
