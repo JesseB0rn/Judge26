@@ -110,8 +110,11 @@
     "show": "Show",
     "todo": "To do",
     "progress": "{done} of {total} scored",
-    "empty": "No games are assigned to your table yet.",
-    "toReview": "Go to the review queue"
+    "empty": "You are not assigned to a table yet.",
+    "toReview": "Go to the review queue",
+    "yourTable": "You are at",
+    "steppingIn": "You are judging at",
+    "emptyTable": "No games are placed on this table yet."
   },
   "sheet": {
     "enterPoints": "Enter the points.",
@@ -161,7 +164,8 @@
     "mulliganGranted": "{team}: re-run granted.",
     "mulliganBy": "Re-run granted by {name}",
     "mulliganMeanwhile": "A re-run was granted meanwhile. The changes stored on this device belonged to the discarded run and were not applied.",
-    "zeroPointsTime": "0 points: this run counts as {time} (ruleset rule). The measured time stays on the sheet."
+    "zeroPointsTime": "0 points: this run counts as {time} (ruleset rule). The measured time stays on the sheet.",
+    "submittedTeam": "Score of {team} submitted."
   },
   "program": {
     "label": "Program",
@@ -170,5 +174,33 @@
     "edit": "Change program",
     "verify": "Check that this program is selected on the robot before starting.",
     "checkHint": "Enter the program the team will run. It is shown on the score sheet so it can be verified before the start."
+  },
+  "confirm": {
+    "slide": "{team}: slide to confirm",
+    "confirmed": "Confirmed by the team",
+    "refuses": "The team refuses to confirm",
+    "refusalReason": "Why does the team refuse?",
+    "backToSlide": "Back to confirming"
+  },
+  "steps": {
+    "position": "Step {n} of {total}",
+    "summary": "Summary",
+    "missing": "Still missing",
+    "toSubmit": "Check and submit",
+    "back": "Back",
+    "next": "Next",
+    "view": "Score sheet view",
+    "views": {
+      "list": "List",
+      "steps": "Step by step"
+    }
+  },
+  "tables": {
+    "title": "Judge at a table",
+    "description": "Choose a table to judge at. Its judges stay assigned; you can switch any time.",
+    "empty": "You are not head judge of an event with tables.",
+    "noJudges": "No judge assigned",
+    "open": "Judge at a table",
+    "switch": "Switch table"
   }
 }

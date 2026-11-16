@@ -26,6 +26,8 @@ const props = defineProps<{
   missing?: string[]
   /** Large touch targets for judges at the table. */
   touch?: boolean
+  /** Only this top-level criterion or group (the judge's step view, M10-05). */
+  only?: string
 }>()
 const values = defineModel<ScoreValues>({ required: true })
 
@@ -65,7 +67,7 @@ function set(id: string, value: ScoreValue | undefined) {
       }}</span>
     </div>
     <ScoreNodeField
-      v-for="child in ruleset.definition.root.children"
+      v-for="child in ruleset.definition.root.children.filter((c) => !only || c.id === only)"
       :key="child.id"
       :node="child"
       :values="values"

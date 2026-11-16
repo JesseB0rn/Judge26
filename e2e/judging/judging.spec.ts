@@ -102,14 +102,14 @@ test.describe('M5 judge interface and scoring workflow', () => {
     await page.getByTestId('judging-card').click()
     const next = page.getByTestId('up-next')
     await expect(next).toContainText(ctx.alpha)
-    await expect(next).toContainText('Table A')
+    // M10-T01: the dashboard names the judge's table.
+    await expect(page.getByTestId('my-table')).toContainText('Table A')
     await next.click()
 
     // M5-T02 / M5-03: the right game.
     await expect(page.getByTestId('team-name')).toHaveText(ctx.alpha)
-    await expect(page.getByTestId('game-context')).toHaveText(
-      'RM-J · Round 1 · Table A · #1 · Saturday',
-    )
+    await expect(page.getByTestId('game-context')).toHaveText('RM-J · Round 1 · #1 · Saturday')
+    await expect(page.getByTestId('sheet-table')).toHaveText('Table A')
 
     // M5-T04 / M5-06: live total.
     await expect(total(page)).toHaveText('0')
@@ -148,11 +148,29 @@ test.describe('M5 judge interface and scoring workflow', () => {
     await page.getByTestId('action-bar').getByRole('button', { name: 'Submit score' }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog.getByTestId('submit-summary')).toContainText('35')
-    await dialog.getByRole('button', { name: 'Submit score' }).click()
-    await expect(page.getByTestId('score-state')).toHaveText('Submitted')
+    // M10-T07 / M10-T08: the team slides to confirm; letting go halfway confirms nothing.
+    const submitButton = dialog.getByRole('button', { name: 'Submit score' })
+    await expect(submitButton).toBeDisabled()
+    const track = (await dialog.getByTestId('slide-to-confirm').boundingBox())!
+    const thumb = (await dialog.getByTestId('slide-thumb').boundingBox())!
+    const y = thumb.y + thumb.height / 2
+    await page.mouse.move(thumb.x + thumb.width / 2, y)
+    await page.mouse.down()
+    await page.mouse.move(track.x + track.width / 2, y, { steps: 5 })
+    await page.mouse.up()
+    await expect(submitButton).toBeDisabled()
+    // The handle springs back to the start.
+    await expect(dialog.getByTestId('slide-thumb')).toHaveAttribute('aria-valuenow', '0')
+    await page.waitForTimeout(300)
+    await page.mouse.move(thumb.x + thumb.width / 2, y)
+    await page.mouse.down()
+    await page.mouse.move(track.x + track.width, y, { steps: 8 })
+    await page.mouse.up()
+    await expect(dialog.getByTestId('slide-to-confirm')).toHaveAttribute('data-confirmed', 'true')
+    await submitButton.click()
 
-    // Back on the dashboard, the next team is up.
-    await page.getByRole('link', { name: 'Back to my games' }).click()
+    // M10-T02: back on the dashboard by itself, with the next team up.
+    await expect(page).toHaveURL(/\/judging(\?|$)/)
     await expect(page.getByTestId('up-next')).toContainText(ctx.bravo)
     await logout(page)
 

@@ -170,6 +170,10 @@ function serializeSheet(app, sheet) {
       id: sheet.getString('mulligan_by'),
       name: userName(app, sheet.getString('mulligan_by'), names),
     },
+    // M10-06: the team's sign-off of the verdict.
+    team_confirmed_at: sheet.getString('team_confirmed_at'),
+    team_refused_at: sheet.getString('team_refused_at'),
+    team_refusal_reason: sheet.getString('team_refusal_reason'),
     updated: sheet.getString('updated'),
   }
 }
@@ -250,6 +254,8 @@ function serializeContext(ctx) {
       status: event.getString('status'),
       // Decimals of run times (M10-19).
       time_decimals: event.getInt('time_decimals'),
+      // Whether a team may refuse to confirm a score sheet (M10-06).
+      allow_team_refusal: event.getBool('allow_team_refusal'),
     },
     table: table ? { id: table.id, name: table.getString('name') } : null,
     day: day ? { id: day.id, date: day.getString('date'), label: day.getString('label') } : null,
@@ -305,6 +311,16 @@ function readInput(body) {
   if (points !== null && !Number.isFinite(points)) {
     badRequest('points', 'invalid_type', 'Points must be a number.')
   }
+  const team = body.team_confirmation
+  if (
+    team !== undefined &&
+    team !== null &&
+    team !== '' &&
+    team !== 'confirmed' &&
+    team !== 'refused'
+  ) {
+    badRequest('team_confirmation', 'invalid_value', 'Use confirmed or refused.')
+  }
   const savedAt = Number(body.client_saved_at || 0)
   const mulligans =
     body.mulligans === undefined || body.mulligans === null ? null : Number(body.mulligans)
@@ -315,6 +331,8 @@ function readInput(body) {
     values,
     time_ms: Math.round(time),
     points,
+    team_confirmation: team || '',
+    refusal_reason: typeof body.refusal_reason === 'string' ? body.refusal_reason.trim() : '',
     client_saved_at: Number.isFinite(savedAt) && savedAt > 0 ? Math.round(savedAt) : 0,
   }
 }
@@ -411,6 +429,38 @@ function saveDraft(app, auth, gameId, body) {
   return { sheet: serializeSheet(app, sheet), stale: false }
 }
 
+/**
+ * The team's sign-off of the verdict (M10-06): a completed or disqualified run is submitted only
+ * after the team confirmed it (slide to confirm), or, if the event allows refusals, with the
+ * judge's note that the team refused and why. Absent teams cannot sign.
+ */
+function applyTeamSignOff(sheet, event, input) {
+  clearTeamSignOff(sheet)
+  if (input.outcome === 'absent') return
+  if (input.team_confirmation === 'confirmed') {
+    sheet.set('team_confirmed_at', new DateTime())
+    return
+  }
+  if (input.team_confirmation === 'refused') {
+    if (!event.getBool('allow_team_refusal')) {
+      badRequest('refusal', 'not_allowed', 'This event does not allow teams to refuse.')
+    }
+    if (!input.refusal_reason) {
+      badRequest('reason', 'required', 'Enter why the team refused to confirm.')
+    }
+    sheet.set('team_refused_at', new DateTime())
+    sheet.set('team_refusal_reason', input.refusal_reason)
+    return
+  }
+  badRequest('team_confirmation', 'required', 'The team must confirm the score sheet first.')
+}
+
+function clearTeamSignOff(sheet) {
+  sheet.set('team_confirmed_at', '')
+  sheet.set('team_refused_at', '')
+  sheet.set('team_refusal_reason', '')
+}
+
 /** POST /api/games/{id}/sheet/submit (M5-10). */
 function submit(app, auth, gameId, body) {
   const ctx = loadContext(app, gameId)
@@ -429,6 +479,7 @@ function submit(app, auth, gameId, body) {
     if (!sheet) sheet = newSheet(tx, gameId)
     const ruleset = rulesetFor(tx, ctx, sheet)
     applyInput(sheet, ruleset, input, score(ruleset, input, 'final'), auth)
+    applyTeamSignOff(sheet, ctx.event, input)
     sheet.set('status', 'submitted')
     sheet.set('submitted_at', new DateTime())
     if (!auth.isSuperuser()) sheet.set('submitted_by', auth.id)
@@ -520,6 +571,8 @@ function reject(app, auth, gameId, body) {
       )
     }
     sheet.set('status', 'rejected')
+    // The team signs again when the corrected sheet is submitted (M10-06).
+    clearTeamSignOff(sheet)
     sheet.set('reviewed_at', new DateTime())
     sheet.set('reviewed_by', auth.isSuperuser() ? '' : auth.id)
     sheet.set('review_note', reason)
@@ -620,6 +673,7 @@ function mulligan(app, auth, gameId, body) {
     // Drafts saved on a device before this moment are outdated (M9-04).
     sheet.set('client_saved_at', Math.max(Date.now(), sheet.getInt('client_saved_at') + 1))
     sheet.set('mulligans', sheet.getInt('mulligans') + 1)
+    clearTeamSignOff(sheet)
     sheet.set('mulligan_reason', reason)
     sheet.set('mulligan_by', auth.isSuperuser() ? '' : auth.id)
     sheet.set('mulligan_at', new DateTime())
@@ -735,6 +789,8 @@ function summary(app, game, cache) {
       status: event.getString('status'),
       // Decimals of run times (M10-19).
       time_decimals: event.getInt('time_decimals'),
+      // Whether a team may refuse to confirm a score sheet (M10-06).
+      allow_team_refusal: event.getBool('allow_team_refusal'),
     },
     table: table ? { id: table.id, name: table.getString('name') } : null,
     day: day ? { id: day.id, date: day.getString('date'), label: day.getString('label') } : null,
@@ -761,10 +817,106 @@ function compareSummaries(a, b) {
   )
 }
 
-/** GET /api/judging/assignments: games on the tables the user judges (M5-01). */
-function assignments(app, auth) {
+/** Head judges of the table's event (and admins) can step in at any of its tables (M10-07). */
+function canStepIn(app, auth, eventId) {
+  const a = access()
+  return (
+    a.isVerifiedUser(auth) &&
+    (a.isAdmin(app, auth) || a.hasEventRole(app, auth, eventId, ['head_judge']))
+  )
+}
+
+function forbiddenTable() {
+  throw new ForbiddenError('Only head judges of the event can judge at this table.', {
+    _error: new ValidationError(
+      'head_judges_only',
+      'Only head judges of the event can judge at this table.',
+    ),
+  })
+}
+
+/**
+ * GET /api/judging/tables: the tables a head judge can step in at (M10-07), with category,
+ * judges and progress. Events of every table where the user is head judge; archived events left out.
+ */
+function headJudgeTables(app, auth) {
+  const a = access()
+  if (!a.isVerifiedUser(auth)) forbiddenTable()
+  const admin = a.isAdmin(app, auth)
+  const eventIds = admin
+    ? app.findRecordsByFilter('events', 'status != "archived"', 'name', 0, 0).map((e) => e.id)
+    : app
+        .findRecordsByFilter(
+          'role_assignments',
+          'user = {:u} && role = "head_judge" && event != ""',
+          '',
+          0,
+          0,
+          { u: auth.id },
+        )
+        .map((r) => r.getString('event'))
+        .filter((id, i, list) => list.indexOf(id) === i)
+  const names = {}
+  const rows = []
+  eventIds.forEach((eventId) => {
+    const event = findOne(app, 'events', 'id = {:id}', { id: eventId })
+    if (!event || event.getString('status') === 'archived') return
+    const board = require(`${__hooks}/lib/board.js`)
+    const tables = app.findRecordsByFilter('tables', 'event = {:e} && active = true', '', 0, 0, {
+      e: eventId,
+    })
+    board.orderTables(app, eventId, tables).forEach((table) => {
+      const categories = table.getStringSlice('categories')
+      const category =
+        categories.length === 1
+          ? findOne(app, 'categories', 'id = {:id}', { id: categories[0] })
+          : null
+      const games = app.findRecordsByFilter('games', 'table = {:t} && sequence > 0', '', 0, 0, {
+        t: table.id,
+      })
+      const done = games.filter((g) => {
+        if (g.getString('status') !== 'scheduled') return true
+        const sheet = sheetFor(app, g.id)
+        return !!sheet && ['submitted', 'finalized'].indexOf(sheet.getString('status')) !== -1
+      }).length
+      rows.push({
+        id: table.id,
+        name: table.getString('name'),
+        event: { id: event.id, name: event.getString('name') },
+        category: category
+          ? { id: category.id, name: category.getString('name'), code: category.getString('code') }
+          : null,
+        judges: table
+          .getStringSlice('judges')
+          .map((id) => ({ id, name: userName(app, id, names) })),
+        progress: { done, total: games.length },
+      })
+    })
+  })
+  return rows
+}
+
+/**
+ * GET /api/judging/assignments: games on the tables the user judges (M5-01). With `table`, the
+ * games of that one table, for a head judge stepping in (M10-07); the board is not changed.
+ */
+function assignments(app, auth, tableId) {
   const cache = {}
   const rows = []
+  if (tableId) {
+    const table = findOne(app, 'tables', 'id = {:id}', { id: tableId })
+    if (!table) forbiddenTable()
+    const event = app.findRecordById('events', table.getString('event'))
+    if (!canStepIn(app, auth, event.id) || event.getString('status') === 'archived') {
+      forbiddenTable()
+    }
+    app
+      .findRecordsByFilter('games', 'table = {:table} && sequence > 0', '', 0, 0, {
+        table: table.id,
+      })
+      .forEach((game) => rows.push(summary(app, game, cache)))
+    return rows.sort(compareSummaries)
+  }
   const tables = app.findRecordsByFilter('tables', 'judges.id ?= {:judge}', '', 0, 0, {
     judge: auth.id,
   })
@@ -837,6 +989,7 @@ module.exports = {
   mulligan,
   setProgram,
   assignments,
+  headJudgeTables,
   eventGames,
   guardDirectEdit,
   snapshot,

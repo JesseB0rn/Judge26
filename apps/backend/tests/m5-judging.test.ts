@@ -156,8 +156,12 @@ describe('M5 judge interface and scoring workflow', () => {
   const saveDraft = (user: TestUser, ctx: Ctx, body: Record<string, unknown>) =>
     user.pb.send<SheetResponse>(sheetUrl(ctx), { method: 'PUT', body })
 
+  // Submissions carry the team's confirmation (M10-06) unless a test states otherwise.
   const post = (user: TestUser, ctx: Ctx, action: string, body: Record<string, unknown> = {}) =>
-    user.pb.send<SheetResponse>(sheetUrl(ctx, action), { method: 'POST', body })
+    user.pb.send<SheetResponse>(sheetUrl(ctx, action), {
+      method: 'POST',
+      body: action === 'submit' ? { team_confirmation: 'confirmed', ...body } : body,
+    })
 
   const submitted = async (ctx: Ctx) => {
     await post(ctx.judge, ctx, 'submit', {

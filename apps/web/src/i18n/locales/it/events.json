@@ -27,7 +27,9 @@
       "1": "Decimi (1:35.3)",
       "2": "Centesimi (1:35.37)",
       "3": "Millesimi (1:35.379)"
-    }
+    },
+    "allowTeamRefusal": "Le squadre possono rifiutare di confermare un foglio di punteggio",
+    "allowTeamRefusalHint": "Il giudice annota allora il motivo. Se disattivato, ogni foglio richiede la conferma della squadra."
   },
   "detail": {
     "updated": "Evento aggiornato.",

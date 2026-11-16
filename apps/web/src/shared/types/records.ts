@@ -33,6 +33,8 @@ export interface EventRecord extends BaseRecord {
   registration_closes_at: string
   /** Decimals of run times, 0–3; empty (0) = whole seconds (M10-19). */
   time_decimals?: number
+  /** Teams may refuse to confirm a score sheet, with a reason (M10-06). */
+  allow_team_refusal?: boolean
   /** How new tables are named (M10-25). */
   table_labels?: '' | 'table_number' | 'number' | 'table_letter' | 'letter'
 }

@@ -29,6 +29,7 @@ import { cacheAssignments, cachedAssignments, finishedChecks, setCheckFinished }
 import { isCheckDone, robotChecks, timeRange, type RobotCheckBlock } from '../lib'
 import type { Assignment } from '../types'
 import ProgramNameField from '../components/ProgramNameField.vue'
+import MarqueeText from '@/shared/components/MarqueeText.vue'
 
 /**
  * Guided robot check (M5-15): steps through the teams of one round at the judge's table in
@@ -70,6 +71,9 @@ const { team: teamId } = useQueryRefs({ team: '' })
 const tableId = computed(() =>
   typeof route.query.table === 'string' ? route.query.table : undefined,
 )
+/** The table a head judge stepped in at (M10-07): its games instead of the user's own. */
+const seat = computed(() => (typeof route.query.seat === 'string' ? route.query.seat : ''))
+const cacheKey = () => `${userId()}${seat.value ? `@${seat.value}` : ''}`
 
 const back = computed(() => backTarget(route.query.from) ?? '/judging')
 const teams = computed(() => block.value?.teams ?? [])
@@ -96,7 +100,7 @@ function programSaved(value: string) {
   rows.value = rows.value.map((r) =>
     r.team.id === team.id && r.round.id === props.roundId ? { ...r, program_name: value } : r,
   )
-  if (!offline.value) cacheAssignments(userId(), rows.value)
+  if (!offline.value) cacheAssignments(cacheKey(), rows.value)
 }
 
 function go(to: number) {
@@ -119,11 +123,11 @@ async function load() {
   try {
     let loaded
     try {
-      loaded = await listAssignments()
+      loaded = await listAssignments(seat.value || undefined)
       offline.value = false
     } catch (e) {
       const err = toAppError(e)
-      loaded = err.kind === 'network' ? cachedAssignments(userId()) : null
+      loaded = err.kind === 'network' ? cachedAssignments(cacheKey()) : null
       if (!loaded) throw e
       offline.value = true
     }
@@ -191,8 +195,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         <h1 class="text-2xl font-semibold tracking-tight">
           {{ block.round.name }} · {{ block.category.code }}
         </h1>
-        <p class="text-muted-foreground">
-          {{ [when, block.table?.name, block.event.name].filter(Boolean).join(' · ') }}
+        <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground">
+          <!-- M10-01: the table this check is at. -->
+          <span
+            v-if="block.table"
+            class="inline-flex items-center gap-1 rounded-full border-2 border-foreground/70 px-3 py-0.5 text-sm font-semibold text-foreground"
+            data-testid="check-table"
+            >{{ block.table.name }}</span
+          >
+          {{ [when, block.event.name].filter(Boolean).join(' · ') }}
         </p>
       </header>
 
@@ -230,7 +241,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             @click="go(i)"
           >
             <span class="font-bold tabular-nums">{{ team.sequence }}</span>
-            <span class="max-w-40 truncate">{{ team.name }}</span>
+            <!-- M10-04: one line per chip; a long name scrolls instead of being cut off. -->
+            <MarqueeText class="max-w-40" :text="team.name" />
             <span
               v-if="countFor(team.id)"
               class="rounded bg-muted px-1.5 text-xs text-muted-foreground"
@@ -252,7 +264,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             >{{ current.sequence }}</span
           >
           <span class="min-w-0 flex-1">
-            <span class="block truncate text-2xl font-bold">{{ current.name }}</span>
+            <span class="block text-2xl font-bold break-words hyphens-auto">{{
+              current.name
+            }}</span>
             <span class="block text-sm text-muted-foreground">{{
               t('judging.check.teamOf', { n: index + 1, total: teams.length })
             }}</span>

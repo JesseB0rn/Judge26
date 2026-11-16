@@ -110,8 +110,11 @@
     "show": "Afficher",
     "todo": "À faire",
     "progress": "{done} sur {total} évaluées",
-    "empty": "Aucune manche n’est encore attribuée à votre table.",
-    "toReview": "Aller à la file de contrôle"
+    "empty": "Vous n’êtes encore attribué·e à aucune table.",
+    "toReview": "Aller à la file de contrôle",
+    "yourTable": "Vous êtes à",
+    "steppingIn": "Vous arbitrez à",
+    "emptyTable": "Aucune manche n’est encore placée sur cette table."
   },
   "sheet": {
     "enterPoints": "Saisissez les points.",
@@ -161,7 +164,8 @@
     "mulliganGranted": "{team} : nouvel essai accordé.",
     "mulliganBy": "Nouvel essai accordé par {name}",
     "mulliganMeanwhile": "Un nouvel essai a été accordé entre-temps. Les modifications enregistrées sur cet appareil concernaient le passage annulé et n’ont pas été appliquées.",
-    "zeroPointsTime": "0 point : cette manche compte pour {time} (règle du règlement). Le temps mesuré reste sur la feuille."
+    "zeroPointsTime": "0 point : cette manche compte pour {time} (règle du règlement). Le temps mesuré reste sur la feuille.",
+    "submittedTeam": "Score de {team} envoyé."
   },
   "program": {
     "label": "Programme",
@@ -170,5 +174,33 @@
     "edit": "Modifier le programme",
     "verify": "Vérifier que ce programme est sélectionné sur le robot avant le départ.",
     "checkHint": "Saisir le programme que l’équipe va lancer. Il est affiché sur la feuille de score pour être vérifié avant le départ."
+  },
+  "confirm": {
+    "slide": "{team} : glisser pour confirmer",
+    "confirmed": "Confirmé par l’équipe",
+    "refuses": "L’équipe refuse de confirmer",
+    "refusalReason": "Pourquoi l’équipe refuse-t-elle ?",
+    "backToSlide": "Revenir à la confirmation"
+  },
+  "steps": {
+    "position": "Étape {n} sur {total}",
+    "summary": "Résumé",
+    "missing": "Encore manquant",
+    "toSubmit": "Vérifier et envoyer",
+    "back": "Retour",
+    "next": "Suivant",
+    "view": "Vue de la feuille de score",
+    "views": {
+      "list": "Liste",
+      "steps": "Étape par étape"
+    }
+  },
+  "tables": {
+    "title": "Arbitrer à une table",
+    "description": "Choisissez une table où arbitrer. Ses juges restent attribués ; vous pouvez changer à tout moment.",
+    "empty": "Vous n’êtes juge principal·e d’aucun événement avec des tables.",
+    "noJudges": "Aucun juge attribué",
+    "open": "Arbitrer à une table",
+    "switch": "Changer de table"
   }
 }

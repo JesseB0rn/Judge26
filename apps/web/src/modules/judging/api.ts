@@ -1,9 +1,27 @@
 import { pb } from '@/shared/api/pocketbase'
-import type { Assignment, ScoreSheet, SheetInput, SheetPayload } from './types'
+import type {
+  Assignment,
+  HeadJudgeTable,
+  ScoreSheet,
+  SheetInput,
+  SheetPayload,
+  TeamSignOff,
+} from './types'
 
-/** Games on the tables the signed-in user judges (M5-01). */
-export function listAssignments() {
-  return pb.send<Assignment[]>('/api/judging/assignments', { method: 'GET' })
+/**
+ * Games on the tables the signed-in user judges (M5-01), or with `table` the games of one table
+ * a head judge steps in at (M10-07).
+ */
+export function listAssignments(table?: string) {
+  return pb.send<Assignment[]>('/api/judging/assignments', {
+    method: 'GET',
+    ...(table ? { query: { table } } : {}),
+  })
+}
+
+/** Tables a head judge can step in at, with judges and progress (M10-07). */
+export function listHeadJudgeTables() {
+  return pb.send<HeadJudgeTable[]>('/api/judging/tables', { method: 'GET' })
 }
 
 /** All games of an event with their score status (head judges and event managers). */
@@ -31,10 +49,11 @@ export function saveDraft(
   })
 }
 
-export function submitSheet(gameId: string, input: SheetInput) {
+/** Submits the sheet with the team's sign-off (M10-06; not needed for absent teams). */
+export function submitSheet(gameId: string, input: SheetInput, signOff?: TeamSignOff) {
   return pb.send<{ sheet: ScoreSheet }>(`/api/games/${gameId}/sheet/submit`, {
     method: 'POST',
-    body: input,
+    body: { ...input, ...signOff },
   })
 }
 

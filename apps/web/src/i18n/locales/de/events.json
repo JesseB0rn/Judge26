@@ -27,7 +27,9 @@
       "1": "Zehntel (1:35.3)",
       "2": "Hundertstel (1:35.37)",
       "3": "Tausendstel (1:35.379)"
-    }
+    },
+    "allowTeamRefusal": "Teams dürfen die Bestätigung des Bewertungsbogens verweigern",
+    "allowTeamRefusalHint": "Die Schiedsrichterin oder der Schiedsrichter hält dann den Grund fest. Ausgeschaltet braucht jeder Bogen die Bestätigung des Teams."
   },
   "detail": {
     "updated": "Anlass aktualisiert.",

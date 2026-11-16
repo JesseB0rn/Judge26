@@ -68,6 +68,8 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'GET', path: '/api/dev/monitoring/crash', access: 'dev' },
   { method: 'POST', path: '/api/categories/{id}/copy', access: 'auth' },
   { method: 'GET', path: '/api/judging/assignments', access: 'auth' },
+  // M10-07: tables a head judge can step in at.
+  { method: 'GET', path: '/api/judging/tables', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/judging', access: 'auth' },
   { method: 'GET', path: '/api/games/{id}/sheet', access: 'auth' },
   { method: 'PUT', path: '/api/games/{id}/sheet', access: 'auth' },
@@ -220,7 +222,7 @@ describe('M7 security', () => {
     })
     await judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
       method: 'POST',
-      body: { values: sheetValues(2) },
+      body: { values: sheetValues(2), team_confirmation: 'confirmed' },
     })
     const block = await su.collection('schedule_blocks').create({
       event: event.id,
@@ -561,7 +563,11 @@ describe('M7 security', () => {
       gameId: string,
       action: string,
       body: Record<string, unknown> = {},
-    ) => user.pb.send(`/api/games/${gameId}/sheet/${action}`, { method: 'POST', body })
+    ) =>
+      user.pb.send(`/api/games/${gameId}/sheet/${action}`, {
+        method: 'POST',
+        body: action === 'submit' ? { team_confirmation: 'confirmed', ...body } : body,
+      })
 
     it('simultaneous submissions: exactly one is stored, the others are refused', async () => {
       const ctx = await judged()

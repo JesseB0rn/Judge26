@@ -18,7 +18,7 @@ import {
   type LocalDraft,
 } from './drafts'
 import * as sw from './lib'
-import type { Outcome, SheetInput, SheetPayload } from './types'
+import type { Outcome, SheetInput, SheetPayload, TeamSignOff } from './types'
 
 /** Where the judge's latest change is. */
 export type SaveState =
@@ -360,10 +360,10 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     }
   }
 
-  const submit = () =>
+  const submit = (signOff?: TeamSignOff) =>
     run(async () => {
       clearTimeout(timer)
-      await api.submitSheet(gameId, input.value)
+      await api.submitSheet(gameId, input.value, signOff)
       removeDraft(gameId)
       await load()
     })
