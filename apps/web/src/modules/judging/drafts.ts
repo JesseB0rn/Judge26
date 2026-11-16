@@ -1,5 +1,5 @@
 import { toAppError } from '@/shared/api/errors'
-import { saveDraft } from './api'
+import { saveDraft, setTeamCheck } from './api'
 import { IDLE, type StopwatchState } from './lib'
 import type { Assignment, ScoreSheet, SheetInput, SheetPayload } from './types'
 
@@ -152,11 +152,67 @@ export async function syncPendingDrafts() {
 
 let installed = false
 
-/** Retries pending drafts whenever the browser comes back online. */
+/** Retries pending drafts and robot checks whenever the browser comes back online. */
 export function installAutoSync() {
   if (installed || typeof window === 'undefined') return
   installed = true
-  window.addEventListener('online', () => void syncPendingDrafts())
+  window.addEventListener('online', () => {
+    void syncPendingDrafts()
+    void syncPendingChecks()
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Robot checks entered offline (M10-10)
+// ---------------------------------------------------------------------------
+
+/** A team's check (or reopening) that has not reached the server yet. */
+export interface PendingCheck {
+  roundId: string
+  teamId: string
+  checked: boolean
+  /** Epoch ms of the judge's change; an older change never overwrites a newer one. */
+  savedAt: number
+}
+
+const checkKey = (roundId: string, teamId: string) => `${PREFIX}checkq:${roundId}:${teamId}`
+
+export function queueCheck(change: PendingCheck) {
+  write(checkKey(change.roundId, change.teamId), change)
+}
+
+/** Checks waiting for the connection, optionally of one round. */
+export function pendingChecks(roundId?: string): PendingCheck[] {
+  const list: PendingCheck[] = []
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (!key?.startsWith(`${PREFIX}checkq:`)) continue
+      const change = read<PendingCheck>(key)
+      if (change && (!roundId || change.roundId === roundId)) list.push(change)
+    }
+  } catch {
+    // ignore
+  }
+  return list
+}
+
+/**
+ * Sends the queued checks. A change the server refuses (e.g. scoring started meanwhile) is
+ * dropped, like an outdated draft; unreachable ones stay queued.
+ */
+export async function syncPendingChecks() {
+  let failed = 0
+  for (const change of pendingChecks()) {
+    try {
+      await setTeamCheck(change.roundId, change.teamId, change.checked, change.savedAt)
+      remove(checkKey(change.roundId, change.teamId))
+    } catch (e) {
+      if (toAppError(e).kind === 'network') failed++
+      else remove(checkKey(change.roundId, change.teamId))
+    }
+  }
+  return failed
 }
 
 /** Robot checks (block keys) the judge finished on this device (M5-15). */

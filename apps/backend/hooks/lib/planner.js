@@ -8,6 +8,8 @@
 const DEFAULT_START = '08:00'
 const DEFAULT_END = '18:00'
 const PHASE_ORDER = ['maintenance', 'check', 'scoring']
+/** Duration of a robot check added with a round (M10-08); same default as the planner. */
+const DEFAULT_CHECK_MINUTES = 10
 
 // ---------------------------------------------------------------------------
 // Time helpers
@@ -160,12 +162,25 @@ function newPhase(app, round, phase, minutes) {
   return record
 }
 
+/** New rounds have a synchronous robot check unless they say otherwise (M10-08, M10-09). */
+function defaultCheckMode(round) {
+  if (!round.getString('check_mode')) round.set('check_mode', 'synchronous')
+}
+
 /**
- * Brings a round's maintenance and scoring phases in line with the round: maintenance exists
- * while testing_minutes > 0, scoring always; their durations and the scoring day follow the
- * round. Saves only what differs, so the phase hooks syncing back stop immediately.
+ * Brings a round's phases in line with the round: maintenance exists while testing_minutes > 0,
+ * the robot check while the check mode is not off (M10-08), scoring always; their durations and
+ * the scoring day follow the round. Saves only what differs, so the phase hooks syncing back stop
+ * immediately.
  */
 function syncPhasesFromRound(app, round) {
+  const mode = round.getString('check_mode')
+  const check = findPhase(app, round.id, 'check')
+  if (mode && mode !== 'off' && !check) {
+    app.save(newPhase(app, round, 'check', DEFAULT_CHECK_MINUTES))
+  }
+  if (mode === 'off' && check) app.delete(check)
+
   const testing = round.getInt('testing_minutes')
   const maintenance = findPhase(app, round.id, 'maintenance')
   if (testing > 0 && !maintenance) app.save(newPhase(app, round, 'maintenance', testing))
@@ -193,12 +208,29 @@ function syncPhasesFromRound(app, round) {
   if (changed) app.save(scoring)
 }
 
-/** Mirrors a phase back into its round (durations; the scoring day is the round's day). */
+/**
+ * Mirrors a phase back into its round (durations; the scoring day is the round's day). A robot
+ * check added in the planner turns the round's check on (synchronous, M10-08).
+ */
+/** A robot check removed in the planner turns the round's check off (M10-08). */
+function checkRemoved(app, phase) {
+  if (phase.getString('phase') !== 'check') return
+  const round = findById(app, 'rounds', phase.getString('round'))
+  if (round && round.getString('check_mode') !== 'off') {
+    round.set('check_mode', 'off')
+    app.save(round)
+  }
+}
+
 function syncRoundFromPhase(app, phase) {
   const round = findById(app, 'rounds', phase.getString('round'))
   if (!round) return
   const kind = phase.getString('phase')
   let changed = false
+  if (kind === 'check' && (round.getString('check_mode') || 'off') === 'off') {
+    round.set('check_mode', 'synchronous')
+    changed = true
+  }
   if (
     kind === 'maintenance' &&
     round.getInt('testing_minutes') !== phase.getInt('duration_minutes')
@@ -231,7 +263,7 @@ function overlaps(a, b) {
  * Pure issue detection over plain objects, so it can be tested and reused:
  * - days: { id, date, start, end }
  * - phases: { id, round, phase, day, start, end } (placed only)
- * - blocks: { id, day, start, end }
+ * - blocks: { id, day, start, end, kind?, categories?, columns? }
  * - rounds: { id, category }
  * - roundTables: { [roundId]: tableId[] }, tableJudges: { [tableId]: judgeId }
  */
@@ -300,6 +332,29 @@ function detectIssues(input) {
       }
     }
   }
+  // A parts check after the day's first scoring phase of a covered category (M10-15).
+  for (const block of blocks) {
+    if (block.kind !== 'parts_check') continue
+    const categories = block.categories || []
+    const all = !categories.length && !(block.columns || []).length
+    const late = phases.find((p) => {
+      const round = roundById[p.round]
+      return (
+        p.phase === 'scoring' &&
+        p.day === block.day &&
+        !!round &&
+        (all || categories.includes(round.category)) &&
+        p.start < block.end
+      )
+    })
+    if (late) {
+      add('parts_check_late', 'The parts check ends after the first scoring run of the day.', [
+        ref('block', block),
+        ref('phase', late),
+      ])
+    }
+  }
+
   // A single round whose tables share one judge needs that judge twice at once.
   for (const p of phases) {
     if (p.phase === 'scoring' && sharesJudge(p, p)) {
@@ -405,7 +460,19 @@ function eventIssues(app, eventId, records) {
         return item && { ...item, round: p.getString('round'), phase: p.getString('phase') }
       })
       .filter(Boolean),
-    blocks: data.blocks.map((b) => placed(b, dayIds)).filter(Boolean),
+    blocks: data.blocks
+      .map((b) => {
+        const item = placed(b, dayIds)
+        return (
+          item && {
+            ...item,
+            kind: b.getString('kind'),
+            categories: b.getStringSlice('categories'),
+            columns: b.getStringSlice('columns'),
+          }
+        )
+      })
+      .filter(Boolean),
     rounds: data.rounds.map((r) => ({ id: r.id, category: r.getString('category') })),
     roundTables,
     tableJudges,
@@ -446,6 +513,7 @@ function payload(app, eventId, internal) {
       name: r.getString('name'),
       position: r.getInt('position'),
       day: r.getString('day'),
+      check_mode: r.getString('check_mode') || 'off',
     })),
     phases: data.phases.map((p) => ({
       id: p.id,
@@ -468,6 +536,10 @@ function payload(app, eventId, internal) {
       categories: b.getStringSlice('categories'),
       columns: b.getStringSlice('columns'),
       public: b.getBool('public'),
+      // M10-15: a parts check block, and whether it gates the day's first round.
+      kind: b.getString('kind'),
+      blocks_first_round: b.getBool('blocks_first_round'),
+      ...(internal ? { completed_at: b.getString('completed_at') } : {}),
       updated: b.getString('updated'),
     })),
     issues: internal ? eventIssues(app, eventId, data) : [],
@@ -515,8 +587,11 @@ module.exports = {
   validateBlock,
   checkColumnDelete,
   checkVersion,
+  defaultCheckMode,
   syncPhasesFromRound,
   syncRoundFromPhase,
+  checkRemoved,
+  DEFAULT_CHECK_MINUTES,
   detectIssues,
   eventIssues,
   payload,

@@ -1,6 +1,9 @@
 import {
+  formatRunTime,
   formatTime,
   validateRankingConfig,
+  withTimeDecimals,
+  type RankingConfig,
   type CompiledRankingConfig,
   type Issue,
   type TeamInput,
@@ -40,7 +43,12 @@ export interface ParsedConfig {
   config?: CompiledRankingConfig
 }
 
-export function parseRankingConfig(text: string): ParsedConfig {
+/**
+ * Parses and validates a ranking configuration. With `timeDecimals` (the event's run time
+ * precision, M10-20) the compiled configuration cuts times to it, like the server does for live
+ * rankings and snapshots; `definition` stays as written (it is what gets saved).
+ */
+export function parseRankingConfig(text: string, timeDecimals?: number): ParsedConfig {
   if (!text.trim()) return { issues: [] }
   let definition: unknown
   try {
@@ -48,7 +56,11 @@ export function parseRankingConfig(text: string): ParsedConfig {
   } catch (e) {
     return { syntaxError: (e as Error).message, issues: [] }
   }
-  const result = validateRankingConfig(definition)
+  const effective =
+    timeDecimals !== undefined && definition && typeof definition === 'object'
+      ? withTimeDecimals(definition as RankingConfig, timeDecimals)
+      : definition
+  const result = validateRankingConfig(effective)
   return result.ok
     ? { definition, issues: [], config: result.config }
     : { definition, issues: result.issues }
@@ -61,9 +73,10 @@ export function secondsToMs(value: string | number): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n * 1000) : 0
 }
 
-export function formatValue(value: number | null, field: 'points' | 'time'): string {
+/** A ranking value: points as they are, times as m:ss with `decimals` (M10-19). */
+export function formatValue(value: number | null, field: 'points' | 'time', decimals = 3): string {
   if (value === null) return '–'
-  return field === 'time' ? formatTime(value) : String(value)
+  return field === 'time' ? formatRunTime(value, decimals) : String(value)
 }
 
 export { formatTime }

@@ -1,0 +1,54 @@
+{
+  "title": "Centro di stampa",
+  "description": "Stampe per la sede: una pagina A4 per squadra o tavolo. Da stampare o salvare come PDF.",
+  "back": "Evento",
+  "kind": "Stampa",
+  "kinds": {
+    "parking": "Etichette di parcheggio dei robot",
+    "workplace": "Schede della postazione",
+    "tables": "Assegnazioni dei tavoli",
+    "qr": "Manifesto con codice QR"
+  },
+  "category": "Categoria",
+  "day": "Giorno",
+  "round": "Turno",
+  "variant": "Mostra",
+  "variants": {
+    "teams": "Solo squadre",
+    "judges": "Solo giudici",
+    "both": "Squadre e giudici"
+  },
+  "all": "Tutti",
+  "print": "Non stampare pagine | Stampa una pagina | Stampa {count} pagine",
+  "selection": "{selected} di {total} selezionati",
+  "selectAll": "Seleziona tutto",
+  "selectNone": "Deseleziona tutto",
+  "noTeams": "Nessuna squadra approvata corrisponde a questi filtri.",
+  "noTables": "Nessun tavolo ha partite in questo turno.",
+  "what": "Cosa",
+  "time": "Ora",
+  "table": "Tavolo",
+  "judges": "Giudici",
+  "teams": "Squadre nell’ordine di gioco",
+  "noJudges": "Nessun giudice assegnato.",
+  "parking": {
+    "heading": "Parcheggio dei robot"
+  },
+  "workplace": {
+    "heading": "Postazione",
+    "tables": "Tavolo di gioco",
+    "noTable": "Nessun tavolo di gioco ancora assegnato.",
+    "schedule": "Programma"
+  },
+  "qr": {
+    "heading": "Classifica in diretta",
+    "scan": "Scansiona per seguire la classifica in diretta sul telefono."
+  },
+  "layout": "Impaginazione",
+  "layouts": {
+    "pages": "Una pagina per tavolo",
+    "single": "Una pagina per categoria"
+  },
+  "tableAssignment": "Assegnazione dei tavoli",
+  "noCategories": "Nessuna categoria ha partite ai tavoli in questo turno."
+}

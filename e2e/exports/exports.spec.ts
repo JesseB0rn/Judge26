@@ -57,8 +57,9 @@ test.describe('M7 exports', () => {
     const text = (await readFile((await csv.path())!, 'utf8')).replace(/^﻿/, '')
     expect(text.trimEnd().split('\r\n')).toEqual([
       'Rank,Shared,Team,Organization,Country,Points,Time (s),Round 1 points,Round 1 time (s),Round 1 status,Provisional,Decided by',
-      `1,,${ctx.bravo},,,120,58.250,120,58.250,,,`,
-      `2,,${ctx.alpha},,,120,61.500,120,61.500,,,Time`,
+      // Seconds cut to the event's precision: whole seconds by default (M10-19).
+      `1,,${ctx.bravo},,,120,58,120,58,,,`,
+      `2,,${ctx.alpha},,,120,61,120,61,,,Time`,
     ])
 
     const [xlsx] = await Promise.all([
@@ -83,7 +84,8 @@ test.describe('M7 exports', () => {
     const rows = report.locator('tbody tr')
     await expect(rows).toHaveCount(2)
     await expect(rows.nth(0)).toContainText(ctx.bravo)
-    await expect(rows.nth(0)).toContainText('58.250 s')
+    // m:ss in whole seconds, the event's default precision (M10-19).
+    await expect(rows.nth(0)).toContainText('0:58')
     await expect(rows.nth(1)).toContainText(ctx.alpha)
 
     // Printed: only the report, no navigation or buttons.

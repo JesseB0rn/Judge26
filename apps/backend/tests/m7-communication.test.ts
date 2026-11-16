@@ -301,6 +301,7 @@ describe('M7 communication', () => {
       const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
       const judge = await fx.user({ roles: [{ role: 'judge', event: event.id }] })
       const round = await manager.pb.collection('rounds').create({
+        check_mode: 'off',
         category: category.id,
         key: 'R1',
         name: 'Round 1',

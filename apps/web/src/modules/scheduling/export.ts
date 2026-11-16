@@ -19,6 +19,8 @@ export function gamesTable(
   games: GameRecord[],
   categories: CategoryRecord[],
   days: CompetitionDayRecord[] = [],
+  /** The event's run time precision (M10-19); times are cut to it. */
+  timeDecimals = 3,
 ): ExportTable {
   const category = new Map(categories.map((c) => [c.id, c.name]))
   const day = new Map(days.map((d) => [d.id, d.label || d.date.slice(0, 10)]))
@@ -49,7 +51,7 @@ export function gamesTable(
       { header: t('teams.team') },
       { header: t('common.status') },
       { header: t('scheduling.export.points'), type: 'number' },
-      { header: t('scheduling.export.time'), type: 'duration' },
+      { header: t('scheduling.export.time'), type: 'duration', decimals: timeDecimals },
     ],
     rows: sorted.map((g) => {
       const round = g.expand?.round

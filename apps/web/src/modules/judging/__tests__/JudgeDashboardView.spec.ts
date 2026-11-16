@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ClientResponseError } from 'pocketbase'
+import { flushPromises } from '@vue/test-utils'
 import { buttonByText, click, makeRole, mountView } from '@/test/utils'
 import * as api from '../api'
 import { cacheAssignments, writeDraft } from '../drafts'
@@ -8,6 +9,7 @@ import JudgeDashboardView from '../views/JudgeDashboardView.vue'
 import { makeAssignment, makeSheet } from './fixtures'
 
 vi.mock('../api')
+vi.mock('@/modules/live/useLiveUpdates', () => ({ useLiveUpdates: vi.fn<() => void>() }))
 const mocked = vi.mocked(api)
 
 const sat = { id: 'sat', date: '2026-06-13', label: 'Saturday' }
@@ -47,6 +49,7 @@ beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
   mocked.listAssignments.mockResolvedValue(rows)
+  mocked.listPartsChecks.mockResolvedValue([])
 })
 afterEach(() => document.body.replaceChildren())
 
@@ -89,7 +92,8 @@ describe('JudgeDashboardView', () => {
   it('explains an empty assignment list', async () => {
     mocked.listAssignments.mockResolvedValue([])
     const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
-    expect(wrapper.get('[data-testid=no-assignments]').text()).toContain('No games')
+    // M10-01: a judge without a table is told so.
+    expect(wrapper.get('[data-testid=no-assignments]').text()).toContain('not assigned to a table')
   })
 
   it('M5-T13: offline it shows the list saved on the device and pending drafts', async () => {
@@ -136,5 +140,83 @@ describe('JudgeDashboardView', () => {
     const { wrapper } = await mountView(JudgeDashboardView, { session: judge, path: '/?day=sat' })
     const href = wrapper.get('[data-game=g2]').attributes('href')!
     expect(decodeURIComponent(href)).toContain('from=/?day=sat')
+  })
+
+  describe('M10-A', () => {
+    it('M10-T01: names the table and category the judge is at on the shown day', async () => {
+      const { wrapper, router } = await mountView(JudgeDashboardView, { session: judge })
+      // All days: both tables.
+      expect(wrapper.findAll('[data-testid=my-table-name]').map((e) => e.text())).toEqual([
+        expect.stringContaining('Table A'),
+        expect.stringContaining('Table B'),
+      ])
+      await router.push('/?day=sat')
+      await flushPromises()
+      const names = wrapper.findAll('[data-testid=my-table-name]').map((e) => e.text())
+      expect(names).toHaveLength(1)
+      expect(names[0]).toContain('Table A')
+      expect(names[0]).toContain(rows[0]!.category.name)
+    })
+
+    it('M10-07: a head judge at a table loads that table’s games and can switch tables', async () => {
+      const { wrapper } = await mountView(JudgeDashboardView, {
+        session: { roles: [makeRole('head_judge', 'event1')] },
+        path: '/?seat=tA',
+      })
+      expect(mocked.listAssignments).toHaveBeenCalledWith('tA')
+      expect(wrapper.get('[data-testid=my-table]').text()).toContain('You are judging at')
+      expect(wrapper.get('[data-testid=step-in]').text()).toContain('Switch table')
+      // Games link back to this table's dashboard (M10-02 returns here).
+      expect(wrapper.get('[data-testid=up-next]').attributes('href')).toContain('seat=tA')
+    })
+
+    it('judges have no step-in link', async () => {
+      const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
+      expect(mocked.listAssignments).toHaveBeenCalledWith(undefined)
+      expect(wrapper.find('[data-testid=step-in]').exists()).toBe(false)
+    })
+  })
+
+  describe('M10-B', () => {
+    const parts = {
+      id: 'p1',
+      title: 'Parts check',
+      place: '',
+      day: sat,
+      starts_at: '08:00',
+      duration_minutes: 30,
+      blocks_first_round: true,
+      completed_at: '',
+      table: tA,
+      confirmed_at: '',
+      confirmed_by: null,
+    }
+
+    it('M10-16: the parts check comes first and is confirmed for the table', async () => {
+      mocked.listPartsChecks.mockResolvedValue([parts])
+      mocked.confirmPartsCheck.mockResolvedValue({
+        ...parts,
+        confirmed_at: '2026-06-13 08:10:00.000Z',
+        confirmed_by: { id: 'user1', name: 'Judy' },
+      })
+      const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
+      const next = wrapper.get('[data-testid=up-next]')
+      expect(next.text()).toContain('Parts check')
+      await click(next.get('[data-testid=parts-confirm]').element as HTMLElement)
+      expect(mocked.confirmPartsCheck).toHaveBeenCalledWith('p1', 'tA', true)
+      expect(wrapper.get('[data-testid=up-next]').text()).toContain('Bravo')
+      expect(wrapper.get('[data-parts-check=p1]').attributes('data-done')).toBe('true')
+    })
+
+    it('M10-T14: a locked game shows why in the list and up next', async () => {
+      mocked.listAssignments.mockResolvedValue(
+        rows.map((r) => (r.id === 'g2' ? { ...r, gate: 'not_released' as const } : r)),
+      )
+      const { wrapper } = await mountView(JudgeDashboardView, { session: judge })
+      expect(wrapper.get('[data-testid=up-next-locked]').text()).toContain(
+        'Waiting for the release',
+      )
+      expect(wrapper.get('[data-game=g2] [data-gate]').attributes('data-gate')).toBe('not_released')
+    })
   })
 })

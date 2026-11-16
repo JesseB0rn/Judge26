@@ -1,0 +1,72 @@
+{
+  "title": "Controlli",
+  "description": "Controlli del materiale e del robot per tavolo, sblocco dei turni e file dei turni.",
+  "rounds": "Controllo del robot per turno",
+  "noRounds": "Nessun turno ha ancora partite ai tavoli.",
+  "confirmed": "Confermato",
+  "open": "Aperto",
+  "checked": "Controllate",
+  "readyState": "Tavolo",
+  "ofTotal": "{done} di {total}",
+  "ready": "Pronto",
+  "notReady": "Non pronto",
+  "release": "Sblocca per la valutazione",
+  "releasedBy": "Sbloccato da {name} alle {time}",
+  "withdraw": "Annulla lo sblocco",
+  "releaseAnyway": "Sbloccare anche se alcuni tavoli non sono pronti?",
+  "notReadyTables": "Non ancora pronti: {tables}. Indica perché il turno viene sbloccato comunque; lo sblocco è registrato nel registro di audit.",
+  "toCheck": "Apri il controllo del robot",
+  "markAbsent": "Squadra non presente: registra come assente",
+  "mode": {
+    "label": "Controllo del robot",
+    "synchronous": "Sincrono (sblocco da parte del giudice capo)",
+    "asynchronous": "Asincrono (ogni squadra dopo il suo controllo)",
+    "off": "Nessun controllo del robot",
+    "hint": "Sincrono: tutti i tavoli controllano, poi il giudice capo sblocca il turno. Asincrono: una squadra può essere valutata non appena il suo controllo è confermato. Fisso dal primo controllo registrato."
+  },
+  "gate": {
+    "parts_check": "In attesa del controllo del materiale",
+    "not_released": "In attesa dello sblocco",
+    "not_confirmed": "Controllo del robot non confermato"
+  },
+  "locked": {
+    "parts_check": "Il controllo del materiale «{title}» non è ancora concluso. La valutazione di questo turno inizia dopo.",
+    "not_released": "Il foglio di punteggio si apre quando il giudice capo sblocca il turno, dopo che ogni tavolo ha concluso il controllo del robot.",
+    "not_confirmed": "Conferma prima il controllo del robot di questa squadra; il foglio di punteggio si apre subito dopo."
+  },
+  "robot": {
+    "confirm": "Conferma il controllo",
+    "checked": "Controllata",
+    "queued": "Controllata su questo dispositivo · inviato al ritorno della connessione",
+    "ready": "Tavolo pronto",
+    "confirmReady": "Una squadra non è ancora controllata. Segnalare comunque il tavolo come pronto? | {count} squadre non sono ancora controllate. Segnalare comunque il tavolo come pronto?",
+    "readyBy": "Il tavolo è pronto ({name}).",
+    "partsOpen": "Il controllo del materiale «{title}» non è ancora concluso. Il controllo del robot di questo turno inizia dopo.",
+    "synchronous": "Quando tutti i tavoli sono pronti, il giudice capo sblocca il turno per la valutazione.",
+    "asynchronous": "Ogni squadra può essere valutata non appena il suo controllo è confermato.",
+    "released": "Il turno è sbloccato per la valutazione."
+  },
+  "parts": {
+    "title": "Controlli del materiale",
+    "kind": "Controllo del materiale (ogni tavolo lo conferma)",
+    "blocksFirstRound": "blocca il primo turno",
+    "blocksFirstRoundHint": "Blocca il controllo del robot e la valutazione del primo turno della giornata fino alla conclusione",
+    "confirm": "Conferma il controllo del materiale",
+    "confirmedBy": "confermato da {name} alle {time}",
+    "complete": "Segna come concluso",
+    "completed": "concluso",
+    "completedBy": "Concluso da {name} alle {time}",
+    "reopen": "Riapri",
+    "confirmOpen": "Non ancora confermato: {tables}. Concludere comunque il controllo del materiale? Viene registrato nel registro di audit."
+  },
+  "file": {
+    "title": "File del turno",
+    "none": "nessuno",
+    "upload": "Carica",
+    "replace": "Sostituisci",
+    "remove": "Rimuovi il file del turno",
+    "confirmRemove": "Rimuovere il file del turno?",
+    "failed": "Non è stato possibile caricare il file del turno.",
+    "hint": "Immagine o PDF, fino a 10 MB. I giudici lo vedono non appena il controllo del robot è confermato; non è mai pubblico."
+  }
+}

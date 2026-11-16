@@ -66,6 +66,43 @@ export function progressOf(games: Pick<PublicGame, 'state'>[]): Progress {
   }
 }
 
+/** One round's part of a progress bar (M10-36). */
+export interface RoundSegment {
+  round: PublicRound
+  category?: PublicEvent['categories'][number]
+  progress: Progress
+  /** Share of the bar's games, 0–1. */
+  share: number
+}
+
+/**
+ * The bar's games split by round (M10-36): one segment per round, in day and round order, as
+ * wide as its share of the games and filled by its own finished games.
+ */
+export function roundSegments(
+  event: Pick<PublicEvent, 'rounds' | 'days' | 'tables' | 'categories'>,
+  games: PublicGame[],
+): RoundSegment[] {
+  const rounds = roundIndex(event)
+  const categories = new Map(event.categories.map((c) => [c.id, c]))
+  const byRound = new Map<string, PublicGame[]>()
+  for (const game of [...games].sort(compareGames(event))) {
+    if (!rounds.has(game.round)) continue
+    const list = byRound.get(game.round) ?? []
+    list.push(game)
+    byRound.set(game.round, list)
+  }
+  return [...byRound].map(([id, list]) => {
+    const round = rounds.get(id)!
+    return {
+      round,
+      category: categories.get(round.category),
+      progress: progressOf(list),
+      share: games.length ? list.length / games.length : 0,
+    }
+  })
+}
+
 /** Progress from the counts of the public ranking endpoint. */
 export function progressFromCounts(p: PublicRanking['progress']): Progress {
   return {
@@ -265,4 +302,19 @@ export function parseRotate(value: unknown): number {
   const n = Number(value)
   if (!Number.isFinite(n) || n <= 0) return 15
   return Math.min(300, Math.max(5, Math.round(n)))
+}
+
+/**
+ * The public live ranking address of an event (M10-35), absolute, for the QR code. `href` is the
+ * router's address of the live event page.
+ */
+export function liveRankingUrl(href: string, origin = window.location.origin) {
+  const url = new URL(href, origin)
+  url.searchParams.set('tab', 'rankings')
+  return url.href
+}
+
+/** The QR code is only shown while the event is public (M10-35). */
+export function isPublicEvent(status: string) {
+  return status === 'published' || status === 'archived'
 }

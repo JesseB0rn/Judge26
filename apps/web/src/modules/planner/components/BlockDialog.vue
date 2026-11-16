@@ -53,6 +53,8 @@ const form = reactive<BlockInput>({
   categories: [],
   columns: [],
   public: true,
+  kind: '',
+  blocks_first_round: true,
 })
 const isNew = computed(() => !props.block?.id)
 
@@ -72,6 +74,8 @@ function fill() {
     categories: [...(b.categories ?? [])],
     columns: [...(b.columns ?? [])],
     public: b.public ?? true,
+    kind: b.kind ?? '',
+    blocks_first_round: b.blocks_first_round ?? true,
   })
 }
 
@@ -327,6 +331,28 @@ const error = computed(() => save.error.value ?? duplicate.error.value ?? remove
           <input v-model="form.public" type="checkbox" class="size-4 accent-primary" />
           {{ t('planner.block.publicHint') }}
         </label>
+        <!-- M10-15: a parts check, confirmed per table; optionally gates the day's first round. -->
+        <fieldset class="flex flex-col gap-2 rounded-lg border p-3">
+          <label class="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              class="size-4 accent-primary"
+              :checked="form.kind === 'parts_check'"
+              data-testid="block-parts-check"
+              @change="form.kind = ($event.target as HTMLInputElement).checked ? 'parts_check' : ''"
+            />
+            {{ t('checks.parts.kind') }}
+          </label>
+          <label v-if="form.kind === 'parts_check'" class="flex items-center gap-2 pl-6 text-sm">
+            <input
+              v-model="form.blocks_first_round"
+              type="checkbox"
+              class="size-4 accent-primary"
+              data-testid="block-blocks-first-round"
+            />
+            {{ t('checks.parts.blocksFirstRoundHint') }}
+          </label>
+        </fieldset>
       </form>
 
       <DialogFooter v-if="editable" class="gap-2 sm:justify-between">

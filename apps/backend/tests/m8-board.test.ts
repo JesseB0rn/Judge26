@@ -45,6 +45,7 @@ describe('M8-E assignment board', () => {
     const roundIds: string[] = []
     for (let i = 1; i <= rounds; i++) {
       const round = await manager.pb.collection('rounds').create({
+        check_mode: 'off',
         category: category.id,
         key: `R${i}`,
         name: `Round ${i}`,

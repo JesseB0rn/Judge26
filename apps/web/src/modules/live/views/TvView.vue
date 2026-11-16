@@ -2,7 +2,7 @@
 import { formatTime } from '@/shared/format'
 import { t } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { MaximizeIcon } from '@lucide/vue'
 import { getPublicEvent, getPublicRanking } from '../api'
 import {
@@ -13,6 +13,10 @@ import {
   pickRanking,
   progressOf,
   publishedCategories,
+  roundSegments,
+  liveRankingUrl,
+  isPublicEvent,
+  type RoundSegment,
   isProvisional,
   parseRotate,
   parseTvView,
@@ -24,6 +28,7 @@ import { useLiveResource } from '../useLiveResource'
 import { useLiveUpdates } from '../useLiveUpdates'
 import LiveIndicator from '../components/LiveIndicator.vue'
 import TvRanking from '../components/TvRanking.vue'
+import QrCode from '@/shared/components/QrCode.vue'
 import PlannerBoard from '@/modules/planner/components/PlannerBoard.vue'
 import { axisRange, gridColumns, isPlaced, placedRanges } from '@/modules/planner/lib'
 
@@ -32,14 +37,24 @@ import { axisRange, gridColumns, isPlaced, placedRanges } from '@/modules/planne
  * (M6-T07). Rotates through the published rankings (page by page), the tables and the progress.
  *
  * URL options: `view` (auto | ranking | tables | timetable | progress), `category` (comma-separated ids),
- * `day`, `source` (official | live), `rotate` (seconds).
+ * `day`, `source` (official | live), `rotate` (seconds), `qr=0` (hide the QR code of the live
+ * ranking, M10-35).
  */
 const props = defineProps<{ id: string }>()
 const route = useRoute()
+const router = useRouter()
 
 const view = computed(() => parseTvView(route.query.view))
 const rotate = computed(() => parseRotate(route.query.rotate))
 const source = computed(() => route.query.source as RankingSource | undefined)
+/** M10-35: the QR code of the live ranking, unless hidden with `qr=0`, while the event is public. */
+const showQr = computed(
+  () =>
+    route.query.qr !== '0' && !!event.data.value && isPublicEvent(event.data.value.event.status),
+)
+const rankingUrl = computed(() =>
+  liveRankingUrl(router.resolve({ name: 'live-event', params: { id: props.id } }).href),
+)
 const onlyCategories = computed(() =>
   String(route.query.category ?? '')
     .split(',')
@@ -187,15 +202,21 @@ const slideRanking = computed(() => {
 const queues = computed(() =>
   event.data.value ? tableQueues(event.data.value, { day: day.value }, 2) : [],
 )
+const segmentLabel = (s: RoundSegment) =>
+  t('live.progress.segment', {
+    round: s.round.name,
+    done: s.progress.done,
+    total: s.progress.total,
+  })
 const progressRows = computed(() => {
   const data = event.data.value
   if (!data) return []
   return data.categories
     .filter((c) => !onlyCategories.value.length || onlyCategories.value.includes(c.id))
-    .map((c) => ({
-      category: c,
-      progress: progressOf(filterGames(data, { category: c.id, day: day.value })),
-    }))
+    .map((c) => {
+      const games = filterGames(data, { category: c.id, day: day.value })
+      return { category: c, progress: progressOf(games), segments: roundSegments(data, games) }
+    })
     .filter((r) => r.progress.total > 0)
 })
 const title = computed(() => {
@@ -313,21 +334,45 @@ const title = computed(() => {
               t('live.tv.games', { done: row.progress.done, total: row.progress.total })
             }}</span>
           </div>
-          <div class="flex h-[0.8em] overflow-hidden rounded-full bg-slate-800">
+          <!-- M10-36: one part per round, named with its counts. -->
+          <div
+            class="flex h-[0.8em] gap-1 overflow-hidden rounded-full"
+            role="img"
+            :aria-label="row.segments.map(segmentLabel).join(', ')"
+          >
             <div
-              class="bg-emerald-500"
-              :style="{ width: `${(row.progress.done / row.progress.total) * 100}%` }"
-            />
-            <div
-              class="bg-sky-400"
-              :style="{ width: `${(row.progress.inReview / row.progress.total) * 100}%` }"
-            />
+              v-for="s in row.segments"
+              :key="s.round.id"
+              class="flex h-full overflow-hidden bg-slate-800"
+              :style="{ width: `${s.share * 100}%` }"
+              data-testid="progress-segment"
+            >
+              <div
+                class="bg-emerald-500"
+                :style="{ width: `${(s.progress.done / s.progress.total) * 100}%` }"
+              />
+              <div
+                class="bg-sky-400"
+                :style="{ width: `${(s.progress.inReview / s.progress.total) * 100}%` }"
+              />
+            </div>
           </div>
+          <p v-if="row.segments.length > 1" class="mt-1 text-[0.6em] text-slate-400 tabular-nums">
+            {{ row.segments.map(segmentLabel).join(' · ') }}
+          </p>
         </div>
         <p v-if="!progressRows.length" class="text-slate-400">{{ t('live.tv.noGames') }}</p>
       </div>
     </main>
 
+    <aside
+      v-if="showQr"
+      class="pointer-events-none fixed right-6 bottom-16 flex flex-col items-center gap-1 rounded-xl bg-white p-2 text-slate-900"
+      data-testid="tv-qr"
+    >
+      <QrCode class="size-[16vh]" :value="rankingUrl" :label="t('live.qr.label')" />
+      <span class="text-[1.4vh] font-medium">{{ t('live.qr.caption') }}</span>
+    </aside>
     <footer class="flex items-center gap-4 border-t border-slate-800 px-8 py-3">
       <LiveIndicator
         :status="live.status.value"

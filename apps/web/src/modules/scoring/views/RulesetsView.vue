@@ -3,7 +3,12 @@ import { t } from '@/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { FilePlusIcon, PencilIcon, PlusIcon, SaveIcon, SendIcon, Trash2Icon } from '@lucide/vue'
-import { evaluate, EXAMPLE_RULESET, type ScoreValues } from '@judge26/scoring-engine'
+import {
+  DEFAULT_ZERO_POINTS_TIME_MS,
+  evaluate,
+  EXAMPLE_RULESET,
+  type ScoreValues,
+} from '@judge26/scoring-engine'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -152,7 +157,8 @@ const newDraft = useSubmit(async () => {
   const base = selected.value ?? active.value
   const draft = await createDraft(
     props.id,
-    base?.definition ?? EXAMPLE_RULESET,
+    // A new version copies its base; a first ruleset counts zero-point runs as 120 s (M10-18).
+    base?.definition ?? { ...EXAMPLE_RULESET, zeroPointsTimeMs: DEFAULT_ZERO_POINTS_TIME_MS },
     base?.id ?? '',
     selectedRule.value?.id ?? '',
   )

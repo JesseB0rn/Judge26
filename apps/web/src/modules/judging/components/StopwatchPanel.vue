@@ -15,6 +15,8 @@ const props = defineProps<{
   elapsedMs: number
   /** The recorded game time. */
   timeMs: number
+  /** Decimals of the event's run times (M10-19). */
+  decimals?: number
   disabled?: boolean
 }>()
 const emit = defineEmits<{
@@ -38,7 +40,7 @@ const label = computed(() => {
 })
 
 async function edit() {
-  text.value = props.timeMs > 0 ? formatTime(props.timeMs) : ''
+  text.value = props.timeMs > 0 ? formatTime(props.timeMs, props.decimals ?? 2) : ''
   error.value = ''
   editing.value = true
   await nextTick()
@@ -73,14 +75,14 @@ function save() {
         data-testid="stopwatch-display"
         aria-live="off"
       >
-        {{ formatTime(display) }}
+        {{ formatTime(display, decimals ?? 2) }}
       </div>
       <div
         v-if="phase !== 'idle' && timeMs > 0"
         class="text-xs text-muted-foreground"
         data-testid="recorded-time"
       >
-        {{ t('judging.stopwatch.recorded', { time: formatTime(timeMs) }) }}
+        {{ t('judging.stopwatch.recorded', { time: formatTime(timeMs, decimals ?? 2) }) }}
       </div>
     </div>
 

@@ -59,3 +59,6 @@ apps/backend/hooks/lib/scheduling-engine.js
 /graphify-out
 # Deployment secrets (see .env.example)
 .env
+
+# Mail relay certificate and key (M10-G)
+mail-relay-certificate/

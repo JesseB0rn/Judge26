@@ -20,6 +20,11 @@ const LIVE_COLLECTIONS = [
   'round_phases',
   'schedule_blocks',
   'schedule_columns',
+  // M10-B: robot and parts checks are followed live by head judges and the judges' tablets.
+  'robot_checks',
+  'robot_check_tables',
+  'parts_check_tables',
+  'round_files',
 ]
 
 onRecordAfterCreateSuccess(

@@ -2055,13 +2055,13 @@ with a certificate instead of a client secret.
 
 ### Tracking
 
--   [ ] **M10-A** Judge workflow at the table (M10-01 to M10-07)
--   [ ] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
--   [ ] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
+-   [x] **M10-A** Judge workflow at the table (M10-01 to M10-07)
+-   [x] **M10-B** Robot check, parts check and round file (M10-08 to M10-17)
+-   [x] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
 -   [x] **M10-D** Planner editing (M10-21 to M10-24)
 -   [x] **M10-E** Board and drag and drop (M10-25 to M10-29)
--   [ ] **M10-F** Setup, print center and live (M10-30 to M10-36)
--   [ ] **M10-G** OAuth for the mail relay with a certificate credential
+-   [x] **M10-F** Setup, print center and live (M10-30 to M10-36)
+-   [x] **M10-G** OAuth for the mail relay with a certificate credential
     (M10-37 to M10-40)
 
 Suggested order: M10-E and M10-D first (fixes, no data model change), then
@@ -2071,6 +2071,13 @@ specification in `docs/specifications` (new `M10-*.md` or a section in the
 M4, M5 and M8 specifications it changes) before implementation.
 
 ### M10-A --- Judge workflow at the table
+
+**Status:** M10-01 to M10-07 implemented (see `docs/specifications/M5-judging.md#judge-workflow-at-the-table-m10-a`
+and `docs/test-plans/M10-judge-workflow.md`). Decisions: an absent team needs no sign-off (it
+cannot sign), a disqualified one does; the confirmation time is the server time at submission;
+a returned sheet clears the sign-off like a mulligan; refusals are off by default and templates
+carry the setting; a step is a top-level criterion or group of the ruleset; admins can step in
+at tables like head judges.
 
 Judges lost track of where they were and what came next. The score sheet
 also gains a one-criterion-per-screen view and a team sign-off.
@@ -2141,6 +2148,19 @@ also gains a one-criterion-per-screen view and a team sign-off.
   ------------------------------------------------------------------------------
 
 ### M10-B --- Robot check, parts check and round file
+
+**Status:** M10-08 to M10-17 implemented (see `docs/specifications/M10-checks.md` and
+`docs/test-plans/M10-checks.md`). Decisions: the mode is one round field (`off`, synchronous,
+asynchronous) mirrored by the planner's check phase; switching between synchronous and
+asynchronous is fixed after the first check, turning the check off stays possible for managers;
+head judges choose the mode but cannot turn it off; a table can be marked ready with unchecked
+teams after a confirmation (absent teams are never checked); in asynchronous mode an absent team
+is recorded without a check; every release is audited, and a release can be withdrawn while no
+sheet of the round exists; a reopened check makes its table not ready again; a parts check is
+confirmed by the active tables serving a covered category and can be reopened; the first round of
+a day is the category's lowest-positioned round on that day; head judges and managers see the
+round file at any time, other users get 404; marking a table ready needs a connection, team checks
+are queued offline. Live updates use the event's live revision (M6-01).
 
 Today a finished robot check is only remembered on the judge's device
 (M5-15), so the head judge cannot see progress and nothing can depend on it.
@@ -2230,6 +2250,15 @@ to the server) and M4-14 (the robot check phase exists by default; new block
 type). M9-06 to M9-09 are unchanged.
 
 ### M10-C --- Zero-point time and time precision
+
+**Status:** M10-18 to M10-20 implemented (see `docs/specifications/M10-times.md` and
+`docs/test-plans/M10-times.md`). Decisions: the zero-point time is a ruleset property
+(`zeroPointsTimeMs`); "on by default" means a category's first ruleset starts with 120 s, while
+existing rulesets and new versions keep their behaviour (M2-14). The game carries the counted
+time, the score sheet the measured one. Times are cut, not rounded; the ranking uses the coarser
+of the ranking configuration's own resolution and the event's precision. Exports write seconds
+as numbers with the event's decimals (95.3) rather than m:ss, so spreadsheets can compute with
+them.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria
@@ -2357,6 +2386,15 @@ scroll jump: while a write ran, the board removed its edit controls, which narro
 
 ### M10-F --- Setup, print center and live
 
+**Status:** M10-30 to M10-36 implemented (see `docs/specifications/M10-setup-print-live.md` and
+`docs/test-plans/M10-setup-print-live.md`). Decisions: games have
+no time of their own, so the workplace sheet shows the start of the round's scoring run; a team
+matches a day filter by the scoring day of its rounds; records can be left out of a printout
+individually; the print layout is A4 without page margins only while the print center is open;
+"public" for the QR code means published or archived; the QR code links to the live page's
+rankings tab and is hidden on the TV view with `qr=0`; progress segments are ordered by day and
+round.
+
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria
   ---------  --------------------  ----  ---------------------------------------
@@ -2407,6 +2445,15 @@ scroll jump: while a write ran, the board removed its edit controls, which narro
   ------------------------------------------------------------------------------
 
 ### M10-G --- OAuth with a certificate credential
+
+**Status:** M10-37 to M10-40 implemented (see
+`docs/operations/deployment.md#certificate-instead-of-a-client-secret`; tests in
+`apps/mail-relay/tests/relay.test.ts`). Decisions: the assertion is signed with PS256 and names
+the certificate by `x5t#S256`, the form Microsoft Entra ID recommends; only RSA keys are accepted
+(Entra ID certificate credentials are RSA); an encrypted key needs
+`SMTP_OAUTH_PRIVATE_KEY_PASSPHRASE`; the files are mounted read-only into the relay container
+(`SMTP_OAUTH_CERTIFICATE_DIR`, default `./mail-relay-certificate`). The expiry warning is logged at
+every start of the relay.
 
 The mail relay (M9-D) authenticates to the token endpoint with a client
 secret. Secrets expire and some tenants' policies forbid them; Microsoft
@@ -2576,8 +2623,8 @@ with migration tests.
                         earlier ruleset version
 
   M10-T30    M10-19     95 379 ms at each precision  1:35, 1:35.3, 1:35.37 and
-                        on sheet, ranking, live,     1:35.379 everywhere
-                        TV, export and print
+                        on sheet, ranking, live,     1:35.379 everywhere;
+                        TV, export and print         exports 95 to 95.379 s
 
   M10-T31    M10-20     Equal points, 95 100 ms and  Tied on time (next key
                         95 900 ms, precision none,   decides); then ranked apart

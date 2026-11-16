@@ -1,0 +1,54 @@
+{
+  "title": "Centre d’impression",
+  "description": "Impressions pour le lieu : une page A4 par équipe ou par table. À imprimer ou à enregistrer en PDF.",
+  "back": "Événement",
+  "kind": "Impression",
+  "kinds": {
+    "parking": "Étiquettes de parking des robots",
+    "workplace": "Fiches de poste de travail",
+    "tables": "Attributions des tables",
+    "qr": "Affiche avec code QR"
+  },
+  "category": "Catégorie",
+  "day": "Jour",
+  "round": "Tour",
+  "variant": "Affiche",
+  "variants": {
+    "teams": "Équipes seulement",
+    "judges": "Juges seulement",
+    "both": "Équipes et juges"
+  },
+  "all": "Tous",
+  "print": "N’imprimer aucune page | Imprimer une page | Imprimer {count} pages",
+  "selection": "{selected} sur {total} sélectionnés",
+  "selectAll": "Tout sélectionner",
+  "selectNone": "Ne rien sélectionner",
+  "noTeams": "Aucune équipe approuvée ne correspond à ces filtres.",
+  "noTables": "Aucune table n’a de matchs dans ce tour.",
+  "what": "Quoi",
+  "time": "Heure",
+  "table": "Table",
+  "judges": "Juges",
+  "teams": "Équipes dans l’ordre de passage",
+  "noJudges": "Aucun juge attribué.",
+  "parking": {
+    "heading": "Parking des robots"
+  },
+  "workplace": {
+    "heading": "Poste de travail",
+    "tables": "Table de jeu",
+    "noTable": "Pas encore de table de jeu attribuée.",
+    "schedule": "Horaire"
+  },
+  "qr": {
+    "heading": "Classement en direct",
+    "scan": "Scanne pour suivre le classement en direct sur ton téléphone."
+  },
+  "layout": "Mise en page",
+  "layouts": {
+    "pages": "Une page par table",
+    "single": "Une page par catégorie"
+  },
+  "tableAssignment": "Attribution des tables",
+  "noCategories": "Aucune catégorie n’a de matchs aux tables dans ce tour."
+}

@@ -96,7 +96,8 @@
     "game": "Lauf",
     "noTime": "nicht erfasst",
     "back": "Zurück zum Bogen",
-    "submit": "Punkte einreichen"
+    "submit": "Punkte einreichen",
+    "countedTime": "zählt bei 0 Punkten; gemessen {measured}"
   },
   "dashboard": {
     "description": "Läufe an Ihrem Tisch, in Spielreihenfolge.",
@@ -109,8 +110,11 @@
     "show": "Anzeigen",
     "todo": "Offen",
     "progress": "{done} von {total} bewertet",
-    "empty": "Ihrem Tisch sind noch keine Läufe zugeteilt.",
-    "toReview": "Zur Prüfliste"
+    "empty": "Sie sind noch keinem Tisch zugeteilt.",
+    "toReview": "Zur Prüfliste",
+    "yourTable": "Sie sind an",
+    "steppingIn": "Sie werten an",
+    "emptyTable": "An diesem Tisch sind noch keine Läufe eingeteilt."
   },
   "sheet": {
     "enterPoints": "Geben Sie die Punkte ein.",
@@ -159,7 +163,9 @@
     "mulliganConfirm": "Lauf verwerfen und Wiederholung erlauben",
     "mulliganGranted": "{team}: Wiederholung gewährt.",
     "mulliganBy": "Wiederholung gewährt von {name}",
-    "mulliganMeanwhile": "Inzwischen wurde eine Wiederholung gewährt. Die auf diesem Gerät gespeicherten Änderungen gehörten zum verworfenen Lauf und wurden nicht übernommen."
+    "mulliganMeanwhile": "Inzwischen wurde eine Wiederholung gewährt. Die auf diesem Gerät gespeicherten Änderungen gehörten zum verworfenen Lauf und wurden nicht übernommen.",
+    "zeroPointsTime": "0 Punkte: Dieser Lauf zählt mit {time} (Regel des Regelwerks). Die gemessene Zeit bleibt auf dem Bogen.",
+    "submittedTeam": "Bewertung von {team} eingereicht."
   },
   "program": {
     "label": "Programm",
@@ -168,5 +174,33 @@
     "edit": "Programm ändern",
     "verify": "Vor dem Start prüfen, dass dieses Programm auf dem Roboter gewählt ist.",
     "checkHint": "Programm erfassen, das das Team laufen lässt. Es erscheint auf dem Bewertungsblatt, damit es vor dem Start geprüft werden kann."
+  },
+  "confirm": {
+    "slide": "{team}: zum Bestätigen schieben",
+    "confirmed": "Vom Team bestätigt",
+    "refuses": "Das Team verweigert die Bestätigung",
+    "refusalReason": "Warum verweigert das Team?",
+    "backToSlide": "Zurück zum Bestätigen"
+  },
+  "steps": {
+    "position": "Schritt {n} von {total}",
+    "summary": "Zusammenfassung",
+    "missing": "Fehlt noch",
+    "toSubmit": "Prüfen und einreichen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "view": "Ansicht des Bewertungsbogens",
+    "views": {
+      "list": "Liste",
+      "steps": "Schritt für Schritt"
+    }
+  },
+  "tables": {
+    "title": "An einem Tisch werten",
+    "description": "Wählen Sie einen Tisch, an dem Sie werten. Die Schiedsrichter/innen bleiben zugeteilt; Sie können jederzeit wechseln.",
+    "empty": "Sie sind bei keinem Anlass mit Tischen Oberschiedsrichter/in.",
+    "noJudges": "Niemand zugeteilt",
+    "open": "An einem Tisch werten",
+    "switch": "Tisch wechseln"
   }
 }

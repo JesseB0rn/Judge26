@@ -135,6 +135,7 @@ describe('M1 events and competition days', () => {
       .collection('competition_days')
       .create({ event: event.id, date: '2026-06-13', label: 'Saturday' })
     const round = await manager.pb.collection('rounds').create({
+      check_mode: 'off',
       category: category.id,
       key: 'R2',
       name: 'Round 2',
@@ -171,7 +172,12 @@ describe('M1 events and competition days', () => {
     })
     await judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
       method: 'POST',
-      body: { outcome: 'completed', values: { flag: true }, time_ms: 1000 },
+      body: {
+        outcome: 'completed',
+        values: { flag: true },
+        time_ms: 1000,
+        team_confirmation: 'confirmed',
+      },
     })
     await headJudge.pb.send(`/api/games/${game.id}/sheet/approve`, { method: 'POST', body: {} })
     expect((await fx.su.collection('games').getOne(game.id)).status).toBe('completed')

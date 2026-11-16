@@ -20,7 +20,8 @@ export function listRounds(categoryId: string) {
 type RoundInput = Pick<
   RoundRecord,
   'key' | 'name' | 'position' | 'testing_minutes' | 'scoring_minutes' | 'day' | 'game_rule'
->
+> &
+  Pick<Partial<RoundRecord>, 'check_mode'>
 
 /** Competition days of an event (a round can be assigned to one, M5-02). */
 export function listEventDays(eventId: string) {

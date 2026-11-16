@@ -18,7 +18,7 @@ import {
   type LocalDraft,
 } from './drafts'
 import * as sw from './lib'
-import type { Outcome, SheetInput, SheetPayload } from './types'
+import type { Outcome, ScoringGate, SheetInput, SheetPayload, TeamSignOff } from './types'
 
 /** Where the judge's latest change is. */
 export type SaveState =
@@ -74,7 +74,21 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
   })
 
   const status = computed(() => payload.value?.sheet?.status ?? null)
-  const editable = computed(() => !!payload.value?.permissions.canEdit || correcting.value)
+  /** Why scoring is locked (M10-B): until the release, the team's check or the parts check. */
+  const gate = computed<ScoringGate>(() => payload.value?.gate ?? '')
+  /**
+   * The sheet cannot be started or submitted while scoring is locked. In asynchronous mode an
+   * unchecked team can still be recorded as absent (it never comes to the check).
+   */
+  const locked = computed(
+    () =>
+      !!gate.value &&
+      !correcting.value &&
+      !(gate.value === 'not_confirmed' && input.value.outcome === 'absent'),
+  )
+  const editable = computed(
+    () => (!!payload.value?.permissions.canEdit && !locked.value) || correcting.value,
+  )
 
   /** Live result for display (draft mode: no "required" noise while scoring). */
   const result = computed(() =>
@@ -189,7 +203,7 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
   }
 
   function persist() {
-    if (!payload.value?.permissions.canEdit) return
+    if (!payload.value?.permissions.canEdit || locked.value) return
     savedAt = Math.max(now(), savedAt + 1)
     const draft: LocalDraft = {
       gameId,
@@ -297,6 +311,13 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     if (!correcting.value) persist()
   }
 
+  /** An unchecked team of an asynchronous round did not come: record it as absent (M10-12). */
+  function markAbsent() {
+    if (!payload.value?.permissions.canEdit || gate.value !== 'not_confirmed') return
+    input.value = { ...input.value, outcome: 'absent' }
+    persist()
+  }
+
   function setTime(timeMs: number) {
     if (!editable.value) return
     input.value = { ...input.value, time_ms: Math.max(0, Math.round(timeMs)) }
@@ -360,10 +381,10 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     }
   }
 
-  const submit = () =>
+  const submit = (signOff?: TeamSignOff) =>
     run(async () => {
       clearTimeout(timer)
-      await api.submitSheet(gameId, input.value)
+      await api.submitSheet(gameId, input.value, signOff)
       removeDraft(gameId)
       await load()
     })
@@ -421,6 +442,9 @@ export function useScoreSheet(gameId: string, options: { now?: () => number } = 
     notice,
     ruleset,
     status,
+    gate,
+    locked,
+    markAbsent,
     editable,
     correcting,
     input,

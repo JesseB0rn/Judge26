@@ -106,15 +106,20 @@ export async function createApprovedTeam(
   })
 }
 
-/** Creates a round with the given testing and scoring durations. */
+/**
+ * Creates a round with the given testing and scoring durations. Without a robot check unless
+ * `checkMode` says otherwise, so scoring is not gated (M10-B; the app's default is synchronous).
+ */
 export async function createRound(
   categoryId: string,
   key: string,
   testingMinutes = 5,
   scoringMinutes = 10,
+  checkMode: 'off' | 'synchronous' | 'asynchronous' = 'off',
 ) {
   const pb = await superuser()
   return pb.collection('rounds').create({
+    check_mode: checkMode,
     category: categoryId,
     key,
     name: `Round ${key.slice(1)}`,
@@ -194,6 +199,19 @@ export async function getScoreSheet(gameId: string) {
 export async function recordResult(gameId: string, points: number, timeMs = 0) {
   const pb = await superuser()
   return pb.collection('games').update(gameId, { status: 'completed', points, time_ms: timeMs })
+}
+
+/** Records a final result scored with a ruleset: points come from `values` (M3-03, M10-18). */
+export async function recordScoredResult(
+  gameId: string,
+  rulesetId: string,
+  values: Record<string, unknown>,
+  timeMs: number,
+) {
+  const pb = await superuser()
+  return pb
+    .collection('games')
+    .update(gameId, { status: 'completed', ruleset: rulesetId, values, time_ms: timeMs })
 }
 
 /** Sets the category's public results (M6-10). */
@@ -289,4 +307,17 @@ export async function createCategoryTable(
   return pb
     .collection('tables')
     .create({ event: eventId, name, active: true, position, categories: [categoryId], judges })
+}
+
+/** Uploads a round's randomization file (M10-17), as a head judge would. */
+export async function uploadRoundFile(
+  roundId: string,
+  name: string,
+  bytes: Uint8Array,
+  type: string,
+) {
+  const pb = await superuser()
+  const form = new FormData()
+  form.append('file', new Blob([bytes], { type }), name)
+  return pb.send(`/api/rounds/${roundId}/file`, { method: 'POST', body: form })
 }

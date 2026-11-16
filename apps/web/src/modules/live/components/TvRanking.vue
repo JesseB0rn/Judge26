@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed } from 'vue'
+import { decimalsOfResolution } from '@judge26/ranking-engine'
 import { formatValue } from '@/modules/rankings/lib'
 import { pageOf } from '../lib'
 import type { PublicTeam, PublishedRanking } from '../types'
@@ -15,6 +16,8 @@ const props = defineProps<{
 
 const rows = computed(() => pageOf(props.ranking.result.entries, props.page, props.perPage))
 const keys = computed(() => props.ranking.result.keys)
+// The event's run time precision, as the server ranked with (M10-19/M10-20).
+const decimals = computed(() => decimalsOfResolution(props.ranking.config.timeResolutionMs))
 </script>
 
 <template>
@@ -60,7 +63,7 @@ const keys = computed(() => props.ranking.result.keys)
           :key="i"
           class="px-4 py-[0.35em] text-right tabular-nums last:rounded-r-lg"
         >
-          {{ formatValue(value, keys[i]!.field) }}
+          {{ formatValue(value, keys[i]!.field, decimals) }}
         </td>
       </tr>
     </tbody>

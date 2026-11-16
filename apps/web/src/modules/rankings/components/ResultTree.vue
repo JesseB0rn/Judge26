@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { t, te, type MessageKey } from '@/i18n'
 import type { ResultExplanation } from '@judge26/ranking-engine'
-import { formatTime } from '../lib'
+import { formatRunTime } from '@judge26/ranking-engine'
 
 /** How a round or calculation result was derived (M3-16). */
-defineProps<{ result: ResultExplanation; selected?: boolean }>()
+withDefaults(
+  defineProps<{
+    result: ResultExplanation
+    selected?: boolean
+    /** Decimals of run times (M10-19). */
+    decimals?: number
+  }>(),
+  { selected: false, decimals: 3 },
+)
 </script>
 
 <template>
@@ -21,7 +29,9 @@ defineProps<{ result: ResultExplanation; selected?: boolean }>()
       <span class="text-xs text-muted-foreground">{{ result.formula }}</span>
       <span class="ml-auto tabular-nums">
         {{ result.points ?? '–'
-        }}<template v-if="result.timeMs !== null"> / {{ formatTime(result.timeMs) }}</template>
+        }}<template v-if="result.timeMs !== null">
+          / {{ formatRunTime(result.timeMs, decimals) }}</template
+        >
       </span>
     </div>
     <ul v-if="result.operands?.length" class="ml-4 border-l pl-3">
@@ -30,6 +40,7 @@ defineProps<{ result: ResultExplanation; selected?: boolean }>()
         :key="operand.id"
         :result="operand"
         :selected="operand.id === result.selected"
+        :decimals="decimals"
       />
     </ul>
   </li>

@@ -14,7 +14,8 @@
     "phase_order": "Die Phasen müssen in der Reihenfolge Unterhalt, Roboterkontrolle, Wertung stattfinden.",
     "round_overlap": "Überschneidet sich mit einer anderen Runde derselben Kategorie.",
     "table_overlap": "Eine andere Runde nutzt zur selben Zeit denselben Tisch.",
-    "judge_overlap": "Dieselbe Schiedsrichterin oder derselbe Schiedsrichter wird zur selben Zeit an zwei Tischen gebraucht."
+    "judge_overlap": "Dieselbe Schiedsrichterin oder derselbe Schiedsrichter wird zur selben Zeit an zwei Tischen gebraucht.",
+    "parts_check_late": "Die Materialkontrolle endet nach dem ersten Wertungslauf des Tages."
   },
   "internal": "Intern (nur Personal)",
   "done": "Fertig",

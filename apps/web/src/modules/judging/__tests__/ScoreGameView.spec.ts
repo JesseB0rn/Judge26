@@ -9,6 +9,7 @@ import ScoreGameView from '../views/ScoreGameView.vue'
 import { makePayload, makeSheet } from './fixtures'
 
 vi.mock('../api')
+vi.mock('@/modules/live/useLiveUpdates', () => ({ useLiveUpdates: vi.fn<() => void>() }))
 const mocked = vi.mocked(api)
 
 const judge = { roles: [makeRole('judge', 'event1')] }
@@ -30,6 +31,13 @@ const choice = (w: Wrapper, id: string, text: string) =>
     .find((b) => b.text().startsWith(text))!
 const pressed = (w: Wrapper, id: string, text: string) =>
   choice(w, id, text).attributes('aria-pressed') === 'true'
+
+/** The team slides to confirm in the submit dialog (M10-06), here with the keyboard. */
+async function teamConfirms() {
+  const thumb = document.querySelector('[role=dialog] [data-testid=slide-thumb]')!
+  thumb.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }))
+  await flushPromises()
+}
 
 async function score(w: Wrapper, values = COMPLETE) {
   if (values.flag) await choice(w, 'flag', 'Yes').trigger('click')
@@ -59,9 +67,9 @@ describe('ScoreGameView', () => {
   it('M5-T02 / M5-03: shows the team, category, round, table, sequence and day', async () => {
     const { wrapper } = await mountGame()
     expect(wrapper.get('[data-testid=team-name]').text()).toBe('Robo Rangers')
-    expect(wrapper.get('[data-testid=game-context]').text()).toBe(
-      'RM-J · Round 1 · Table A · #3 · Saturday',
-    )
+    expect(wrapper.get('[data-testid=game-context]').text()).toBe('RM-J · Round 1 · #3 · Saturday')
+    // M10-01: the table has its own badge in the header.
+    expect(wrapper.get('[data-testid=sheet-table]').text()).toBe('Table A')
     expect(wrapper.get('[data-testid=score-state]').text()).toBe('Not scored')
   })
 
@@ -230,7 +238,7 @@ describe('ScoreGameView', () => {
   })
 
   it('M5-10 / M5-T08: a complete sheet is confirmed and submitted', async () => {
-    const { wrapper } = await mountGame()
+    const { wrapper, router } = await mountGame()
     await score(wrapper)
     expect(wrapper.text()).toContain('Ready to submit')
     await click(buttonByText('Submit score'))
@@ -244,15 +252,19 @@ describe('ScoreGameView', () => {
       }),
     )
     const dialog = document.querySelector('[role=dialog]') as HTMLElement
+    // M10-T07: no submission before the team confirmed.
+    expect(buttonByText('Submit score', dialog).disabled).toBe(true)
+    await teamConfirms()
     await click(buttonByText('Submit score', dialog))
-    expect(mocked.submitSheet).toHaveBeenCalledWith('game1', {
-      outcome: 'completed',
-      values: COMPLETE,
-      time_ms: 0,
-      points: null,
-    })
+    expect(mocked.submitSheet).toHaveBeenCalledWith(
+      'game1',
+      { outcome: 'completed', values: COMPLETE, time_ms: 0, points: null },
+      { team_confirmation: 'confirmed' },
+    )
     expect(wrapper.get('[data-testid=score-state]').text()).toBe('Submitted')
     expect(wrapper.text()).toContain('waiting for the head judge')
+    // M10-T02: a table judge goes back to the dashboard, where the next item is marked.
+    expect(router.currentRoute.value.fullPath).toBe('/judging')
     expect(readDraft('game1')).toBeNull()
     expect((choice(wrapper, 'flag', 'Yes').element as HTMLButtonElement).disabled).toBe(true)
   })
@@ -401,6 +413,7 @@ describe('ScoreGameView', () => {
       }),
     )
     await click(buttonByText('Submit score'))
+    await teamConfirms()
     await click(
       buttonByText('Submit score', document.querySelector('[role=dialog]') as HTMLElement),
     )
@@ -503,6 +516,228 @@ describe('ScoreGameView', () => {
       )
       const { wrapper } = await mountGame()
       expect(wrapper.find('[data-testid=program-edit]').exists()).toBe(false)
+    })
+  })
+
+  describe('M10-C run times', () => {
+    const ZERO_RULE = {
+      schemaVersion: 1 as const,
+      zeroPointsTimeMs: 120_000,
+      root: {
+        id: 'root',
+        label: 'Total',
+        type: 'group' as const,
+        aggregate: 'sum' as const,
+        children: [{ id: 'flag', label: 'Flag raised', type: 'boolean' as const, points: 10 }],
+      },
+    }
+    const mountWith = async (decimals: number, definition: object = ZERO_RULE) => {
+      const base = makePayload()
+      mocked.getSheet.mockResolvedValue(
+        makePayload({
+          event: { ...base.event, time_decimals: decimals },
+          ruleset: {
+            id: 'rs1',
+            version: 1,
+            definition: definition as NonNullable<typeof base.ruleset>['definition'],
+          },
+        } as Partial<typeof base>),
+      )
+      return mountGame()
+    }
+
+    it('M10-19: the stopwatch shows the event’s decimals, cut not rounded', async () => {
+      const { wrapper } = await mountWith(1)
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '1:35.379')
+      await click(buttonByText('Set time'))
+      expect(wrapper.get('[data-testid=stopwatch-display]').text()).toBe('1:35.3')
+      // The full measured value is kept.
+      expect(readDraft('game1')?.input.time_ms).toBe(95_379)
+    })
+
+    it('M10-T27/T28: a zero-point run says it counts as 120 s; with points it does not', async () => {
+      const { wrapper } = await mountWith(0)
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '0:43')
+      await click(buttonByText('Set time'))
+      await choice(wrapper, 'flag', 'No').trigger('click')
+      expect(total(wrapper)).toBe('0')
+      expect(wrapper.get('[data-testid=zero-points-time]').text()).toContain('counts as 2:00')
+
+      await click(buttonByText('Submit score'))
+      const summary = document.querySelector('[data-testid=submit-summary]')!
+      expect(summary.textContent).toContain('2:00')
+      expect(summary.textContent).toContain('measured 0:43')
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      await flushPromises()
+
+      await choice(wrapper, 'flag', 'Yes').trigger('click')
+      expect(total(wrapper)).toBe('10')
+      expect(wrapper.find('[data-testid=zero-points-time]').exists()).toBe(false)
+    })
+
+    it('M10-18: without the option a zero-point run keeps its measured time', async () => {
+      const { zeroPointsTimeMs: _, ...off } = ZERO_RULE
+      const { wrapper } = await mountWith(0, off)
+      await choice(wrapper, 'flag', 'No').trigger('click')
+      expect(wrapper.find('[data-testid=zero-points-time]').exists()).toBe(false)
+    })
+  })
+
+  describe('M10-A at the table', () => {
+    it('M10-T02: a sheet opened from a filtered dashboard returns there after submitting', async () => {
+      const { wrapper, router } = await mountGame(
+        judge,
+        '/?from=' + encodeURIComponent('/judging?day=sat'),
+      )
+      await score(wrapper)
+      mocked.submitSheet.mockResolvedValue({ sheet: makeSheet({ status: 'submitted' }) })
+      await click(buttonByText('Submit score'))
+      await teamConfirms()
+      await click(
+        buttonByText('Submit score', document.querySelector('[role=dialog]') as HTMLElement),
+      )
+      expect(router.currentRoute.value.fullPath).toBe('/judging?day=sat')
+    })
+
+    it('M10-T03: the run time appears in the header and follows edits', async () => {
+      const { wrapper } = await mountGame()
+      expect(wrapper.find('[data-testid=header-time]').exists()).toBe(false)
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '1:35.37')
+      await click(buttonByText('Set time'))
+      const header = wrapper.get('[data-testid=game-header]')
+      expect(header.get('[data-testid=header-time]').text()).toBe('1:35.37')
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '1:40')
+      await click(buttonByText('Set time'))
+      expect(header.get('[data-testid=header-time]').text()).toBe('1:40.00')
+    })
+
+    it('M10-T04: the team name is never cut off', async () => {
+      const { wrapper } = await mountGame()
+      const name = wrapper.get('[data-testid=team-name]')
+      expect(name.classes()).not.toContain('truncate')
+      expect(name.classes()).toContain('break-words')
+    })
+
+    it('M10-T05: the step view shows one criterion at a time and edits the same draft', async () => {
+      const { wrapper } = await mountGame()
+      await click(buttonByText('Step by step'))
+      const steps = () => wrapper.get('[data-testid=step-sheet]')
+      expect(
+        steps()
+          .findAll('[data-node]')
+          .map((n) => n.attributes('data-node'))[0],
+      ).toBe('flag')
+      expect(steps().get('[data-testid=step-position]').text()).toBe('Step 1 of 4')
+      await choice(wrapper, 'flag', 'Yes').trigger('click')
+      await click(wrapper.get('[data-testid=step-next]').element as HTMLElement)
+      expect(steps().get('[data-testid=step-position]').text()).toBe('Step 2 of 4')
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
+      await flushPromises()
+      expect(steps().get('[data-testid=step-position]').text()).toBe('Step 1 of 4')
+      // Same draft in the list view; the choice is remembered on the device.
+      await click(buttonByText('List'))
+      expect(pressed(wrapper, 'flag', 'Yes')).toBe(true)
+      await click(buttonByText('Step by step'))
+      wrapper.unmount()
+      const again = await mountGame()
+      expect(again.wrapper.find('[data-testid=step-sheet]').exists()).toBe(true)
+    })
+
+    it('M10-05: the last step is a summary that leads to the submit dialog', async () => {
+      const { wrapper } = await mountGame()
+      await score(wrapper)
+      await click(buttonByText('Step by step'))
+      for (let i = 0; i < 3; i++)
+        await click(wrapper.get('[data-testid=step-next]').element as HTMLElement)
+      const summary = wrapper.get('[data-testid=step-summary]')
+      expect(summary.text()).toContain('40')
+      await click(buttonByText('Check and submit', summary.element))
+      expect(document.querySelector('[data-testid=submit-summary]')).not.toBeNull()
+    })
+
+    it('M10-T09: with refusals allowed, the judge records the reason instead', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ event: { ...makePayload().event, allow_team_refusal: true } }),
+      )
+      const { wrapper } = await mountGame()
+      await score(wrapper)
+      await click(buttonByText('Submit score'))
+      const dialog = document.querySelector('[role=dialog]') as HTMLElement
+      await click(dialog.querySelector<HTMLElement>('[data-testid=team-refuses]')!)
+      expect(buttonByText('Submit score', dialog).disabled).toBe(true)
+      await fill('#refusal-reason', 'Team disputes the flag')
+      await click(buttonByText('Submit score', dialog))
+      expect(mocked.submitSheet).toHaveBeenCalledWith('game1', expect.anything(), {
+        team_confirmation: 'refused',
+        refusal_reason: 'Team disputes the flag',
+      })
+    })
+
+    it('M10-06: without the setting there is no refusal option; absent teams need no sign-off', async () => {
+      const { wrapper } = await mountGame()
+      await score(wrapper)
+      await click(buttonByText('Submit score'))
+      expect(document.querySelector('[data-testid=team-refuses]')).toBeNull()
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      await flushPromises()
+      await click(buttonByText('Absent'))
+      await click(buttonByText('Submit score'))
+      expect(document.querySelector('[role=dialog] [data-testid=team-sign-off]')).toBeNull()
+      const dialog = document.querySelector('[role=dialog]') as HTMLElement
+      expect(buttonByText('Submit score', dialog).disabled).toBe(false)
+    })
+  })
+
+  describe('M10-B scoring gate', () => {
+    const robot = (mode: 'synchronous' | 'asynchronous') => ({
+      mode,
+      released_at: '',
+      checked: false,
+      table_ready: false,
+      parts_check: null,
+    })
+
+    it('M10-T14: before the release the sheet is locked and cannot be submitted', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ gate: 'not_released', robot_check: robot('synchronous') }),
+      )
+      const { wrapper } = await mountGame()
+      expect(wrapper.get('[data-testid=sheet-locked]').text()).toContain('Waiting for the release')
+      expect(wrapper.text()).not.toContain('Submit score')
+      await choice(wrapper, 'flag', 'Yes').trigger('click')
+      expect(pressed(wrapper, 'flag', 'Yes')).toBe(false)
+      expect(readDraft('game1')).toBeNull()
+    })
+
+    it('M10-T18: an unchecked team links to its check, or is recorded as absent', async () => {
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ gate: 'not_confirmed', robot_check: robot('asynchronous') }),
+      )
+      const { wrapper } = await mountGame()
+      const link = wrapper.get('[data-testid=to-check]')
+      expect(link.attributes('href')).toContain('judging-check')
+      expect(link.attributes('href')).toContain('team=')
+      await click(wrapper.get('[data-testid=mark-absent]').element as HTMLElement)
+      expect(readDraft('game1')?.input.outcome).toBe('absent')
+      expect(wrapper.find('[data-testid=sheet-locked]').exists()).toBe(false)
+      expect(wrapper.text()).toContain('Submit score')
+    })
+
+    it('M10-T25: the round file is shown once released', async () => {
+      mocked.roundFileUrl.mockResolvedValue('blob:round-file')
+      mocked.getSheet.mockResolvedValue(
+        makePayload({ round_file: { name: 'Field R1.png', kind: 'image', updated: 'u1' } }),
+      )
+      const { wrapper } = await mountGame()
+      await flushPromises()
+      expect(wrapper.get('[data-testid=round-file]').text()).toContain('Field R1.png')
+      expect(wrapper.get('[data-testid=round-file-image]').attributes('src')).toBe(
+        'blob:round-file',
+      )
     })
   })
 })

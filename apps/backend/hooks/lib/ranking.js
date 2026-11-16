@@ -49,4 +49,20 @@ function loadInputs(app, categoryId) {
   return inputs
 }
 
-module.exports = { loadInputs }
+/**
+ * The category's ranking configuration with the event's run time precision applied (M10-20):
+ * times are cut to it before ranking. Live rankings and new snapshots use this; snapshots store
+ * it, so a later precision change leaves them as they are.
+ */
+function effectiveConfig(app, category, config) {
+  const engine = require(`${__hooks}/lib/ranking-engine.js`)
+  let decimals = 0
+  try {
+    decimals = app.findRecordById('events', category.getString('event')).getInt('time_decimals')
+  } catch (_) {
+    // Category templates have no event: whole seconds.
+  }
+  return engine.withTimeDecimals(config, decimals)
+}
+
+module.exports = { loadInputs, effectiveConfig }

@@ -83,7 +83,12 @@ watch(() => props.event.id, reload)
         :title="t('scheduling.export.title', { event: event.name })"
         :tables="
           () => [
-            gamesTable(games.data.value ?? [], categories.data.value ?? [], days.data.value ?? []),
+            gamesTable(
+              games.data.value ?? [],
+              categories.data.value ?? [],
+              days.data.value ?? [],
+              event.time_decimals ?? 0,
+            ),
           ]
         "
         :disabled="!games.data.value?.length"

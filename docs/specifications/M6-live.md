@@ -57,6 +57,7 @@ and the progress. URL options:
 | `day`      | competition day id                                   | current day         |
 | `source`   | `official`, `live`                                   | official if present |
 | `rotate`   | seconds per slide, 5–300                             | 15                  |
+| `qr`       | `0` hides the QR code of the live ranking (M10-35)   | shown while public  |
 
 ## Live updates (M6-01, exit criterion)
 

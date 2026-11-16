@@ -64,15 +64,15 @@ with their active rulesets; rounds keep their game rule).
 }
 ```
 
-| Property           | Notes                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------ |
-| `precision`        | Decimal places of points (0–4, default 2)                                                  |
-| `timeResolutionMs` | Times are truncated to multiples of this value before use (default 1)                      |
-| `rounds`           | Round keys used by games; optional `attempts` aggregation (see below)                      |
-| `calculations`     | Named intermediate results; operands are `{ "round": key }` or `{ "calc": id }` (M3-12)    |
-| `policies`         | Treatment of results without valid points                                                  |
-| `ranking.keys`     | Primary key first, then tie-breakers in order (M3-13, M3-14)                               |
-| `ranking.ties`     | `shared` (default): equal teams share a rank; `name`: ordered by team name (M3-15, M3-T10) |
+| Property           | Notes                                                                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `precision`        | Decimal places of points (0–4, default 2)                                                                                                          |
+| `timeResolutionMs` | Times are truncated to multiples of this value before use (default 1); the event's run time precision can make it coarser ([M10-20](M10-times.md)) |
+| `rounds`           | Round keys used by games; optional `attempts` aggregation (see below)                                                                              |
+| `calculations`     | Named intermediate results; operands are `{ "round": key }` or `{ "calc": id }` (M3-12)                                                            |
+| `policies`         | Treatment of results without valid points                                                                                                          |
+| `ranking.keys`     | Primary key first, then tie-breakers in order (M3-13, M3-14)                                                                                       |
+| `ranking.ties`     | `shared` (default): equal teams share a rank; `name`: ordered by team name (M3-15, M3-T10)                                                         |
 
 Ids (round keys and calculation ids) share one namespace. Unknown properties, unknown references
 and **circular calculations** are rejected.
@@ -116,7 +116,9 @@ value for the primary key are listed without a rank.
 
 Points are converted once to the configured precision when read (scaled integers, half away
 from zero) and then computed exactly. Times are integers in milliseconds, truncated to
-`timeResolutionMs`.
+`timeResolutionMs`. Live rankings and new snapshots use the coarser of the configuration's
+`timeResolutionMs` and the event's run time precision (M10-20); snapshots store that
+configuration.
 
 ## Ranking output
 
