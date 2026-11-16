@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from '@/i18n'
+import { t, type MessageKey } from '@/i18n'
 import { reactive, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +31,8 @@ const form = reactive({
   venue: '',
   description: '',
   status: 'draft' as EventRecord['status'],
+  time_decimals: 0,
+  allow_team_refusal: false,
 })
 
 const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
@@ -40,6 +42,8 @@ const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
     venue: form.venue,
     description: form.description,
     status: form.status,
+    time_decimals: form.time_decimals,
+    allow_team_refusal: form.allow_team_refusal,
   }
   const saved = props.event ? await updateEvent(props.event.id, data) : await createEvent(data)
   emit('saved', saved)
@@ -56,6 +60,8 @@ watch(open, (isOpen) => {
     venue: e?.venue ?? '',
     description: e?.description ?? '',
     status: e?.status ?? 'draft',
+    time_decimals: e?.time_decimals ?? 0,
+    allow_team_refusal: e?.allow_team_refusal ?? false,
   })
 })
 </script>
@@ -110,6 +116,37 @@ watch(open, (isOpen) => {
           <FormField v-slot="{ id }" :label="t('events.venue')" name="venue" :errors="fieldErrors">
             <Input :id="id" v-model="form.venue" />
           </FormField>
+          <FormField
+            v-slot="{ id }"
+            :label="t('events.form.timeDecimals')"
+            name="time_decimals"
+            :errors="fieldErrors"
+            :description="t('events.form.timeDecimalsHint')"
+          >
+            <NativeSelect
+              :id="id"
+              v-model.number="form.time_decimals"
+              class="w-full"
+              data-testid="time-decimals"
+            >
+              <NativeSelectOption v-for="d in [0, 1, 2, 3]" :key="d" :value="d">{{
+                t(`events.form.timeDecimalsOption.${d}` as MessageKey)
+              }}</NativeSelectOption>
+            </NativeSelect>
+          </FormField>
+          <label class="flex items-start gap-2 text-sm" data-testid="allow-team-refusal">
+            <input
+              v-model="form.allow_team_refusal"
+              type="checkbox"
+              class="mt-0.5 size-4 accent-primary"
+            />
+            <span>
+              {{ t('events.form.allowTeamRefusal') }}
+              <span class="block text-xs text-muted-foreground">{{
+                t('events.form.allowTeamRefusalHint')
+              }}</span>
+            </span>
+          </label>
           <FormField
             v-slot="{ id }"
             :label="t('common.description')"

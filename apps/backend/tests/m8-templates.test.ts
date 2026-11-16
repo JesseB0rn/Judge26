@@ -101,12 +101,15 @@ describe('M8-D event templates', () => {
       starts_at: '10:00',
       expected_updated: scoring.updated,
     })
-    await su.collection('round_phases').create({
-      round: round.id,
-      phase: 'check',
+    // New rounds have a robot check (M10-08); place it.
+    const check = await su
+      .collection('round_phases')
+      .getFirstListItem(`round = "${round.id}" && phase = "check"`)
+    await su.collection('round_phases').update(check.id, {
       day: day1.id,
       starts_at: '16:00',
       duration_minutes: 45,
+      expected_updated: check.updated,
     })
     const judge = await fx.user({ name: 'Judy', roles: [{ role: 'judge', event: event.id }] })
     await su.collection('tables').create({

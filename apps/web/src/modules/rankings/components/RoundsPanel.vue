@@ -43,7 +43,10 @@ const form = reactive({
   scoring_minutes: 15,
   day: '',
   game_rule: '',
+  // M10-08: new rounds have a synchronous robot check.
+  check_mode: 'synchronous' as NonNullable<RoundRecord['check_mode']>,
 })
+const CHECK_MODES = ['synchronous', 'asynchronous', 'off'] as const
 const rules = () => props.gameRules ?? []
 const gameLabel = (round: RoundRecord) =>
   rules().find((r) => r.id === gameRuleIdForRound(round, rules()))?.name ??
@@ -75,6 +78,7 @@ const add = useSubmit(async () => {
     scoring_minutes: form.scoring_minutes,
     ...(props.days?.length ? { day: form.day } : {}),
     ...(rules().length ? { game_rule: form.game_rule } : {}),
+    check_mode: form.check_mode,
   }
   if (editingId.value) {
     const round = props.rounds.find((item) => item.id === editingId.value)
@@ -95,6 +99,7 @@ function resetForm() {
   form.scoring_minutes = 15
   form.day = ''
   form.game_rule = defaultGame()
+  form.check_mode = 'synchronous'
 }
 
 function edit(round: RoundRecord) {
@@ -105,6 +110,7 @@ function edit(round: RoundRecord) {
   form.scoring_minutes = round.scoring_minutes
   form.day = round.day ?? ''
   form.game_rule = gameRuleIdForRound(round, rules())
+  form.check_mode = round.check_mode ?? 'off'
   add.reset()
 }
 
@@ -157,6 +163,9 @@ const remove = useSubmit(async (round: RoundRecord) => {
             }}</TableCell>
             <TableCell v-if="days?.length" class="text-sm">{{ dayLabel(round.day) }}</TableCell>
             <TableCell class="text-sm">
+              <span class="block text-muted-foreground" data-testid="round-check">{{
+                t(`checks.mode.${round.check_mode ?? 'off'}`)
+              }}</span>
               {{
                 t('rankings.rounds.phaseSummary', {
                   testing: round.testing_minutes,
@@ -271,6 +280,24 @@ const remove = useSubmit(async (round: RoundRecord) => {
           step="1"
           required
         />
+      </FormField>
+      <FormField
+        v-slot="{ id }"
+        :label="t('checks.mode.label')"
+        name="check_mode"
+        :errors="add.fieldErrors.value"
+        :description="t('checks.mode.hint')"
+      >
+        <NativeSelect
+          :id="id"
+          v-model="form.check_mode"
+          class="w-full"
+          data-testid="round-check-mode"
+        >
+          <NativeSelectOption v-for="mode in CHECK_MODES" :key="mode" :value="mode">{{
+            t(`checks.mode.${mode}`)
+          }}</NativeSelectOption>
+        </NativeSelect>
       </FormField>
       <p class="text-sm text-muted-foreground">
         {{ t('rankings.rounds.total', { minutes: form.testing_minutes + form.scoring_minutes }) }}

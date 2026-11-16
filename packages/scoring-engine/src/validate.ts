@@ -1,5 +1,6 @@
 import { scaleFor, toUnits } from './decimal'
 import {
+  MAX_ZERO_POINTS_TIME_MS,
   SCHEMA_VERSION,
   type Condition,
   type Issue,
@@ -56,7 +57,7 @@ export function validateRuleset(raw: unknown): ValidationResult {
     add('$', 'invalid_type', 'The ruleset must be an object.')
     return { ok: false, issues }
   }
-  checkKeys(input, ['schemaVersion', 'precision', 'root'], '$', add)
+  checkKeys(input, ['schemaVersion', 'precision', 'zeroPointsTimeMs', 'root'], '$', add)
   if (input.schemaVersion !== SCHEMA_VERSION) {
     add('$.schemaVersion', 'unsupported_schema', `schemaVersion must be ${SCHEMA_VERSION}.`)
   }
@@ -73,6 +74,17 @@ export function validateRuleset(raw: unknown): ValidationResult {
     }
   }
   const scale = scaleFor(precision)
+  const zero = input.zeroPointsTimeMs
+  if (
+    zero !== undefined &&
+    (!Number.isInteger(zero) || (zero as number) < 0 || (zero as number) > MAX_ZERO_POINTS_TIME_MS)
+  ) {
+    add(
+      '$.zeroPointsTimeMs',
+      'invalid_zero_points_time',
+      'zeroPointsTimeMs must be whole milliseconds from 0 to 3600000.',
+    )
+  }
 
   const nodes = new Map<string, ScoringNode>()
   const parents = new Map<string, string | null>()

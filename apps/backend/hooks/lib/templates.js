@@ -6,17 +6,20 @@
 // A template file is plain JSON:
 //
 //   { format: "judge26.event-template", version: 1, name, description, exported_at, source,
-//     event:      { venue, description, table_labels? },
+//     event:      { venue, description, table_labels?, time_decimals?, allow_team_refusal? },
 //     days:       [{ offset, label, starts_at, ends_at }]           offset = days after the first day
 //     categories: [{ code, name, description, min_age, max_age, min_team_size, max_team_size,
 //                    max_teams, judges_per_table, settings, ranking,
 //                    game_rules: [{ key, name, description, position, ruleset: { definition, notes } | null }],
 //                    rounds:     [{ key, name, position, game_rule, testing_minutes, scoring_minutes,
-//                                   phases: [{ phase, day, starts_at, duration_minutes }] }] }],
+//                                   check_mode, phases: [{ phase, day, starts_at, duration_minutes }] }] }],
 //     tables:     [{ name, position, active, categories: [code] }],
 //     columns:    [{ name, position, public }],
 //     blocks:     [{ day, starts_at, duration_minutes, title, place, color, responsibility,
-//                    public, categories: [code], columns: [name] }] }
+//                    public, kind, blocks_first_round, categories: [code], columns: [name] }] }
+//
+// check_mode (M10-08) defaults to synchronous when the round has a check phase, off otherwise;
+// kind is "" or "parts_check" (M10-15).
 //
 // Days are referenced by offset, categories by code, game rules by key and columns by name, so
 // the file has no record ids and works on any installation. Rulesets are copied (the active
@@ -28,6 +31,7 @@ const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/
 const CODE = /^[A-Za-z0-9_-]+$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
 const PHASES = ['maintenance', 'check', 'scoring']
+const CHECK_MODES = ['off', 'synchronous', 'asynchronous']
 const COLORS = ['slate', 'red', 'orange', 'amber', 'green', 'teal', 'blue', 'violet', 'pink']
 const MAX_DAYS = 31
 
@@ -137,6 +141,8 @@ function exportEvent(app, eventId, meta) {
       venue: event.getString('venue'),
       description: event.getString('description'),
       table_labels: event.getString('table_labels') || 'table_number',
+      time_decimals: event.getInt('time_decimals'),
+      allow_team_refusal: event.getBool('allow_team_refusal'),
     },
     days: days.map((d) => ({
       offset: offsetOf[d.id],
@@ -184,6 +190,7 @@ function exportEvent(app, eventId, meta) {
           game_rule: ruleKey[r.getString('game_rule')] || '',
           testing_minutes: r.getInt('testing_minutes'),
           scoring_minutes: r.getInt('scoring_minutes'),
+          check_mode: r.getString('check_mode') || 'off',
           phases: list(app, 'round_phases', 'round = {:r}', '', { r: r.id })
             .sort(
               (a, b) => PHASES.indexOf(a.getString('phase')) - PHASES.indexOf(b.getString('phase')),
@@ -219,6 +226,8 @@ function exportEvent(app, eventId, meta) {
         color: b.getString('color'),
         responsibility: b.getString('responsibility'),
         public: b.getBool('public'),
+        kind: b.getString('kind'),
+        blocks_first_round: b.getBool('blocks_first_round'),
         categories: codes(b.getStringSlice('categories')),
         columns: b
           .getStringSlice('columns')
@@ -299,6 +308,10 @@ function validate(data) {
       description: text(event.description, 'event.description', { max: 5000 }),
       // M10-25; optional, so files exported before it still load.
       table_labels: tableLabels(event.table_labels),
+      // M10-19; optional.
+      time_decimals: int(event.time_decimals, 'event.time_decimals', 0, 3, 0),
+      // M10-06; optional.
+      allow_team_refusal: event.allow_team_refusal === true,
     },
     days: [],
     categories: [],
@@ -434,6 +447,14 @@ function validate(data) {
         }
         round.phases.push(phase)
       })
+      const hasCheck = round.phases.some((p) => p.phase === 'check')
+      const mode = r.check_mode === undefined || r.check_mode === null ? '' : r.check_mode
+      if (mode && !CHECK_MODES.includes(mode)) {
+        throw invalid(`${rpath}.check_mode`, 'is not off, synchronous or asynchronous')
+      }
+      round.check_mode = mode || (hasCheck ? 'synchronous' : 'off')
+      // Without a check the check phase is dropped.
+      if (round.check_mode === 'off') round.phases = round.phases.filter((p) => p.phase !== 'check')
       category.rounds.push(round)
     })
     out.categories.push(category)
@@ -481,7 +502,12 @@ function validate(data) {
     object(b, path)
     const color = text(b.color, `${path}.color`)
     if (color && !COLORS.includes(color)) throw invalid(`${path}.color`, 'is not a known color')
+    const kind = text(b.kind, `${path}.kind`)
+    if (kind && kind !== 'parts_check') throw invalid(`${path}.kind`, 'is not a known block kind')
     out.blocks.push({
+      kind,
+      blocks_first_round:
+        b.blocks_first_round === undefined ? kind === 'parts_check' : !!b.blocks_first_round,
       day: dayRef(b.day, `${path}.day`, true),
       starts_at: text(b.starts_at, `${path}.starts_at`, { required: true, pattern: TIME }),
       duration_minutes: int(b.duration_minutes, `${path}.duration_minutes`, 5, 1440, undefined),
@@ -551,6 +577,8 @@ function createEvent(tx, template, input, auth) {
   )
   event.set('description', template.event.description)
   event.set('table_labels', template.event.table_labels)
+  event.set('time_decimals', template.event.time_decimals)
+  event.set('allow_team_refusal', template.event.allow_team_refusal)
   event.set('status', 'draft')
   tx.save(event)
 
@@ -624,10 +652,11 @@ function createEvent(tx, template, input, auth) {
       round.set('game_rule', r.game_rule ? ruleIds[r.game_rule.toLowerCase()] : '')
       round.set('testing_minutes', r.testing_minutes)
       round.set('scoring_minutes', r.scoring_minutes)
+      round.set('check_mode', r.check_mode)
       round.set('day', scoring ? dayId(scoring.day) : '')
       save(round, rpath)
-      // Saving the round created its maintenance and scoring phases (hooks/planner.pb.js);
-      // place them as in the template and add the robot check.
+      // Saving the round created its maintenance, robot check (unless off) and scoring phases
+      // (hooks/planner.pb.js); place them as in the template.
       r.phases.forEach((p, k) => {
         if (p.phase === 'maintenance' && r.testing_minutes <= 0) return
         let phase = null
@@ -683,6 +712,8 @@ function createEvent(tx, template, input, auth) {
       'color',
       'responsibility',
       'public',
+      'kind',
+      'blocks_first_round',
     ]) {
       block.set(field, b[field])
     }

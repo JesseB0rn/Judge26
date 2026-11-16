@@ -67,9 +67,11 @@ routerAdd(
     }
 
     const engine = require(`${__hooks}/lib/ranking-engine.js`)
-    const config = JSON.parse(configJson)
+    const ranking = require(`${__hooks}/lib/ranking.js`)
+    // With the event's time precision (M10-20); the snapshot keeps this configuration.
+    const config = ranking.effectiveConfig(e.app, category, JSON.parse(configJson))
     const compiled = engine.compileRankingConfig(config)
-    const inputs = require(`${__hooks}/lib/ranking.js`).loadInputs(e.app, category.id)
+    const inputs = ranking.loadInputs(e.app, category.id)
     const result = engine.rank(compiled, inputs)
 
     const snapshot = new Record(e.app.findCollectionByNameOrId('ranking_snapshots'))

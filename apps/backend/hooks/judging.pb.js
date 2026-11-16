@@ -2,7 +2,8 @@
 
 // M5: judge interface and scoring workflow. See docs/specifications/M5-judging.md.
 
-// GET /api/judging/assignments -> games on the tables the user judges (M5-01)
+// GET /api/judging/assignments[?table=] -> games on the tables the user judges (M5-01), or of one
+// table for a head judge stepping in (M10-07)
 routerAdd(
   'GET',
   '/api/judging/assignments',
@@ -12,8 +13,17 @@ routerAdd(
       throw new ForbiddenError('Verify your account first.', {
         _error: new ValidationError('not_verified', 'Verify your account first.'),
       })
-    return e.json(200, require(`${__hooks}/lib/judging.js`).assignments(e.app, e.auth))
+    const table = e.request.url.query().get('table')
+    return e.json(200, require(`${__hooks}/lib/judging.js`).assignments(e.app, e.auth, table))
   },
+  $apis.requireAuth('users', '_superusers'),
+)
+
+// GET /api/judging/tables -> tables a head judge can step in at, with judges and progress (M10-07)
+routerAdd(
+  'GET',
+  '/api/judging/tables',
+  (e) => e.json(200, require(`${__hooks}/lib/judging.js`).headJudgeTables(e.app, e.auth)),
   $apis.requireAuth('users', '_superusers'),
 )
 

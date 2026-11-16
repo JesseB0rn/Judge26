@@ -75,10 +75,17 @@ services:
       SMTP_OAUTH_TENANT_ID: ${SMTP_OAUTH_TENANT_ID:-}
       SMTP_OAUTH_CLIENT_ID: ${SMTP_OAUTH_CLIENT_ID:-}
       SMTP_OAUTH_CLIENT_SECRET: ${SMTP_OAUTH_CLIENT_SECRET:-}
+      # M10-G: a certificate credential instead of the secret (paths inside the container).
+      SMTP_OAUTH_CERTIFICATE_FILE: ${SMTP_OAUTH_CERTIFICATE_FILE:-}
+      SMTP_OAUTH_PRIVATE_KEY_FILE: ${SMTP_OAUTH_PRIVATE_KEY_FILE:-}
+      SMTP_OAUTH_PRIVATE_KEY_PASSPHRASE: ${SMTP_OAUTH_PRIVATE_KEY_PASSPHRASE:-}
       # Mailbox to send as; MAIL_SENDER_ADDRESS when empty.
       SMTP_OAUTH_USER: ${SMTP_OAUTH_USER:-}
       MAIL_SENDER_ADDRESS: ${MAIL_SENDER_ADDRESS:-}
       TZ: ${TZ:-Europe/Zurich}
+    volumes:
+      # Certificate and key for SMTP_OAUTH_CERTIFICATE_FILE / _PRIVATE_KEY_FILE (M10-G), read-only.
+      - ${SMTP_OAUTH_CERTIFICATE_DIR:-./mail-relay-certificate}:/certificate:ro
     restart: unless-stopped
     logging:
       driver: json-file

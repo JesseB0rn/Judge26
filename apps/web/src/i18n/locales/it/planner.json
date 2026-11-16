@@ -14,7 +14,8 @@
     "phase_order": "Le fasi devono svolgersi nell’ordine manutenzione, controllo del robot, valutazione.",
     "round_overlap": "Si sovrappone a un altro turno della stessa categoria.",
     "table_overlap": "Un altro turno usa lo stesso tavolo in questo momento.",
-    "judge_overlap": "Lo stesso giudice è necessario su due tavoli in questo momento."
+    "judge_overlap": "Lo stesso giudice è necessario su due tavoli in questo momento.",
+    "parts_check_late": "Il controllo del materiale termina dopo la prima manche valutata della giornata."
   },
   "internal": "Interno (solo staff)",
   "done": "Fatto",

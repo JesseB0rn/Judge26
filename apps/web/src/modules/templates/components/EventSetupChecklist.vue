@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { t, type MessageKey } from '@/i18n'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { RouterLink, type RouteLocationRaw } from 'vue-router'
-import { ArrowRightIcon, CalendarRangeIcon, CircleCheckIcon, CircleIcon } from '@lucide/vue'
+import {
+  ArrowRightIcon,
+  CalendarRangeIcon,
+  CircleCheckIcon,
+  CircleIcon,
+  SendIcon,
+} from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,8 +21,15 @@ import { getSetupStatus, type SetupStep, type SetupStepKey } from '../api'
  * Setup checklist of an event (M8-20): each step shows whether it is done, what is missing and
  * links to where it is done. Steps only wait for the data they build on (`needs`).
  */
-const props = defineProps<{ event: EventRecord }>()
+const props = defineProps<{ event: EventRecord; publishing?: boolean }>()
+/** M10-30: the publish row publishes like the button in the page header. */
+const emit = defineEmits<{ publish: [] }>()
 const { data: status, loading, error, load } = useLoader(() => getSetupStatus(props.event.id))
+// Publishing (here or in the header) completes the last step.
+watch(
+  () => props.event.status,
+  () => void load(),
+)
 
 /** Event tab where each step is done. */
 const TAB: Record<SetupStepKey, string> = {
@@ -131,6 +144,16 @@ defineExpose({ reload: load })
               <RouterLink :to="{ name: 'event-planner', params: { id: event.id } }">
                 <CalendarRangeIcon /> {{ t('templates.setup.openPlanner') }}
               </RouterLink>
+            </Button>
+            <!-- Same state and rules as the header button: shown while the event is a draft. -->
+            <Button
+              v-if="step.key === 'publish' && event.status === 'draft'"
+              size="sm"
+              :disabled="publishing"
+              data-testid="setup-publish"
+              @click="emit('publish')"
+            >
+              <SendIcon /> {{ t('events.detail.publish') }}
             </Button>
             <Button
               v-if="step.key !== 'publish'"

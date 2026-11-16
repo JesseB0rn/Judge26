@@ -22,11 +22,12 @@ A ruleset is JSON:
 }
 ```
 
-| Property        | Notes                                                 |
-| --------------- | ----------------------------------------------------- |
-| `schemaVersion` | Must be `1`                                           |
-| `precision`     | Decimal places of all scores, 0–4 (default 2)         |
-| `root`          | A group. It cannot have a condition or be a deduction |
+| Property           | Notes                                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schemaVersion`    | Must be `1`                                                                                                                                                                     |
+| `precision`        | Decimal places of all scores, 0–4 (default 2)                                                                                                                                   |
+| `zeroPointsTimeMs` | Optional (M10-18): time a completed run with 0 points counts with, 0–3 600 000 ms. Absent: the measured time counts. New first rulesets get 120 000 ([M10 times](M10-times.md)) |
+| `root`             | A group. It cannot have a condition or be a deduction                                                                                                                           |
 
 Unknown properties are rejected so that typos do not go unnoticed.
 

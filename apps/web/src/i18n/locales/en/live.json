@@ -20,7 +20,8 @@
     "labelOf": "{label} progress",
     "done": "{done} of {total} games done",
     "inReview": "{count} in review",
-    "remaining": "{count} remaining"
+    "remaining": "{count} remaining",
+    "segment": "{round}: {done} of {total}"
   },
   "publication": {
     "updated": "Publication updated.",
@@ -74,5 +75,10 @@
     "description": "Rankings, schedules and progress of competitions.",
     "empty": "No competitions are public yet.",
     "finished": "finished"
+  },
+  "qr": {
+    "button": "QR code",
+    "label": "QR code of the live ranking",
+    "caption": "Live ranking"
   }
 }

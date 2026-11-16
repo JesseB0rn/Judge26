@@ -6,6 +6,7 @@ export { canonicalJson, fingerprint } from './fingerprint'
 export { formatUnits, fromUnits, toUnits } from './decimal'
 export { EXAMPLE_RULESET } from './example'
 export { updateValue, pruneInactive } from './sheet'
+export { countedTimeMs, usesZeroPointsTime } from './time'
 
 import { evaluate } from './evaluate'
 import { compileRuleset } from './validate'

@@ -31,6 +31,12 @@ export interface EventRecord extends BaseRecord {
   /** PocketBase datetime string ("YYYY-MM-DD HH:mm:ss.SSSZ") or "". */
   registration_opens_at: string
   registration_closes_at: string
+  /** Decimals of run times, 0–3; empty (0) = whole seconds (M10-19). */
+  time_decimals?: number
+  /** Teams may refuse to confirm a score sheet, with a reason (M10-06). */
+  allow_team_refusal?: boolean
+  /** How new tables are named (M10-25). */
+  table_labels?: '' | 'table_number' | 'number' | 'table_letter' | 'letter'
 }
 
 /** Contents of a template file (apps/backend/hooks/lib/templates.js). Only what the app shows is typed. */
@@ -179,6 +185,10 @@ export interface RoundRecord extends BaseRecord {
   day?: string
   /** Game rule the round is scored with, or "" (then the category's only game rule). */
   game_rule?: string
+  /** Robot check before scoring (M10-08, M10-09); new rounds default to synchronous. */
+  check_mode?: 'off' | 'synchronous' | 'asynchronous'
+  /** When the head judge released a synchronous round for scoring (M10-11). */
+  released_at?: string
 }
 
 export type GameStatus = 'scheduled' | 'completed' | 'disqualified' | 'absent'

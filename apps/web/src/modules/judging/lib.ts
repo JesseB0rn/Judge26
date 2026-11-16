@@ -1,5 +1,6 @@
+import { formatRunTime } from '@judge26/ranking-engine'
 import { t, translatedLabels } from '@/i18n'
-import type { Assignment, NamedRef, RoundCheck, RoundRef, SheetStatus } from './types'
+import type { Assignment, NamedRef, RoundCheck, RoundRef, ScoringGate, SheetStatus } from './types'
 
 // ---------------------------------------------------------------------------
 // Stopwatch (M5-07). Based on wall-clock timestamps, so it survives a reload.
@@ -45,13 +46,12 @@ export function stop(
 // Times
 // ---------------------------------------------------------------------------
 
-/** 95370 → "1:35.37" (minutes:seconds.hundredths). */
-export function formatTime(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 10))
-  const hundredths = total % 100
-  const seconds = Math.floor(total / 100) % 60
-  const minutes = Math.floor(total / 6000)
-  return `${minutes}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`
+/**
+ * A run time as minutes:seconds with the event's decimals (M10-19), cut not rounded: 95370 at
+ * 2 decimals → "1:35.37", at 0 → "1:35".
+ */
+export function formatTime(ms: number, decimals = 2): string {
+  return formatRunTime(ms, decimals)
 }
 
 /**
@@ -257,12 +257,38 @@ export function checkWhen(block: RobotCheckBlock) {
 }
 
 /** Route of the guided check of a block; `from` is the page to return to. */
-export function checkRoute(block: RobotCheckBlock, from?: string) {
+/** The robot check of a block; `seat`: the table a head judge stepped in at (M10-07). */
+export function checkRoute(block: RobotCheckBlock, from?: string, seat?: string) {
+  // A head judge's table travels with the dashboard address it came from.
+  if (!seat && from) seat = new URL(from, 'http://local').searchParams.get('seat') ?? undefined
   return {
     name: 'judging-check',
     params: { roundId: block.round.id },
-    query: { ...(block.table ? { table: block.table.id } : {}), ...(from ? { from } : {}) },
+    query: {
+      ...(block.table ? { table: block.table.id } : {}),
+      ...(from ? { from } : {}),
+      ...(seat ? { seat } : {}),
+    },
   }
+}
+
+/**
+ * The tables (and their categories) of the shown games, for "you are at table …" (M10-01):
+ * one entry per table, in order of appearance.
+ */
+export function myTables(rows: Assignment[]) {
+  const seen = new Map<string, { id: string; name: string; categories: string[] }>()
+  for (const row of rows) {
+    if (!row.table) continue
+    const entry = seen.get(row.table.id) ?? {
+      id: row.table.id,
+      name: row.table.name,
+      categories: [],
+    }
+    if (!entry.categories.includes(row.category.name)) entry.categories.push(row.category.name)
+    seen.set(row.table.id, entry)
+  }
+  return [...seen.values()]
 }
 
 /** Dashboard filters applied to robot check blocks (the check's own day). */
@@ -321,17 +347,33 @@ export function buildTimeline(rows: Assignment[], checks: RobotCheckBlock[]): Ti
 }
 
 /**
- * A robot check is done once the judge finished it (on this device) or as soon as scoring of
- * that round has started at that table.
+ * A robot check is done once its table confirmed it as complete on the server (M10-10), or as
+ * soon as scoring of that round has started at that table. Rows cached before M10-B carry no
+ * server state; for them a check finished on this device counts (`finished`, M5-15).
  */
-export function isCheckDone(block: RobotCheckBlock, rows: Assignment[], finished: string[]) {
-  if (finished.includes(block.key)) return true
-  return rows.some(
-    (row) =>
-      row.round.id === block.round.id &&
-      (row.table?.id ?? '') === (block.table?.id ?? '') &&
-      scoreState(row) !== 'open',
+export function isCheckDone(block: RobotCheckBlock, rows: Assignment[], finished: string[] = []) {
+  const own = rows.filter(
+    (row) => row.round.id === block.round.id && (row.table?.id ?? '') === (block.table?.id ?? ''),
   )
+  if (own.some((row) => scoreState(row) !== 'open')) return true
+  if (own.some((row) => row.robot_check)) return own.some((row) => row.robot_check?.table_ready)
+  return finished.includes(block.key)
+}
+
+/** Why scoring of a row is locked (M10-B), "" when it is open or the row predates M10-B. */
+export function gateOf(row: Pick<Assignment, 'gate'>): ScoringGate {
+  return row.gate ?? ''
+}
+
+/** Short label of a scoring lock, e.g. "Waiting for the release"; "" when open. */
+export function gateLabel(gate: ScoringGate) {
+  return gate ? t(`checks.gate.${gate}`) : ''
+}
+
+/** What a locked score sheet waits for; `title`: the parts check's title. */
+export function gateExplanation(gate: ScoringGate, title = '') {
+  if (gate === 'parts_check') return t('checks.locked.parts_check', { title })
+  return gate ? t(`checks.locked.${gate}`) : ''
 }
 
 export type NextUp = { kind: 'check'; block: RobotCheckBlock } | { kind: 'game'; row: Assignment }

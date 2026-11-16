@@ -20,7 +20,8 @@
     "labelOf": "Avancement {label}",
     "done": "{done} manches sur {total} terminées",
     "inReview": "{count} en contrôle",
-    "remaining": "{count} restante(s)"
+    "remaining": "{count} restante(s)",
+    "segment": "{round} : {done} sur {total}"
   },
   "publication": {
     "updated": "Publication mise à jour.",
@@ -74,5 +75,10 @@
     "description": "Classements, horaires et avancement des compétitions.",
     "empty": "Aucune compétition n’est encore publique.",
     "finished": "terminé"
+  },
+  "qr": {
+    "button": "Code QR",
+    "label": "Code QR du classement en direct",
+    "caption": "Classement en direct"
   }
 }

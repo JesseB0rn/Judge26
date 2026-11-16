@@ -68,6 +68,25 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'GET', path: '/api/dev/monitoring/crash', access: 'dev' },
   { method: 'POST', path: '/api/categories/{id}/copy', access: 'auth' },
   { method: 'GET', path: '/api/judging/assignments', access: 'auth' },
+  // M10-07: tables a head judge can step in at.
+  { method: 'GET', path: '/api/judging/tables', access: 'auth' },
+  // M10-B: robot check, parts check and round file (guests get 404 for the file).
+  { method: 'GET', path: '/api/rounds/{id}/checks', access: 'auth' },
+  { method: 'PUT', path: '/api/rounds/{id}/checks', access: 'auth' },
+  { method: 'POST', path: '/api/rounds/{id}/checks/ready', access: 'auth' },
+  { method: 'POST', path: '/api/rounds/{id}/release', access: 'auth' },
+  { method: 'DELETE', path: '/api/rounds/{id}/release', access: 'auth' },
+  { method: 'PUT', path: '/api/rounds/{id}/check-mode', access: 'auth' },
+  { method: 'GET', path: '/api/rounds/{id}/file', access: 'auth' },
+  { method: 'POST', path: '/api/rounds/{id}/file', access: 'auth' },
+  { method: 'DELETE', path: '/api/rounds/{id}/file', access: 'auth' },
+  { method: 'GET', path: '/api/events/{id}/checks', access: 'auth' },
+  { method: 'GET', path: '/api/judging/parts-checks', access: 'auth' },
+  { method: 'POST', path: '/api/parts-checks/{id}/tables/{table}', access: 'auth' },
+  { method: 'POST', path: '/api/parts-checks/{id}/complete', access: 'auth' },
+  { method: 'DELETE', path: '/api/parts-checks/{id}/complete', access: 'auth' },
+  // M10-31: print center data (staff).
+  { method: 'GET', path: '/api/events/{id}/print', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/judging', access: 'auth' },
   { method: 'GET', path: '/api/games/{id}/sheet', access: 'auth' },
   { method: 'PUT', path: '/api/games/{id}/sheet', access: 'auth' },
@@ -184,6 +203,7 @@ describe('M7 security', () => {
       .collection('competition_days')
       .create({ event: event.id, date: '2026-06-01', label: 'Day 1' })
     const round = await su.collection('rounds').create({
+      check_mode: 'off',
       category: category.id,
       key: 'R1',
       name: 'Round 1',
@@ -220,7 +240,7 @@ describe('M7 security', () => {
     })
     await judge.pb.send(`/api/games/${game.id}/sheet/submit`, {
       method: 'POST',
-      body: { values: sheetValues(2) },
+      body: { values: sheetValues(2), team_confirmation: 'confirmed' },
     })
     const block = await su.collection('schedule_blocks').create({
       event: event.id,
@@ -338,7 +358,15 @@ describe('M7 security', () => {
         )
         .map((c) => c.name)
         .sort()
-      expect(closed).toEqual(['app_settings', 'schedule_notices', 'view_sessions'])
+      expect(closed).toEqual([
+        'app_settings',
+        'parts_check_tables',
+        'robot_check_tables',
+        'robot_checks',
+        'round_files',
+        'schedule_notices',
+        'view_sessions',
+      ])
     })
 
     it('M7-T09: outsiders can neither read nor change the records of an event', async () => {
@@ -521,6 +549,11 @@ describe('M7 security', () => {
           { rows: [{ name: 'x', email: 'x@test.local' }] },
         ],
         ['DELETE', `/api/events/${ctx.event.id}/staff/${ctx.records.role_assignments}`],
+        ['GET', `/api/events/${ctx.event.id}/checks`],
+        ['GET', `/api/events/${ctx.event.id}/print`],
+        ['POST', `/api/rounds/${ctx.records.rounds}/release`, { reason: 'x' }],
+        ['PUT', `/api/rounds/${ctx.records.rounds}/check-mode`, { mode: 'asynchronous' }],
+        ['DELETE', `/api/rounds/${ctx.records.rounds}/file`],
       ]
       for (const [who, pb] of [
         ['judge', judge![1]],
@@ -561,7 +594,11 @@ describe('M7 security', () => {
       gameId: string,
       action: string,
       body: Record<string, unknown> = {},
-    ) => user.pb.send(`/api/games/${gameId}/sheet/${action}`, { method: 'POST', body })
+    ) =>
+      user.pb.send(`/api/games/${gameId}/sheet/${action}`, {
+        method: 'POST',
+        body: action === 'submit' ? { team_confirmation: 'confirmed', ...body } : body,
+      })
 
     it('simultaneous submissions: exactly one is stored, the others are refused', async () => {
       const ctx = await judged()

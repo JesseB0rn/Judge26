@@ -5,7 +5,7 @@ import { buttonByText, click, fill, makeRole, mountView } from '@/test/utils'
 import type { TeamDocumentRecord } from '@/shared/types/records'
 import * as api from '../api'
 import * as documents from '@/modules/teams/documents'
-import { cacheAssignments, cachedAssignments, finishedChecks, setCheckFinished } from '../drafts'
+import { cacheAssignments, cachedAssignments, setCheckFinished } from '../drafts'
 import {
   buildTimeline,
   dayOptions,
@@ -15,11 +15,13 @@ import {
   robotChecks,
   timeRange,
 } from '../lib'
+import type { CheckTeam, TableCheckState } from '../types'
 import JudgeDashboardView from '../views/JudgeDashboardView.vue'
 import RobotCheckView from '../views/RobotCheckView.vue'
 import { makeAssignment } from './fixtures'
 
 vi.mock('../api')
+vi.mock('@/modules/live/useLiveUpdates', () => ({ useLiveUpdates: vi.fn<() => void>() }))
 vi.mock('@/modules/teams/documents', async (original) => ({
   ...(await original<typeof documents>()),
   listTeamDocuments: vi.fn<typeof documents.listTeamDocuments>(),
@@ -121,10 +123,56 @@ describe('robot check helpers (M5-15)', () => {
 
 const judge = { roles: [makeRole('judge', 'event1')] }
 
+const checkTeam = (id: string, name: string, sequence: number, game: string): CheckTeam => ({
+  id,
+  name,
+  game,
+  sequence,
+  checked: false,
+  checked_at: '',
+  checked_by: null,
+  client_saved_at: 0,
+  scoring_started: false,
+})
+
+/** The server's state of round r1 at table A (M10-10). */
+function tableState(over: Partial<TableCheckState> = {}): TableCheckState {
+  return {
+    round: {
+      id: 'r1',
+      key: 'R1',
+      name: 'Round 1',
+      position: 1,
+      check_mode: 'synchronous',
+      released_at: '',
+      released_by: null,
+      release_reason: '',
+      category: { id: 'cat1', name: 'RoboMission Junior', code: 'RM-J' },
+    },
+    event: { id: 'event1', name: 'WRO Final', status: 'published' },
+    table: tA,
+    parts_check: null,
+    ready: null,
+    teams: [checkTeam('a', 'Alpha', 1, 'g1'), checkTeam('b', 'Bravo', 2, 'g2')],
+    file: null,
+    can_release: false,
+    ...over,
+  }
+}
+const allChecked = () =>
+  tableState().teams.map((t) => ({
+    ...t,
+    checked: true,
+    checked_at: '2026-06-12 16:05:00.000Z',
+    checked_by: { id: 'user1', name: 'Judy' },
+  }))
+
 beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
   mocked.listAssignments.mockResolvedValue(rows)
+  mocked.listPartsChecks.mockResolvedValue([])
+  mocked.getTableCheck.mockResolvedValue(tableState())
   mockedDocs.listTeamDocuments.mockResolvedValue([
     doc('d1', 'a', 'Robot description', 'robot_abc.pdf'),
     doc('d2', 'a', 'Robot photo', 'photo_abc.jpg'),
@@ -297,20 +345,69 @@ describe('RobotCheckView (M5-15)', () => {
     expect(current().text()).toContain('Alpha')
   })
 
-  it('finishing the check on the last team marks it done and returns to the dashboard', async () => {
+  it('M10-11: the last team marks the table ready on the server and returns to the dashboard', async () => {
+    mocked.getTableCheck.mockResolvedValue(tableState({ teams: allChecked() }))
+    mocked.setTableReady.mockResolvedValue(
+      tableState({ teams: allChecked(), ready: { at: '', by: { id: 'user1', name: 'Judy' } } }),
+    )
     const { wrapper, router } = await mountCheck('?table=tA&team=b&from=/judging?day=fri')
+    expect(mocked.getTableCheck).toHaveBeenCalledWith('r1', 'tA')
     await click(wrapper.get('[data-testid=check-finish]').element as HTMLElement)
-    expect(finishedChecks('user1')).toEqual(['r1:tA'])
+    expect(mocked.setTableReady).toHaveBeenCalledWith('r1', 'tA', true)
     expect(router.currentRoute.value.fullPath).toBe('/judging?day=fri')
   })
 
-  it('a finished check can be reopened', async () => {
-    setCheckFinished('user1', 'r1:tA', true)
+  it('asks before marking a table ready with unchecked teams', async () => {
+    const ask = vi.spyOn(window, 'confirm').mockReturnValue(false)
     const { wrapper } = await mountCheck('?table=tA&team=b')
-    expect(wrapper.get('[data-testid=check-done]').text()).toContain('You finished')
+    await click(wrapper.get('[data-testid=check-finish]').element as HTMLElement)
+    expect(ask).toHaveBeenCalledWith(expect.stringContaining('2 teams are not checked'))
+    expect(mocked.setTableReady).not.toHaveBeenCalled()
+    ask.mockRestore()
+  })
+
+  it('a ready table can be reopened until the release', async () => {
+    const ready = { at: '2026-06-12 16:20:00.000Z', by: { id: 'u2', name: 'Jo' } }
+    mocked.getTableCheck.mockResolvedValue(tableState({ teams: allChecked(), ready }))
+    mocked.setTableReady.mockResolvedValue(tableState({ teams: allChecked() }))
+    const { wrapper } = await mountCheck('?table=tA&team=b')
+    expect(wrapper.get('[data-testid=check-done]').text()).toContain('The table is ready (Jo)')
     await click(buttonByText('Mark as not done'))
-    expect(finishedChecks('user1')).toEqual([])
+    expect(mocked.setTableReady).toHaveBeenCalledWith('r1', 'tA', false)
     expect(wrapper.find('[data-testid=check-finish]').exists()).toBe(true)
+  })
+
+  it('M10-T13: a team checked on another device shows who checked it', async () => {
+    mocked.getTableCheck.mockResolvedValue(tableState({ teams: allChecked() }))
+    const { wrapper } = await mountCheck('?table=tA&team=a')
+    expect(wrapper.get('[data-testid=team-check]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-testid=team-checked-by]').text()).toContain('Judy')
+  })
+
+  it('M10-10: checking a team stores it on the server; offline it is queued', async () => {
+    const [alpha] = allChecked()
+    mocked.setTeamCheck.mockResolvedValueOnce({ team: alpha!, stale: false })
+    const { wrapper } = await mountCheck('?table=tA&team=a')
+    await click(wrapper.get('[data-testid=team-check]').element as HTMLElement)
+    expect(mocked.setTeamCheck).toHaveBeenCalledWith('r1', 'a', true, expect.any(Number))
+    expect(wrapper.get('[data-testid=team-check]').attributes('aria-pressed')).toBe('true')
+
+    mocked.setTeamCheck.mockRejectedValue(new ClientResponseError({ status: 0 }))
+    await click(wrapper.get('[data-testid=check-next]').element as HTMLElement)
+    await click(wrapper.get('[data-testid=team-check]').element as HTMLElement)
+    expect(wrapper.get('[data-testid=team-checked-by]').text()).toContain('this device')
+    expect(JSON.parse(localStorage.getItem('judge26:judging:checkq:r1:b')!)).toMatchObject({
+      checked: true,
+    })
+  })
+
+  it('M10-16: while the parts check is open the check is locked', async () => {
+    mocked.getTableCheck.mockResolvedValue(
+      tableState({ parts_check: { id: 'p1', title: 'Parts check' } }),
+    )
+    const { wrapper } = await mountCheck('?table=tA&team=a')
+    expect(wrapper.get('[data-testid=check-parts-open]').text()).toContain('Parts check')
+    expect(wrapper.get('[data-testid=team-check]').attributes('disabled')).toBeDefined()
   })
 
   it('opens the team from the URL and links to its score sheet', async () => {

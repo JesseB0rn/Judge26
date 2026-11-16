@@ -16,6 +16,13 @@ export const eventRoutes: RouteRecordRaw[] = [
     props: true,
   },
   {
+    // Print center (M10-31): venue printouts for event managers and head judges.
+    path: '/events/:id/print',
+    name: 'event-print',
+    component: () => import('@/modules/print/views/PrintCenterView.vue'),
+    props: true,
+  },
+  {
     // The assignment board (M8-E) lives in the Schedule tab; keep earlier links working.
     path: '/events/:id/board',
     redirect: (to) => ({ name: 'event', params: { id: to.params.id }, query: { tab: 'schedule' } }),

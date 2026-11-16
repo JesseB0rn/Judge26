@@ -95,7 +95,11 @@ const canManage = computed(() => {
 const savedText = computed(() =>
   category.value?.ranking ? JSON.stringify(category.value.ranking, null, 2) : '',
 )
-const parsed = computed(() => parseRankingConfig(text.value))
+// Live preview with the event's run time precision (M10-20), as the server ranks.
+const timeDecimals = computed(
+  () => event.value?.time_decimals ?? (isTemplate.value ? undefined : 0),
+)
+const parsed = computed(() => parseRankingConfig(text.value, timeDecimals.value))
 const dirty = computed(() => text.value !== savedText.value)
 const inputs = computed(() => toTeamInputs(teams.value, games.value, rounds.value))
 const ranking = computed(() =>
@@ -110,7 +114,7 @@ function exportTables(data: { ranking: Ranking; config: RankingConfig; inputs: T
 const liveExport = () =>
   exportTables({
     ranking: ranking.value!,
-    config: parsed.value.definition as RankingConfig,
+    config: parsed.value.config!.config,
     inputs: inputs.value,
   })
 const snapshotExport = () =>
@@ -371,6 +375,7 @@ onMounted(load)
           :teams="teams"
           :rounds="rounds"
           :games="games"
+          :decimals="timeDecimals ?? 0"
           :editable="canManage"
           @open="openGame"
         />

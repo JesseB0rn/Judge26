@@ -20,7 +20,8 @@
     "labelOf": "Fortschritt {label}",
     "done": "{done} von {total} Läufen fertig",
     "inReview": "{count} in Prüfung",
-    "remaining": "{count} ausstehend"
+    "remaining": "{count} ausstehend",
+    "segment": "{round}: {done} von {total}"
   },
   "publication": {
     "updated": "Veröffentlichung aktualisiert.",
@@ -74,5 +75,10 @@
     "description": "Ranglisten, Zeitpläne und Fortschritt der Wettbewerbe.",
     "empty": "Noch keine Wettbewerbe öffentlich.",
     "finished": "beendet"
+  },
+  "qr": {
+    "button": "QR-Code",
+    "label": "QR-Code der Live-Rangliste",
+    "caption": "Live-Rangliste"
   }
 }

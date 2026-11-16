@@ -9,6 +9,7 @@ import {
 } from '@judge26/scoring-engine'
 import ScoreSheet from '../components/ScoreSheet.vue'
 import RulesetEditor from '../components/RulesetEditor.vue'
+import ScoringInspector from '../components/ScoringInspector.vue'
 import { parseRuleset } from '../lib'
 
 const ruleset = compileRuleset(EXAMPLE_RULESET)
@@ -129,5 +130,40 @@ describe('RulesetEditor', () => {
   it('parseRuleset returns the compiled ruleset when valid', () => {
     expect(parseRuleset(JSON.stringify(EXAMPLE_RULESET)).ruleset).toBeDefined()
     expect(parseRuleset('[]').issues[0]!.code).toBe('invalid_type')
+  })
+})
+
+describe('ScoringInspector (M10-18)', () => {
+  const def = {
+    schemaVersion: 1,
+    root: {
+      id: 'root',
+      label: 'Total',
+      type: 'group' as const,
+      aggregate: 'sum' as const,
+      children: [{ id: 'flag', label: 'Flag', type: 'boolean' as const, points: 10 }],
+    },
+  }
+
+  it('turns the zero-point time on (120 s), changes it and turns it off', async () => {
+    const wrapper = mount(ScoringInspector, { props: { def, nodeKey: '' } })
+    const toggle = wrapper.get('[data-testid=zero-points-toggle] input')
+    expect((toggle.element as HTMLInputElement).checked).toBe(false)
+    await toggle.setValue(true)
+    const on = wrapper.emitted('apply')![0]![0] as { zeroPointsTimeMs?: number }
+    expect(on.zeroPointsTimeMs).toBe(120_000)
+
+    await wrapper.setProps({ def: { ...def, zeroPointsTimeMs: 120_000 } })
+    const seconds = wrapper.get('[data-testid=zero-points-seconds] input')
+    expect((seconds.element as HTMLInputElement).value).toBe('120')
+    await seconds.setValue('90')
+    await seconds.trigger('change')
+    expect(
+      (wrapper.emitted('apply')!.at(-1)![0] as { zeroPointsTimeMs?: number }).zeroPointsTimeMs,
+    ).toBe(90_000)
+
+    await wrapper.get('[data-testid=zero-points-toggle] input').setValue(false)
+    expect('zeroPointsTimeMs' in (wrapper.emitted('apply')!.at(-1)![0] as object)).toBe(false)
+    wrapper.unmount()
   })
 })

@@ -2,7 +2,7 @@
 import { t } from '@/i18n'
 import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { TvIcon } from '@lucide/vue'
+import { QrCodeIcon, TvIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import FilterChips from '@/shared/components/FilterChips.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
+import QrCode from '@/shared/components/QrCode.vue'
+import { useSessionStore } from '@/shared/auth/session'
 import { formatDay } from '@/shared/format'
 import { getPublicEvent, getPublicRanking } from '../api'
 import {
@@ -18,6 +20,9 @@ import {
   filterGames,
   localDate,
   progressOf,
+  roundSegments,
+  liveRankingUrl,
+  isPublicEvent,
   publishedCategories,
 } from '../lib'
 import type { RankingSource } from '../types'
@@ -37,6 +42,11 @@ import type { ItemRef } from '@/modules/planner/types'
 const props = defineProps<{ id: string }>()
 const route = useRoute()
 const router = useRouter()
+const session = useSessionStore()
+/** The address the QR code points to (M10-35). */
+const rankingUrl = computed(() =>
+  liveRankingUrl(router.resolve({ name: 'live-event', params: { id: props.id } }).href),
+)
 
 const event = useLiveResource(
   () => `event.${props.id}`,
@@ -123,13 +133,18 @@ watch(
 const categoryProgress = computed(() => {
   const data = event.data.value
   if (!data) return []
-  return data.categories.map((c) => ({
-    category: c,
-    progress: progressOf(filterGames(data, { category: c.id, day: day.value ?? '' })),
-  }))
+  return data.categories.map((c) => {
+    const games = filterGames(data, { category: c.id, day: day.value ?? '' })
+    return { category: c, progress: progressOf(games), segments: roundSegments(data, games) }
+  })
 })
-const overall = computed(() =>
-  event.data.value ? progressOf(filterGames(event.data.value, { day: day.value ?? '' })) : null,
+const overallGames = computed(() =>
+  event.data.value ? filterGames(event.data.value, { day: day.value ?? '' }) : null,
+)
+const overall = computed(() => (overallGames.value ? progressOf(overallGames.value) : null))
+// M10-36: the day's bar is divided by round.
+const overallSegments = computed(() =>
+  event.data.value && overallGames.value ? roundSegments(event.data.value, overallGames.value) : [],
 )
 const selectedDay = computed(() => event.data.value?.days.find((d) => d.id === day.value))
 const stale = computed(() => event.stale.value || ranking.stale.value)
@@ -185,6 +200,24 @@ const shownRound = computed(() =>
       "
     >
       <template #actions>
+        <!-- M10-35: staff show the QR code of the live ranking (e.g. on a beamer). -->
+        <details
+          v-if="session.isEventStaff(props.id) && isPublicEvent(event.data.value.event.status)"
+          class="relative self-center"
+          data-testid="live-qr"
+        >
+          <summary
+            class="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border px-3 text-sm font-medium hover:bg-muted"
+          >
+            <QrCodeIcon class="size-4" /> {{ t('live.qr.button') }}
+          </summary>
+          <div
+            class="absolute right-0 z-20 mt-2 flex w-64 flex-col gap-2 rounded-xl border bg-background p-3 shadow-lg"
+          >
+            <QrCode class="size-56 self-center" :value="rankingUrl" :label="t('live.qr.label')" />
+            <p class="text-center text-xs break-all text-muted-foreground">{{ rankingUrl }}</p>
+          </div>
+        </details>
         <LiveIndicator
           class="self-center"
           :status="live.status.value"
@@ -280,12 +313,17 @@ const shownRound = computed(() =>
             <CardTitle>{{ selectedDay ? dayLabel(selectedDay) : t('live.allDays') }}</CardTitle>
           </CardHeader>
           <CardContent class="flex flex-col gap-4">
-            <ProgressBar :progress="overall" :label="t('teams.filter.allCategories')" />
+            <ProgressBar
+              :progress="overall"
+              :segments="overallSegments"
+              :label="t('teams.filter.allCategories')"
+            />
             <ProgressBar
               v-for="row in categoryProgress"
               v-show="!category || row.category.id === category"
               :key="row.category.id"
               :progress="row.progress"
+              :segments="row.segments"
               :label="row.category.name"
               :data-category="row.category.id"
             />

@@ -1,8 +1,10 @@
+import { createClientAssertion } from './assertion.ts'
 import type { RelayConfig } from './config.ts'
 
 // OAuth 2.0 client credentials (M9-13): an access token for SMTP AUTH XOAUTH2, fetched once and
-// reused until shortly before it expires. The client secret never leaves this module and is
-// never part of an error message.
+// reused until shortly before it expires. The client authenticates with its secret, or with a
+// client assertion signed by its certificate's key, new for every request (M10-37, M10-38). The
+// secret, the key and assertions never leave this module and are never part of an error message.
 
 /** Renew this long before the token expires, so a message never goes out with a stale one. */
 export const RENEW_BEFORE_MS = 5 * 60_000
@@ -27,6 +29,21 @@ export function createTokenProvider(
   let cached: { token: string; expiresAt: number } | undefined
   let pending: Promise<string> | undefined
 
+  function credentialParams(): Record<string, string> {
+    const credential = oauth.credential
+    if (credential.kind === 'secret') return { client_secret: credential.secret }
+    return {
+      client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+      client_assertion: createClientAssertion({
+        tokenUrl: oauth.tokenUrl,
+        clientId: oauth.clientId,
+        certificate: credential.certificate,
+        privateKey: credential.privateKey,
+        now: now(),
+      }),
+    }
+  }
+
   async function request(): Promise<string> {
     let response: Response
     try {
@@ -36,7 +53,7 @@ export function createTokenProvider(
         body: new URLSearchParams({
           grant_type: 'client_credentials',
           client_id: oauth.clientId,
-          client_secret: oauth.clientSecret,
+          ...credentialParams(),
           scope: oauth.scope,
         }),
         signal: AbortSignal.timeout(15_000),

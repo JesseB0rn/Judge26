@@ -44,7 +44,22 @@ describe('rankings lib', () => {
 
   it('formats key values', () => {
     expect(formatValue(null, 'points')).toBe('–')
-    expect(formatValue(110_000, 'time')).toBe('110.000 s')
+    // M10-19: times as m:ss with the event's decimals (default milliseconds), cut not rounded.
+    expect(formatValue(110_000, 'time')).toBe('1:50.000')
+    expect(formatValue(95_379, 'time', 1)).toBe('1:35.3')
+    expect(formatValue(95_379, 'time', 0)).toBe('1:35')
     expect(formatValue(42, 'points')).toBe('42')
+  })
+
+  it('M10-20: parsing with the event’s decimals cuts times to the coarser resolution', () => {
+    const text = JSON.stringify({ ...EXAMPLE_RANKING_CONFIG, timeResolutionMs: 10 })
+    expect(parseRankingConfig(text, 0).config!.timeResolutionMs).toBe(1000)
+    expect(parseRankingConfig(text, 1).config!.timeResolutionMs).toBe(100)
+    expect(parseRankingConfig(text, 3).config!.timeResolutionMs).toBe(10)
+    // Category templates (no event): as configured. The saved definition is never changed.
+    expect(parseRankingConfig(text).config!.timeResolutionMs).toBe(10)
+    expect(
+      (parseRankingConfig(text, 0).definition as { timeResolutionMs: number }).timeResolutionMs,
+    ).toBe(10)
   })
 })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import {
@@ -9,12 +9,14 @@ import {
   CircleAlertIcon,
   CloudOffIcon,
   HistoryIcon,
+  LockIcon,
+  MapPinIcon,
   PencilIcon,
   RotateCcwIcon,
   SendIcon,
   Undo2Icon,
 } from '@lucide/vue'
-import type { ScoreValues } from '@judge26/scoring-engine'
+import { usesZeroPointsTime, type ScoreValues } from '@judge26/scoring-engine'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,17 +25,21 @@ import ScoreSheet from '@/modules/scoring/components/ScoreSheet.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { backTarget } from '@/shared/composables/useQueryRefs'
 import { formatDay } from '@/shared/format'
+import { useLiveUpdates } from '@/modules/live/useLiveUpdates'
 import { cachePage, installAutoSync } from '../drafts'
-import { formatTime, scoreState } from '../lib'
+import { formatTime, gateExplanation, gateLabel, scoreState } from '../lib'
 import { useScoreSheet } from '../useScoreSheet'
 import OutcomePicker from '../components/OutcomePicker.vue'
 import ProgramNameField from '../components/ProgramNameField.vue'
 import ReasonDialog from '../components/ReasonDialog.vue'
+import RoundFilePanel from '../components/RoundFilePanel.vue'
 import SaveIndicator from '../components/SaveIndicator.vue'
 import ScoreHistory from '../components/ScoreHistory.vue'
 import ScoreStateBadge from '../components/ScoreStateBadge.vue'
 import StopwatchPanel from '../components/StopwatchPanel.vue'
 import SubmitDialog from '../components/SubmitDialog.vue'
+import StepSheet from '../components/StepSheet.vue'
+import type { TeamSignOff } from '../types'
 
 /**
  * Score sheet of one game at the table (M5-03 – M5-12). Built to be read in a hurry: who is
@@ -43,8 +49,48 @@ import SubmitDialog from '../components/SubmitDialog.vue'
 const props = defineProps<{ id: string }>()
 const s = useScoreSheet(props.id)
 const p = computed(() => s.payload.value)
+/** Decimals of the event's run times (M10-19). */
+const decimals = computed(() => p.value?.event.time_decimals ?? 0)
+/** The time a zero-point run counts with instead of the measured one (M10-18), or null. */
+const countedMs = computed(() => {
+  const definition = p.value?.ruleset?.definition
+  if (s.input.value.outcome !== 'completed' || !usesZeroPointsTime(definition, s.total.value))
+    return null
+  return definition!.zeroPointsTimeMs!
+})
 const route = useRoute()
 const router = useRouter()
+
+// List or step-by-step view (M10-05), remembered on this device.
+const VIEW_KEY = 'judge26.judging.sheetView'
+function storedView(): 'list' | 'steps' {
+  try {
+    return localStorage.getItem(VIEW_KEY) === 'steps' ? 'steps' : 'list'
+  } catch {
+    return 'list'
+  }
+}
+const sheetView = ref(storedView())
+watch(sheetView, (view) => {
+  try {
+    localStorage.setItem(VIEW_KEY, view)
+  } catch {
+    // Not remembered (storage blocked); the view still switches.
+  }
+})
+
+/**
+ * Where a submitted sheet leads (M10-02): back to the judge dashboard (with its filters, or the
+ * table a head judge stepped in at), however the sheet was opened. A reviewer who came from the
+ * review queue stays, as before.
+ */
+const afterSubmit = computed(() => {
+  const from = backTarget(route.query.from)
+  if (from && /^\/judging(\?|$)/.test(from)) return from
+  if (from?.startsWith('/review')) return null
+  if (!from && (p.value?.permissions.canReview || p.value?.permissions.canCorrect)) return null
+  return '/judging'
+})
 
 // Back always leads to the list this sheet was opened from, with its filters. A reviewer who
 // opened the sheet without such a list (e.g. a shared link) goes to the review queue.
@@ -68,14 +114,36 @@ onMounted(() => {
   void s.load()
 })
 
+// A locked sheet unlocks without a reload when the round is released or the check confirmed
+// (M10-T15, M10-T18). An open sheet is not reloaded, so nothing being entered is replaced.
+useLiveUpdates(
+  () => p.value?.event.id,
+  () => (s.locked.value && !s.fromCache.value ? s.load() : undefined),
+)
+
+/** The team's robot check, linked from a sheet locked until that check (M10-12). */
+const checkLink = computed(() =>
+  p.value
+    ? {
+        name: 'judging-check',
+        params: { roundId: p.value.round.id },
+        query: {
+          ...(p.value.table ? { table: p.value.table.id } : {}),
+          team: p.value.team.id,
+          from: route.fullPath,
+          ...(typeof route.query.seat === 'string' ? { seat: route.query.seat } : {}),
+        },
+      }
+    : null,
+)
+
 const context = computed(() => {
   if (!p.value) return ''
-  const { category, round, table, game, ruleset } = p.value
+  const { category, round, game, ruleset } = p.value
   return [
     category.code,
     round.name,
     ruleset?.game_rule?.name,
-    table?.name,
     game.sequence > 0 ? `#${game.sequence}` : '',
     game.attempt > 1 ? t('judging.attempt', { attempt: game.attempt }) : '',
   ]
@@ -115,11 +183,13 @@ function requestSubmit() {
   submitOpen.value = true
 }
 
-async function confirmSubmit() {
-  if (await s.submit()) {
+async function confirmSubmit(signOff: TeamSignOff | undefined) {
+  if (await s.submit(signOff)) {
     submitOpen.value = false
     showMissing.value = false
-    toast.success(t('judging.sheet.submitted'))
+    toast.success(t('judging.sheet.submittedTeam', { team: p.value?.team.name ?? '' }))
+    // The next open item is marked on the dashboard (M10-02).
+    if (afterSubmit.value) await router.push(afterSubmit.value)
   } else submitOpen.value = false
 }
 
@@ -209,8 +279,9 @@ function setManualPoints(raw: string | number) {
       >
         <div class="flex items-start gap-4">
           <div class="min-w-0 flex-1">
+            <!-- M10-04: the whole name, wrapped, never cut off. -->
             <h1
-              class="truncate text-2xl font-bold tracking-tight sm:text-3xl"
+              class="text-2xl font-bold tracking-tight break-words hyphens-auto sm:text-3xl"
               data-testid="team-name"
             >
               {{ p.team.name }}
@@ -219,6 +290,13 @@ function setManualPoints(raw: string | number) {
               {{ context }}<template v-if="day"> · {{ day }}</template>
             </p>
             <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <!-- M10-01: the table, so the judge does not get lost. -->
+              <span
+                v-if="p.table"
+                class="inline-flex items-center gap-1 rounded-full border-2 border-foreground/70 px-3 py-0.5 text-sm font-semibold"
+                data-testid="sheet-table"
+                ><MapPinIcon class="size-3.5" aria-hidden="true" />{{ p.table.name }}</span
+              >
               <ScoreStateBadge :state="state" size="lg" />
               <span
                 v-if="s.correcting.value"
@@ -231,6 +309,20 @@ function setManualPoints(raw: string | number) {
                 :error="s.saveError.value"
               />
             </div>
+          </div>
+          <!-- M10-03: the recorded run time next to the points, in the event's precision. -->
+          <div
+            v-if="s.input.value.outcome === 'completed' && s.input.value.time_ms > 0"
+            class="flex flex-col items-end rounded-xl border-2 border-foreground/30 px-3 py-1.5"
+          >
+            <span class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">{{
+              t('judging.time')
+            }}</span>
+            <span
+              class="font-mono text-3xl leading-none font-bold tabular-nums"
+              data-testid="header-time"
+              >{{ formatTime(s.input.value.time_ms, decimals) }}</span
+            >
           </div>
           <div
             class="flex min-w-24 flex-col items-end rounded-xl border-2 px-3 py-1.5"
@@ -318,6 +410,34 @@ function setManualPoints(raw: string | number) {
         }}</AlertTitle>
         <AlertDescription>{{ sheet.mulligan_reason }}</AlertDescription>
       </Alert>
+      <!-- M10-B: scoring waits for the release, the team's check or the parts check. -->
+      <Alert
+        v-if="s.locked.value && s.status.value !== 'submitted' && s.status.value !== 'finalized'"
+        class="border-amber-300 bg-amber-50 text-amber-950"
+        data-testid="sheet-locked"
+        :data-gate="s.gate.value"
+      >
+        <LockIcon />
+        <AlertTitle>{{ gateLabel(s.gate.value) }}</AlertTitle>
+        <AlertDescription class="flex flex-col items-start gap-2">
+          <span>{{ gateExplanation(s.gate.value, p.robot_check?.parts_check?.title) }}</span>
+          <span v-if="s.gate.value === 'not_confirmed'" class="flex flex-wrap gap-2">
+            <Button v-if="checkLink" as-child size="touch" data-testid="to-check">
+              <RouterLink :to="checkLink">{{ t('checks.toCheck') }}</RouterLink>
+            </Button>
+            <Button
+              v-if="p.permissions.canEdit"
+              variant="outline"
+              size="touch"
+              data-testid="mark-absent"
+              @click="s.markAbsent"
+              >{{ t('checks.markAbsent') }}</Button
+            >
+          </span>
+        </AlertDescription>
+      </Alert>
+      <!-- M10-17: the round's randomization file, once the check is confirmed. -->
+      <RoundFilePanel v-if="p.round_file" :round-id="p.round.id" :file="p.round_file" />
       <Alert v-if="p.event.status === 'archived'">
         <AlertDescription>{{ t('judging.sheet.archived') }}</AlertDescription>
       </Alert>
@@ -336,6 +456,7 @@ function setManualPoints(raw: string | number) {
           :phase="s.watchPhase.value"
           :elapsed-ms="s.watchElapsed.value"
           :time-ms="s.input.value.time_ms"
+          :decimals="decimals"
           :disabled="!s.editable.value"
           @start="s.startWatch"
           @pause="s.pauseWatch"
@@ -343,9 +464,46 @@ function setManualPoints(raw: string | number) {
           @reset="s.resetWatch"
           @set-time="s.setTime"
         />
+        <p
+          v-if="countedMs !== null"
+          class="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
+          data-testid="zero-points-time"
+        >
+          {{ t('judging.sheet.zeroPointsTime', { time: formatTime(countedMs, decimals) }) }}
+        </p>
 
-        <ScoreSheet
+        <div
           v-if="s.ruleset.value && s.result.value"
+          class="inline-flex self-end rounded-lg border p-0.5"
+          role="group"
+          :aria-label="t('judging.steps.view')"
+          data-testid="sheet-view"
+        >
+          <button
+            v-for="view in ['list', 'steps'] as const"
+            :key="view"
+            type="button"
+            class="min-h-9 rounded-md px-3 text-sm font-medium"
+            :class="sheetView === view ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'"
+            :aria-pressed="sheetView === view"
+            @click="sheetView = view"
+          >
+            {{ view === 'list' ? t('judging.steps.views.list') : t('judging.steps.views.steps') }}
+          </button>
+        </div>
+        <StepSheet
+          v-if="s.ruleset.value && s.result.value && sheetView === 'steps'"
+          v-model="values"
+          :ruleset="s.ruleset.value"
+          :result="s.result.value"
+          :disabled="!s.editable.value"
+          :missing="
+            showMissing ? missingIds : s.problems.value.map((i) => i.nodeId!).filter(Boolean)
+          "
+          @submit="requestSubmit"
+        />
+        <ScoreSheet
+          v-else-if="s.ruleset.value && s.result.value"
           v-model="values"
           :ruleset="s.ruleset.value"
           :result="s.result.value"
@@ -394,7 +552,11 @@ function setManualPoints(raw: string | number) {
           <HistoryIcon class="size-4" /> {{ t('judging.sheet.history') }} ({{ p.history.length }})
         </summary>
         <div class="mt-3">
-          <ScoreHistory :entries="p.history" :definition="p.ruleset?.definition" />
+          <ScoreHistory
+            :entries="p.history"
+            :definition="p.ruleset?.definition"
+            :decimals="decimals"
+          />
         </div>
       </details>
 
@@ -462,7 +624,7 @@ function setManualPoints(raw: string | number) {
             </template>
             <template v-else-if="p.permissions.canCorrect">
               <span class="flex-1 text-sm text-muted-foreground"
-                >{{ formatTime(s.input.value.time_ms) }} ·
+                >{{ formatTime(countedMs ?? s.input.value.time_ms, decimals) }} ·
                 {{ t('judging.sheet.points', { points: s.total.value ?? '–' }) }}</span
               >
               <Button size="touch" variant="outline" @click="s.startCorrection">
@@ -492,6 +654,9 @@ function setManualPoints(raw: string | number) {
         :outcome="s.input.value.outcome"
         :total="s.total.value"
         :time-ms="s.input.value.time_ms"
+        :decimals="decimals"
+        :counted-ms="countedMs"
+        :allow-refusal="!!p.event.allow_team_refusal"
         :busy="s.busy.value"
         @confirm="confirmSubmit"
       />

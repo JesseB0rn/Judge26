@@ -125,7 +125,10 @@
     "rule": "Rule",
     "rawHint": "This condition nests and/or deeper than the form shows. Edit it here as JSON.",
     "rawCondition": "Condition (JSON)",
-    "options": "Options"
+    "options": "Options",
+    "zeroPointsTime": "Count zero-point runs with a fixed time",
+    "zeroPointsSeconds": "Time for zero points (s)",
+    "zeroPointsHint": "A completed run with 0 points ranks as if it took this long; the measured time stays on the score sheet."
   },
   "view": {
     "draftSaved": "Draft saved.",

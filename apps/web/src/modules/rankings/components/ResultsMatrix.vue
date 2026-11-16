@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { GameRecord, RoundRecord, TeamRecord } from '@/shared/types/records'
-import { formatTime } from '../lib'
+import { formatRunTime } from '@judge26/ranking-engine'
 
 /** Teams × rounds overview of recorded results. */
 const props = defineProps<{
@@ -21,6 +21,8 @@ const props = defineProps<{
   rounds: RoundRecord[]
   games: GameRecord[]
   editable: boolean
+  /** Decimals of the event's run times (M10-19). */
+  decimals?: number
 }>()
 const emit = defineEmits<{ open: [team: TeamRecord, round: RoundRecord] }>()
 
@@ -35,7 +37,7 @@ const cell = computed(() => {
 
 const label = (g: GameRecord) => {
   if (g.status === 'completed')
-    return `${g.points}${g.time_ms > 0 ? ' / ' + formatTime(g.time_ms) : ''}`
+    return `${g.points}${g.time_ms > 0 ? ' / ' + formatRunTime(g.time_ms, props.decimals ?? 0) : ''}`
   return g.status === 'disqualified'
     ? t('judging.dq')
     : g.status === 'absent'

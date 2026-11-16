@@ -43,9 +43,18 @@ onRecordUpdate((e) => {
 }, 'round_phases')
 
 onRecordCreate((e) => {
+  const planner = require(`${__hooks}/lib/planner.js`)
+  planner.defaultCheckMode(e.record)
   e.next()
-  require(`${__hooks}/lib/planner.js`).syncPhasesFromRound(e.app, e.record)
+  planner.syncPhasesFromRound(e.app, e.record)
 }, 'rounds')
+
+// Removing the robot check in the planner turns the round's check off (M10-08). Only API
+// deletions: a round deleted with its phases is not saved again.
+onRecordDeleteRequest((e) => {
+  e.next()
+  require(`${__hooks}/lib/planner.js`).checkRemoved(e.app, e.record)
+}, 'round_phases')
 
 onRecordUpdate((e) => {
   e.next()

@@ -1,0 +1,72 @@
+{
+  "title": "Kontrollen",
+  "description": "Material- und Roboterkontrollen pro Tisch, Freigabe der Runden und Rundendateien.",
+  "rounds": "Roboterkontrolle pro Runde",
+  "noRounds": "Noch keine Runde hat Spiele an Tischen.",
+  "confirmed": "Bestätigt",
+  "open": "Offen",
+  "checked": "Kontrolliert",
+  "readyState": "Tisch",
+  "ofTotal": "{done} von {total}",
+  "ready": "Bereit",
+  "notReady": "Nicht bereit",
+  "release": "Zur Wertung freigeben",
+  "releasedBy": "Freigegeben von {name} um {time}",
+  "withdraw": "Freigabe zurücknehmen",
+  "releaseAnyway": "Freigeben, obwohl Tische nicht bereit sind?",
+  "notReadyTables": "Noch nicht bereit: {tables}. Gib an, warum die Runde trotzdem freigegeben wird; die Freigabe wird im Audit-Log festgehalten.",
+  "toCheck": "Roboterkontrolle öffnen",
+  "markAbsent": "Team nicht erschienen: als abwesend erfassen",
+  "mode": {
+    "label": "Roboterkontrolle",
+    "synchronous": "Synchron (Freigabe durch die Oberschiedsrichter)",
+    "asynchronous": "Asynchron (jedes Team nach seiner Kontrolle)",
+    "off": "Keine Roboterkontrolle",
+    "hint": "Synchron: alle Tische kontrollieren, dann gibt die Oberschiedsrichterin oder der Oberschiedsrichter die Runde frei. Asynchron: ein Team kann gewertet werden, sobald seine Kontrolle bestätigt ist. Fix, sobald die erste Kontrolle erfasst ist."
+  },
+  "gate": {
+    "parts_check": "Wartet auf die Materialkontrolle",
+    "not_released": "Wartet auf die Freigabe",
+    "not_confirmed": "Roboterkontrolle nicht bestätigt"
+  },
+  "locked": {
+    "parts_check": "Die Materialkontrolle «{title}» ist noch nicht abgeschlossen. Die Wertung dieser Runde beginnt danach.",
+    "not_released": "Das Wertungsblatt öffnet sich, wenn die Runde freigegeben ist, nachdem alle Tische ihre Roboterkontrolle abgeschlossen haben.",
+    "not_confirmed": "Bestätige zuerst die Roboterkontrolle dieses Teams; danach öffnet sich das Wertungsblatt."
+  },
+  "robot": {
+    "confirm": "Kontrolle bestätigen",
+    "checked": "Kontrolliert",
+    "queued": "Auf diesem Gerät kontrolliert · wird gesendet, sobald die Verbindung zurück ist",
+    "ready": "Tisch bereit",
+    "confirmReady": "Ein Team ist noch nicht kontrolliert. Tisch trotzdem als bereit melden? | {count} Teams sind noch nicht kontrolliert. Tisch trotzdem als bereit melden?",
+    "readyBy": "Der Tisch ist bereit ({name}).",
+    "partsOpen": "Die Materialkontrolle «{title}» ist noch nicht abgeschlossen. Die Roboterkontrolle dieser Runde beginnt danach.",
+    "synchronous": "Wenn alle Tische bereit sind, wird die Runde zur Wertung freigegeben.",
+    "asynchronous": "Jedes Team kann gewertet werden, sobald seine Kontrolle bestätigt ist.",
+    "released": "Die Runde ist zur Wertung freigegeben."
+  },
+  "parts": {
+    "title": "Materialkontrollen",
+    "kind": "Materialkontrolle (jeder Tisch bestätigt sie)",
+    "blocksFirstRound": "sperrt die erste Runde",
+    "blocksFirstRoundHint": "Sperrt Roboterkontrolle und Wertung der ersten Runde des Tages bis zum Abschluss",
+    "confirm": "Materialkontrolle bestätigen",
+    "confirmedBy": "bestätigt von {name} um {time}",
+    "complete": "Als abgeschlossen markieren",
+    "completed": "abgeschlossen",
+    "completedBy": "Abgeschlossen von {name} um {time}",
+    "reopen": "Wieder öffnen",
+    "confirmOpen": "Noch nicht bestätigt: {tables}. Materialkontrolle trotzdem abschliessen? Das wird im Audit-Log festgehalten."
+  },
+  "file": {
+    "title": "Rundendatei",
+    "none": "keine",
+    "upload": "Hochladen",
+    "replace": "Ersetzen",
+    "remove": "Rundendatei entfernen",
+    "confirmRemove": "Rundendatei entfernen?",
+    "failed": "Die Rundendatei konnte nicht geladen werden.",
+    "hint": "Bild oder PDF, bis 10 MB. Schiedsrichter sehen sie, sobald die Roboterkontrolle bestätigt ist; sie ist nie öffentlich."
+  }
+}

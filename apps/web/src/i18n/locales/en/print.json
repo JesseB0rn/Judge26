@@ -1,0 +1,54 @@
+{
+  "title": "Print center",
+  "description": "Printouts for the venue: one A4 page per team or table. Print them or save them as PDF.",
+  "back": "Event",
+  "kind": "Printout",
+  "kinds": {
+    "parking": "Robot parking labels",
+    "workplace": "Workplace sheets",
+    "tables": "Table assignments",
+    "qr": "QR code poster"
+  },
+  "category": "Category",
+  "day": "Day",
+  "round": "Round",
+  "variant": "Shows",
+  "variants": {
+    "teams": "Teams only",
+    "judges": "Judges only",
+    "both": "Teams and judges"
+  },
+  "all": "All",
+  "print": "Print no pages | Print one page | Print {count} pages",
+  "selection": "{selected} of {total} selected",
+  "selectAll": "Select all",
+  "selectNone": "Select none",
+  "noTeams": "No approved teams match these filters.",
+  "noTables": "No table has games in this round.",
+  "what": "What",
+  "time": "Time",
+  "table": "Table",
+  "judges": "Judges",
+  "teams": "Teams in playing order",
+  "noJudges": "No judges assigned.",
+  "parking": {
+    "heading": "Robot parking"
+  },
+  "workplace": {
+    "heading": "Workplace",
+    "tables": "Game table",
+    "noTable": "No game table assigned yet.",
+    "schedule": "Schedule"
+  },
+  "qr": {
+    "heading": "Live ranking",
+    "scan": "Scan to follow the ranking live on your phone."
+  },
+  "layout": "Layout",
+  "layouts": {
+    "pages": "One page per table",
+    "single": "Single page per category"
+  },
+  "tableAssignment": "Table assignment",
+  "noCategories": "No category has games at tables in this round."
+}

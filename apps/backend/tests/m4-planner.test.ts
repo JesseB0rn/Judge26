@@ -65,8 +65,10 @@ describe('M4-14 schedule planner', () => {
     return { event, category, manager, judge, day1, day2, round }
   }
 
+  // Without a robot check, as before M10-08 (M10-T12 covers the default); checks are added here.
   const createRound = (user: TestUser, category: string, key: string, testing = 30, scoring = 60) =>
     user.pb.collection('rounds').create({
+      check_mode: 'off',
       category,
       key,
       name: `Round ${key}`,
