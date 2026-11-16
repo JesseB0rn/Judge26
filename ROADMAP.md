@@ -2060,7 +2060,7 @@ with a certificate instead of a client secret.
 -   [x] **M10-C** Zero-point time and time precision (M10-18 to M10-20)
 -   [x] **M10-D** Planner editing (M10-21 to M10-24)
 -   [x] **M10-E** Board and drag and drop (M10-25 to M10-29)
--   [ ] **M10-F** Setup, print center and live (M10-30 to M10-36)
+-   [x] **M10-F** Setup, print center and live (M10-30 to M10-36)
 -   [x] **M10-G** OAuth for the mail relay with a certificate credential
     (M10-37 to M10-40)
 
@@ -2385,6 +2385,15 @@ scroll jump: while a write ran, the board removed its edit controls, which narro
   ------------------------------------------------------------------------------
 
 ### M10-F --- Setup, print center and live
+
+**Status:** M10-30 to M10-36 implemented (see `docs/specifications/M10-setup-print-live.md` and
+`docs/test-plans/M10-setup-print-live.md`). Decisions: games have
+no time of their own, so the workplace sheet shows the start of the round's scoring run; a team
+matches a day filter by the scoring day of its rounds; records can be left out of a printout
+individually; the print layout is A4 without page margins only while the print center is open;
+"public" for the QR code means published or archived; the QR code links to the live page's
+rankings tab and is hidden on the TV view with `qr=0`; progress segments are ordered by day and
+round.
 
   ------------------------------------------------------------------------------
   ID         Feature               Pri   Acceptance criteria

@@ -183,5 +183,6 @@
   "parts_check_tables_open": "Certaines tables n’ont pas encore confirmé le contrôle du matériel.",
   "check_off_managers_only": "Seuls les responsables de l’événement peuvent désactiver le contrôle du robot.",
   "checks_recorded": "Des contrôles du robot ont déjà été saisis ; le mode de contrôle ne peut plus changer.",
-  "read_only": "Ce champ est défini par la libération ou la clôture."
+  "read_only": "Ce champ est défini par la libération ou la clôture.",
+  "print_not_allowed": "Seuls les responsables de l’événement et les juges principaux peuvent utiliser le centre d’impression."
 }

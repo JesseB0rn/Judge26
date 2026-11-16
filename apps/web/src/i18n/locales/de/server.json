@@ -183,5 +183,6 @@
   "parts_check_tables_open": "Einige Tische haben die Materialkontrolle noch nicht bestätigt.",
   "check_off_managers_only": "Nur Eventverantwortliche können die Roboterkontrolle ausschalten.",
   "checks_recorded": "Es wurden bereits Roboterkontrollen erfasst; der Kontrollmodus kann nicht mehr geändert werden.",
-  "read_only": "Dieses Feld wird durch die Freigabe oder den Abschluss gesetzt."
+  "read_only": "Dieses Feld wird durch die Freigabe oder den Abschluss gesetzt.",
+  "print_not_allowed": "Nur Eventverantwortliche und Oberschiedsrichter können das Druckcenter nutzen."
 }

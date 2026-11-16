@@ -22,6 +22,7 @@ import {
 import * as api from '../api'
 import LiveEventView from '../views/LiveEventView.vue'
 import TvView from '../views/TvView.vue'
+import QRCode from 'qrcode'
 import PublicationPanel from '../components/PublicationPanel.vue'
 import { makePublicEvent, makePublicRanking, official } from './fixtures'
 
@@ -153,6 +154,36 @@ describe('LiveEventView', () => {
 })
 
 describe('TvView', () => {
+  it('M10-35 / M10-T49: shows the QR code of the live ranking; hidden with qr=0', async () => {
+    const { wrapper } = await mountView(TvView, {
+      props: { id: 'event1' },
+      session: guest,
+      path: '/?view=tables',
+    })
+    await flushPromises()
+    const qr = wrapper.get('[data-testid=tv-qr] [data-testid=qr-code]')
+    const url = qr.attributes('data-qr-value')!
+    expect(url).toMatch(/\/event1\?tab=rankings$/)
+    // The code encodes exactly that address.
+    const expected = await QRCode.toString(url, {
+      type: 'svg',
+      margin: 1,
+      errorCorrectionLevel: 'M',
+    })
+    const paths = (svg: string) => [...svg.matchAll(/ d="([^"]+)"/g)].map((m) => m[1])
+    expect(paths(qr.element.innerHTML)).toEqual(paths(expected))
+    expect(paths(expected).length).toBeGreaterThan(0)
+    wrapper.unmount()
+    const hidden = await mountView(TvView, {
+      props: { id: 'event1' },
+      session: guest,
+      path: '/?view=tables&qr=0',
+    })
+    await flushPromises()
+    expect(hidden.wrapper.find('[data-testid=tv-qr]').exists()).toBe(false)
+    hidden.wrapper.unmount()
+  })
+
   it('M6-05: rotates through the published rankings, the tables and the progress', async () => {
     vi.useFakeTimers()
     const { wrapper } = await mountView(TvView, {

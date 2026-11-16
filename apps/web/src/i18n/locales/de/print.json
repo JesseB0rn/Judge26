@@ -1,0 +1,47 @@
+{
+  "title": "Druckcenter",
+  "description": "Ausdrucke für den Austragungsort: eine A4-Seite pro Team oder Tisch. Drucken oder als PDF speichern.",
+  "back": "Event",
+  "kind": "Ausdruck",
+  "kinds": {
+    "parking": "Roboter-Parkplatzschilder",
+    "workplace": "Arbeitsplatzblätter",
+    "tables": "Tischzuteilungen",
+    "qr": "QR-Code-Plakat"
+  },
+  "category": "Kategorie",
+  "day": "Tag",
+  "round": "Runde",
+  "variant": "Zeigt",
+  "variants": {
+    "teams": "Nur Teams",
+    "judges": "Nur Schiedsrichter",
+    "both": "Teams und Schiedsrichter"
+  },
+  "all": "Alle",
+  "print": "Keine Seite drucken | Eine Seite drucken | {count} Seiten drucken",
+  "selection": "{selected} von {total} ausgewählt",
+  "selectAll": "Alle auswählen",
+  "selectNone": "Keine auswählen",
+  "noTeams": "Keine bestätigten Teams passen zu diesen Filtern.",
+  "noTables": "Kein Tisch hat Spiele in dieser Runde.",
+  "what": "Was",
+  "time": "Zeit",
+  "table": "Tisch",
+  "judges": "Schiedsrichter",
+  "teams": "Teams in Spielreihenfolge",
+  "noJudges": "Keine Schiedsrichter zugeteilt.",
+  "parking": {
+    "heading": "Roboter-Parkplatz"
+  },
+  "workplace": {
+    "heading": "Arbeitsplatz",
+    "tables": "Spieltisch",
+    "noTable": "Noch kein Spieltisch zugeteilt.",
+    "schedule": "Zeitplan"
+  },
+  "qr": {
+    "heading": "Live-Rangliste",
+    "scan": "Scannen, um die Rangliste live auf dem Handy zu verfolgen."
+  }
+}

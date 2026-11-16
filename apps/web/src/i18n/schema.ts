@@ -22,6 +22,7 @@ import type planner from './locales/en/planner.json'
 import type board from './locales/en/board.json'
 import type templates from './locales/en/templates.json'
 import type checks from './locales/en/checks.json'
+import type print from './locales/en/print.json'
 
 export interface MessageSchema {
   auth: typeof auth
@@ -46,4 +47,5 @@ export interface MessageSchema {
   board: typeof board
   templates: typeof templates
   checks: typeof checks
+  print: typeof print
 }

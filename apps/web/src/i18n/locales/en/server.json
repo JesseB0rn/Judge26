@@ -183,5 +183,6 @@
   "parts_check_tables_open": "Some tables have not confirmed the parts check yet.",
   "check_off_managers_only": "Only event managers can turn the robot check off.",
   "checks_recorded": "Robot checks were already recorded; the check mode can no longer change.",
-  "read_only": "This field is set by the release or completion action."
+  "read_only": "This field is set by the release or completion action.",
+  "print_not_allowed": "Only event managers and head judges can use the print center."
 }

@@ -85,6 +85,8 @@ const ROUTES: { method: string; path: string; access: 'public' | 'dev' | 'auth' 
   { method: 'POST', path: '/api/parts-checks/{id}/tables/{table}', access: 'auth' },
   { method: 'POST', path: '/api/parts-checks/{id}/complete', access: 'auth' },
   { method: 'DELETE', path: '/api/parts-checks/{id}/complete', access: 'auth' },
+  // M10-31: print center data (staff).
+  { method: 'GET', path: '/api/events/{id}/print', access: 'auth' },
   { method: 'GET', path: '/api/events/{id}/judging', access: 'auth' },
   { method: 'GET', path: '/api/games/{id}/sheet', access: 'auth' },
   { method: 'PUT', path: '/api/games/{id}/sheet', access: 'auth' },
@@ -548,6 +550,7 @@ describe('M7 security', () => {
         ],
         ['DELETE', `/api/events/${ctx.event.id}/staff/${ctx.records.role_assignments}`],
         ['GET', `/api/events/${ctx.event.id}/checks`],
+        ['GET', `/api/events/${ctx.event.id}/print`],
         ['POST', `/api/rounds/${ctx.records.rounds}/release`, { reason: 'x' }],
         ['PUT', `/api/rounds/${ctx.records.rounds}/check-mode`, { mode: 'asynchronous' }],
         ['DELETE', `/api/rounds/${ctx.records.rounds}/file`],

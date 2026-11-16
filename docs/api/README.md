@@ -46,6 +46,7 @@ All errors use PocketBase's format:
 | GET      | `/api/rounds/{id}/file`                   | see spec               | The round's randomization file once shown; 404 for others (M10-17)                                  |
 | POST/DEL | `/api/rounds/{id}/file`                   | reviewers              | Upload or replace (multipart `file`) / remove the round file (M10-17)                               |
 | GET      | `/api/events/{id}/checks`                 | reviewers              | Parts checks and robot checks per round and table (M10-13)                                          |
+| GET      | `/api/events/{id}/print`                  | reviewers              | Teams with games, rounds with phases, tables with judges for the print center (M10-31)              |
 | GET      | `/api/judging/parts-checks`               | verified users         | Parts checks of the user's tables (`?table=` for head judges) (M10-16)                              |
 | POST     | `/api/parts-checks/{id}/tables/{table}`   | table judge, reviewers | Confirm (or undo) the parts check for a table (M10-16)                                              |
 | POST/DEL | `/api/parts-checks/{id}/complete`         | reviewers              | Complete (`force` with open tables) / reopen a parts check (M10-16)                                 |

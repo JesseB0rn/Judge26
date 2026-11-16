@@ -183,5 +183,6 @@
   "parts_check_tables_open": "Alcuni tavoli non hanno ancora confermato il controllo del materiale.",
   "check_off_managers_only": "Solo i responsabili dell’evento possono disattivare il controllo del robot.",
   "checks_recorded": "Sono già stati registrati controlli del robot; la modalità di controllo non può più cambiare.",
-  "read_only": "Questo campo è impostato dallo sblocco o dalla conclusione."
+  "read_only": "Questo campo è impostato dallo sblocco o dalla conclusione.",
+  "print_not_allowed": "Solo i responsabili dell’evento e i giudici capo possono usare il centro di stampa."
 }

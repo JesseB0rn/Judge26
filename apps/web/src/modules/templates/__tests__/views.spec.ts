@@ -234,4 +234,22 @@ describe('setup checklist (M8-20)', () => {
     expect(step('tables').find('a').attributes('href')).toContain('tab=schedule')
     expect(step('publish').find('a').exists()).toBe(false)
   })
+
+  it('M10-30 / M10-T45: the publish row publishes like the header button', async () => {
+    mocked.getSetupStatus.mockResolvedValue({
+      complete: false,
+      steps: [{ key: 'publish', done: false, needs: ['schedule'], status: 'draft' }],
+    })
+    const { wrapper } = await mountView(EventSetupChecklist, {
+      props: { event: makeEvent({ status: 'draft' }) },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    await click(wrapper.get('[data-testid=setup-publish]').element as HTMLElement)
+    expect(wrapper.emitted('publish')).toHaveLength(1)
+    // Once published (here or in the header) the button is gone and the checklist reloads.
+    await wrapper.setProps({ event: makeEvent({ status: 'published' }) })
+    await flushPromises()
+    expect(wrapper.find('[data-testid=setup-publish]').exists()).toBe(false)
+    expect(mocked.getSetupStatus).toHaveBeenCalledTimes(2)
+  })
 })

@@ -164,7 +164,7 @@ const activeClass = '!bg-foreground !text-background font-medium'
         </div>
       </div>
     </header>
-    <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+    <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 print:max-w-none print:p-0">
       <slot />
     </main>
     <ViewAsDialog v-if="session.canViewAs" v-model:open="viewAsOpen" :event-id="currentEvent" />

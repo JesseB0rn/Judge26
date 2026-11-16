@@ -9,6 +9,7 @@ import {
   ClipboardListIcon,
   LibraryIcon,
   PencilIcon,
+  PrinterIcon,
   RadioIcon,
   SendIcon,
 } from '@lucide/vue'
@@ -117,6 +118,14 @@ watch(() => props.id, load)
             <ClipboardListIcon /> {{ t('events.detail.reviewScores') }}
           </RouterLink>
         </Button>
+        <Button v-if="canReview" as-child variant="outline">
+          <RouterLink
+            :to="{ name: 'event-print', params: { id: event.id } }"
+            data-testid="print-link"
+          >
+            <PrinterIcon /> {{ t('print.title') }}
+          </RouterLink>
+        </Button>
         <Button v-if="isStaff || event.status !== 'draft'" as-child variant="outline">
           <RouterLink :to="{ name: 'event-planner', params: { id: event.id } }">
             <CalendarRangeIcon />
@@ -174,7 +183,11 @@ watch(() => props.id, load)
       </TabsContent>
 
       <TabsContent v-if="canManage" value="setup">
-        <EventSetupChecklist :event="event" />
+        <EventSetupChecklist
+          :event="event"
+          :publishing="setStatus.pending.value"
+          @publish="setStatus.run('published')"
+        />
       </TabsContent>
 
       <TabsContent value="categories">
