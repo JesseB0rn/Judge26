@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "precision": 0,
+  "zeroPointsTimeMs": 120000,
+  "root": {
+    "id": "total",
+    "label": "WRO 2026 – RoboMission Elementary",
+    "type": "group",
+    "aggregate": "sum",
+    "children": [
+      {
+        "id": "t1",
+        "label": "Teilaufgabe 1 – Musikanlage aufbauen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "cable",
+            "label": "Kabel",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 2,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "cableFull",
+                "label": "Vollständig",
+                "description": "Das Kabel befindet sich vollständig im grauen Bereich und steht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 15,
+                "unit": "Kabel"
+              },
+              {
+                "id": "cablePartial",
+                "label": "Teilweise",
+                "description": "Das Kabel befindet sich nur teilweise im grauen Bereich oder steht nicht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 5,
+                "unit": "Kabel"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t2",
+        "label": "Teilaufgabe 2 – Show vorbereiten",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "microphone",
+            "label": "Mikrofon",
+            "description": "Vollständig: im Mikrofon-Zielbereich und steht aufrecht. Teilweise: nur teilweise im Mikrofon-Zielbereich oder steht nicht aufrecht.",
+            "type": "select",
+            "options": [
+              {
+                "id": "none",
+                "label": "Keine Punkte",
+                "points": 0
+              },
+              {
+                "id": "partial",
+                "label": "Teilweise",
+                "points": 10
+              },
+              {
+                "id": "full",
+                "label": "Vollständig",
+                "points": 20
+              }
+            ]
+          },
+          {
+            "id": "instruments",
+            "label": "Instrumente im Backstage-Bereich",
+            "description": "Das Instrument befindet sich vollständig im Backstage-Bereich.",
+            "type": "number",
+            "integer": true,
+            "min": 0,
+            "max": 3,
+            "pointsPerUnit": 15,
+            "unit": "Instrumente"
+          }
+        ]
+      },
+      {
+        "id": "t3",
+        "label": "Teilaufgabe 3 – Lied spielen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "note",
+            "label": "Noten",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 6,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "noteFull",
+                "label": "Vollständig",
+                "description": "Die Note befindet sich vollständig im Notenzielbereich der richtigen Farbe (einschliesslich grauer Umrandung) und steht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 20,
+                "unit": "Noten"
+              },
+              {
+                "id": "notePartial",
+                "label": "Teilweise",
+                "description": "Die Note befindet sich nur teilweise im Notenzielbereich der richtigen Farbe (einschliesslich grauer Umrandung) oder steht nicht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 10,
+                "unit": "Noten"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t4",
+        "label": "Teilaufgabe 4 – Bonuspunkte sammeln",
+        "description": "Bonuspunkte werden nur vergeben, wenn mindestens bei einer der Teilaufgaben 1 bis 3 Punkte erzielt wurden.",
+        "condition": {
+          "any": [
+            {
+              "ref": "t1",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t2",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t3",
+              "op": "gt",
+              "value": 0
+            }
+          ]
+        },
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "clef",
+            "label": "Notenschlüssel unversehrt",
+            "description": "Der Notenschlüssel ist weder beschädigt noch verschoben.",
+            "type": "boolean",
+            "points": 10
+          },
+          {
+            "id": "speakers",
+            "label": "Lautsprecher unversehrt",
+            "description": "Der Lautsprecher ist weder beschädigt noch verschoben.",
+            "type": "number",
+            "integer": true,
+            "min": 0,
+            "max": 2,
+            "pointsPerUnit": 10,
+            "unit": "Lautsprecher"
+          },
+          {
+            "id": "amplifier",
+            "label": "Verstärker unversehrt",
+            "description": "Der Verstärker ist weder beschädigt noch verschoben.",
+            "type": "boolean",
+            "points": 10
+          }
+        ]
+      },
+      {
+        "id": "surprise",
+        "label": "Punkte Überraschungsaufgabe",
+        "description": "Punkte der Überraschungsaufgabe gemäss den Zusatzregeln am Wettbewerbstag.",
+        "type": "number",
+        "integer": true,
+        "min": 0,
+        "pointsPerUnit": 1,
+        "unit": "Punkte"
+      }
+    ]
+  }
+}
