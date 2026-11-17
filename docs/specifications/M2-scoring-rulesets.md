@@ -134,6 +134,14 @@ Score sheet issues use the criterion or group id as path: `invalid_type`, `not_i
 `below_minimum`, `above_maximum`, `unknown_option`, `unknown_criterion`, `not_a_criterion`,
 `not_eligible`, `required`, `too_many_selected`, `too_few_selected`, `too_many_objects`.
 
+## Examples
+
+`packages/scoring-engine/examples/` holds the WRO 2026 RoboMission score sheets (Elementary,
+Junior, Senior) as rulesets, ready to paste into the JSON editor. Repeated objects with
+full/partial outcomes are distributions (M2-16), single objects are choices, plain per-object
+points are counts, and the bonus task only counts when an earlier task scored. The surprise task
+is a count of points. `tests/examples.test.ts` checks that each reaches the sheet's maximum.
+
 ## Explanation (M2-13)
 
 Every evaluation returns an explanation tree mirroring the ruleset: per node the label, whether

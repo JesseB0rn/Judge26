@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "precision": 0,
+  "zeroPointsTimeMs": 120000,
+  "root": {
+    "id": "total",
+    "label": "WRO 2026 – RoboMission Senior",
+    "type": "group",
+    "aggregate": "sum",
+    "children": [
+      {
+        "id": "t1",
+        "label": "Teilaufgabe 1 – Werkzeug verteilen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "rectTrowel",
+            "label": "Rechteckige Kelle im Sponsorenbereich",
+            "description": "Die rechteckige Kelle befindet sich vollständig (15) oder nur teilweise (5) im Sponsorenbereich.",
+            "type": "select",
+            "options": [
+              {
+                "id": "none",
+                "label": "Keine Punkte",
+                "points": 0
+              },
+              {
+                "id": "partial",
+                "label": "Teilweise",
+                "points": 5
+              },
+              {
+                "id": "full",
+                "label": "Vollständig",
+                "points": 15
+              }
+            ]
+          },
+          {
+            "id": "bucket",
+            "label": "Zementkübel im Parkplatz",
+            "description": "Der Zementkübel befindet sich vollständig (15) oder nur teilweise (5) im Parkplatz.",
+            "type": "select",
+            "options": [
+              {
+                "id": "none",
+                "label": "Keine Punkte",
+                "points": 0
+              },
+              {
+                "id": "partial",
+                "label": "Teilweise",
+                "points": 5
+              },
+              {
+                "id": "full",
+                "label": "Vollständig",
+                "points": 15
+              }
+            ]
+          },
+          {
+            "id": "trowel",
+            "label": "Maurerkelle im Startbereich",
+            "description": "Die Maurerkelle befindet sich vollständig (15) oder nur teilweise (5) im Startbereich.",
+            "type": "select",
+            "options": [
+              {
+                "id": "none",
+                "label": "Keine Punkte",
+                "points": 0
+              },
+              {
+                "id": "partial",
+                "label": "Teilweise",
+                "points": 5
+              },
+              {
+                "id": "full",
+                "label": "Vollständig",
+                "points": 15
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t2",
+        "label": "Teilaufgabe 2 – Mosaik verlegen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "tile",
+            "label": "Mosaikfliesen",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 12,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "tileCorrect",
+                "label": "Korrekt platziert",
+                "description": "Die Mosaikfliese ist korrekt im Mosaikrahmen platziert.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 10,
+                "unit": "Fliesen"
+              },
+              {
+                "id": "tileWrong",
+                "label": "Falsch platziert",
+                "description": "Die Mosaikfliese ist falsch im Mosaikrahmen platziert.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 5,
+                "unit": "Fliesen"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t3",
+        "label": "Teilaufgabe 3 – Zement liefern",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "cement",
+            "label": "Zementelemente im Zielbereich",
+            "description": "Das Zementelement befindet sich vollständig im Zielbereich der entsprechenden Farbe.",
+            "type": "number",
+            "integer": true,
+            "min": 0,
+            "max": 40,
+            "pointsPerUnit": 1,
+            "unit": "Elemente"
+          }
+        ]
+      },
+      {
+        "id": "t4",
+        "label": "Teilaufgabe 4 – Bonuspunkte sammeln",
+        "description": "Bonuspunkte werden nur vergeben, wenn mindestens bei einer der Teilaufgaben 1 bis 3 Punkte erzielt wurden.",
+        "condition": {
+          "any": [
+            {
+              "ref": "t1",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t2",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t3",
+              "op": "gt",
+              "value": 0
+            }
+          ]
+        },
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "barriers",
+            "label": "Barrieren unversehrt",
+            "description": "Die Barriere ist weder beschädigt noch verschoben.",
+            "type": "number",
+            "integer": true,
+            "min": 0,
+            "max": 4,
+            "pointsPerUnit": 7,
+            "unit": "Barrieren"
+          }
+        ]
+      },
+      {
+        "id": "surprise",
+        "label": "Punkte Überraschungsaufgabe",
+        "description": "Punkte der Überraschungsaufgabe gemäss den Zusatzregeln am Wettbewerbstag.",
+        "type": "number",
+        "integer": true,
+        "min": 0,
+        "pointsPerUnit": 1,
+        "unit": "Punkte"
+      }
+    ]
+  }
+}

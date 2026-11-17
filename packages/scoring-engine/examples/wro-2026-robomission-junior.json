@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "precision": 0,
+  "zeroPointsTimeMs": 120000,
+  "root": {
+    "id": "total",
+    "label": "WRO 2026 – RoboMission Junior",
+    "type": "group",
+    "aggregate": "sum",
+    "children": [
+      {
+        "id": "t1",
+        "label": "Teilaufgabe 1 – Besucher führen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "visitor",
+            "label": "Besucher",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 4,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "visitorFull",
+                "label": "Vollständig",
+                "description": "Der Besucher befindet sich vollständig im Bereich der entsprechenden Farbe und steht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 10,
+                "unit": "Besucher"
+              },
+              {
+                "id": "visitorPartial",
+                "label": "Teilweise",
+                "description": "Der Besucher befindet sich nur teilweise im Bereich der entsprechenden Farbe oder steht nicht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 5,
+                "unit": "Besucher"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t2",
+        "label": "Teilaufgabe 2 – Türme wieder aufbauen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "redTower",
+            "label": "Rote Türme",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 2,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "redTowerFull",
+                "label": "Vollständig",
+                "description": "Der rote Turm befindet sich vollständig im roten Zielbereich (einschliesslich orangefarbenem Rand) und steht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 15,
+                "unit": "Türme"
+              },
+              {
+                "id": "redTowerPartial",
+                "label": "Teilweise",
+                "description": "Der rote Turm befindet sich nur teilweise im roten Zielbereich (einschliesslich orangefarbenem Rand) und steht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 10,
+                "unit": "Türme"
+              }
+            ]
+          },
+          {
+            "id": "yellowTop",
+            "label": "Gelbe Turmspitzen",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 2,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "yellowTopFull",
+                "label": "Sockel vollständig im Zielbereich",
+                "description": "Die gelbe Turmspitze ist korrekt auf dem Turmsockel platziert und der Turmsockel befindet sich noch vollständig im gelben Zielbereich (einschliesslich dem orangefarbenem Rand).",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 25,
+                "unit": "Turmspitzen"
+              },
+              {
+                "id": "yellowTopPartial",
+                "label": "Sockel teilweise im Zielbereich",
+                "description": "Die gelbe Turmspitze ist korrekt auf dem Turmsockel platziert und der Turmsockel befindet sich nur teilweise im gelben Zielbereich (einschliesslich dem orangefarbenem Rand).",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 15,
+                "unit": "Turmspitzen"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t3",
+        "label": "Teilaufgabe 3 – Artefakte transportieren",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "artifact",
+            "label": "Artefakte",
+            "type": "group",
+            "aggregate": "sum",
+            "distribute": {
+              "objects": 4,
+              "remainder": "Keine Punkte"
+            },
+            "children": [
+              {
+                "id": "artifactFull",
+                "label": "Vollständig",
+                "description": "Das Artefakt befindet sich vollständig im Ausstellungsort der entsprechenden Farbe im Museum und steht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 15,
+                "unit": "Artefakte"
+              },
+              {
+                "id": "artifactPartial",
+                "label": "Teilweise",
+                "description": "Das Artefakt befindet sich nur teilweise am Ausstellungsort der entsprechenden Farbe im Museum oder steht nicht aufrecht.",
+                "type": "number",
+                "integer": true,
+                "min": 0,
+                "pointsPerUnit": 5,
+                "unit": "Artefakte"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t4",
+        "label": "Teilaufgabe 4 – Kopfsteinpflaster reinigen",
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "dirt",
+            "label": "Entfernte Schmutzpartikel",
+            "description": "Die Schmutzpartikel berühren den Kopfsteinpflasterbereich nicht mehr.",
+            "type": "number",
+            "integer": true,
+            "min": 0,
+            "max": 10,
+            "pointsPerUnit": 2,
+            "unit": "Partikel"
+          }
+        ]
+      },
+      {
+        "id": "t5",
+        "label": "Teilaufgabe 5 – Bonuspunkte sammeln",
+        "description": "Bonuspunkte werden nur vergeben, wenn mindestens bei einer der Teilaufgaben 1 bis 4 Punkte erzielt wurden.",
+        "condition": {
+          "any": [
+            {
+              "ref": "t1",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t2",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t3",
+              "op": "gt",
+              "value": 0
+            },
+            {
+              "ref": "t4",
+              "op": "gt",
+              "value": 0
+            }
+          ]
+        },
+        "type": "group",
+        "aggregate": "sum",
+        "children": [
+          {
+            "id": "barriers",
+            "label": "Barrieren unversehrt",
+            "description": "Die Barriere ist weder beschädigt noch verschoben.",
+            "type": "number",
+            "integer": true,
+            "min": 0,
+            "max": 2,
+            "pointsPerUnit": 10,
+            "unit": "Barrieren"
+          },
+          {
+            "id": "parrot",
+            "label": "Papagei unversehrt",
+            "description": "Der Papagei ist weder beschädigt noch verschoben.",
+            "type": "boolean",
+            "points": 10
+          }
+        ]
+      },
+      {
+        "id": "surprise",
+        "label": "Punkte Überraschungsaufgabe",
+        "description": "Punkte der Überraschungsaufgabe gemäss den Zusatzregeln am Wettbewerbstag.",
+        "type": "number",
+        "integer": true,
+        "min": 0,
+        "pointsPerUnit": 1,
+        "unit": "Punkte"
+      }
+    ]
+  }
+}
