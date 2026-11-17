@@ -254,6 +254,8 @@ function serializeContext(ctx) {
       status: event.getString('status'),
       // Decimals of run times (M10-19).
       time_decimals: event.getInt('time_decimals'),
+      // Run times as seconds only instead of minutes:seconds.
+      time_seconds_only: event.getBool('time_seconds_only'),
       // Whether a team may refuse to confirm a score sheet (M10-06).
       allow_team_refusal: event.getBool('allow_team_refusal'),
     },
@@ -809,6 +811,8 @@ function summary(app, auth, game, cache) {
       status: event.getString('status'),
       // Decimals of run times (M10-19).
       time_decimals: event.getInt('time_decimals'),
+      // Run times as seconds only instead of minutes:seconds.
+      time_seconds_only: event.getBool('time_seconds_only'),
       // Whether a team may refuse to confirm a score sheet (M10-06).
       allow_team_refusal: event.getBool('allow_team_refusal'),
     },

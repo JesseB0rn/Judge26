@@ -10,7 +10,11 @@ import type { PublicRanking, RankingSource } from '../types'
 import ProgressBar from './ProgressBar.vue'
 
 /** Official and/or live ranking of one category, as published (M6-02, M6-03). */
-const props = defineProps<{ ranking: PublicRanking }>()
+const props = defineProps<{
+  ranking: PublicRanking
+  /** Run times as seconds only instead of minutes:seconds. */
+  secondsOnly?: boolean
+}>()
 const source = defineModel<RankingSource | ''>('source', { default: '' })
 
 const shown = computed(() => pickRanking(props.ranking, source.value || undefined))
@@ -71,7 +75,11 @@ const sourceModel = computed({
         </AlertDescription>
       </Alert>
       <ProgressBar v-if="shown.source === 'live'" :progress="progress" />
-      <RankingTable :ranking="shown.ranking.result" :config="shown.ranking.config" />
+      <RankingTable
+        :ranking="shown.ranking.result"
+        :config="shown.ranking.config"
+        :seconds-only="secondsOnly"
+      />
     </template>
   </div>
 </template>

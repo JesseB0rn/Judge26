@@ -11,6 +11,8 @@ const props = defineProps<{
   definition?: RulesetDefinition | null
   /** Decimals of the event's run times (M10-19). */
   decimals?: number
+  /** Run times as seconds only instead of minutes:seconds. */
+  secondsOnly?: boolean
 }>()
 
 const ACTIONS = translatedLabels<AuditEntry['action']>(
@@ -43,7 +45,7 @@ const outcomeLabel = (outcome: string) => {
 const points = (s: ScoreSnapshot | null) =>
   !s ? '–' : s.outcome !== 'completed' ? outcomeLabel(s.outcome) : String(s.points ?? '–')
 const time = (s: ScoreSnapshot | null) =>
-  s && s.time_ms > 0 ? formatTime(s.time_ms, props.decimals ?? 2) : '–'
+  s && s.time_ms > 0 ? formatTime(s.time_ms, props.decimals ?? 2, props.secondsOnly) : '–'
 
 /** Criteria whose value differs between before and after. */
 function changes(entry: AuditEntry) {

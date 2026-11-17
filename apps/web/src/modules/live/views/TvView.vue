@@ -284,6 +284,7 @@ const title = computed(() => {
           :teams="slideRanking.data.teams"
           :page="slide.page"
           :per-page="rowsPerPage"
+          :seconds-only="!!event.data.value?.event.time_seconds_only"
         />
       </template>
 

@@ -10,8 +10,10 @@ withDefaults(
     selected?: boolean
     /** Decimals of run times (M10-19). */
     decimals?: number
+    /** Run times as seconds only instead of minutes:seconds. */
+    secondsOnly?: boolean
   }>(),
-  { selected: false, decimals: 3 },
+  { selected: false, decimals: 3, secondsOnly: false },
 )
 </script>
 
@@ -30,7 +32,7 @@ withDefaults(
       <span class="ml-auto tabular-nums">
         {{ result.points ?? '–'
         }}<template v-if="result.timeMs !== null">
-          / {{ formatRunTime(result.timeMs, decimals) }}</template
+          / {{ formatRunTime(result.timeMs, decimals, secondsOnly) }}</template
         >
       </span>
     </div>
@@ -41,6 +43,7 @@ withDefaults(
         :result="operand"
         :selected="operand.id === result.selected"
         :decimals="decimals"
+        :seconds-only="secondsOnly"
       />
     </ul>
   </li>

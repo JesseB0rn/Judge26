@@ -51,6 +51,7 @@ const s = useScoreSheet(props.id)
 const p = computed(() => s.payload.value)
 /** Decimals of the event's run times (M10-19). */
 const decimals = computed(() => p.value?.event.time_decimals ?? 0)
+const secondsOnly = computed(() => !!p.value?.event.time_seconds_only)
 /** The time a zero-point run counts with instead of the measured one (M10-18), or null. */
 const countedMs = computed(() => {
   const definition = p.value?.ruleset?.definition
@@ -321,7 +322,7 @@ function setManualPoints(raw: string | number) {
             <span
               class="font-mono text-3xl leading-none font-bold tabular-nums"
               data-testid="header-time"
-              >{{ formatTime(s.input.value.time_ms, decimals) }}</span
+              >{{ formatTime(s.input.value.time_ms, decimals, secondsOnly) }}</span
             >
           </div>
           <div
@@ -457,6 +458,7 @@ function setManualPoints(raw: string | number) {
           :elapsed-ms="s.watchElapsed.value"
           :time-ms="s.input.value.time_ms"
           :decimals="decimals"
+          :seconds-only="secondsOnly"
           :disabled="!s.editable.value"
           @start="s.startWatch"
           @pause="s.pauseWatch"
@@ -469,7 +471,11 @@ function setManualPoints(raw: string | number) {
           class="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
           data-testid="zero-points-time"
         >
-          {{ t('judging.sheet.zeroPointsTime', { time: formatTime(countedMs, decimals) }) }}
+          {{
+            t('judging.sheet.zeroPointsTime', {
+              time: formatTime(countedMs, decimals, secondsOnly),
+            })
+          }}
         </p>
 
         <div
@@ -556,6 +562,7 @@ function setManualPoints(raw: string | number) {
             :entries="p.history"
             :definition="p.ruleset?.definition"
             :decimals="decimals"
+            :seconds-only="secondsOnly"
           />
         </div>
       </details>
@@ -624,7 +631,7 @@ function setManualPoints(raw: string | number) {
             </template>
             <template v-else-if="p.permissions.canCorrect">
               <span class="flex-1 text-sm text-muted-foreground"
-                >{{ formatTime(countedMs ?? s.input.value.time_ms, decimals) }} ·
+                >{{ formatTime(countedMs ?? s.input.value.time_ms, decimals, secondsOnly) }} ·
                 {{ t('judging.sheet.points', { points: s.total.value ?? '–' }) }}</span
               >
               <Button size="touch" variant="outline" @click="s.startCorrection">
@@ -655,6 +662,7 @@ function setManualPoints(raw: string | number) {
         :total="s.total.value"
         :time-ms="s.input.value.time_ms"
         :decimals="decimals"
+        :seconds-only="secondsOnly"
         :counted-ms="countedMs"
         :allow-refusal="!!p.event.allow_team_refusal"
         :busy="s.busy.value"

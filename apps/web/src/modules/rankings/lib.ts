@@ -73,10 +73,18 @@ export function secondsToMs(value: string | number): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n * 1000) : 0
 }
 
-/** A ranking value: points as they are, times as m:ss with `decimals` (M10-19). */
-export function formatValue(value: number | null, field: 'points' | 'time', decimals = 3): string {
+/**
+ * A ranking value: points as they are, times as m:ss (or seconds only with `secondsOnly`) with
+ * `decimals` (M10-19).
+ */
+export function formatValue(
+  value: number | null,
+  field: 'points' | 'time',
+  decimals = 3,
+  secondsOnly = false,
+): string {
   if (value === null) return '–'
-  return field === 'time' ? formatRunTime(value, decimals) : String(value)
+  return field === 'time' ? formatRunTime(value, decimals, secondsOnly) : String(value)
 }
 
 export { formatTime }

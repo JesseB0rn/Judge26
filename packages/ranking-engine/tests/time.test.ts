@@ -27,6 +27,18 @@ describe('time precision', () => {
     expect(formatRunTime(null, 2)).toBe('–')
   })
 
+  it('formats run times as seconds only when asked', () => {
+    expect([0, 1, 2, 3].map((d) => formatRunTime(95_379, d, true))).toEqual([
+      '95s',
+      '95.3s',
+      '95.37s',
+      '95.379s',
+    ])
+    expect(formatRunTime(5_040, 2, true)).toBe('5.04s')
+    expect(formatRunTime(3_600_000, 0, true)).toBe('3600s')
+    expect(formatRunTime(null, 2, true)).toBe('–')
+  })
+
   it('maps decimals to resolutions and back; invalid decimals are whole seconds', () => {
     expect([0, 1, 2, 3].map(timeResolutionMs)).toEqual([1000, 100, 10, 1])
     expect([1000, 100, 10, 1, undefined, 250].map(decimalsOfResolution)).toEqual([0, 1, 2, 3, 3, 3])

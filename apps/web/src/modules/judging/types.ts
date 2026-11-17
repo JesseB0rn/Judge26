@@ -91,6 +91,8 @@ export interface Assignment extends CheckFields {
     name: string
     status: string
     time_decimals?: number
+    /** Run times as seconds only instead of minutes:seconds. */
+    time_seconds_only?: boolean
     /** Whether a team may refuse to confirm a score sheet (M10-06). */
     allow_team_refusal?: boolean
   }
@@ -175,6 +177,8 @@ export interface SheetPayload extends CheckFields {
     name: string
     status: string
     time_decimals?: number
+    /** Run times as seconds only instead of minutes:seconds. */
+    time_seconds_only?: boolean
     /** Whether a team may refuse to confirm a score sheet (M10-06). */
     allow_team_refusal?: boolean
   }

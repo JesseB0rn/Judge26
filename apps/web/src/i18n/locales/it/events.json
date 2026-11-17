@@ -28,6 +28,11 @@
       "2": "Centesimi (1:35.37)",
       "3": "Millesimi (1:35.379)"
     },
+    "timeFormat": "Formato dei tempi",
+    "timeFormatOption": {
+      "minutes": "Minuti e secondi (1:35)",
+      "seconds": "Solo secondi (95s)"
+    },
     "allowTeamRefusal": "Le squadre possono rifiutare di confermare un foglio di punteggio",
     "allowTeamRefusalHint": "Il giudice annota allora il motivo. Se disattivato, ogni foglio richiede la conferma della squadra."
   },

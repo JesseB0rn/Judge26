@@ -171,6 +171,7 @@ onMounted(load)
                   value,
                   shown.ranking.keys[i]!.field,
                   decimalsOfResolution(shown.config.timeResolutionMs),
+                  !!event?.time_seconds_only,
                 )
               }}
             </td>

@@ -269,6 +269,7 @@ const shownRound = computed(() =>
           v-if="ranking.data.value && ranking.data.value.category.id === rankingCategory"
           v-model:source="source"
           :ranking="ranking.data.value"
+          :seconds-only="!!event.data.value?.event.time_seconds_only"
         />
       </TabsContent>
 

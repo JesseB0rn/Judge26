@@ -88,7 +88,7 @@ describe('M10-C run times', () => {
 
   const sheetOf = (user: TestUser, game: RecordModel) =>
     user.pb.send<{
-      event: { time_decimals: number }
+      event: { time_decimals: number; time_seconds_only: boolean }
       sheet: { time_ms: number }
       history: { action: string; after: { time_ms: number } | null }[]
     }>(`/api/games/${game.id}/sheet`, {})
@@ -223,6 +223,23 @@ describe('M10-C run times', () => {
         body: { name: 'From template', first_day: '2027-05-15' },
       })
       expect(created.time_decimals).toBe(3)
+    })
+
+    it('the seconds-only time format reaches the sheet and live views; templates carry it', async () => {
+      const ctx = await setup({ time_seconds_only: true, status: 'published' })
+      const game = await playedGame(ctx, 'Team', 1)
+      expect((await sheetOf(ctx.judge, game)).event.time_seconds_only).toBe(true)
+      const admin = await fx.admin()
+      const live = await admin.pb.send<{ event: { time_seconds_only: boolean } }>(
+        `/api/public/events/${ctx.event.id}`,
+        { method: 'GET' },
+      )
+      expect(live.event.time_seconds_only).toBe(true)
+      const template = await admin.pb.send<{ event: { time_seconds_only: boolean } }>(
+        `/api/events/${ctx.event.id}/template`,
+        { method: 'GET' },
+      )
+      expect(template.event.time_seconds_only).toBe(true)
     })
   })
 })

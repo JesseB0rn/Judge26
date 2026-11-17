@@ -43,7 +43,7 @@ function result(row: Assignment) {
 }
 function time(row: Assignment) {
   const ms = row.sheet && row.sheet.status !== 'draft' ? row.sheet.time_ms : row.time_ms
-  return ms > 0 ? formatTime(ms, row.event.time_decimals ?? 0) : ''
+  return ms > 0 ? formatTime(ms, row.event.time_decimals ?? 0, !!row.event.time_seconds_only) : ''
 }
 </script>
 

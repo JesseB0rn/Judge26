@@ -117,6 +117,8 @@ function serializeEvent(event) {
     venue: event.getString('venue'),
     description: event.getString('description'),
     status: event.getString('status'),
+    // Run times as seconds only instead of minutes:seconds.
+    time_seconds_only: event.getBool('time_seconds_only'),
   }
 }
 

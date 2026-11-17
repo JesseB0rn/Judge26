@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t, type MessageKey } from '@/i18n'
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,7 +32,13 @@ const form = reactive({
   description: '',
   status: 'draft' as EventRecord['status'],
   time_decimals: 0,
+  time_seconds_only: false,
   allow_team_refusal: false,
+})
+// The select needs strings; the record stores a boolean.
+const timeFormat = computed({
+  get: () => (form.time_seconds_only ? 'seconds' : 'minutes'),
+  set: (value: string) => (form.time_seconds_only = value === 'seconds'),
 })
 
 const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
@@ -43,6 +49,7 @@ const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
     description: form.description,
     status: form.status,
     time_decimals: form.time_decimals,
+    time_seconds_only: form.time_seconds_only,
     allow_team_refusal: form.allow_team_refusal,
   }
   const saved = props.event ? await updateEvent(props.event.id, data) : await createEvent(data)
@@ -61,6 +68,7 @@ watch(open, (isOpen) => {
     description: e?.description ?? '',
     status: e?.status ?? 'draft',
     time_decimals: e?.time_decimals ?? 0,
+    time_seconds_only: e?.time_seconds_only ?? false,
     allow_team_refusal: e?.allow_team_refusal ?? false,
   })
 })
@@ -131,6 +139,21 @@ watch(open, (isOpen) => {
             >
               <NativeSelectOption v-for="d in [0, 1, 2, 3]" :key="d" :value="d">{{
                 t(`events.form.timeDecimalsOption.${d}` as MessageKey)
+              }}</NativeSelectOption>
+            </NativeSelect>
+          </FormField>
+          <FormField
+            v-slot="{ id }"
+            :label="t('events.form.timeFormat')"
+            name="time_seconds_only"
+            :errors="fieldErrors"
+          >
+            <NativeSelect :id="id" v-model="timeFormat" class="w-full" data-testid="time-format">
+              <NativeSelectOption value="minutes">{{
+                t('events.form.timeFormatOption.minutes')
+              }}</NativeSelectOption>
+              <NativeSelectOption value="seconds">{{
+                t('events.form.timeFormatOption.seconds')
               }}</NativeSelectOption>
             </NativeSelect>
           </FormField>

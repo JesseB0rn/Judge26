@@ -48,18 +48,22 @@ export function stop(
 
 /**
  * A run time as minutes:seconds with the event's decimals (M10-19), cut not rounded: 95370 at
- * 2 decimals → "1:35.37", at 0 → "1:35".
+ * 2 decimals → "1:35.37", at 0 → "1:35"; with `secondsOnly` → "95.37s" / "95s".
  */
-export function formatTime(ms: number, decimals = 2): string {
-  return formatRunTime(ms, decimals)
+export function formatTime(ms: number, decimals = 2, secondsOnly = false): string {
+  return formatRunTime(ms, decimals, secondsOnly)
 }
 
 /**
- * Parses a manually entered time (M5-08): "1:35.37", "1:35", "95.37" or "95,37" (seconds).
+ * Parses a manually entered time (M5-08): "1:35.37", "1:35", "95.37", "95,37" or
+ * "95.37s" (seconds).
  * Returns milliseconds, 0 for an empty value, or null if the value is not a time.
  */
 export function parseTime(text: string): number | null {
-  const value = text.trim().replace(',', '.')
+  const value = text
+    .trim()
+    .replace(',', '.')
+    .replace(/(\d)\s*s$/i, '$1')
   if (value === '') return 0
   const match = /^(?:(\d+):)?(\d+(?:\.\d{0,3})?)$/.exec(value)
   if (!match) return null

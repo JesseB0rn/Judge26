@@ -56,11 +56,13 @@ describe('times (M5-08)', () => {
     ['1:35', 95_000],
     ['95.37', 95_370],
     ['95,37', 95_370],
+    ['95.37s', 95_370],
+    ['120 s', 120_000],
     [' 12 ', 12_000],
     ['', 0],
   ])('parses %j', (text, ms) => expect(parseTime(text)).toBe(ms))
 
-  it.each(['abc', '1:75', '-3', '1:2:3'])('rejects %j', (text) => {
+  it.each(['abc', '1:75', '-3', '1:2:3', 's'])('rejects %j', (text) => {
     expect(parseTime(text)).toBeNull()
   })
 })
