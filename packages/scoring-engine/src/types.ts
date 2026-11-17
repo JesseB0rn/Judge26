@@ -73,6 +73,20 @@ export interface Group extends NodeBase {
   clamp?: { min?: number; max?: number }
   /** Score when no child is answered (M2-T06). Default 0. */
   empty?: number
+  /**
+   * Distribution (M2-16): the group splits `objects` objects among its children, which are
+   * whole-number counts per outcome (e.g. "partially placed", "fully placed"). The counts add up
+   * to at most `objects`; the rest fall into the `remainder` outcome (a label, no points), e.g.
+   * 6 objects → 4 partial, 1 full, 1 none. Only for `sum` groups.
+   */
+  distribute?: Distribution
+}
+
+export interface Distribution {
+  /** Number of objects to distribute; a whole number ≥ 1. */
+  objects: number
+  /** Label of the outcome that takes the objects not counted elsewhere, e.g. "none". */
+  remainder?: string
 }
 
 export type Criterion = BooleanCriterion | NumberCriterion | SelectCriterion

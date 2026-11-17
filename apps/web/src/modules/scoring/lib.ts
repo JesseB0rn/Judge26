@@ -70,7 +70,11 @@ export function issueMessage(issue: Issue, ruleset?: CompiledRuleset | null): st
   let code = issue.code
   if (node.type === 'number') Object.assign(params, { min: node.min ?? '', max: node.max ?? '' })
   if (node.type === 'group') {
-    Object.assign(params, { min: node.selection?.min ?? '', max: node.selection?.max ?? '' })
+    Object.assign(params, {
+      min: node.selection?.min ?? '',
+      max: node.selection?.max ?? '',
+      objects: node.distribute?.objects ?? '',
+    })
   }
   if (code === 'invalid_type') code = node.type === 'boolean' ? 'not_boolean' : 'not_number'
   const key = `scoring.issues.${code}`

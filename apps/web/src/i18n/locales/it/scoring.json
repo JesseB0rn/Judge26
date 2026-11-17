@@ -5,7 +5,8 @@
     "select": "Scelta",
     "sum": "Somma",
     "max": "Massimo",
-    "min": "Minimo"
+    "min": "Minimo",
+    "distribute": "Distribuzione"
   },
   "new": {
     "task": "Nuovo compito",
@@ -13,7 +14,9 @@
     "choice": "Nuova scelta",
     "none": "Nessuno",
     "full": "Completo",
-    "group": "Nuovo gruppo"
+    "group": "Nuovo gruppo",
+    "distribution": "Nuova distribuzione",
+    "partial": "Parziale"
   },
   "summary": {
     "boolean": "{points} pt se sì",
@@ -24,7 +27,8 @@
     "min": "Il più basso"
   },
   "badge": {
-    "required": "OBB"
+    "required": "OBB",
+    "objects": "{n} ogg."
   },
   "wire": {
     "notConditional": "Questo blocco non può essere reso condizionale.",
@@ -42,7 +46,8 @@
     "too_many_selected": "«{label}» consente al massimo {max} selezioni.",
     "too_few_selected": "«{label}» richiede almeno {min} selezioni.",
     "not_eligible": "«{label}» non conta qui: la sua condizione non è soddisfatta.",
-    "required": "«{label}» è obbligatorio."
+    "required": "«{label}» è obbligatorio.",
+    "too_many_objects": "«{label}» ha solo {objects} oggetti."
   },
   "field": {
     "chooseExactly": "Sceglierne esattamente {n}",
@@ -55,7 +60,9 @@
     "decrease": "Diminuisci",
     "increase": "Aumenta",
     "inactive": "Non disponibile: condizione non soddisfatta.",
-    "deduction": "detrazione"
+    "deduction": "detrazione",
+    "objects": "{n} oggetti",
+    "notCounted": "Non contati"
   },
   "editor": {
     "json": "Definizione del regolamento (JSON)",
@@ -128,7 +135,10 @@
     "options": "Opzioni",
     "zeroPointsTime": "Conta le manche a 0 punti con un tempo fisso",
     "zeroPointsSeconds": "Tempo per 0 punti (s)",
-    "zeroPointsHint": "Una manche completata con 0 punti viene classificata come se fosse durata così; il tempo misurato resta sul foglio."
+    "zeroPointsHint": "Una manche completata con 0 punti viene classificata come se fosse durata così; il tempo misurato resta sul foglio.",
+    "objects": "Oggetti da distribuire",
+    "objectsHint": "I figli contano gli oggetti per risultato",
+    "remainder": "Gli oggetti rimanenti sono"
   },
   "view": {
     "draftSaved": "Bozza salvata.",

@@ -36,7 +36,7 @@ const TYPE_KEYS: Record<string, string[]> = {
   boolean: ['points', 'required'],
   number: ['integer', 'min', 'max', 'pointsPerUnit', 'unit', 'required'],
   select: ['options', 'required'],
-  group: ['aggregate', 'children', 'selection', 'clamp', 'empty'],
+  group: ['aggregate', 'children', 'selection', 'clamp', 'empty', 'distribute'],
 }
 
 type Json = Record<string, unknown>
@@ -152,6 +152,41 @@ export function validateRuleset(raw: unknown): ValidationResult {
       add(`${path}.max`, 'invalid_range', 'max must not be lower than min.')
     }
     return { min, max }
+  }
+
+  /** M2-16: a distribution sums whole-number, non-negative counts. */
+  function checkDistribution(raw: Json, path: string, nodeId: string | undefined) {
+    const at = `${path}.distribute`
+    if (!isObject(raw.distribute)) {
+      add(at, 'invalid_type', 'distribute must be an object.', nodeId)
+      return
+    }
+    checkKeys(raw.distribute, ['objects', 'remainder'], at, add)
+    const objects = checkNumber(raw.distribute, 'objects', at, { required: true, integer: true })
+    if (objects !== undefined && objects < 1) {
+      add(`${at}.objects`, 'invalid_range', 'objects must be at least 1.', nodeId)
+    }
+    checkString(raw.distribute, 'remainder', at, false)
+    if (raw.aggregate !== 'sum') {
+      add(`${path}.aggregate`, 'invalid_distribution', 'A distribution must use sum.', nodeId)
+    }
+    if (!Array.isArray(raw.children)) return
+    raw.children.forEach((child, i) => {
+      if (!isObject(child)) return
+      const ok =
+        child.type === 'number' &&
+        child.integer === true &&
+        isFiniteNumber(child.min) &&
+        child.min >= 0
+      if (!ok) {
+        add(
+          `${path}.children[${i}]`,
+          'invalid_distribution',
+          'Every outcome of a distribution must be a count of whole numbers with min ≥ 0.',
+          typeof child.id === 'string' ? child.id : nodeId,
+        )
+      }
+    })
   }
 
   function visitNode(raw: unknown, path: string, parent: string | null) {
@@ -286,6 +321,7 @@ export function validateRuleset(raw: unknown): ValidationResult {
           else checkRange(raw.clamp, `${path}.clamp`, { points: true })
         }
         checkNumber(raw, 'empty', path, { points: true })
+        if (raw.distribute !== undefined) checkDistribution(raw, path, nodeId)
         break
       }
     }

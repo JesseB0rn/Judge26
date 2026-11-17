@@ -15,13 +15,13 @@ import { parseRuleset } from '../lib'
 const ruleset = compileRuleset(EXAMPLE_RULESET)
 
 /** Hosts the sheet like a parent view does: evaluates values on every change. */
-function mountSheet(initial: ScoreValues = {}) {
+function mountSheet(initial: ScoreValues = {}, compiled = ruleset) {
   const values = ref<ScoreValues>(initial)
   const Host = defineComponent(
     () => () =>
       h(ScoreSheet, {
-        ruleset,
-        result: evaluate(ruleset, values.value, { mode: 'final' }),
+        ruleset: compiled,
+        result: evaluate(compiled, values.value, { mode: 'final' }),
         modelValue: values.value,
         'onUpdate:modelValue': (v: ScoreValues) => (values.value = v),
       }),
@@ -104,6 +104,51 @@ describe('ScoreSheet', () => {
     await button(wrapper, 'wallDamage', 'No').trigger('click')
     await node(wrapper, 'runA').get('input').setValue('')
     expect(values.value).toEqual({})
+  })
+
+  it('M2-16: a distribution shows counts, the remainder and caps at the number of objects', async () => {
+    const count = (id: string, pointsPerUnit: number) => ({
+      id,
+      label: id,
+      type: 'number' as const,
+      integer: true,
+      min: 0,
+      pointsPerUnit,
+    })
+    const distribution = compileRuleset({
+      schemaVersion: 1,
+      root: {
+        id: 'root',
+        label: 'Total',
+        type: 'group',
+        aggregate: 'sum',
+        children: [
+          {
+            id: 'objects',
+            label: 'Objects',
+            type: 'group',
+            aggregate: 'sum',
+            distribute: { objects: 6, remainder: 'None' },
+            children: [count('partial', 5), count('full', 10)],
+          },
+        ],
+      },
+    })
+    const { wrapper, values } = mountSheet({ partial: 4 }, distribution)
+    const remainder = () => wrapper.get('[data-testid=distribution-remainder]').text()
+    expect(node(wrapper, 'objects').text()).toContain('6 objects')
+    expect(remainder()).toBe('None2')
+
+    const increase = () => node(wrapper, 'full').findAll('button')[1]!
+    await increase().trigger('click')
+    await increase().trigger('click')
+    expect(values.value).toEqual({ partial: 4, full: 2 })
+    expect(wrapper.find('[data-testid=distribution-remainder]').exists()).toBe(false)
+    expect(increase().attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[data-testid=score-total]').text()).toBe('40')
+
+    await node(wrapper, 'partial').get('input').setValue('5')
+    expect(node(wrapper, 'objects').get('[role=alert]').text()).toContain('only 6 objects')
   })
 })
 

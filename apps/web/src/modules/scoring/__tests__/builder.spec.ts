@@ -199,4 +199,21 @@ describe('visual rule builder model', () => {
     })
     expect(flattenCondition({ all: [{ any: [{ ref: 'a', op: 'set' }] }] })).toBeNull()
   })
+
+  it('M2-16: the distribution block starts as a valid 6-object distribution', () => {
+    const def = example()
+    const added = addNode(def, 'group', '', 'sum', true)
+    const node = nodeAt(added.def, added.key)
+    expect(node).toMatchObject({
+      type: 'group',
+      aggregate: 'sum',
+      distribute: { objects: 6, remainder: 'None' },
+    })
+    const children = node?.type === 'group' ? node.children : []
+    expect(children.map((c) => c.type)).toEqual(['number', 'number'])
+    expect(new Set(ids(added.def)).size).toBe(ids(added.def).length)
+    expect(validateRuleset(added.def).ok).toBe(true)
+    const block = toDiagram(added.def).nodes.find((n) => n.id === added.key)
+    expect(block?.badges).toContain('6 obj.')
+  })
 })
