@@ -29,6 +29,8 @@ export interface PublicEventInfo {
   venue: string
   description: string
   status: 'published' | 'archived'
+  /** Run times as seconds only instead of minutes:seconds. */
+  time_seconds_only?: boolean
 }
 
 export interface PublicEventSummary extends PublicEventInfo {

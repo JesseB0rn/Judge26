@@ -334,7 +334,11 @@ onMounted(load)
               {{ t('rankings.view.provisional', { open: openGames, total: games.length }) }}
             </AlertDescription>
           </Alert>
-          <RankingTable :ranking="ranking" :config="parsed.config.config" />
+          <RankingTable
+            :ranking="ranking"
+            :config="parsed.config.config"
+            :seconds-only="!!event?.time_seconds_only"
+          />
           <p
             v-if="ranking.issues.length"
             class="text-sm text-destructive"
@@ -376,6 +380,7 @@ onMounted(load)
           :rounds="rounds"
           :games="games"
           :decimals="timeDecimals ?? 0"
+          :seconds-only="!!event?.time_seconds_only"
           :editable="canManage"
           @open="openGame"
         />
@@ -483,6 +488,7 @@ onMounted(load)
             <RankingTable
               :ranking="shownSnapshot.result"
               :config="shownSnapshot.config as RankingConfig"
+              :seconds-only="!!event?.time_seconds_only"
             />
           </template>
         </template>

@@ -531,11 +531,15 @@ describe('ScoreGameView', () => {
         children: [{ id: 'flag', label: 'Flag raised', type: 'boolean' as const, points: 10 }],
       },
     }
-    const mountWith = async (decimals: number, definition: object = ZERO_RULE) => {
+    const mountWith = async (
+      decimals: number,
+      definition: object = ZERO_RULE,
+      secondsOnly = false,
+    ) => {
       const base = makePayload()
       mocked.getSheet.mockResolvedValue(
         makePayload({
-          event: { ...base.event, time_decimals: decimals },
+          event: { ...base.event, time_decimals: decimals, time_seconds_only: secondsOnly },
           ruleset: {
             id: 'rs1',
             version: 1,
@@ -553,6 +557,15 @@ describe('ScoreGameView', () => {
       await click(buttonByText('Set time'))
       expect(wrapper.get('[data-testid=stopwatch-display]').text()).toBe('1:35.3')
       // The full measured value is kept.
+      expect(readDraft('game1')?.input.time_ms).toBe(95_379)
+    })
+
+    it('shows run times as seconds only when the event says so', async () => {
+      const { wrapper } = await mountWith(2, ZERO_RULE, true)
+      await click(buttonByText('Edit time'))
+      await fill('#manual-time', '1:35.379')
+      await click(buttonByText('Set time'))
+      expect(wrapper.get('[data-testid=stopwatch-display]').text()).toBe('95.37s')
       expect(readDraft('game1')?.input.time_ms).toBe(95_379)
     })
 

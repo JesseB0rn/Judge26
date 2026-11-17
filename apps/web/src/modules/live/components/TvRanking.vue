@@ -12,6 +12,8 @@ const props = defineProps<{
   teams: Record<string, PublicTeam>
   page: number
   perPage: number
+  /** Run times as seconds only instead of minutes:seconds. */
+  secondsOnly?: boolean
 }>()
 
 const rows = computed(() => pageOf(props.ranking.result.entries, props.page, props.perPage))
@@ -63,7 +65,7 @@ const decimals = computed(() => decimalsOfResolution(props.ranking.config.timeRe
           :key="i"
           class="px-4 py-[0.35em] text-right tabular-nums last:rounded-r-lg"
         >
-          {{ formatValue(value, keys[i]!.field, decimals) }}
+          {{ formatValue(value, keys[i]!.field, decimals, secondsOnly) }}
         </td>
       </tr>
     </tbody>

@@ -28,6 +28,11 @@
       "2": "Hundertstel (1:35.37)",
       "3": "Tausendstel (1:35.379)"
     },
+    "timeFormat": "Zeitformat",
+    "timeFormatOption": {
+      "minutes": "Minuten und Sekunden (1:35)",
+      "seconds": "Nur Sekunden (95s)"
+    },
     "allowTeamRefusal": "Teams dürfen die Bestätigung des Bewertungsbogens verweigern",
     "allowTeamRefusalHint": "Die Schiedsrichterin oder der Schiedsrichter hält dann den Grund fest. Ausgeschaltet braucht jeder Bogen die Bestätigung des Teams."
   },

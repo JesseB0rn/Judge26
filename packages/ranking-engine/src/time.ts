@@ -33,19 +33,25 @@ export function truncateTime(ms: number, decimals: number): number {
 
 /**
  * A run time as minutes:seconds with the event's decimals, cut not rounded: 95379 ms →
- * "1:35" (0), "1:35.3" (1), "1:35.37" (2), "1:35.379" (3). null → "–".
+ * "1:35" (0), "1:35.3" (1), "1:35.37" (2), "1:35.379" (3). With `secondsOnly` the minutes are
+ * folded into the seconds and marked with "s": "95s", "95.3s", "95.37s", "95.379s". null → "–".
  */
-export function formatRunTime(ms: number | null | undefined, decimals: number): string {
+export function formatRunTime(
+  ms: number | null | undefined,
+  decimals: number,
+  secondsOnly = false,
+): string {
   if (ms === null || ms === undefined) return '–'
   const d = timeDecimals(decimals)
   const cut = truncateTime(Math.max(0, ms), d)
-  const minutes = Math.floor(cut / 60_000)
-  const seconds = Math.floor(cut / 1000) % 60
   const fraction = d
     ? `.${String(cut % 1000)
         .padStart(3, '0')
         .slice(0, d)}`
     : ''
+  if (secondsOnly) return `${Math.floor(cut / 1000)}${fraction}s`
+  const minutes = Math.floor(cut / 60_000)
+  const seconds = Math.floor(cut / 1000) % 60
   return `${minutes}:${String(seconds).padStart(2, '0')}${fraction}`
 }
 

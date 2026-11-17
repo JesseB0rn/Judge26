@@ -17,7 +17,12 @@ import { formatValue } from '../lib'
 import ResultTree from './ResultTree.vue'
 
 /** Ranking with key values, tie-break information and per-team explanations. */
-const props = defineProps<{ ranking: Ranking; config: RankingConfig }>()
+const props = defineProps<{
+  ranking: Ranking
+  config: RankingConfig
+  /** Run times as seconds only instead of minutes:seconds. */
+  secondsOnly?: boolean
+}>()
 // Times as precise as the ranking used them (the event's precision, M10-19/M10-20).
 const decimals = computed(() => decimalsOfResolution(props.config.timeResolutionMs))
 const expanded = ref(new Set<string>())
@@ -75,7 +80,7 @@ const decided = (d: number | 'name' | null) =>
             >
           </TableCell>
           <TableCell v-for="(value, i) in entry.values" :key="i" class="text-right tabular-nums">
-            {{ formatValue(value, ranking.keys[i]!.field, decimals) }}
+            {{ formatValue(value, ranking.keys[i]!.field, decimals, secondsOnly) }}
           </TableCell>
           <TableCell class="hidden text-muted-foreground md:table-cell">{{
             decided(entry.decidedBy)
@@ -101,6 +106,7 @@ const decided = (d: number | 'name' | null) =>
                 :key="id"
                 :result="entry.results[id]!"
                 :decimals="decimals"
+                :seconds-only="secondsOnly"
               />
             </ul>
           </TableCell>

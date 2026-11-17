@@ -29,6 +29,8 @@ const props = defineProps<{
   timeMs: number
   /** Decimals of the event's run times (M10-19). */
   decimals?: number
+  /** Run times as seconds only instead of minutes:seconds. */
+  secondsOnly?: boolean
   /** The time that counts instead of the measured one (zero points, M10-18), or null. */
   countedMs?: number | null
   busy?: boolean
@@ -88,16 +90,20 @@ const OUTCOME_LABELS = translatedLabels<Outcome>(['completed', 'disqualified', '
           <dt class="text-sm text-muted-foreground">{{ t('judging.time') }}</dt>
           <dd class="font-mono text-lg tabular-nums">
             <template v-if="countedMs !== null && countedMs !== undefined">
-              {{ formatTime(countedMs, decimals ?? 2) }}
+              {{ formatTime(countedMs, decimals ?? 2, secondsOnly) }}
               <span class="block text-xs font-normal text-muted-foreground">{{
                 t('judging.submit.countedTime', {
                   measured:
-                    timeMs > 0 ? formatTime(timeMs, decimals ?? 2) : t('judging.submit.noTime'),
+                    timeMs > 0
+                      ? formatTime(timeMs, decimals ?? 2, secondsOnly)
+                      : t('judging.submit.noTime'),
                 })
               }}</span>
             </template>
             <template v-else>{{
-              timeMs > 0 ? formatTime(timeMs, decimals ?? 2) : t('judging.submit.noTime')
+              timeMs > 0
+                ? formatTime(timeMs, decimals ?? 2, secondsOnly)
+                : t('judging.submit.noTime')
             }}</template>
           </dd>
           <dt class="text-sm text-muted-foreground">{{ t('scheduling.export.points') }}</dt>

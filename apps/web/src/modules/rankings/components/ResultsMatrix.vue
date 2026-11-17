@@ -23,6 +23,8 @@ const props = defineProps<{
   editable: boolean
   /** Decimals of the event's run times (M10-19). */
   decimals?: number
+  /** Run times as seconds only instead of minutes:seconds. */
+  secondsOnly?: boolean
 }>()
 const emit = defineEmits<{ open: [team: TeamRecord, round: RoundRecord] }>()
 
@@ -37,7 +39,7 @@ const cell = computed(() => {
 
 const label = (g: GameRecord) => {
   if (g.status === 'completed')
-    return `${g.points}${g.time_ms > 0 ? ' / ' + formatRunTime(g.time_ms, props.decimals ?? 0) : ''}`
+    return `${g.points}${g.time_ms > 0 ? ' / ' + formatRunTime(g.time_ms, props.decimals ?? 0, props.secondsOnly) : ''}`
   return g.status === 'disqualified'
     ? t('judging.dq')
     : g.status === 'absent'

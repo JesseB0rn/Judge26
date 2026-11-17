@@ -28,6 +28,11 @@
       "2": "Hundredths (1:35.37)",
       "3": "Thousandths (1:35.379)"
     },
+    "timeFormat": "Time format",
+    "timeFormatOption": {
+      "minutes": "Minutes and seconds (1:35)",
+      "seconds": "Seconds only (95s)"
+    },
     "allowTeamRefusal": "Teams may refuse to confirm a score sheet",
     "allowTeamRefusalHint": "The judge then records the reason. When off, every score sheet needs the team’s confirmation."
   },
