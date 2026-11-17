@@ -237,6 +237,25 @@ export function evaluate(
       }
     }
 
+    if (node.distribute) {
+      const { objects, remainder } = node.distribute
+      const counted = node.children.reduce((sum, child) => {
+        if (!activity(child.id).active || child.type !== 'number') return sum
+        const value = validValue(child)
+        return sum + (typeof value === 'number' ? value : 0)
+      }, 0)
+      const rest = objects - counted
+      if (rest < 0) {
+        issue(
+          node.id,
+          'too_many_objects',
+          `"${node.label}" has ${objects} object(s); ${counted} counted.`,
+        )
+      } else if (rest > 0) {
+        formula = `${formula}; ${rest} of ${objects} ${remainder ?? 'not counted'}`
+      }
+    }
+
     const selectedCount = node.children.filter(
       (child, i) => activity(child.id).active && childScores[i]!.selected,
     ).length

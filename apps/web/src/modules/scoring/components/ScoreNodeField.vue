@@ -17,6 +17,8 @@ const props = defineProps<{
   missing?: string[]
   /** Large touch targets (judge view). */
   touch?: boolean
+  /** Objects still to distribute when this count is an outcome of a distribution (M2-16). */
+  remaining?: number
 }>()
 const emit = defineEmits<{ set: [id: string, value: ScoreValue | undefined] }>()
 
@@ -39,6 +41,20 @@ const selectionHint = computed(() => {
   return t('scoring.field.chooseAtLeast', { n: min ?? '' })
 })
 
+/** A distribution group (M2-16): objects not yet counted in any outcome. */
+const distribution = computed(() => {
+  const node = props.node
+  if (node.type !== 'group' || !node.distribute) return null
+  const counted = node.children.reduce((sum, child) => {
+    const v = props.values[child.id]
+    const active = props.explanations.get(child.id)?.active !== false
+    return active && typeof v === 'number' ? sum + v : sum
+  }, 0)
+  const { objects, remainder } = node.distribute
+  return { objects, remainder, remaining: objects - counted }
+})
+const canIncrease = computed(() => props.remaining === undefined || props.remaining > 0)
+
 function setNumber(raw: string | number) {
   if (raw === '' || raw === null) return emit('set', props.node.id, undefined)
   const n = typeof raw === 'number' ? raw : Number(raw)
@@ -49,6 +65,8 @@ function step(delta: number) {
   if (props.node.type !== 'number') return
   const current = typeof value.value === 'number' ? value.value : 0
   let next = current + delta
+  if (delta > 0 && props.remaining !== undefined)
+    next = Math.min(next, current + Math.max(0, props.remaining))
   if (props.node.min !== undefined) next = Math.max(props.node.min, next)
   if (props.node.max !== undefined) next = Math.min(props.node.max, next)
   emit('set', props.node.id, next)
@@ -69,6 +87,9 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       {{ node.label }}
       <span v-if="selectionHint" class="font-normal text-muted-foreground"
         >· {{ selectionHint }}</span
+      >
+      <span v-if="distribution" class="font-normal text-muted-foreground"
+        >· {{ t('scoring.field.objects', { n: distribution.objects }) }}</span
       >
       <span v-if="node.deduction" class="font-normal text-destructive"
         >· {{ t('scoring.field.deduction') }}</span
@@ -92,8 +113,18 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
       :disabled="disabled"
       :missing="missing"
       :touch="touch"
+      :remaining="distribution?.remaining"
       @set="(id, v) => emit('set', id, v)"
     />
+    <p
+      v-if="distribution && distribution.remaining > 0"
+      class="flex items-center justify-between rounded-md border border-dashed px-3 py-2 text-muted-foreground"
+      :class="touch ? 'text-base' : 'text-sm'"
+      data-testid="distribution-remainder"
+    >
+      <span>{{ distribution.remainder ?? t('scoring.field.notCounted') }}</span>
+      <span class="tabular-nums">{{ distribution.remaining }}</span>
+    </p>
   </fieldset>
 
   <div
@@ -179,7 +210,7 @@ const pointsLabel = (p: number) => (p > 0 ? `+${p}` : String(p))
           type="button"
           :size="iconSize"
           variant="outline"
-          :disabled="locked"
+          :disabled="locked || !canIncrease"
           :aria-label="t('scoring.field.increase')"
           @click="step(1)"
         >

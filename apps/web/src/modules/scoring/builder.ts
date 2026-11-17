@@ -96,14 +96,16 @@ function allIds(def: Draft) {
   return new Set(entries(def).map((e) => e.node.id))
 }
 
-function uniqueId(def: Draft, base: string) {
-  const ids = allIds(def)
+function uniqueId(def: Draft, base: string, taken: string[] = []) {
+  const ids = new Set([...allIds(def), ...taken])
   for (let i = 1; ; i++) if (!ids.has(`${base}${i}`)) return `${base}${i}`
 }
 
 export const PALETTE: {
   type: NodeType
   aggregate?: Group['aggregate']
+  /** Starts as a distribution (M2-16) with two counted outcomes. */
+  distribute?: boolean
   label: string
   glyph: string
 }[] = (
@@ -114,6 +116,7 @@ export const PALETTE: {
     { type: 'group', aggregate: 'sum', glyph: 'Σ', key: 'sum' },
     { type: 'group', aggregate: 'max', glyph: 'MAX', key: 'max' },
     { type: 'group', aggregate: 'min', glyph: 'MIN', key: 'min' },
+    { type: 'group', aggregate: 'sum', distribute: true, glyph: 'N→', key: 'distribute' },
   ] as const
 ).map(({ key, ...block }) => ({
   ...block,
@@ -122,6 +125,23 @@ export const PALETTE: {
     return t(`scoring.palette.${key}`)
   },
 }))
+
+function newDistribution(def: Draft): Group {
+  const taken: string[] = []
+  const count = (label: string, pointsPerUnit: number) => {
+    const id = uniqueId(def, 'count', taken)
+    taken.push(id)
+    return { id, label, type: 'number' as const, integer: true, min: 0, pointsPerUnit }
+  }
+  return {
+    id: uniqueId(def, 'distribution'),
+    label: t('scoring.new.distribution'),
+    type: 'group',
+    aggregate: 'sum',
+    distribute: { objects: 6, remainder: t('scoring.new.none') },
+    children: [count(t('scoring.new.partial'), 5), count(t('scoring.new.full'), 10)],
+  }
+}
 
 function newNode(def: Draft, type: NodeType, aggregate: Group['aggregate'] = 'sum'): ScoringNode {
   switch (type) {
@@ -174,11 +194,14 @@ export function addNode(
   type: NodeType,
   parent: string,
   aggregate?: Group['aggregate'],
+  distribute?: boolean,
 ): { def: Draft; key: string } {
   const next = clone(def)
   const group = nodeAt(next, parent)
   if (group?.type !== 'group') return { def, key: parent }
-  group.children.push(newNode(next, type, aggregate))
+  group.children.push(
+    distribute && type === 'group' ? newDistribution(next) : newNode(next, type, aggregate),
+  )
   const index = group.children.length - 1
   return { def: next, key: parent === '' ? `${index}` : `${parent}.${index}` }
 }
@@ -419,6 +442,7 @@ function badges(node: ScoringNode): string[] {
               : `≥${s.min}`,
       )
     }
+    if (node.distribute) list.push(t('scoring.badge.objects', { n: fmt(node.distribute.objects) }))
     const c = node.clamp
     if (c && (c.min !== undefined || c.max !== undefined))
       list.push(`[${c.min ?? '−∞'},${c.max ?? '∞'}]`)

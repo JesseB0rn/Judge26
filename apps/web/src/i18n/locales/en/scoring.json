@@ -5,7 +5,8 @@
     "select": "Choice",
     "sum": "Sum",
     "max": "Maximum",
-    "min": "Minimum"
+    "min": "Minimum",
+    "distribute": "Distribution"
   },
   "new": {
     "task": "New task",
@@ -13,7 +14,9 @@
     "choice": "New choice",
     "none": "None",
     "full": "Full",
-    "group": "New group"
+    "group": "New group",
+    "distribution": "New distribution",
+    "partial": "Partial"
   },
   "summary": {
     "boolean": "{points} pts if yes",
@@ -24,7 +27,8 @@
     "min": "Lowest"
   },
   "badge": {
-    "required": "REQ"
+    "required": "REQ",
+    "objects": "{n} obj."
   },
   "wire": {
     "notConditional": "This block cannot be made conditional.",
@@ -42,7 +46,8 @@
     "too_many_selected": "\"{label}\" allows at most {max} selections.",
     "too_few_selected": "\"{label}\" requires at least {min} selections.",
     "not_eligible": "\"{label}\" does not count here: its condition is not met.",
-    "required": "\"{label}\" is required."
+    "required": "\"{label}\" is required.",
+    "too_many_objects": "\"{label}\" has only {objects} objects."
   },
   "field": {
     "chooseExactly": "Choose exactly {n}",
@@ -55,7 +60,9 @@
     "decrease": "Decrease",
     "increase": "Increase",
     "inactive": "Not available: condition not met.",
-    "deduction": "deduction"
+    "deduction": "deduction",
+    "objects": "{n} objects",
+    "notCounted": "Not counted"
   },
   "editor": {
     "json": "Ruleset definition (JSON)",
@@ -128,7 +135,10 @@
     "options": "Options",
     "zeroPointsTime": "Count zero-point runs with a fixed time",
     "zeroPointsSeconds": "Time for zero points (s)",
-    "zeroPointsHint": "A completed run with 0 points ranks as if it took this long; the measured time stays on the score sheet."
+    "zeroPointsHint": "A completed run with 0 points ranks as if it took this long; the measured time stays on the score sheet.",
+    "objects": "Distribute objects",
+    "objectsHint": "Children count objects per outcome",
+    "remainder": "Remaining objects are"
   },
   "view": {
     "draftSaved": "Draft saved.",

@@ -55,13 +55,21 @@ Values on a score sheet are keyed by criterion id: `true`/`false`, a number, or 
 
 ### Groups
 
-| Property    | Notes                                                                                                                             |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `aggregate` | `sum` (M2-06), `max` (M2-08) or `min` (M2-09) of the children's scores                                                            |
-| `children`  | Criteria and nested groups (M2-11); at least one                                                                                  |
-| `selection` | `{ min?, max? }` number of selected children (M2-05). `{ "max": 1 }` = mutually exclusive, `{ "min": 1, "max": 1 }` = exactly one |
-| `clamp`     | `{ min?, max? }` bounds applied after aggregation, e.g. `{ "min": 0 }` (M2-T07)                                                   |
-| `empty`     | Score when no child is answered (M2-T06). Default 0. A group with `empty` always provides a score to its parent                   |
+| Property     | Notes                                                                                                                             |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `aggregate`  | `sum` (M2-06), `max` (M2-08) or `min` (M2-09) of the children's scores                                                            |
+| `children`   | Criteria and nested groups (M2-11); at least one                                                                                  |
+| `selection`  | `{ min?, max? }` number of selected children (M2-05). `{ "max": 1 }` = mutually exclusive, `{ "min": 1, "max": 1 }` = exactly one |
+| `clamp`      | `{ min?, max? }` bounds applied after aggregation, e.g. `{ "min": 0 }` (M2-T07)                                                   |
+| `empty`      | Score when no child is answered (M2-T06). Default 0. A group with `empty` always provides a score to its parent                   |
+| `distribute` | `{ objects, remainder? }` distribution (M2-16), see below                                                                         |
+
+**Distribution (M2-16).** A `sum` group with `distribute` splits `objects` objects into outcomes.
+Each child is one outcome: a `number` criterion with `integer: true` and `min ≥ 0`, scored as a
+normal count (count × `pointsPerUnit`). The counts may add up to at most `objects`; the objects
+not counted fall into the `remainder` outcome (a label such as "none", no points). Example: 6
+objects → 4 partial (× 5), 1 full (× 10), 1 none = 30. Judges see ordinary count fields plus the
+remaining objects; counting more than `objects` is the sheet issue `too_many_objects`.
 
 ### Conditions
 
@@ -115,7 +123,7 @@ missing required values or unmet `selection.min`.
 Ruleset issues have a `code`, a `message` and a JSON `path`. Codes include `invalid_type`,
 `required`, `unknown_property`, `invalid_id`, `duplicate_id`, `invalid_range`, `not_integer`,
 `negative_value`, `too_many_decimals`, `invalid_condition`, `unknown_reference` (M2-T08) and
-`circular_reference` (M2-T09).
+`circular_reference` (M2-T09) and `invalid_distribution` (M2-16).
 
 Circular dependencies are found on a graph where a node's activity depends on its parent's
 activity and on the nodes its condition references, a group's score depends on its children and
@@ -124,7 +132,7 @@ references one of its own descendants is therefore circular.
 
 Score sheet issues use the criterion or group id as path: `invalid_type`, `not_integer`,
 `below_minimum`, `above_maximum`, `unknown_option`, `unknown_criterion`, `not_a_criterion`,
-`not_eligible`, `required`, `too_many_selected`, `too_few_selected`.
+`not_eligible`, `required`, `too_many_selected`, `too_few_selected`, `too_many_objects`.
 
 ## Explanation (M2-13)
 

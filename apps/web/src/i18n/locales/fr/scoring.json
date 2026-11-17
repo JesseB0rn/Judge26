@@ -5,7 +5,8 @@
     "select": "Choix",
     "sum": "Somme",
     "max": "Maximum",
-    "min": "Minimum"
+    "min": "Minimum",
+    "distribute": "Répartition"
   },
   "new": {
     "task": "Nouvelle tâche",
@@ -13,7 +14,9 @@
     "choice": "Nouveau choix",
     "none": "Aucun",
     "full": "Complet",
-    "group": "Nouveau groupe"
+    "group": "Nouveau groupe",
+    "distribution": "Nouvelle répartition",
+    "partial": "Partiel"
   },
   "summary": {
     "boolean": "{points} pts si oui",
@@ -24,7 +27,8 @@
     "min": "Le plus bas"
   },
   "badge": {
-    "required": "OBL"
+    "required": "OBL",
+    "objects": "{n} obj."
   },
   "wire": {
     "notConditional": "Ce bloc ne peut pas être rendu conditionnel.",
@@ -42,7 +46,8 @@
     "too_many_selected": "« {label} » autorise au plus {max} sélections.",
     "too_few_selected": "« {label} » exige au moins {min} sélections.",
     "not_eligible": "« {label} » ne compte pas ici : sa condition n’est pas remplie.",
-    "required": "« {label} » est obligatoire."
+    "required": "« {label} » est obligatoire.",
+    "too_many_objects": "« {label} » n'a que {objects} objets."
   },
   "field": {
     "chooseExactly": "Choisir exactement {n}",
@@ -55,7 +60,9 @@
     "decrease": "Diminuer",
     "increase": "Augmenter",
     "inactive": "Non disponible : condition non remplie.",
-    "deduction": "déduction"
+    "deduction": "déduction",
+    "objects": "{n} objets",
+    "notCounted": "Non comptés"
   },
   "editor": {
     "json": "Définition du règlement (JSON)",
@@ -128,7 +135,10 @@
     "options": "Options",
     "zeroPointsTime": "Compter les manches à 0 point avec un temps fixe",
     "zeroPointsSeconds": "Temps pour 0 point (s)",
-    "zeroPointsHint": "Une manche terminée avec 0 point est classée comme si elle avait duré ce temps ; le temps mesuré reste sur la feuille."
+    "zeroPointsHint": "Une manche terminée avec 0 point est classée comme si elle avait duré ce temps ; le temps mesuré reste sur la feuille.",
+    "objects": "Objets à répartir",
+    "objectsHint": "Les enfants comptent les objets par résultat",
+    "remainder": "Les objets restants sont"
   },
   "view": {
     "draftSaved": "Brouillon enregistré.",

@@ -64,7 +64,7 @@ function onApply(next: Draft, key?: string | null) {
 function add(item: (typeof PALETTE)[number]) {
   if (!def.value || props.readonly) return
   const parent = targetGroup(def.value, selectedNode.value)
-  const result = addNode(def.value, item.type, parent, item.aggregate)
+  const result = addNode(def.value, item.type, parent, item.aggregate, item.distribute)
   state.apply(result.def, { select: result.key })
 }
 

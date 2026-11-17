@@ -5,7 +5,8 @@
     "select": "Auswahl",
     "sum": "Summe",
     "max": "Maximum",
-    "min": "Minimum"
+    "min": "Minimum",
+    "distribute": "Verteilung"
   },
   "new": {
     "task": "Neue Aufgabe",
@@ -13,7 +14,9 @@
     "choice": "Neue Auswahl",
     "none": "Keine",
     "full": "Vollständig",
-    "group": "Neue Gruppe"
+    "group": "Neue Gruppe",
+    "distribution": "Neue Verteilung",
+    "partial": "Teilweise"
   },
   "summary": {
     "boolean": "{points} Pkt. bei Ja",
@@ -24,7 +27,8 @@
     "min": "Tiefster"
   },
   "badge": {
-    "required": "PFL"
+    "required": "PFL",
+    "objects": "{n} Obj."
   },
   "wire": {
     "notConditional": "Dieser Block kann nicht bedingt gemacht werden.",
@@ -42,7 +46,8 @@
     "too_many_selected": "«{label}» erlaubt höchstens {max} Auswahlen.",
     "too_few_selected": "«{label}» verlangt mindestens {min} Auswahlen.",
     "not_eligible": "«{label}» zählt hier nicht: Seine Bedingung ist nicht erfüllt.",
-    "required": "«{label}» ist obligatorisch."
+    "required": "«{label}» ist obligatorisch.",
+    "too_many_objects": "«{label}» hat nur {objects} Objekte."
   },
   "field": {
     "chooseExactly": "Genau {n} wählen",
@@ -55,7 +60,9 @@
     "decrease": "Verringern",
     "increase": "Erhöhen",
     "inactive": "Nicht verfügbar: Bedingung nicht erfüllt.",
-    "deduction": "Abzug"
+    "deduction": "Abzug",
+    "objects": "{n} Objekte",
+    "notCounted": "Nicht gezählt"
   },
   "editor": {
     "json": "Regelwerk-Definition (JSON)",
@@ -128,7 +135,10 @@
     "options": "Optionen",
     "zeroPointsTime": "Läufe mit 0 Punkten mit fester Zeit werten",
     "zeroPointsSeconds": "Zeit bei 0 Punkten (s)",
-    "zeroPointsHint": "Ein abgeschlossener Lauf mit 0 Punkten wird gewertet, als hätte er so lange gedauert; die gemessene Zeit bleibt auf dem Bewertungsbogen."
+    "zeroPointsHint": "Ein abgeschlossener Lauf mit 0 Punkten wird gewertet, als hätte er so lange gedauert; die gemessene Zeit bleibt auf dem Bewertungsbogen.",
+    "objects": "Objekte verteilen",
+    "objectsHint": "Kinder zählen Objekte pro Ergebnis",
+    "remainder": "Übrige Objekte sind"
   },
   "view": {
     "draftSaved": "Entwurf gespeichert.",

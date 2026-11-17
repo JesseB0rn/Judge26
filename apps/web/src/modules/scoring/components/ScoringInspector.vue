@@ -52,6 +52,14 @@ const groups = computed(() =>
 function set(patch: Record<string, unknown>) {
   emit('apply', updateNode(props.def, props.nodeKey, patch))
 }
+function setDistribution(field: 'objects' | 'remainder', value: unknown) {
+  if (node.value?.type !== 'group') return
+  const current: Record<string, unknown> = { ...node.value.distribute }
+  if (value === undefined || value === '') delete current[field]
+  else current[field] = value
+  // Without objects there is no distribution: drop the remainder label too.
+  set({ distribute: current.objects === undefined ? undefined : current })
+}
 function setNested(key: 'selection' | 'clamp', field: 'min' | 'max', value: unknown) {
   const current = {
     ...((node.value as unknown as Record<string, unknown>)[key] as object | undefined),
@@ -436,6 +444,22 @@ function setZeroTime(ms: number | undefined) {
           placeholder="0"
           @commit="set({ empty: $event })"
         />
+        <div class="grid grid-cols-2 gap-2">
+          <InspectorField
+            :label="t('scoring.inspector.objects')"
+            type="number"
+            :model-value="node.distribute?.objects"
+            :hint="t('scoring.inspector.objectsHint')"
+            @commit="setDistribution('objects', $event)"
+          />
+          <InspectorField
+            v-if="node.distribute"
+            :label="t('scoring.inspector.remainder')"
+            :model-value="node.distribute.remainder"
+            :placeholder="t('scoring.field.notCounted')"
+            @commit="setDistribution('remainder', $event)"
+          />
+        </div>
       </template>
 
       <template v-if="isRoot">
