@@ -86,6 +86,12 @@ competition management
                     feedback          robot and parts   
                                       check, planner,   
                                       board, printouts  
+
+  M11               Event setup flow  Categories by     P1
+                                      rounds grid,      
+                                      direct links,     
+                                      create and        
+                                      publish rules     
   -----------------------------------------------------------------------
 
 Milestones are dependency-oriented, not fixed calendar commitments. A
@@ -2761,7 +2767,269 @@ trial run feedback reproduces.
 
 ------------------------------------------------------------------------
 
-## 13. Cross-project quality requirements
+## 13. M11 --- Event setup flow
+
+**Priority:** P1\
+**Objective:** Close the gap between the logical setup of an event (the
+setup checklist of M8-20) and the screens an admin uses to do it. Today
+rounds are a page and a tab away, behind a category's Ranking button,
+rulesets behind its Rules button, and several checklist links land a page or a tab
+short of the work. The Categories tab becomes a grid of categories by
+rounds, so the per-category setup is visible and editable in one place; the
+checklist stays a list and its links go straight to the work and back.
+
+### Tracking
+
+-   [ ] **M11-A** Categories grid and setup flow alignment (M11-01 to M11-14)
+
+The user flow analysis behind this epic (logical steps against UI paths,
+with five gaps and six friction points) and the implementation plan are in
+`docs/specifications/M11-setup-flow.md`.
+
+### M11-A --- Categories grid and setup flow alignment
+
+Each requirement answers one finding of the flow analysis: gaps G1 to G5,
+friction points F1 to F6 (see the specification).
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M11-01     Categories by rounds  P1    The Categories tab shows the event's
+                                         categories as a grid: one row per
+                                         category, one column per round position
+                                         (1st, 2nd, 3rd round …, as many as the
+                                         category with the most rounds). A cell
+                                         shows the round's key and name, its
+                                         game, its competition day and start,
+                                         and its robot check mode; a category
+                                         with fewer rounds leaves the rest of
+                                         its row empty. Each row keeps what the
+                                         list row has today: code, name, team
+                                         size, age, maximum teams and its
+                                         actions (Ranking, Rules, Edit, Save as
+                                         template, Delete). The category column
+                                         stays in view while the grid scrolls
+                                         sideways.
+
+  M11-02     Rounds in the grid    P1    For event managers, each row ends in an
+                                         Add round cell, and choosing a round
+                                         cell opens that round's form (the
+                                         fields of the Rounds tab, M3-01) in a
+                                         dialog on the Categories tab; it saves,
+                                         deletes and cancels like the Rounds
+                                         tab, with the same rules. The grid
+                                         shows the change at once. The Rounds
+                                         tab of the category page stays and
+                                         edits the same rounds.
+
+  M11-03     Ruleset state in row  P1    Each row shows whether every game of
+                                         the category has a published ruleset. A
+                                         round whose game has no published
+                                         ruleset is marked in its cell, and the
+                                         row's Rules action is highlighted with
+                                         the reason ("No published ruleset" or
+                                         "Draft only"). A category just created
+                                         shows this at once.
+
+  M11-04     Grid by keyboard      P1    The grid is an ARIA grid: one tab stop,
+                                         arrow keys move between cells, Enter
+                                         opens a round or adds one; each cell's
+                                         name reads category, round position and
+                                         round ("RM-J, round 2, R2 Final,
+                                         Saturday 10:00"). Below 768 px each
+                                         category is a card with its rounds as a
+                                         list and its actions below. Everyone
+                                         who can see the Categories tab sees the
+                                         grid; only event managers and admins
+                                         can change rounds.
+
+  M11-05     Start time on round   P2    The round form (grid and Rounds tab)
+                                         has an optional start time next to its
+                                         day; saving it places the round's
+                                         scoring phase in the planner at that
+                                         time, so a round can be timed without
+                                         opening the planner. A time outside the
+                                         day or a stale planner version is
+                                         reported like a planner move, and the
+                                         round stays open for editing.
+
+  M11-06     Checklist lands on    P1    The setup checklist (M8-20) stays a
+             work                        list. Its Categories and rulesets and
+                                         its Rounds steps open the Categories
+                                         tab, where both are now visible
+                                         (M11-01, M11-03). The Schedule step
+                                         shows placed games and timed rounds
+                                         separately, each with its own link: the
+                                         Assignments tab for placing, the
+                                         planner for timing.
+
+  M11-07     Honest needs          P1    The Rounds step needs Competition days
+                                         and Categories and rulesets, matching
+                                         the fields of the round form. When the
+                                         event has no day, the round form says
+                                         so and links to the Overview tab.
+
+  M11-08     Way back              P1    The ruleset page, the category page
+                                         (ranking, rounds) and the planner show
+                                         a Back button to the page they were
+                                         opened from (`from`, as M10-02);
+                                         without one, Back from a category's
+                                         pages goes to the event's Categories
+                                         tab, not the Overview.
+
+  M11-09     Tables without        P1    When active tables have no judge, the
+             judges                      Tables step names them ("Table 2, Table
+                                         3 have no judge"), so an event made
+                                         from a template shows which copied
+                                         tables still need judges.
+
+  M11-10     Always a draft        P1    Creating an event always makes a draft:
+                                         the event dialog has no Status field
+                                         and the API rejects another status on
+                                         create (superusers excepted). Publish,
+                                         Archive and Restore in the header are
+                                         the only status changes.
+
+  M11-11     First day at create   P1    The empty-event dialog asks for an
+                                         optional first day (date, start and
+                                         end, prefilled 08:00 to 18:00). With a
+                                         date, the event is created with that
+                                         day; an invalid day creates neither.
+                                         The Days step is then done.
+
+  M11-12     One create dialog     P2    "New event" opens one dialog with a
+                                         choice: empty, or from a template
+                                         (admins only; others see only empty).
+                                         The template library's New event opens
+                                         the same dialog with that template
+                                         chosen. The separate "From template"
+                                         button goes.
+
+  M11-13     Publish confirm       P1    Publishing an event whose setup is not
+                                         complete, from the header or the
+                                         checklist, first shows an in-page
+                                         confirmation listing the open steps;
+                                         the manager can publish anyway or go to
+                                         the setup. A complete setup publishes
+                                         without a question. Steps stay unlocked
+                                         (M8-20).
+
+  M11-14     One name per place    P1    The Assignments tab's URL value becomes
+                                         `assignments`; `?tab=schedule` and
+                                         `/events/{id}/board` keep working. The
+                                         setup step "Tables" is titled "Tables
+                                         and judges". Tabs follow the setup
+                                         order: Overview, Setup, Categories,
+                                         Teams, Staff, Assignments, Public
+                                         results, Messages, Activity. All four
+                                         languages are updated.
+  ------------------------------------------------------------------------------
+
+### Tests
+
+API changes are tested in `apps/backend/tests/m11-*.test.ts`, the grid and
+dialogs in unit tests next to the code, and the first-event flow end to end
+in `e2e` (empty event and from a template).
+
+  ------------------------------------------------------------------------------
+  Test ID    Covers     Scenario                     Expected result
+  ---------  ---------  ---------------------------  ---------------------------
+  M11-T01    M11-01     RME with 3 rounds, RMJ with  Three rows, three round
+                        2, RMS with none             columns; RMJ's third and
+                                                     RMS's cells empty; actions
+                                                     in each row
+
+  M11-T02    M11-02     Manager adds a round to RMS  Each change shows in the
+                        from the grid, edits RMJ     grid and on the Rounds tab
+                        round 2, deletes it
+
+  M11-T03    M11-02,    Coach and judge open the     Grid shown read-only; no
+             M11-04     Categories tab               Add round, no round form
+
+  M11-T04    M11-03     Category with a draft only;  Rules highlighted with
+                        a new category               "Draft only" / "No
+                                                     published ruleset"; its
+                                                     rounds marked
+
+  M11-T05    M11-04     Keyboard only: reach RMJ     Round form opens; the
+                        round 2 and press Enter      cell's name reads category,
+                                                     position, round, day and
+                                                     start
+
+  M11-T06    M11-04     Categories tab at 375 px     One card per category,
+                        width                        rounds listed, actions
+                                                     below; no sideways page
+                                                     scroll
+
+  M11-T07    M11-05     Add a round on day 1         First: planner shows it at
+                        starting 10:00; then 23:30   10:00, round timed; second:
+                        on a day ending 18:00        error, round kept open
+
+  M11-T08    M11-06     Open the Rounds and the      Categories tab; schedule
+                        Categories and rulesets      shows placed done, timed 2
+                        steps; Schedule with all     of 3, with board and
+                        placed, one round untimed    planner links
+
+  M11-T09    M11-07     Event without days opens     "Needs Competition days
+                        the rounds step and the      first"; form explains and
+                        round form                   links to Overview
+
+  M11-T10    M11-08     Open Rules from the          Categories tab; Setup tab
+                        Categories tab, press Back;
+                        open the planner from the
+                        checklist, press Back
+
+  M11-T11    M11-09     Event from a template, no    Tables step names the
+                        judges yet                   copied tables without a
+                                                     judge
+
+  M11-T12    M11-10     POST an event with status    400; the dialog has no
+                        published as an admin        status field and creates a
+                                                     draft
+
+  M11-T13    M11-11     Create an empty event with   One day, Days step done;
+                        a first day; with a day      error and no event
+                        ending before it starts
+
+  M11-T14    M11-12     Admin and event manager      Admin can choose a
+                        open New event               template; manager sees only
+                                                     empty
+
+  M11-T15    M11-13     Publish with an incomplete   First asks, listing open
+                        setup, then with a complete  steps; second publishes at
+                        one                          once
+
+  M11-T16    M11-14     Open an old `?tab=schedule`  Assignments tab shown; URL
+                        link and                     uses `assignments`; tabs in
+                        `/events/{id}/board`         setup order
+  ------------------------------------------------------------------------------
+
+### Open questions
+
+Open items have a working assumption, already written into the criteria
+above; work proceeds on it unless decided otherwise.
+
+1.  **Columns (M11-01):** Rounds line up by position (assumed), or by round
+    key, so that R2 of every category shares a column even when one category
+    skips a key?
+2.  **Category library (M11-01):** The grid is on the event's Categories tab
+    only (assumed); the category library at /admin/categories stays a list.
+3.  **Row details (M11-01):** Team size, age and maximum teams stay in the
+    row header (assumed), or move into the Edit dialog to keep rows short?
+4.  **Back to draft (M11-10):** Without a status field, a published event
+    can no longer return to draft. Is that wanted (assumed), or does the
+    header need an Unpublish button?
+
+**Exit criteria:** All P1 requirements and M11 tests pass. In a user test,
+an admin who has not seen the app before sets up an event from empty to
+published following the setup checklist, adds and times every category's
+rounds on the Categories tab without opening a category page, never lands on
+a page without the work a link promised, and gets back with one click from
+every page a link opened; the same admin sets up a second event from a
+template.
+
+------------------------------------------------------------------------
+## 14. Cross-project quality requirements
 
 These requirements apply to every milestone.
 
@@ -2810,7 +3078,7 @@ The following properties must be continuously checked:
 
 ------------------------------------------------------------------------
 
-## 14. Definition of Done
+## 15. Definition of Done
 
 A task may only be marked complete when all applicable conditions are
 satisfied.
@@ -2831,7 +3099,7 @@ acceptance tests must also pass.
 
 ------------------------------------------------------------------------
 
-## 15. Project tracking model
+## 16. Project tracking model
 
 Track progress at three levels:
 
@@ -2881,7 +3149,7 @@ Track progress at three levels:
 
 ------------------------------------------------------------------------
 
-## 16. Suggested repository structure
+## 17. Suggested repository structure
 
 Keep business logic independent of the user interface.
 
@@ -2926,7 +3194,7 @@ wro-platform/
 
 ------------------------------------------------------------------------
 
-## 17. Recommended implementation order
+## 18. Recommended implementation order
 
 Do not begin by building the full dashboard or registration experience.
 First validate the three riskiest parts of the application with vertical
@@ -2962,7 +3230,7 @@ investment in the complete user interface.
 
 ------------------------------------------------------------------------
 
-## 18. Key architectural decisions to resolve
+## 19. Key architectural decisions to resolve
 
 The following questions should be settled before or during the relevant
 implementation milestone:
@@ -2986,7 +3254,7 @@ implementation milestone:
 Make these behaviours configurable where practical, while keeping the
 initial implementation straightforward.
 
-## 19. Primary implementation recommendation
+## 20. Primary implementation recommendation
 
 Build and thoroughly test the scoring and ranking engines before
 implementing the complete administration interface. They contain the
