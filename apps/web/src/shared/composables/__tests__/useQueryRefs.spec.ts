@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { useQueryRefs } from '../useQueryRefs'
+import { backTarget, eventBackTarget, useQueryRefs } from '../useQueryRefs'
 
 const Page = defineComponent({
   setup() {
@@ -39,5 +39,21 @@ describe('useQueryRefs', () => {
     await router.push('/events/1')
     await flushPromises()
     expect(wrapper.text()).toBe('overview')
+  })
+})
+
+describe('back targets', () => {
+  it('accepts in-app paths only', () => {
+    expect(backTarget('/judging')).toBe('/judging')
+    expect(backTarget('//evil.example')).toBeUndefined()
+    expect(backTarget('https://evil.example')).toBeUndefined()
+    expect(backTarget(['/judging'])).toBeUndefined()
+  })
+
+  it('M11-08: event back targets are event pages', () => {
+    expect(eventBackTarget('/events/e1?tab=categories')).toBe('/events/e1?tab=categories')
+    expect(eventBackTarget('/events/e1/planner')).toBe('/events/e1/planner')
+    expect(eventBackTarget('/judging')).toBeUndefined()
+    expect(eventBackTarget(undefined)).toBeUndefined()
   })
 })

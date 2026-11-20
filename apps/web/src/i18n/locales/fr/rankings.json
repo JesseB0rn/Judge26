@@ -156,7 +156,9 @@
     "scoring": "Phase d’évaluation (minutes)",
     "total": "Durée totale du tour : {minutes} minutes.",
     "save": "Enregistrer le tour",
-    "add": "Ajouter un tour"
+    "add": "Ajouter un tour",
+    "noDays": "Cet événement n’a pas encore de jour de compétition : les tours ne peuvent pas recevoir de jour.",
+    "noDaysLink": "Ajouter des jours dans l’onglet Aperçu"
   },
   "export": {
     "title": "classement {category}",

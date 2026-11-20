@@ -46,15 +46,20 @@ describe('event views', () => {
     const decimals = 'select[data-testid=time-decimals]'
     expect(document.querySelector<HTMLSelectElement>(decimals)!.value).toBe('0')
     await fill(decimals, '1')
+    // M11-10: no status field, the server makes it a draft. M11-11: optional first day.
+    expect(document.querySelector('[role=dialog]')!.textContent).not.toContain('Status')
+    expect(document.querySelector('[data-testid=draft-notice]')).not.toBeNull()
+    await fill('[data-testid=first-day-date]', '2026-06-13')
     await click(buttonByText('Save'))
     expect(mocked.createEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Swiss Final',
-        status: 'draft',
         season: new Date().getFullYear(),
         time_decimals: 1,
+        first_day: { date: '2026-06-13', starts_at: '08:00', ends_at: '18:00' },
       }),
     )
+    expect(mocked.createEvent.mock.calls[0]![0]).not.toHaveProperty('status')
     expect(router.currentRoute.value.name).toBe('event')
   })
 

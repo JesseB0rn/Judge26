@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { reactive, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
 import { PencilIcon, Trash2Icon } from '@lucide/vue'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
@@ -33,6 +35,8 @@ const props = defineProps<{
   editable: boolean
   /** Round to open for editing once known (deep link from the planner). */
   editRound?: string
+  /** The category's event; M11-07: without days the form links to its Overview tab. */
+  eventId?: string
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
@@ -205,6 +209,16 @@ const remove = useSubmit(async (round: RoundRecord) => {
     </div>
     <form v-if="editable" class="flex flex-col gap-3" @submit.prevent="add.run()">
       <ErrorAlert :error="add.error.value" />
+      <Alert v-if="eventId && days && !days.length" data-testid="round-no-days">
+        <AlertDescription>
+          {{ t('rankings.rounds.noDays') }}
+          <RouterLink
+            class="underline"
+            :to="{ name: 'event', params: { id: eventId }, query: { tab: 'overview' } }"
+            >{{ t('rankings.rounds.noDaysLink') }}</RouterLink
+          >
+        </AlertDescription>
+      </Alert>
       <FormField
         v-slot="{ id }"
         :label="t('rankings.rounds.key')"

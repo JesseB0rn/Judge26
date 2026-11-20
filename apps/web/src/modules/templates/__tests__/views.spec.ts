@@ -181,7 +181,13 @@ describe('setup checklist (M8-20)', () => {
       steps: [
         { key: 'days', done: true, needs: [], count: 2 },
         { key: 'categories', done: false, needs: [], count: 2, missing: ['RME'] },
-        { key: 'rounds', done: false, needs: ['categories'], count: 0, missing: ['RMJ', 'RME'] },
+        {
+          key: 'rounds',
+          done: false,
+          needs: ['days', 'categories'],
+          count: 0,
+          missing: ['RMJ', 'RME'],
+        },
         { key: 'teams', done: true, needs: ['categories'], count: 12 },
         { key: 'judges', done: true, needs: [], count: 3 },
         {
@@ -190,6 +196,7 @@ describe('setup checklist (M8-20)', () => {
           needs: ['categories', 'judges'],
           count: 2,
           tables_without_judges: 1,
+          tables_without_judges_names: ['Table 2'],
         },
         {
           key: 'schedule',
@@ -225,7 +232,8 @@ describe('setup checklist (M8-20)', () => {
     expect(step('categories').text()).toContain('Without a published ruleset: RME')
     expect(step('rounds').text()).toContain('Needs Categories and rulesets first.')
     expect(step('teams').text()).not.toContain('Needs')
-    expect(step('tables').text()).toContain('1 table without a judge')
+    // M11-09: the tables without a judge are named.
+    expect(step('tables').text()).toContain('Table 2 has no judge')
     expect(step('tables').text()).toContain('Needs Categories and rulesets first.')
     expect(step('judges').text()).toContain('3 judges')
     expect(step('schedule').text()).toContain('4 of 36 games placed · 0 of 3 rounds timed')
@@ -233,6 +241,13 @@ describe('setup checklist (M8-20)', () => {
     expect(step('schedule').text()).toContain('Needs Rounds, Tables first.')
     expect(step('tables').find('a').attributes('href')).toContain('tab=schedule')
     expect(step('publish').find('a').exists()).toBe(false)
+    // M11-08: the planner returns to the checklist.
+    const planner = step('schedule')
+      .findAll('a')
+      .find((a) => a.attributes('href')?.includes('__event-planner'))!
+    expect(decodeURIComponent(planner.attributes('href')!)).toContain(
+      'from=/events/event1?tab=setup',
+    )
   })
 
   it('M10-30 / M10-T45: the publish row publishes like the header button', async () => {

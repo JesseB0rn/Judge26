@@ -87,7 +87,8 @@
         "todo": "Créez des tables pour chaque catégorie sur le tableau d’attribution et attribuez-y les juges.",
         "missing": "Sans table active : {codes}",
         "done": "aucune table active | 1 table active | {count} tables actives",
-        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge"
+        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge",
+        "withoutJudgesNamed": "Chaque table a un ou une juge | {names} n’a pas de juge | {names} n’ont pas de juge"
       },
       "schedule": {
         "title": "Horaire",

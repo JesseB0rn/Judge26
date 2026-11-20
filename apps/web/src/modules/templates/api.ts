@@ -73,6 +73,8 @@ export interface SetupStep {
   /** Category codes still missing this step. */
   missing?: string[]
   tables_without_judges?: number
+  /** M11-09: names of the active tables without a judge. */
+  tables_without_judges_names?: string[]
   placed?: number
   expected?: number
   timed?: number

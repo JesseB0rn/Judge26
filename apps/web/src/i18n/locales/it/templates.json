@@ -87,7 +87,8 @@
         "todo": "Crei i tavoli per ogni categoria sulla tavola delle assegnazioni e vi assegni i giudici.",
         "missing": "Senza tavolo attivo: {codes}",
         "done": "nessun tavolo attivo | 1 tavolo attivo | {count} tavoli attivi",
-        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice"
+        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice",
+        "withoutJudgesNamed": "Ogni tavolo ha un giudice | {names} non ha un giudice | {names} non hanno un giudice"
       },
       "schedule": {
         "title": "Programma",

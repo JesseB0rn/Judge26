@@ -87,7 +87,8 @@
         "todo": "Auf der Zuteilungstafel Tische für jede Kategorie anlegen und die Schiedsrichter/innen zuteilen.",
         "missing": "Ohne aktiven Tisch: {codes}",
         "done": "keine aktiven Tische | 1 aktiver Tisch | {count} aktive Tische",
-        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in"
+        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in",
+        "withoutJudgesNamed": "Jeder Tisch hat eine Schiedsrichterin oder einen Schiedsrichter | {names} hat noch keine Schiedsrichterin oder keinen Schiedsrichter | {names} haben noch keine Schiedsrichterin oder keinen Schiedsrichter"
       },
       "schedule": {
         "title": "Zeitplan",

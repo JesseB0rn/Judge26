@@ -156,7 +156,9 @@
     "scoring": "Bewertungsphase (Minuten)",
     "total": "Gesamtdauer der Runde: {minutes} Minuten.",
     "save": "Runde speichern",
-    "add": "Runde hinzufügen"
+    "add": "Runde hinzufügen",
+    "noDays": "Dieser Anlass hat noch keinen Wettbewerbstag, Runden können also keinem Tag zugeordnet werden.",
+    "noDaysLink": "Tage im Tab Übersicht hinzufügen"
   },
   "export": {
     "title": "rangliste {category}",

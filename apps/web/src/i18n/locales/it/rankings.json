@@ -156,7 +156,9 @@
     "scoring": "Fase di valutazione (minuti)",
     "total": "Durata totale del turno: {minutes} minuti.",
     "save": "Salva il turno",
-    "add": "Aggiungi turno"
+    "add": "Aggiungi turno",
+    "noDays": "Questo evento non ha ancora un giorno di gara: ai turni non si può assegnare un giorno.",
+    "noDaysLink": "Aggiungere giorni nella scheda Panoramica"
   },
   "export": {
     "title": "classifica {category}",

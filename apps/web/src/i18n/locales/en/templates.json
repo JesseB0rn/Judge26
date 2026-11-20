@@ -87,7 +87,8 @@
         "todo": "Create tables for each category on the assignment board and put the judges on them.",
         "missing": "Without an active table: {codes}",
         "done": "no active tables | 1 active table | {count} active tables",
-        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge"
+        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge",
+        "withoutJudgesNamed": "Every table has a judge | {names} has no judge | {names} have no judge"
       },
       "schedule": {
         "title": "Schedule",

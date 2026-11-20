@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { FilePlusIcon, PencilIcon, PlusIcon, SaveIcon, SendIcon, Trash2Icon } from '@lucide/vue'
 import {
   DEFAULT_ZERO_POINTS_TIME_MS,
@@ -29,7 +29,7 @@ import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
-import { useQueryRefs } from '@/shared/composables/useQueryRefs'
+import { eventBackTarget, useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
 import type { CategoryRecord, GameRuleRecord, RulesetRecord } from '@/shared/types/records'
 import {
@@ -59,6 +59,9 @@ import ScoreSheet from '../components/ScoreSheet.vue'
  */
 const props = defineProps<{ id: string }>()
 const session = useSessionStore()
+// M11-08: Back returns to the page this one was opened from, else to the event's Categories tab.
+const route = useRoute()
+const fromBack = computed(() => eventBackTarget(route.query.from))
 
 const category = ref<CategoryRecord>()
 const rules = ref<GameRuleRecord[]>([])
@@ -261,10 +264,14 @@ onMounted(() => load())
       "
     >
       <template #actions>
-        <Button v-if="event" as-child variant="outline">
-          <RouterLink :to="{ name: 'event', params: { id: event.id } }">{{
-            t('rankings.view.backToEvent')
-          }}</RouterLink>
+        <Button v-if="fromBack" as-child variant="outline">
+          <RouterLink :to="fromBack" data-testid="back-link">{{ t('common.back') }}</RouterLink>
+        </Button>
+        <Button v-else-if="event" as-child variant="outline">
+          <RouterLink
+            :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
+            >{{ t('rankings.view.backToEvent') }}</RouterLink
+          >
         </Button>
         <Button v-else as-child variant="outline">
           <RouterLink :to="{ name: 'category-library' }">{{
@@ -317,7 +324,11 @@ onMounted(() => load())
         {{ t('scoring.view.gamesHint') }}
         <RouterLink
           class="underline"
-          :to="{ name: 'category-ranking', params: { id: category.id }, query: { tab: 'rounds' } }"
+          :to="{
+            name: 'category-ranking',
+            params: { id: category.id },
+            query: { tab: 'rounds', ...(fromBack ? { from: fromBack } : {}) },
+          }"
           >{{ t('scoring.view.gamesHintLink') }}</RouterLink
         >
       </p>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
@@ -40,6 +40,7 @@ import EventStatusBadge from '../components/EventStatusBadge.vue'
 
 const props = defineProps<{ id: string }>()
 const session = useSessionStore()
+const route = useRoute()
 const { data: event, loading, error, load } = useLoader(() => getEvent(props.id))
 const editing = ref(false)
 const savingTemplate = ref(false)
@@ -127,7 +128,13 @@ watch(() => props.id, load)
           </RouterLink>
         </Button>
         <Button v-if="isStaff || event.status !== 'draft'" as-child variant="outline">
-          <RouterLink :to="{ name: 'event-planner', params: { id: event.id } }">
+          <RouterLink
+            :to="{
+              name: 'event-planner',
+              params: { id: event.id },
+              query: { from: route.fullPath },
+            }"
+          >
             <CalendarRangeIcon />
             {{ canManage && !archived ? t('events.detail.planner') : t('events.tabs.schedule') }}
           </RouterLink>

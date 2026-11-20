@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { eventBackTarget } from '@/shared/composables/useQueryRefs'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
@@ -508,7 +509,10 @@ onBeforeUnmount(() => {
   endPrint()
 })
 
-const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
+// M11-08: Back returns to the event page the planner was opened from (a tab), else the event.
+const backLink = computed(
+  () => eventBackTarget(route.query.from) ?? { name: 'event', params: { id: props.id } },
+)
 </script>
 
 <template>
@@ -527,7 +531,10 @@ const backLink = computed(() => ({ name: 'event', params: { id: props.id } }))
           :stale="false"
         />
         <Button as-child variant="outline" class="print:hidden">
-          <RouterLink :to="backLink"><ArrowLeftIcon /> {{ t('events.event') }}</RouterLink>
+          <RouterLink :to="backLink" data-testid="back-link"
+            ><ArrowLeftIcon />
+            {{ typeof backLink === 'string' ? t('common.back') : t('events.event') }}</RouterLink
+          >
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>

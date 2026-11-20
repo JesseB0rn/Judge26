@@ -156,7 +156,9 @@
     "scoring": "Scoring phase (minutes)",
     "total": "Total round duration: {minutes} minutes.",
     "save": "Save round",
-    "add": "Add round"
+    "add": "Add round",
+    "noDays": "This event has no competition day yet, so rounds cannot be given a day.",
+    "noDaysLink": "Add days on the Overview tab"
   },
   "export": {
     "title": "ranking {category}",

@@ -70,6 +70,7 @@ onMounted(load)
       :loading="loading"
       :empty="t('categories.empty')"
       :show-ranking="session.isEventStaff(event.id)"
+      :from="`/events/${event.id}?tab=categories`"
     >
       <template #actions="{ category }">
         <template v-if="editable">

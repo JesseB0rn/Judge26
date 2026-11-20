@@ -77,7 +77,12 @@ function summary(step: SetupStep): string {
   }
   if (codes) return t(`${key}.missing` as MessageKey, { codes })
   if (step.key === 'tables' && step.count && step.tables_without_judges) {
-    return t('templates.setup.steps.tables.withoutJudges', step.tables_without_judges)
+    const names = step.tables_without_judges_names ?? []
+    return names.length
+      ? t('templates.setup.steps.tables.withoutJudgesNamed', names.length, {
+          names: names.join(', '),
+        })
+      : t('templates.setup.steps.tables.withoutJudges', step.tables_without_judges)
   }
   if (!step.count) return t(`${key}.todo` as MessageKey)
   return t(`${key}.done` as MessageKey, step.count)
@@ -141,7 +146,13 @@ defineExpose({ reload: load })
           </div>
           <div class="flex gap-2">
             <Button v-if="step.key === 'schedule'" as-child size="sm" variant="outline">
-              <RouterLink :to="{ name: 'event-planner', params: { id: event.id } }">
+              <RouterLink
+                :to="{
+                  name: 'event-planner',
+                  params: { id: event.id },
+                  query: { from: `/events/${event.id}?tab=setup` },
+                }"
+              >
                 <CalendarRangeIcon /> {{ t('templates.setup.openPlanner') }}
               </RouterLink>
             </Button>
