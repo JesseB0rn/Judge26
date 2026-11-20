@@ -29,7 +29,6 @@ test.describe('M1 event administration', () => {
     await page.getByRole('button', { name: 'New event' }).click()
     dialog = page.getByRole('dialog')
     await dialog.getByLabel('Name').fill(eventName)
-    await dialog.getByLabel('Status').selectOption('published')
     await dialog.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('heading', { name: eventName })).toBeVisible()
     // A new event opens its setup checklist (M8-20); the days are on the overview.

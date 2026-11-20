@@ -34,7 +34,12 @@
       "seconds": "Nur Sekunden (95s)"
     },
     "allowTeamRefusal": "Teams dürfen die Bestätigung des Bewertungsbogens verweigern",
-    "allowTeamRefusalHint": "Die Schiedsrichterin oder der Schiedsrichter hält dann den Grund fest. Ausgeschaltet braucht jeder Bogen die Bestätigung des Teams."
+    "allowTeamRefusalHint": "Die Schiedsrichterin oder der Schiedsrichter hält dann den Grund fest. Ausgeschaltet braucht jeder Bogen die Bestätigung des Teams.",
+    "firstDay": "Erster Wettbewerbstag",
+    "firstDayHint": "Optional. Weitere Tage fügen Sie im Tab Übersicht hinzu.",
+    "dayStart": "Beginn",
+    "dayEnd": "Ende",
+    "draftNotice": "Ein neuer Anlass beginnt als Entwurf. Veröffentlichen Sie ihn auf der Anlassseite, sobald die Einrichtung fertig ist."
   },
   "detail": {
     "updated": "Anlass aktualisiert.",

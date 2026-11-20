@@ -19,8 +19,11 @@ import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
 import type { EventRecord } from '@/shared/types/records'
 import { createEvent, updateEvent } from '../api'
-import { EVENT_STATUS_LABELS } from '../lib'
 
+/**
+ * Creates or edits an event. M11-10: there is no status field; a new event is a draft and the
+ * header's Publish, Archive and Restore change it. M11-11: a new event may get its first day.
+ */
 const props = defineProps<{ event?: EventRecord }>()
 const open = defineModel<boolean>('open', { required: true })
 const emit = defineEmits<{ saved: [event: EventRecord] }>()
@@ -30,10 +33,12 @@ const form = reactive({
   season: new Date().getFullYear(),
   venue: '',
   description: '',
-  status: 'draft' as EventRecord['status'],
   time_decimals: 0,
   time_seconds_only: false,
   allow_team_refusal: false,
+  day_date: '',
+  day_starts_at: '08:00',
+  day_ends_at: '18:00',
 })
 // The select needs strings; the record stores a boolean.
 const timeFormat = computed({
@@ -47,12 +52,16 @@ const { run, pending, error, fieldErrors, reset } = useSubmit(async () => {
     season: form.season,
     venue: form.venue,
     description: form.description,
-    status: form.status,
     time_decimals: form.time_decimals,
     time_seconds_only: form.time_seconds_only,
     allow_team_refusal: form.allow_team_refusal,
   }
-  const saved = props.event ? await updateEvent(props.event.id, data) : await createEvent(data)
+  const firstDay = form.day_date
+    ? { date: form.day_date, starts_at: form.day_starts_at, ends_at: form.day_ends_at }
+    : undefined
+  const saved = props.event
+    ? await updateEvent(props.event.id, data)
+    : await createEvent({ ...data, ...(firstDay ? { first_day: firstDay } : {}) })
   emit('saved', saved)
   open.value = false
 })
@@ -66,10 +75,12 @@ watch(open, (isOpen) => {
     season: e?.season ?? new Date().getFullYear(),
     venue: e?.venue ?? '',
     description: e?.description ?? '',
-    status: e?.status ?? 'draft',
     time_decimals: e?.time_decimals ?? 0,
     time_seconds_only: e?.time_seconds_only ?? false,
     allow_team_refusal: e?.allow_team_refusal ?? false,
+    day_date: '',
+    day_starts_at: '08:00',
+    day_ends_at: '18:00',
   })
 })
 </script>
@@ -85,42 +96,53 @@ watch(open, (isOpen) => {
       </DialogHeader>
       <form id="event-form" class="flex flex-col gap-4" @submit.prevent="run()">
         <ErrorAlert :error="error" />
+        <p v-if="!event" class="text-sm text-muted-foreground" data-testid="draft-notice">
+          {{ t('events.form.draftNotice') }}
+        </p>
         <FieldGroup>
           <FormField v-slot="{ id }" :label="t('common.name')" name="name" :errors="fieldErrors">
             <Input :id="id" v-model="form.name" required />
           </FormField>
-          <div class="grid grid-cols-2 gap-4">
-            <FormField
-              v-slot="{ id }"
-              :label="t('events.season')"
-              name="season"
-              :errors="fieldErrors"
-            >
-              <Input
-                :id="id"
-                v-model.number="form.season"
-                type="number"
-                min="2000"
-                max="2100"
-                required
-              />
-            </FormField>
-            <FormField
-              v-slot="{ id }"
-              :label="t('common.status')"
-              name="status"
-              :errors="fieldErrors"
-            >
-              <NativeSelect :id="id" v-model="form.status" class="w-full">
-                <NativeSelectOption
-                  v-for="(label, value) in EVENT_STATUS_LABELS"
-                  :key="value"
-                  :value="value"
-                  >{{ label }}</NativeSelectOption
-                >
-              </NativeSelect>
-            </FormField>
-          </div>
+          <FormField
+            v-slot="{ id }"
+            :label="t('events.season')"
+            name="season"
+            :errors="fieldErrors"
+          >
+            <Input
+              :id="id"
+              v-model.number="form.season"
+              type="number"
+              min="2000"
+              max="2100"
+              required
+            />
+          </FormField>
+          <fieldset v-if="!event" class="flex flex-col gap-2" data-testid="first-day">
+            <legend class="mb-2 text-sm font-medium">{{ t('events.form.firstDay') }}</legend>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr_1fr]">
+              <FormField
+                v-slot="{ id }"
+                :label="t('common.date')"
+                name="first_day"
+                :errors="fieldErrors"
+              >
+                <Input :id="id" v-model="form.day_date" type="date" data-testid="first-day-date" />
+              </FormField>
+              <FormField v-slot="{ id }" :label="t('events.form.dayStart')" name="day_starts_at">
+                <Input
+                  :id="id"
+                  v-model="form.day_starts_at"
+                  type="time"
+                  :disabled="!form.day_date"
+                />
+              </FormField>
+              <FormField v-slot="{ id }" :label="t('events.form.dayEnd')" name="day_ends_at">
+                <Input :id="id" v-model="form.day_ends_at" type="time" :disabled="!form.day_date" />
+              </FormField>
+            </div>
+            <p class="text-xs text-muted-foreground">{{ t('events.form.firstDayHint') }}</p>
+          </fieldset>
           <FormField v-slot="{ id }" :label="t('events.venue')" name="venue" :errors="fieldErrors">
             <Input :id="id" v-model="form.venue" />
           </FormField>

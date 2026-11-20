@@ -34,7 +34,12 @@
       "seconds": "Solo secondi (95s)"
     },
     "allowTeamRefusal": "Le squadre possono rifiutare di confermare un foglio di punteggio",
-    "allowTeamRefusalHint": "Il giudice annota allora il motivo. Se disattivato, ogni foglio richiede la conferma della squadra."
+    "allowTeamRefusalHint": "Il giudice annota allora il motivo. Se disattivato, ogni foglio richiede la conferma della squadra.",
+    "firstDay": "Primo giorno di gara",
+    "firstDayHint": "Facoltativo. Altri giorni si aggiungono nella scheda Panoramica.",
+    "dayStart": "Inizio",
+    "dayEnd": "Fine",
+    "draftNotice": "Un nuovo evento inizia come bozza. Lo pubblichi dalla pagina dell’evento a configurazione terminata."
   },
   "detail": {
     "updated": "Evento aggiornato.",

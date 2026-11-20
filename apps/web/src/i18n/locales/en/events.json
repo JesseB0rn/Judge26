@@ -34,7 +34,12 @@
       "seconds": "Seconds only (95s)"
     },
     "allowTeamRefusal": "Teams may refuse to confirm a score sheet",
-    "allowTeamRefusalHint": "The judge then records the reason. When off, every score sheet needs the team’s confirmation."
+    "allowTeamRefusalHint": "The judge then records the reason. When off, every score sheet needs the team’s confirmation.",
+    "firstDay": "First competition day",
+    "firstDayHint": "Optional. More days can be added on the Overview tab.",
+    "dayStart": "Starts",
+    "dayEnd": "Ends",
+    "draftNotice": "A new event starts as a draft. Publish it from the event page once the setup is done."
   },
   "detail": {
     "updated": "Event updated.",

@@ -135,6 +135,10 @@
     },
     "passwordConfirm": {
       "mismatch": "Die Passwörter stimmen nicht überein."
+    },
+    "first_day": {
+      "invalid_range": "Der Tag muss nach seinem Beginn enden.",
+      "invalid_day": "Der erste Tag konnte nicht erstellt werden."
     }
   },
   "invitation_invalid": "Dieser Einladungslink ist nicht gültig.",
@@ -184,5 +188,7 @@
   "check_off_managers_only": "Nur Eventverantwortliche können die Roboterkontrolle ausschalten.",
   "checks_recorded": "Es wurden bereits Roboterkontrollen erfasst; der Kontrollmodus kann nicht mehr geändert werden.",
   "read_only": "Dieses Feld wird durch die Freigabe oder den Abschluss gesetzt.",
-  "print_not_allowed": "Nur Eventverantwortliche und Oberschiedsrichter können das Druckcenter nutzen."
+  "print_not_allowed": "Nur Eventverantwortliche und Oberschiedsrichter können das Druckcenter nutzen.",
+  "event_create_draft": "Ein neuer Anlass wird immer als Entwurf erstellt.",
+  "invalid_time": "Zeiten im Format HH:MM angeben."
 }

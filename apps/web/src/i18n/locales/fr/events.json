@@ -34,7 +34,12 @@
       "seconds": "Secondes uniquement (95s)"
     },
     "allowTeamRefusal": "Les équipes peuvent refuser de confirmer une feuille de score",
-    "allowTeamRefusalHint": "Le ou la juge note alors la raison. Désactivé, chaque feuille nécessite la confirmation de l’équipe."
+    "allowTeamRefusalHint": "Le ou la juge note alors la raison. Désactivé, chaque feuille nécessite la confirmation de l’équipe.",
+    "firstDay": "Premier jour de compétition",
+    "firstDayHint": "Facultatif. D’autres jours s’ajoutent dans l’onglet Aperçu.",
+    "dayStart": "Début",
+    "dayEnd": "Fin",
+    "draftNotice": "Un nouvel événement commence en brouillon. Publiez-le depuis la page de l’événement une fois la configuration terminée."
   },
   "detail": {
     "updated": "Événement mis à jour.",
