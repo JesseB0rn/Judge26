@@ -56,7 +56,8 @@ test.describe('M1 event administration', () => {
       .selectOption({ label: `${templateCode} – Future Innovators` })
     await dialog.getByLabel('Code').fill('FI')
     await dialog.getByRole('button', { name: 'Copy' }).click()
-    await expect(page.getByRole('cell', { name: 'FI', exact: true })).toBeVisible()
+    // M11-01: the category is a row of the categories grid.
+    await expect(page.locator('tr[data-category="FI"]')).toBeVisible()
 
     // Staff (M1-05, M8-B): an existing account is added to the event right away.
     await page.getByRole('tab', { name: 'Staff' }).click()

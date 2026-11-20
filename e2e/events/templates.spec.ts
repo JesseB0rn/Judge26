@@ -66,7 +66,7 @@ test.describe('M8-D event templates', () => {
     await page.getByRole('button', { name: 'New event' }).click()
     dialog = page.getByRole('dialog')
     await dialog.getByLabel('From a template').check()
-    await dialog.getByLabel('Template').selectOption({ label: templateName })
+    await dialog.getByLabel('Template', { exact: true }).selectOption({ label: templateName })
     await dialog.getByLabel('Name').fill(newName)
     await dialog.getByLabel('First day').fill('2027-05-15')
     await dialog.getByRole('button', { name: 'Create event' }).click()
@@ -79,10 +79,10 @@ test.describe('M8-D event templates', () => {
     // Judges are not part of a template, so the copied tables wait for them (M9-C).
     await expect(checklist.locator('[data-step=judges]')).toHaveAttribute('data-done', 'false')
     await expect(checklist.locator('[data-step=tables]')).toHaveAttribute('data-done', 'false')
-    await expect(checklist.locator('[data-step=tables]')).toContainText('1 table without a judge')
+    await expect(checklist.locator('[data-step=tables]')).toContainText(/Table .* has no judge/)
     await expect(checklist.locator('[data-step=tables]')).toContainText(/Needs .*Judges first\./)
     await expect(checklist.locator('[data-step=schedule]')).toContainText(
-      'Needs Tables, Teams first.',
+      'Needs Tables and judges, Teams first.',
     )
 
     await checklist.getByRole('link', { name: 'Open: Competition days' }).click()
