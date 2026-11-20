@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { reactive, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, ref, watch } from 'vue'
 import { PencilIcon, Trash2Icon } from '@lucide/vue'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import {
   Table,
   TableBody,
@@ -17,12 +13,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
-import FormField from '@/shared/components/FormField.vue'
 import { useSubmit } from '@/shared/composables/useSubmit'
 import { formatDay } from '@/shared/format'
 import type { CompetitionDayRecord, GameRuleRecord, RoundRecord } from '@/shared/types/records'
 import { gameRuleIdForRound } from '@/modules/scoring/lib'
-import { createRound, deleteRound, updateRound } from '../api'
+import { deleteRound } from '../api'
+import RoundForm from './RoundForm.vue'
 
 /** Rounds of a category (M3-01). Keys are referenced by the ranking configuration. */
 const props = defineProps<{
@@ -40,82 +36,24 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
-const form = reactive({
-  key: '',
-  name: '',
-  testing_minutes: 0,
-  scoring_minutes: 15,
-  day: '',
-  game_rule: '',
-  // M10-08: new rounds have a synchronous robot check.
-  check_mode: 'synchronous' as NonNullable<RoundRecord['check_mode']>,
-})
-const CHECK_MODES = ['synchronous', 'asynchronous', 'off'] as const
 const rules = () => props.gameRules ?? []
 const gameLabel = (round: RoundRecord) =>
   rules().find((r) => r.id === gameRuleIdForRound(round, rules()))?.name ??
   t('rankings.rounds.notSet')
-/** A new round plays the game of the previous round (or the only game). */
-const defaultGame = () =>
-  props.rounds[props.rounds.length - 1]?.game_rule || (rules().length ? rules()[0]!.id : '')
 const dayLabel = (id: string | undefined) => {
   const day = props.days?.find((d) => d.id === id)
   return day ? day.label || formatDay(day.date) : '–'
 }
 const editingId = ref<string>()
-// Preselect a game once the games are known.
-watch(
-  () => props.gameRules,
-  () => {
-    if (!editingId.value && !rules().some((r) => r.id === form.game_rule))
-      form.game_rule = defaultGame()
-  },
-  { immediate: true },
-)
-
-const add = useSubmit(async () => {
-  const data = {
-    key: form.key,
-    name: form.name,
-    position: Math.max(0, ...props.rounds.map((r) => r.position)) + 1,
-    testing_minutes: form.testing_minutes,
-    scoring_minutes: form.scoring_minutes,
-    ...(props.days?.length ? { day: form.day } : {}),
-    ...(rules().length ? { game_rule: form.game_rule } : {}),
-    check_mode: form.check_mode,
-  }
-  if (editingId.value) {
-    const round = props.rounds.find((item) => item.id === editingId.value)
-    if (!round) throw new Error(t('rankings.rounds.gone'))
-    await updateRound(round.id, { ...data, position: round.position })
-  } else {
-    await createRound(props.categoryId, data)
-  }
-  resetForm()
-  emit('changed')
-})
-
-function resetForm() {
-  editingId.value = undefined
-  form.key = ''
-  form.name = ''
-  form.testing_minutes = 0
-  form.scoring_minutes = 15
-  form.day = ''
-  form.game_rule = defaultGame()
-  form.check_mode = 'synchronous'
-}
+const editing = computed(() => props.rounds.find((r) => r.id === editingId.value))
 
 function edit(round: RoundRecord) {
   editingId.value = round.id
-  form.key = round.key
-  form.name = round.name
-  form.testing_minutes = round.testing_minutes
-  form.scoring_minutes = round.scoring_minutes
-  form.day = round.day ?? ''
-  form.game_rule = gameRuleIdForRound(round, rules())
-  form.check_mode = round.check_mode ?? 'off'
-  add.reset()
+}
+
+function onSaved() {
+  editingId.value = undefined
+  emit('changed')
 }
 
 // Open the linked round once, as soon as it is loaded.
@@ -135,6 +73,7 @@ watch(
 const remove = useSubmit(async (round: RoundRecord) => {
   if (!confirm(t('rankings.rounds.confirmDelete', { round: round.name }))) return
   await deleteRound(round.id)
+  if (editingId.value === round.id) editingId.value = undefined
   emit('changed')
 })
 </script>
@@ -207,123 +146,16 @@ const remove = useSubmit(async (round: RoundRecord) => {
         </TableBody>
       </Table>
     </div>
-    <form v-if="editable" class="flex flex-col gap-3" @submit.prevent="add.run()">
-      <ErrorAlert :error="add.error.value" />
-      <Alert v-if="eventId && days && !days.length" data-testid="round-no-days">
-        <AlertDescription>
-          {{ t('rankings.rounds.noDays') }}
-          <RouterLink
-            class="underline"
-            :to="{ name: 'event', params: { id: eventId }, query: { tab: 'overview' } }"
-            >{{ t('rankings.rounds.noDaysLink') }}</RouterLink
-          >
-        </AlertDescription>
-      </Alert>
-      <FormField
-        v-slot="{ id }"
-        :label="t('rankings.rounds.key')"
-        name="key"
-        :errors="add.fieldErrors.value"
-        :description="t('rankings.rounds.keyHint')"
-      >
-        <Input :id="id" v-model="form.key" required pattern="[A-Za-z][A-Za-z0-9_\-]*" />
-      </FormField>
-      <FormField
-        v-slot="{ id }"
-        :label="t('rankings.rounds.name')"
-        name="name"
-        :errors="add.fieldErrors.value"
-      >
-        <Input :id="id" v-model="form.name" required />
-      </FormField>
-      <FormField
-        v-if="gameRules?.length"
-        v-slot="{ id }"
-        :label="t('rankings.rounds.game')"
-        name="game_rule"
-        :errors="add.fieldErrors.value"
-        :description="t('rankings.rounds.gameHint')"
-      >
-        <NativeSelect :id="id" v-model="form.game_rule" class="w-full" required>
-          <NativeSelectOption v-for="r in gameRules" :key="r.id" :value="r.id">{{
-            r.name
-          }}</NativeSelectOption>
-        </NativeSelect>
-      </FormField>
-      <FormField
-        v-if="days?.length"
-        v-slot="{ id }"
-        :label="t('rankings.rounds.day')"
-        name="day"
-        :errors="add.fieldErrors.value"
-        :description="t('rankings.rounds.dayHint')"
-      >
-        <NativeSelect :id="id" v-model="form.day" class="w-full">
-          <NativeSelectOption value="">{{ t('judging.noDay') }}</NativeSelectOption>
-          <NativeSelectOption v-for="d in days" :key="d.id" :value="d.id">{{
-            d.label ? `${d.label} (${formatDay(d.date)})` : formatDay(d.date)
-          }}</NativeSelectOption>
-        </NativeSelect>
-      </FormField>
-      <FormField
-        v-slot="{ id }"
-        :label="t('rankings.rounds.testing')"
-        name="testing_minutes"
-        :errors="add.fieldErrors.value"
-      >
-        <Input
-          :id="id"
-          v-model.number="form.testing_minutes"
-          type="number"
-          min="0"
-          step="1"
-          required
-        />
-      </FormField>
-      <FormField
-        v-slot="{ id }"
-        :label="t('rankings.rounds.scoring')"
-        name="scoring_minutes"
-        :errors="add.fieldErrors.value"
-      >
-        <Input
-          :id="id"
-          v-model.number="form.scoring_minutes"
-          type="number"
-          min="1"
-          step="1"
-          required
-        />
-      </FormField>
-      <FormField
-        v-slot="{ id }"
-        :label="t('checks.mode.label')"
-        name="check_mode"
-        :errors="add.fieldErrors.value"
-        :description="t('checks.mode.hint')"
-      >
-        <NativeSelect
-          :id="id"
-          v-model="form.check_mode"
-          class="w-full"
-          data-testid="round-check-mode"
-        >
-          <NativeSelectOption v-for="mode in CHECK_MODES" :key="mode" :value="mode">{{
-            t(`checks.mode.${mode}`)
-          }}</NativeSelectOption>
-        </NativeSelect>
-      </FormField>
-      <p class="text-sm text-muted-foreground">
-        {{ t('rankings.rounds.total', { minutes: form.testing_minutes + form.scoring_minutes }) }}
-      </p>
-      <div class="flex gap-2">
-        <Button type="submit" :disabled="add.pending.value">
-          {{ editingId ? t('rankings.rounds.save') : t('rankings.rounds.add') }}
-        </Button>
-        <Button v-if="editingId" type="button" variant="outline" @click="resetForm">{{
-          t('common.cancel')
-        }}</Button>
-      </div>
-    </form>
+    <RoundForm
+      v-if="editable"
+      :category-id="categoryId"
+      :rounds="rounds"
+      :round="editing"
+      :days="days"
+      :game-rules="gameRules"
+      :event-id="eventId"
+      @saved="onSaved"
+      @cancel="editingId = undefined"
+    />
   </div>
 </template>

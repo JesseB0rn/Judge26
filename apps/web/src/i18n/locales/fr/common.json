@@ -31,5 +31,6 @@
   "loading": "Chargement…",
   "yes": "oui",
   "no": "non",
-  "back": "Retour"
+  "back": "Retour",
+  "delete": "Supprimer"
 }
