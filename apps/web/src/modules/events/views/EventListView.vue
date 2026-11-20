@@ -2,7 +2,7 @@
 import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { LibraryIcon, PlusIcon } from '@lucide/vue'
+import { PlusIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -19,15 +19,13 @@ import { useSessionStore } from '@/shared/auth/session'
 import { useLoader } from '@/shared/composables/useSubmit'
 import type { EventRecord } from '@/shared/types/records'
 import { listEvents } from '../api'
-import EventFormDialog from '../components/EventFormDialog.vue'
-import NewEventFromTemplateDialog from '@/modules/templates/components/NewEventFromTemplateDialog.vue'
+import NewEventDialog from '../components/NewEventDialog.vue'
 import EventStatusBadge from '../components/EventStatusBadge.vue'
 
 const session = useSessionStore()
 const router = useRouter()
 const { data: events, loading, error, load } = useLoader(listEvents)
 const creating = ref(false)
-const fromTemplate = ref(false)
 
 function onCreated(event: EventRecord) {
   // A new event opens its setup checklist (M8-20).
@@ -40,12 +38,10 @@ onMounted(load)
 <template>
   <PageHeader :title="t('shell.nav.events')" :description="t('events.list.description')">
     <template #actions>
-      <template v-if="session.isAdmin">
-        <Button variant="outline" @click="fromTemplate = true"
-          ><LibraryIcon /> {{ t('templates.create.button') }}</Button
-        >
-        <Button @click="creating = true"><PlusIcon /> {{ t('events.form.newTitle') }}</Button>
-      </template>
+      <!-- M11-12: one New event dialog, empty or from a template. -->
+      <Button v-if="session.isAdmin" @click="creating = true"
+        ><PlusIcon /> {{ t('events.form.newTitle') }}</Button
+      >
     </template>
   </PageHeader>
   <ErrorAlert :error="error" />
@@ -74,10 +70,5 @@ onMounted(load)
       }}</TableEmpty>
     </TableBody>
   </Table>
-  <EventFormDialog v-model:open="creating" @saved="onCreated" />
-  <NewEventFromTemplateDialog
-    v-if="session.isAdmin"
-    v-model:open="fromTemplate"
-    @created="onCreated"
-  />
+  <NewEventDialog v-if="session.isAdmin" v-model:open="creating" @created="onCreated" />
 </template>

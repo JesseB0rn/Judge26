@@ -31,8 +31,6 @@
     "managerHint": "Nur Admins führen Vorlagen in der Bibliothek. Die Datei herunterladen und einem Admin geben oder in einer anderen Installation hochladen."
   },
   "create": {
-    "button": "Aus Vorlage",
-    "title": "Neuer Anlass aus Vorlage",
     "description": "Alle Daten verschieben sich so, dass der erste Tag der Vorlage auf den gewählten Tag fällt. Der neue Anlass ändert sich nicht, wenn die Vorlage geändert wird.",
     "template": "Vorlage",
     "chooseTemplate": "Vorlage wählen",

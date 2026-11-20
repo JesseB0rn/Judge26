@@ -31,8 +31,6 @@
     "managerHint": "Seuls les admins gèrent les modèles de la bibliothèque. Téléchargez le fichier et transmettez-le à un admin, ou importez-le sur une autre installation."
   },
   "create": {
-    "button": "À partir d’un modèle",
-    "title": "Nouvel événement à partir d’un modèle",
     "description": "Toutes les dates sont décalées pour que le premier jour du modèle tombe sur le jour choisi. Le nouvel événement ne change pas si le modèle est modifié.",
     "template": "Modèle",
     "chooseTemplate": "Choisir un modèle",

@@ -62,8 +62,10 @@ test.describe('M8-D event templates', () => {
 
     // New event from the template with a new first day (M8-23, M8-T13).
     await page.goto('/events')
-    await page.getByRole('button', { name: 'From template' }).click()
+    // M11-12: one New event dialog; admins choose a template at the top.
+    await page.getByRole('button', { name: 'New event' }).click()
     dialog = page.getByRole('dialog')
+    await dialog.getByLabel('From a template').check()
     await dialog.getByLabel('Template').selectOption({ label: templateName })
     await dialog.getByLabel('Name').fill(newName)
     await dialog.getByLabel('First day').fill('2027-05-15')

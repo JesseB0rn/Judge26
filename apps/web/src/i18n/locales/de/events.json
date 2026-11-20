@@ -72,5 +72,12 @@
     "description": "Diese Einrichtungsschritte sind noch offen. Teams und Öffentlichkeit sehen den Anlass, sobald er veröffentlicht ist.",
     "goToSetup": "Zur Einrichtung",
     "anyway": "Trotzdem veröffentlichen"
+  },
+  "newEvent": {
+    "startFrom": "Ausgangspunkt",
+    "empty": "Leerer Anlass",
+    "emptyHint": "Tage, Kategorien und Runden Schritt für Schritt einrichten.",
+    "template": "Aus einer Vorlage",
+    "templateHint": "Tage, Kategorien, Bewertungsregeln, Runden und Tische aus der Bibliothek übernehmen."
   }
 }

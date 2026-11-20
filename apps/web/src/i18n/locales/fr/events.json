@@ -72,5 +72,12 @@
     "description": "Ces étapes de configuration sont encore ouvertes. Les équipes et le public voient l’événement dès sa publication.",
     "goToSetup": "Aller à la configuration",
     "anyway": "Publier quand même"
+  },
+  "newEvent": {
+    "startFrom": "Point de départ",
+    "empty": "Événement vide",
+    "emptyHint": "Configurer jours, catégories et tours pas à pas.",
+    "template": "À partir d’un modèle",
+    "templateHint": "Reprendre jours, catégories, règles, tours et tables de la bibliothèque."
   }
 }

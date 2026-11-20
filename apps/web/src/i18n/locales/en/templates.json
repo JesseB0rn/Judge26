@@ -31,8 +31,6 @@
     "managerHint": "Only admins keep templates in the library. Download the file and give it to an admin, or upload it on another installation."
   },
   "create": {
-    "button": "From template",
-    "title": "New event from template",
     "description": "All dates move so the template’s first day falls on the day you choose. The new event does not change when the template changes.",
     "template": "Template",
     "chooseTemplate": "Choose a template",
