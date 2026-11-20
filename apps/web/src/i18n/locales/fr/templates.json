@@ -93,7 +93,8 @@
       "schedule": {
         "title": "Horaire",
         "todo": "Placez chaque équipe sur une table et fixez l’heure de chaque manche dans le planificateur.",
-        "progress": "{placed} passages placés sur {expected} · {timed} manches planifiées sur {rounds}"
+        "placed": "{placed} passages placés sur {expected}",
+        "timed": "{timed} manches planifiées sur {rounds}"
       },
       "publish": {
         "title": "Publier",

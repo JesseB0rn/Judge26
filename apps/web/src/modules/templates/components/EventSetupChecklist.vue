@@ -7,6 +7,7 @@ import {
   CalendarRangeIcon,
   CircleCheckIcon,
   CircleIcon,
+  LayoutGridIcon,
   SendIcon,
 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -60,16 +61,7 @@ function waitingFor(step: SetupStep) {
 function summary(step: SetupStep): string {
   const key = `templates.setup.steps.${step.key}`
   const codes = step.missing?.join(', ') ?? ''
-  if (step.key === 'schedule') {
-    return step.expected || step.rounds
-      ? t('templates.setup.steps.schedule.progress', {
-          placed: step.placed ?? 0,
-          expected: step.expected ?? 0,
-          timed: step.timed ?? 0,
-          rounds: step.rounds ?? 0,
-        })
-      : t('templates.setup.steps.schedule.todo')
-  }
+  if (step.key === 'schedule') return t('templates.setup.steps.schedule.todo')
   if (step.key === 'publish') {
     return step.done
       ? t('templates.setup.steps.publish.done')
@@ -90,6 +82,43 @@ function summary(step: SetupStep): string {
 
 function link(step: SetupStep): RouteLocationRaw {
   return { name: 'event', params: { id: props.event.id }, query: { tab: TAB[step.key] } }
+}
+
+/**
+ * M11-06: the schedule step is two jobs on two screens: placing teams (Assignments tab) and
+ * timing rounds (planner), each with its own line and link.
+ */
+function scheduleLines(step: SetupStep) {
+  const placed = step.expected ? (step.placed ?? 0) >= step.expected : false
+  const timed = step.rounds ? (step.timed ?? 0) >= step.rounds : false
+  return [
+    {
+      key: 'placed',
+      done: placed,
+      text: t('templates.setup.steps.schedule.placed', {
+        placed: step.placed ?? 0,
+        expected: step.expected ?? 0,
+      }),
+      label: t('events.tabs.assignments'),
+      icon: LayoutGridIcon,
+      to: link(step),
+    },
+    {
+      key: 'timed',
+      done: timed,
+      text: t('templates.setup.steps.schedule.timed', {
+        timed: step.timed ?? 0,
+        rounds: step.rounds ?? 0,
+      }),
+      label: t('templates.setup.openPlanner'),
+      icon: CalendarRangeIcon,
+      to: {
+        name: 'event-planner',
+        params: { id: props.event.id },
+        query: { from: `/events/${props.event.id}?tab=setup` },
+      },
+    },
+  ]
 }
 
 onMounted(load)
@@ -135,7 +164,37 @@ defineExpose({ reload: load })
                 }})</span
               >
             </p>
-            <p class="text-sm text-muted-foreground">{{ summary(step) }}</p>
+            <ul
+              v-if="step.key === 'schedule' && (step.expected || step.rounds)"
+              class="mt-1 flex flex-col gap-1 text-sm"
+              data-testid="schedule-lines"
+            >
+              <li
+                v-for="line in scheduleLines(step)"
+                :key="line.key"
+                class="flex flex-wrap items-center gap-2"
+                :data-line="line.key"
+                :data-done="line.done"
+              >
+                <CircleCheckIcon
+                  v-if="line.done"
+                  class="size-4 shrink-0 text-green-600"
+                  aria-hidden="true"
+                />
+                <CircleIcon
+                  v-else
+                  class="size-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span class="text-muted-foreground">{{ line.text }}</span>
+                <Button as-child size="sm" :variant="line.done ? 'ghost' : 'outline'">
+                  <RouterLink :to="line.to" :data-testid="`schedule-${line.key}-link`">
+                    <component :is="line.icon" /> {{ line.label }}
+                  </RouterLink>
+                </Button>
+              </li>
+            </ul>
+            <p v-else class="text-sm text-muted-foreground">{{ summary(step) }}</p>
             <p
               v-if="!step.done && waitingFor(step).length"
               class="text-sm text-amber-700 dark:text-amber-400"
@@ -145,17 +204,19 @@ defineExpose({ reload: load })
             </p>
           </div>
           <div class="flex gap-2">
-            <Button v-if="step.key === 'schedule'" as-child size="sm" variant="outline">
-              <RouterLink
-                :to="{
-                  name: 'event-planner',
-                  params: { id: event.id },
-                  query: { from: `/events/${event.id}?tab=setup` },
-                }"
+            <template v-if="step.key === 'schedule' && !(step.expected || step.rounds)">
+              <Button
+                v-for="line in scheduleLines(step)"
+                :key="line.key"
+                as-child
+                size="sm"
+                variant="outline"
               >
-                <CalendarRangeIcon /> {{ t('templates.setup.openPlanner') }}
-              </RouterLink>
-            </Button>
+                <RouterLink :to="line.to" :data-testid="`schedule-${line.key}-link`">
+                  <component :is="line.icon" /> {{ line.label }}
+                </RouterLink>
+              </Button>
+            </template>
             <!-- Same state and rules as the header button: shown while the event is a draft. -->
             <Button
               v-if="step.key === 'publish' && event.status === 'draft'"
@@ -167,7 +228,7 @@ defineExpose({ reload: load })
               <SendIcon /> {{ t('events.detail.publish') }}
             </Button>
             <Button
-              v-if="step.key !== 'publish'"
+              v-if="step.key !== 'publish' && step.key !== 'schedule'"
               as-child
               size="sm"
               :variant="step.done ? 'ghost' : 'outline'"

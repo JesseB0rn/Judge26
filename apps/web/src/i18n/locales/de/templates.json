@@ -93,7 +93,8 @@
       "schedule": {
         "title": "Zeitplan",
         "todo": "Jedes Team einem Tisch zuteilen und jede Runde im Planer zeitlich festlegen.",
-        "progress": "{placed} von {expected} Läufen zugeteilt · {timed} von {rounds} Runden terminiert"
+        "placed": "{placed} von {expected} Läufen zugeteilt",
+        "timed": "{timed} von {rounds} Runden terminiert"
       },
       "publish": {
         "title": "Veröffentlichen",

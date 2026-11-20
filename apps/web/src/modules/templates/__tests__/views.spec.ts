@@ -236,7 +236,15 @@ describe('setup checklist (M8-20)', () => {
     expect(step('tables').text()).toContain('Table 2 has no judge')
     expect(step('tables').text()).toContain('Needs Categories and rulesets first.')
     expect(step('judges').text()).toContain('3 judges')
-    expect(step('schedule').text()).toContain('4 of 36 games placed · 0 of 3 rounds timed')
+    // M11-06 / M11-T08: placing and timing are separate lines with their own links.
+    const line = (key: string) => step('schedule').get(`[data-line=${key}]`)
+    expect(line('placed').text()).toContain('4 of 36 games placed')
+    expect(line('placed').get('a').attributes('href')).toContain('tab=assignments')
+    expect(line('timed').text()).toContain('0 of 3 rounds timed')
+    expect(line('timed').get('a').text()).toContain('Planner')
+    // Rounds and categories open the Categories tab, where both are visible.
+    expect(step('rounds').find('a').attributes('href')).toContain('tab=categories')
+    expect(step('categories').find('a').attributes('href')).toContain('tab=categories')
     // Days and teams are done, so the schedule only waits for rounds and tables.
     expect(step('schedule').text()).toContain('Needs Rounds, Tables and judges first.')
     expect(step('tables').find('a').attributes('href')).toContain('tab=assignments')

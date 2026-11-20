@@ -93,7 +93,8 @@
       "schedule": {
         "title": "Schedule",
         "todo": "Place every team on a table and time every round in the planner.",
-        "progress": "{placed} of {expected} games placed · {timed} of {rounds} rounds timed"
+        "placed": "{placed} of {expected} games placed",
+        "timed": "{timed} of {rounds} rounds timed"
       },
       "publish": {
         "title": "Publish",

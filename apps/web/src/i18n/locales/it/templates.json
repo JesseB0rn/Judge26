@@ -93,7 +93,8 @@
       "schedule": {
         "title": "Programma",
         "todo": "Assegni ogni squadra a un tavolo e fissi l’orario di ogni manche nel pianificatore.",
-        "progress": "{placed} di {expected} prove assegnate · {timed} di {rounds} manche con orario"
+        "placed": "{placed} di {expected} prove assegnate",
+        "timed": "{timed} di {rounds} manche con orario"
       },
       "publish": {
         "title": "Pubblica",
