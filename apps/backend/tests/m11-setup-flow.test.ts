@@ -121,4 +121,46 @@ describe('M11 event setup flow', () => {
       tables_without_judges_names: ['Table 2', 'Table 3'],
     })
   })
+
+  it('M11-T07: a round is timed by updating its scoring phase with its version', async () => {
+    const event = await fx.event({ status: 'draft' })
+    const category = await fx.category(event.id)
+    const manager = await fx.user({ roles: [{ role: 'event_manager', event: event.id }] })
+    const day = await fx.su
+      .collection('competition_days')
+      .create({ event: event.id, date: '2026-06-13', starts_at: '08:00', ends_at: '18:00' })
+    const round = await manager.pb.collection('rounds').create({
+      category: category.id,
+      key: 'R1',
+      name: 'Run 1',
+      position: 1,
+      scoring_minutes: 15,
+      day: day.id,
+    })
+    const scoring = () =>
+      manager.pb
+        .collection('round_phases')
+        .getFirstListItem(`round = "${round.id}" && phase = "scoring"`)
+    const phase = await scoring()
+    expect(phase).toMatchObject({ day: day.id, starts_at: '' })
+    const schedule = async () =>
+      (await steps(manager, event.id)).find((s) => s.key === 'schedule') as unknown as {
+        timed: number
+        rounds: number
+      }
+    expect(await schedule()).toMatchObject({ timed: 0, rounds: 1 })
+
+    await manager.pb
+      .collection('round_phases')
+      .update(phase.id, { starts_at: '10:00', expected_updated: phase.updated })
+    expect((await scoring()).starts_at).toBe('10:00')
+    expect(await schedule()).toMatchObject({ timed: 1, rounds: 1 })
+
+    // A version read before a planner move is refused, as in the planner.
+    const error = await manager.pb
+      .collection('round_phases')
+      .update(phase.id, { starts_at: '11:00', expected_updated: phase.updated })
+      .catch((e: { status: number }) => e)
+    expect((error as { status: number }).status).toBe(409)
+  })
 })

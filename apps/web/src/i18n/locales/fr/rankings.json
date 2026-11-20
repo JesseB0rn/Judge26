@@ -158,7 +158,10 @@
     "save": "Enregistrer le tour",
     "add": "Ajouter un tour",
     "noDays": "Cet événement n’a pas encore de jour de compétition : les tours ne peuvent pas recevoir de jour.",
-    "noDaysLink": "Ajouter des jours dans l’onglet Aperçu"
+    "noDaysLink": "Ajouter des jours dans l’onglet Aperçu",
+    "startsAt": "Début de la manche d’évaluation",
+    "startsAtHint": "Facultatif. Place le tour dans le planificateur d’horaire ; la journée va de {from} à {to}.",
+    "timeNotSaved": "Le tour a été enregistré, mais pas son heure de début : {reason}"
   },
   "export": {
     "title": "classement {category}",

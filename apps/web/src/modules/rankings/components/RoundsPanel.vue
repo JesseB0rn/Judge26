@@ -51,6 +51,12 @@ function edit(round: RoundRecord) {
   editingId.value = round.id
 }
 
+/** Saved, but its start time was not (M11-05): the form stays on the round. */
+function onChanged(round: RoundRecord) {
+  editingId.value = round.id
+  emit('changed')
+}
+
 function onSaved() {
   editingId.value = undefined
   emit('changed')
@@ -155,6 +161,7 @@ const remove = useSubmit(async (round: RoundRecord) => {
       :game-rules="gameRules"
       :event-id="eventId"
       @saved="onSaved"
+      @changed="onChanged"
       @cancel="editingId = undefined"
     />
   </div>

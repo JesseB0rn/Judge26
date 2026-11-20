@@ -241,6 +241,12 @@ function openRound(row: GridRow, round?: RoundRecord) {
   dialog.value = { row, round }
 }
 
+/** Saved, but its start time was not (M11-05): the dialog stays open on the round. */
+async function onRoundKept(round: RoundRecord) {
+  if (dialog.value) dialog.value = { ...dialog.value, round }
+  await loadRounds()
+}
+
 async function onRoundChanged() {
   dialog.value = undefined
   await loadRounds()
@@ -613,6 +619,7 @@ defineExpose({ reload: loadAll })
           cancelable
           deletable
           @saved="onRoundChanged"
+          @changed="onRoundKept"
           @deleted="onRoundChanged"
           @cancel="dialog = undefined"
         />

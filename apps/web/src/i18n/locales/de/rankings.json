@@ -158,7 +158,10 @@
     "save": "Runde speichern",
     "add": "Runde hinzufügen",
     "noDays": "Dieser Anlass hat noch keinen Wettbewerbstag, Runden können also keinem Tag zugeordnet werden.",
-    "noDaysLink": "Tage im Tab Übersicht hinzufügen"
+    "noDaysLink": "Tage im Tab Übersicht hinzufügen",
+    "startsAt": "Beginn des Wertungslaufs",
+    "startsAtHint": "Optional. Setzt die Runde in den Zeitplaner; der Tag dauert von {from} bis {to}.",
+    "timeNotSaved": "Die Runde wurde gespeichert, ihre Startzeit nicht: {reason}"
   },
   "export": {
     "title": "rangliste {category}",

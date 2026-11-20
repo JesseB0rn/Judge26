@@ -158,7 +158,10 @@
     "save": "Save round",
     "add": "Add round",
     "noDays": "This event has no competition day yet, so rounds cannot be given a day.",
-    "noDaysLink": "Add days on the Overview tab"
+    "noDaysLink": "Add days on the Overview tab",
+    "startsAt": "Start of the scoring run",
+    "startsAtHint": "Optional. Places the round in the planner; the day runs {from}–{to}.",
+    "timeNotSaved": "The round was saved, but not its start time: {reason}"
   },
   "export": {
     "title": "ranking {category}",

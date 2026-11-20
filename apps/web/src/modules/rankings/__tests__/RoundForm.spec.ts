@@ -57,4 +57,88 @@ describe('round form (M11-02)', () => {
     expect(hint.text()).toContain('no competition day yet')
     expect(hint.get('a').attributes('href')).toContain('tab=overview')
   })
+
+  describe('start time (M11-05)', () => {
+    const day = {
+      id: 'sat',
+      event: 'event1',
+      date: '2026-06-13',
+      label: 'Saturday',
+      ends_at: '18:00',
+      collectionId: '',
+      collectionName: '',
+      created: '',
+      updated: '',
+    }
+
+    async function addRoundAt(time: string) {
+      const created = { ...makeRound('R3', 3), id: 'new', day: 'sat' }
+      mocked.createRound.mockResolvedValue(created)
+      mocked.updateRound.mockResolvedValue(created)
+      mocked.timeRound.mockResolvedValue({} as never)
+      mocked.getScoringPhase.mockResolvedValue({
+        id: 'p',
+        day: 'sat',
+        starts_at: '',
+        updated: 'v1',
+      })
+      const view = await mountView(RoundForm, {
+        props: { categoryId: 'cat1', rounds, days: [day], cancelable: true },
+      })
+      expect(view.wrapper.find('[data-testid=round-starts-at]').exists()).toBe(false)
+      await fill('[data-testid=round-form] input[pattern]', 'R3')
+      await fill('[data-testid=round-form] input:not([pattern]):not([type=number])', 'Final')
+      await fill('[data-testid=round-form] select', 'sat')
+      await fill('[data-testid=round-starts-at]', time)
+      await click(buttonByText('Add round'))
+      return view
+    }
+
+    it('M11-T07: a start within the day times the round', async () => {
+      const { wrapper } = await addRoundAt('10:00')
+      expect(mocked.createRound).toHaveBeenCalledWith(
+        'cat1',
+        expect.objectContaining({ key: 'R3', day: 'sat' }),
+      )
+      expect(mocked.timeRound).toHaveBeenCalledWith('new', '10:00', undefined)
+      expect(wrapper.emitted('saved')).toHaveLength(1)
+    })
+
+    it('M11-T07: a start outside the day keeps the saved round open with the error', async () => {
+      const { wrapper } = await addRoundAt('23:30')
+      expect(mocked.createRound).toHaveBeenCalledTimes(1)
+      expect(mocked.timeRound).not.toHaveBeenCalled()
+      expect(wrapper.emitted('saved')).toBeUndefined()
+      expect(wrapper.emitted('changed')![0]).toEqual([expect.objectContaining({ id: 'new' })])
+      expect(wrapper.text()).toContain('The round was saved, but not its start time')
+      expect(wrapper.text()).toContain('Outside the hours of this day.')
+      // The form now edits the saved round: fixing the time updates, never creates again.
+      await fill('[data-testid=round-starts-at]', '11:00')
+      await click(buttonByText('Save round'))
+      expect(mocked.createRound).toHaveBeenCalledTimes(1)
+      expect(mocked.updateRound).toHaveBeenCalledWith('new', expect.anything())
+      expect(mocked.timeRound).toHaveBeenCalledWith('new', '11:00', { starts_at: '' })
+      expect(wrapper.emitted('saved')).toHaveLength(1)
+    })
+
+    it('editing a round shows its current start', async () => {
+      mocked.getScoringPhase.mockResolvedValue({
+        id: 'p',
+        day: 'sat',
+        starts_at: '09:30',
+        updated: 'v1',
+      })
+      const { wrapper } = await mountView(RoundForm, {
+        props: {
+          categoryId: 'cat1',
+          rounds,
+          round: { ...rounds[0]!, day: 'sat' },
+          days: [day],
+        },
+      })
+      expect(mocked.getScoringPhase).toHaveBeenCalledWith('round-R1')
+      const input = wrapper.get<HTMLInputElement>('[data-testid=round-starts-at]')
+      expect(input.element.value).toBe('09:30')
+    })
+  })
 })
