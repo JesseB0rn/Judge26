@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { buttonByText, click, fill, makeEvent, makeRole, mountView } from '@/test/utils'
 import * as api from '../api'
+import * as templatesApi from '@/modules/templates/api'
 import EventListView from '../views/EventListView.vue'
 import EventDetailView from '../views/EventDetailView.vue'
 import CompetitionDays from '../components/CompetitionDays.vue'
@@ -10,8 +11,10 @@ vi.mock('../api')
 vi.mock('@/modules/categories/api')
 vi.mock('@/modules/teams/api')
 vi.mock('@/modules/administration/api')
+vi.mock('@/modules/templates/api')
 
 const mocked = vi.mocked(api)
+const templates = vi.mocked(templatesApi)
 
 describe('event views', () => {
   beforeEach(() => {
@@ -104,14 +107,61 @@ describe('event views', () => {
     expect(wrapper.get('a[href*="event=event1"]').text()).toContain('Review scores')
   })
 
-  it('publishes draft events', async () => {
+  it('M11-T15: publishes a complete setup at once', async () => {
     mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
     mocked.updateEvent.mockResolvedValue(makeEvent({ status: 'published' }))
+    templates.getSetupStatus.mockResolvedValue({
+      complete: false,
+      steps: [
+        { key: 'days', done: true, needs: [] },
+        { key: 'publish', done: false, needs: ['schedule'] },
+      ],
+    })
     await mountView(EventDetailView, {
       props: { id: 'event1' },
       session: { roles: [makeRole('admin')] },
     })
     await click(buttonByText('Publish'))
+    await flushPromises()
+    expect(document.querySelector('[data-testid=publish-dialog]')).toBeNull()
+    expect(mocked.updateEvent).toHaveBeenCalledWith('event1', { status: 'published' })
+  })
+
+  it('M11-T15: asks first when the setup is incomplete, listing the open steps', async () => {
+    mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
+    mocked.updateEvent.mockResolvedValue(makeEvent({ status: 'published' }))
+    templates.getSetupStatus.mockResolvedValue({
+      complete: false,
+      steps: [
+        { key: 'days', done: true, needs: [] },
+        { key: 'rounds', done: false, needs: ['days', 'categories'] },
+        { key: 'schedule', done: false, needs: ['rounds'] },
+        { key: 'publish', done: false, needs: ['schedule'] },
+      ],
+    })
+    const { router } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('admin')] },
+    })
+    const confirm = vi.spyOn(window, 'confirm')
+    await click(buttonByText('Publish'))
+    await flushPromises()
+    const steps = document.querySelector('[data-testid=publish-open-steps]')!.textContent
+    expect(steps).toContain('Rounds')
+    expect(steps).toContain('Schedule')
+    expect(steps).not.toContain('Competition days')
+    expect(mocked.updateEvent).not.toHaveBeenCalled()
+    expect(confirm).not.toHaveBeenCalled()
+
+    await click(buttonByText('Go to setup'))
+    await flushPromises()
+    expect(router.currentRoute.value.query.tab).toBe('setup')
+    expect(mocked.updateEvent).not.toHaveBeenCalled()
+
+    await click(buttonByText('Publish'))
+    await flushPromises()
+    await click(buttonByText('Publish anyway'))
+    await flushPromises()
     expect(mocked.updateEvent).toHaveBeenCalledWith('event1', { status: 'published' })
   })
 

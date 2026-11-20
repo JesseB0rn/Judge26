@@ -37,6 +37,7 @@ import { getEvent, updateEvent } from '../api'
 import CompetitionDays from '../components/CompetitionDays.vue'
 import EventFormDialog from '../components/EventFormDialog.vue'
 import EventStatusBadge from '../components/EventStatusBadge.vue'
+import PublishDialog from '../components/PublishDialog.vue'
 
 const props = defineProps<{ id: string }>()
 const session = useSessionStore()
@@ -76,6 +77,13 @@ const setStatus = useSubmit(
   { success: () => t('events.detail.updated') },
 )
 
+// M11-13: Publish (header and checklist) asks first while the setup is incomplete.
+const publishDialog = ref<InstanceType<typeof PublishDialog>>()
+const publishing = computed(() => setStatus.pending.value || !!publishDialog.value?.checking)
+function requestPublish() {
+  void publishDialog.value?.start()
+}
+
 function onSaved(saved: EventRecord) {
   event.value = saved
 }
@@ -101,7 +109,12 @@ watch(() => props.id, load)
           <Button v-if="!archived" variant="outline" @click="editing = true"
             ><PencilIcon /> {{ t('common.edit') }}</Button
           >
-          <Button v-if="event.status === 'draft'" @click="setStatus.run('published')">
+          <Button
+            v-if="event.status === 'draft'"
+            :disabled="publishing"
+            data-testid="header-publish"
+            @click="requestPublish"
+          >
             <SendIcon /> {{ t('events.detail.publish') }}
           </Button>
           <Button variant="outline" @click="savingTemplate = true">
@@ -190,11 +203,7 @@ watch(() => props.id, load)
       </TabsContent>
 
       <TabsContent v-if="canManage" value="setup">
-        <EventSetupChecklist
-          :event="event"
-          :publishing="setStatus.pending.value"
-          @publish="setStatus.run('published')"
-        />
+        <EventSetupChecklist :event="event" :publishing="publishing" @publish="requestPublish" />
       </TabsContent>
 
       <TabsContent value="categories">
@@ -227,6 +236,13 @@ watch(() => props.id, load)
     </Tabs>
 
     <EventFormDialog v-model:open="editing" :event="event" @saved="onSaved" />
+    <PublishDialog
+      v-if="canManage"
+      ref="publishDialog"
+      :event="event"
+      :publishing="setStatus.pending.value"
+      @publish="setStatus.run('published')"
+    />
     <SaveTemplateDialog v-if="canManage" v-model:open="savingTemplate" :event="event" />
   </template>
 </template>

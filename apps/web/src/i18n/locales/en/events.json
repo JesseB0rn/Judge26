@@ -66,5 +66,11 @@
   "list": {
     "description": "Competitions you can access.",
     "empty": "No events available."
+  },
+  "publish": {
+    "title": "Publish before the setup is done?",
+    "description": "These setup steps are still open. Teams and the public see the event once it is published.",
+    "goToSetup": "Go to setup",
+    "anyway": "Publish anyway"
   }
 }

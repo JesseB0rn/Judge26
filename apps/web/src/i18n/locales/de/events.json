@@ -66,5 +66,11 @@
   "list": {
     "description": "Wettbewerbe, auf die Sie Zugriff haben.",
     "empty": "Keine Anlässe verfügbar."
+  },
+  "publish": {
+    "title": "Veröffentlichen, bevor die Einrichtung fertig ist?",
+    "description": "Diese Einrichtungsschritte sind noch offen. Teams und Öffentlichkeit sehen den Anlass, sobald er veröffentlicht ist.",
+    "goToSetup": "Zur Einrichtung",
+    "anyway": "Trotzdem veröffentlichen"
   }
 }

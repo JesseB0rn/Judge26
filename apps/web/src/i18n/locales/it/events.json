@@ -66,5 +66,11 @@
   "list": {
     "description": "Le competizioni a cui ha accesso.",
     "empty": "Nessun evento disponibile."
+  },
+  "publish": {
+    "title": "Pubblicare prima che la configurazione sia terminata?",
+    "description": "Questi passi della configurazione sono ancora aperti. Squadre e pubblico vedono l’evento appena è pubblicato.",
+    "goToSetup": "Vai alla configurazione",
+    "anyway": "Pubblica comunque"
   }
 }
