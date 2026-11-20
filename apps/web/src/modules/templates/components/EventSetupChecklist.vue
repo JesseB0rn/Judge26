@@ -36,10 +36,10 @@ const TAB: Record<SetupStepKey, string> = {
   days: 'overview',
   categories: 'categories',
   rounds: 'categories',
-  tables: 'schedule',
+  tables: 'assignments',
   teams: 'teams',
   judges: 'staff',
-  schedule: 'schedule',
+  schedule: 'assignments',
   publish: 'overview',
 }
 

@@ -83,7 +83,7 @@
         "done": "nessun giudice | 1 giudice | {count} giudici"
       },
       "tables": {
-        "title": "Tavoli",
+        "title": "Tavoli e giudici",
         "todo": "Crei i tavoli per ogni categoria sulla tavola delle assegnazioni e vi assegni i giudici.",
         "missing": "Senza tavolo attivo: {codes}",
         "done": "nessun tavolo attivo | 1 tavolo attivo | {count} tavoli attivi",

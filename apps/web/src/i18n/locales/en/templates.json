@@ -83,7 +83,7 @@
         "done": "no judges | 1 judge | {count} judges"
       },
       "tables": {
-        "title": "Tables",
+        "title": "Tables and judges",
         "todo": "Create tables for each category on the assignment board and put the judges on them.",
         "missing": "Without an active table: {codes}",
         "done": "no active tables | 1 active table | {count} active tables",

@@ -83,7 +83,7 @@
         "done": "keine Schiedsrichter/innen | 1 Schiedsrichter/in | {count} Schiedsrichter/innen"
       },
       "tables": {
-        "title": "Tische",
+        "title": "Tische und Schiedsrichter/innen",
         "todo": "Auf der Zuteilungstafel Tische für jede Kategorie anlegen und die Schiedsrichter/innen zuteilen.",
         "missing": "Ohne aktiven Tisch: {codes}",
         "done": "keine aktiven Tische | 1 aktiver Tisch | {count} aktive Tische",

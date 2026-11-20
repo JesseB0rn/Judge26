@@ -238,8 +238,8 @@ describe('setup checklist (M8-20)', () => {
     expect(step('judges').text()).toContain('3 judges')
     expect(step('schedule').text()).toContain('4 of 36 games placed · 0 of 3 rounds timed')
     // Days and teams are done, so the schedule only waits for rounds and tables.
-    expect(step('schedule').text()).toContain('Needs Rounds, Tables first.')
-    expect(step('tables').find('a').attributes('href')).toContain('tab=schedule')
+    expect(step('schedule').text()).toContain('Needs Rounds, Tables and judges first.')
+    expect(step('tables').find('a').attributes('href')).toContain('tab=assignments')
     expect(step('publish').find('a').exists()).toBe(false)
     // M11-08: the planner returns to the checklist.
     const planner = step('schedule')

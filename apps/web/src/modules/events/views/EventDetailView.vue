@@ -47,6 +47,14 @@ const editing = ref(false)
 const savingTemplate = ref(false)
 // The open tab lives in the URL: a refresh or "back" returns to the same panel.
 const { tab } = useQueryRefs({ tab: 'overview' })
+// M11-14: the Assignments tab was `schedule`; old links still open it.
+watch(
+  tab,
+  (value) => {
+    if (value === 'schedule') tab.value = 'assignments'
+  },
+  { immediate: true },
+)
 
 const canManage = computed(() => session.canManageEvent(props.id))
 const isStaff = computed(() => session.isEventStaff(props.id))
@@ -60,7 +68,7 @@ const visibleTab = computed(() => {
     setup: canManage.value,
     categories: true,
     teams: isStaff.value,
-    schedule: isStaff.value,
+    assignments: isStaff.value,
     publication: canManage.value,
     messages: canManage.value,
     activity: canManage.value,
@@ -166,12 +174,14 @@ watch(() => props.id, load)
     </Alert>
 
     <Tabs :model-value="visibleTab" @update:model-value="tab = String($event)">
+      <!-- M11-14: tabs follow the setup order. -->
       <TabsList>
         <TabsTrigger value="overview">{{ t('events.tabs.overview') }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="setup">{{ t('templates.setup.title') }}</TabsTrigger>
         <TabsTrigger value="categories">{{ t('events.tabs.categories') }}</TabsTrigger>
         <TabsTrigger v-if="isStaff" value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
-        <TabsTrigger v-if="isStaff" value="schedule">{{
+        <TabsTrigger v-if="canManage" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
+        <TabsTrigger v-if="isStaff" value="assignments">{{
           t('events.tabs.assignments')
         }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="publication">{{
@@ -179,7 +189,6 @@ watch(() => props.id, load)
         }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="messages">{{ t('events.tabs.messages') }}</TabsTrigger>
         <TabsTrigger v-if="canManage" value="activity">{{ t('events.tabs.activity') }}</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" class="grid gap-4 md:grid-cols-2">
@@ -214,7 +223,7 @@ watch(() => props.id, load)
         <EventTeamsTab :event="event" :can-manage="canManage && !archived" />
       </TabsContent>
 
-      <TabsContent v-if="isStaff" value="schedule">
+      <TabsContent v-if="isStaff" value="assignments">
         <EventScheduleTab :event="event" :can-manage="canManage && !archived" />
       </TabsContent>
 

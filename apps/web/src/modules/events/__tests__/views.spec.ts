@@ -107,6 +107,28 @@ describe('event views', () => {
     expect(wrapper.get('a[href*="event=event1"]').text()).toContain('Review scores')
   })
 
+  it('M11-T16: old schedule links open the Assignments tab; tabs follow the setup order', async () => {
+    const { wrapper, router } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('admin')] },
+      path: '/?tab=schedule',
+    })
+    await flushPromises()
+    expect(router.currentRoute.value.query.tab).toBe('assignments')
+    expect(wrapper.get('[role=tab][data-state=active]').text()).toBe('Assignments')
+    expect(wrapper.findAll('[role=tab]').map((t) => t.text())).toEqual([
+      'Overview',
+      'Setup',
+      'Categories',
+      'Teams',
+      'Staff',
+      'Assignments',
+      'Public results',
+      'Messages',
+      'Activity',
+    ])
+  })
+
   it('M11-T15: publishes a complete setup at once', async () => {
     mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
     mocked.updateEvent.mockResolvedValue(makeEvent({ status: 'published' }))

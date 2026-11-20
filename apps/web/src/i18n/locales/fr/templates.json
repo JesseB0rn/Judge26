@@ -83,7 +83,7 @@
         "done": "aucun juge | 1 juge | {count} juges"
       },
       "tables": {
-        "title": "Tables",
+        "title": "Tables et juges",
         "todo": "Créez des tables pour chaque catégorie sur le tableau d’attribution et attribuez-y les juges.",
         "missing": "Sans table active : {codes}",
         "done": "aucune table active | 1 table active | {count} tables actives",
