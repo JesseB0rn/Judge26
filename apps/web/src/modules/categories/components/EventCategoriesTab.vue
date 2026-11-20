@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { onMounted, ref } from 'vue'
-import { CopyIcon, LibraryIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
+import { LibraryIcon, PlusIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import { useSessionStore } from '@/shared/auth/session'
@@ -9,7 +9,7 @@ import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
 import type { CategoryRecord, EventRecord } from '@/shared/types/records'
 import { deleteCategory, listEventCategories, listTemplates } from '../api'
 import CategoryFormDialog from './CategoryFormDialog.vue'
-import CategoryTable from './CategoryTable.vue'
+import CategoryRoundsGrid from './CategoryRoundsGrid.vue'
 import CopyCategoryDialog from './CopyCategoryDialog.vue'
 
 const props = defineProps<{ event: EventRecord; editable: boolean }>()
@@ -65,43 +65,18 @@ onMounted(load)
       <Button @click="edit()"><PlusIcon /> {{ t('categories.form.newCategory') }}</Button>
     </div>
     <ErrorAlert :error="error ?? remove.error.value ?? templates.error.value" />
-    <CategoryTable
+    <!-- M11-01: categories by rounds; the category library keeps CategoryTable. -->
+    <CategoryRoundsGrid
+      :event-id="event.id"
       :categories="categories"
       :loading="loading"
-      :empty="t('categories.empty')"
+      :editable="editable"
       :show-ranking="session.isEventStaff(event.id)"
-      :from="`/events/${event.id}?tab=categories`"
-    >
-      <template #actions="{ category }">
-        <template v-if="editable">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            :aria-label="t('common.editItem', { item: category.code })"
-            @click="edit(category)"
-          >
-            <PencilIcon />
-          </Button>
-          <Button
-            v-if="session.isAdmin"
-            variant="ghost"
-            size="icon-sm"
-            :aria-label="t('categories.saveAsTemplateOf', { code: category.code })"
-            @click="saveAsTemplate(category)"
-          >
-            <CopyIcon />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            :aria-label="t('common.deleteItem', { item: category.code })"
-            @click="remove.run(category)"
-          >
-            <Trash2Icon />
-          </Button>
-        </template>
-      </template>
-    </CategoryTable>
+      :can-save-template="session.isAdmin"
+      @edit="edit"
+      @save-as-template="saveAsTemplate"
+      @delete="remove.run"
+    />
 
     <CategoryFormDialog
       v-model:open="formOpen"

@@ -43,5 +43,31 @@
     "empty": "Ancora nessun modello.",
     "copyToEvent": "Copia il modello in un evento",
     "copyToEventOf": "Copia {code} in un evento"
+  },
+  "grid": {
+    "label": "Categorie e i loro turni",
+    "roundHeader": "Turno {n}",
+    "roundN": "turno {n}",
+    "notTimed": "senza orario",
+    "noPublishedRuleset": "nessun regolamento pubblicato",
+    "noRuleset": "Nessun regolamento",
+    "rules": {
+      "none": "Nessun regolamento pubblicato",
+      "draft": "Solo bozza"
+    },
+    "check": {
+      "asynchronous": "Controllo asincrono",
+      "off": "Nessun controllo del robot",
+      "synchronous": "Controllo sincrono"
+    },
+    "addRound": "Turno",
+    "addRoundTo": "Aggiungere un turno a {code}",
+    "emptyCell": "{code}, turno {n}, nessun turno",
+    "moreActions": "Altre azioni per {code}",
+    "legendRuleset": "il gioco non ha un regolamento pubblicato",
+    "legendTime": "ancora senza orario",
+    "newTitle": "Nuovo turno in {code}",
+    "editTitle": "{round} in {code}",
+    "dialogDescription": "Lo stesso turno della scheda Turni della categoria."
   }
 }

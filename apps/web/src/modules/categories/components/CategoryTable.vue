@@ -20,8 +20,6 @@ defineProps<{
   empty: string
   /** Show the rounds & ranking link (event staff and admins). */
   showRanking?: boolean
-  /** M11-08: the page the Ranking and Rules pages return to. */
-  from?: string
 }>()
 
 const range = (min: number, max: number) =>
@@ -53,7 +51,7 @@ const range = (min: number, max: number) =>
           <!-- Labelled, not icon-only: under time pressure nobody should guess what a glyph means. -->
           <Button v-if="showRanking" as-child variant="outline" size="sm">
             <RouterLink
-              :to="{ name: 'category-ranking', params: { id: c.id }, query: from ? { from } : {} }"
+              :to="{ name: 'category-ranking', params: { id: c.id } }"
               :aria-label="t('categories.rankingFor', { code: c.code })"
             >
               <TrophyIcon /> {{ t('categories.ranking') }}
@@ -61,7 +59,7 @@ const range = (min: number, max: number) =>
           </Button>
           <Button as-child variant="ghost" size="sm">
             <RouterLink
-              :to="{ name: 'category-scoring', params: { id: c.id }, query: from ? { from } : {} }"
+              :to="{ name: 'category-scoring', params: { id: c.id } }"
               :aria-label="t('categories.rulesFor', { code: c.code })"
             >
               <CalculatorIcon /> {{ t('categories.rules') }}

@@ -43,5 +43,31 @@
     "empty": "No templates yet.",
     "copyToEvent": "Copy template to event",
     "copyToEventOf": "Copy {code} to event"
+  },
+  "grid": {
+    "label": "Categories and their rounds",
+    "roundHeader": "Round {n}",
+    "roundN": "round {n}",
+    "notTimed": "not timed",
+    "noPublishedRuleset": "no published ruleset",
+    "noRuleset": "No ruleset",
+    "rules": {
+      "none": "No published ruleset",
+      "draft": "Draft only"
+    },
+    "check": {
+      "asynchronous": "Asynchronous check",
+      "off": "No robot check",
+      "synchronous": "Synchronous check"
+    },
+    "addRound": "Round",
+    "addRoundTo": "Add a round to {code}",
+    "emptyCell": "{code}, round {n}, no round",
+    "moreActions": "More actions for {code}",
+    "legendRuleset": "the game has no published ruleset",
+    "legendTime": "no start time yet (not timed)",
+    "newTitle": "New round in {code}",
+    "editTitle": "{round} in {code}",
+    "dialogDescription": "The same round as on the category’s Rounds tab."
   }
 }

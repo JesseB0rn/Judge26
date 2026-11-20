@@ -43,5 +43,31 @@
     "empty": "Noch keine Vorlagen.",
     "copyToEvent": "Vorlage in Anlass kopieren",
     "copyToEventOf": "{code} in Anlass kopieren"
+  },
+  "grid": {
+    "label": "Kategorien und ihre Runden",
+    "roundHeader": "Runde {n}",
+    "roundN": "Runde {n}",
+    "notTimed": "ohne Startzeit",
+    "noPublishedRuleset": "keine veröffentlichten Bewertungsregeln",
+    "noRuleset": "Keine Regeln",
+    "rules": {
+      "none": "Keine veröffentlichten Regeln",
+      "draft": "Nur Entwurf"
+    },
+    "check": {
+      "asynchronous": "Asynchrone Kontrolle",
+      "off": "Keine Roboterkontrolle",
+      "synchronous": "Synchrone Kontrolle"
+    },
+    "addRound": "Runde",
+    "addRoundTo": "Runde zu {code} hinzufügen",
+    "emptyCell": "{code}, Runde {n}, keine Runde",
+    "moreActions": "Weitere Aktionen für {code}",
+    "legendRuleset": "das Spiel hat keine veröffentlichten Bewertungsregeln",
+    "legendTime": "noch keine Startzeit",
+    "newTitle": "Neue Runde in {code}",
+    "editTitle": "{round} in {code}",
+    "dialogDescription": "Dieselbe Runde wie im Tab Runden der Kategorie."
   }
 }

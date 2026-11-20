@@ -43,5 +43,31 @@
     "empty": "Aucun modèle pour l’instant.",
     "copyToEvent": "Copier le modèle vers un événement",
     "copyToEventOf": "Copier {code} vers un événement"
+  },
+  "grid": {
+    "label": "Catégories et leurs tours",
+    "roundHeader": "Tour {n}",
+    "roundN": "tour {n}",
+    "notTimed": "sans horaire",
+    "noPublishedRuleset": "aucune règle publiée",
+    "noRuleset": "Aucune règle",
+    "rules": {
+      "none": "Aucune règle publiée",
+      "draft": "Brouillon seulement"
+    },
+    "check": {
+      "asynchronous": "Contrôle asynchrone",
+      "off": "Pas de contrôle du robot",
+      "synchronous": "Contrôle synchrone"
+    },
+    "addRound": "Tour",
+    "addRoundTo": "Ajouter un tour à {code}",
+    "emptyCell": "{code}, tour {n}, aucun tour",
+    "moreActions": "Autres actions pour {code}",
+    "legendRuleset": "le jeu n’a pas de règles publiées",
+    "legendTime": "pas encore d’horaire",
+    "newTitle": "Nouveau tour dans {code}",
+    "editTitle": "{round} dans {code}",
+    "dialogDescription": "Le même tour que dans l’onglet Tours de la catégorie."
   }
 }
