@@ -50,7 +50,8 @@
     "reviewScores": "Review scores",
     "planner": "Planner",
     "archivedNotice": "This event is archived. Its records are read-only.",
-    "details": "Details"
+    "details": "Details",
+    "more": "More"
   },
   "tabs": {
     "overview": "Overview",
@@ -62,6 +63,10 @@
     "messages": "Messages",
     "activity": "Activity",
     "staff": "Staff"
+  },
+  "nav": {
+    "label": "Event",
+    "print": "Print"
   },
   "list": {
     "description": "Competitions you can access.",

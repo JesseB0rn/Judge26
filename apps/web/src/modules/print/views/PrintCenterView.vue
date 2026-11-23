@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import { ArrowLeftIcon, PrinterIcon } from '@lucide/vue'
+import { useRouter } from 'vue-router'
+import { PrinterIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Skeleton } from '@/components/ui/skeleton'
+import EventFrame from '@/modules/events/components/EventFrame.vue'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import QrCode from '@/shared/components/QrCode.vue'
 import { isPublicEvent, liveRankingUrl } from '@/modules/live/lib'
@@ -140,17 +141,9 @@ function print() {
 
 <template>
   <div class="print-center">
+    <EventFrame :event-id="id" section="print" />
     <div class="flex flex-col gap-4 print:hidden">
-      <RouterLink
-        :to="{ name: 'event', params: { id } }"
-        class="inline-flex min-h-11 items-center gap-1 self-start text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeftIcon class="size-4" /> {{ data?.event.name ?? t('print.back') }}
-      </RouterLink>
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">{{ t('print.title') }}</h1>
-        <p class="text-muted-foreground">{{ t('print.description') }}</p>
-      </div>
+      <p class="text-muted-foreground">{{ t('print.description') }}</p>
       <ErrorAlert :error="error" />
       <Skeleton v-if="loading" class="h-32 w-full" />
 

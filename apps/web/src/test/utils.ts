@@ -203,6 +203,29 @@ export async function click(el: HTMLElement) {
   await flushPromises()
 }
 
+/** Opens a dropdown menu from its trigger, as the keyboard does. */
+export async function openMenu(trigger: Element) {
+  trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+  await flushPromises()
+}
+
+export function menuItem(text: string) {
+  const item = [...document.querySelectorAll<HTMLElement>('[role=menuitem]')].find((el) =>
+    el.textContent?.includes(text),
+  )
+  if (!item) throw new Error(`No menu item "${text}"`)
+  return item
+}
+
+/** The places in an event's navigation (M11-17), and the current one. */
+export function eventNav(root: ParentNode = document.body) {
+  const links = [...root.querySelectorAll<HTMLElement>('[data-testid=event-nav] [data-section]')]
+  return {
+    sections: links.map((l) => l.textContent!.trim()),
+    current: links.find((l) => l.getAttribute('aria-current') === 'page')?.textContent?.trim(),
+  }
+}
+
 export function makeRound(key: string, position = 1): RoundRecord {
   return {
     ...base(`round-${key}`, 'rounds'),

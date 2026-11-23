@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { click, makeEvent, makeRole, mountView } from '@/test/utils'
+import { click, eventNav, makeEvent, makeRole, mountView } from '@/test/utils'
 import * as eventsApi from '@/modules/events/api'
 import EventDetailView from '@/modules/events/views/EventDetailView.vue'
 import type { AuditLogRecord } from '@/shared/types/records'
@@ -97,13 +97,13 @@ describe('audit log (M7-08)', () => {
       props: { id: 'event1' },
       session: { roles: [makeRole('event_manager', 'event1')] },
     })
-    expect(manager.wrapper.findAll('[role=tab]').map((t) => t.text())).toContain('Activity')
+    expect(eventNav(manager.wrapper.element).sections).toContain('Activity')
     manager.wrapper.unmount()
     document.body.replaceChildren()
     const judge = await mountView(EventDetailView, {
       props: { id: 'event1' },
       session: { roles: [makeRole('judge', 'event1')] },
     })
-    expect(judge.wrapper.findAll('[role=tab]').map((t) => t.text())).not.toContain('Activity')
+    expect(eventNav(judge.wrapper.element).sections).not.toContain('Activity')
   })
 })

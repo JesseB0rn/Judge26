@@ -50,7 +50,8 @@
     "reviewScores": "Punkte prüfen",
     "planner": "Planer",
     "archivedNotice": "Dieser Anlass ist archiviert. Seine Daten können nur gelesen werden.",
-    "details": "Details"
+    "details": "Details",
+    "more": "Mehr"
   },
   "tabs": {
     "overview": "Übersicht",
@@ -62,6 +63,10 @@
     "messages": "Nachrichten",
     "activity": "Aktivität",
     "staff": "Personal"
+  },
+  "nav": {
+    "label": "Anlass",
+    "print": "Drucken"
   },
   "list": {
     "description": "Wettbewerbe, auf die Sie Zugriff haben.",

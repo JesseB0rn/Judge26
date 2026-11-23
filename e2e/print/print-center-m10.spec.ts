@@ -11,7 +11,7 @@ import {
   unique,
   updateRound,
 } from '../support/backend'
-import { login } from '../support/pages'
+import { login, section } from '../support/pages'
 
 // M10-31 – M10-34: print center (M10-T46 – M10-T48).
 async function setup() {
@@ -46,7 +46,7 @@ test.describe('M10-F print center', () => {
     const ctx = await setup()
     await login(page, ctx.headJudge.email, ctx.headJudge.password)
     await page.goto(`/events/${ctx.event.id}`)
-    await page.getByTestId('print-link').click()
+    await section(page, 'Print').click()
     await page.getByTestId('print-category').selectOption(ctx.category.id)
     const labels = page.locator('[data-page=parking]')
     await expect(labels).toHaveCount(2)

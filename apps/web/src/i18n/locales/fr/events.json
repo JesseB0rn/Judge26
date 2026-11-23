@@ -50,7 +50,8 @@
     "reviewScores": "Contrôler les scores",
     "planner": "Planificateur",
     "archivedNotice": "Cet événement est archivé. Ses données sont en lecture seule.",
-    "details": "Détails"
+    "details": "Détails",
+    "more": "Plus"
   },
   "tabs": {
     "overview": "Aperçu",
@@ -62,6 +63,10 @@
     "messages": "Messages",
     "activity": "Activité",
     "staff": "Équipe d’organisation"
+  },
+  "nav": {
+    "label": "Événement",
+    "print": "Imprimer"
   },
   "list": {
     "description": "Les compétitions auxquelles vous avez accès.",

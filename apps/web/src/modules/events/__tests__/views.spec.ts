@@ -1,6 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { buttonByText, click, fill, makeEvent, makeRole, mountView } from '@/test/utils'
+import {
+  buttonByText,
+  click,
+  eventNav,
+  fill,
+  makeEvent,
+  makeRole,
+  menuItem,
+  mountView,
+  openMenu,
+} from '@/test/utils'
 import * as api from '../api'
 import * as templatesApi from '@/modules/templates/api'
 import EventListView from '../views/EventListView.vue'
@@ -73,17 +83,20 @@ describe('event views', () => {
       session: { roles: [makeRole('event_manager', 'event1')] },
     })
     expect(wrapper.text()).toContain('Edit')
-    await click(buttonByText('Archive'))
+    // M11-16: Archive is in the More menu; the header holds actions only.
+    await openMenu(wrapper.get('[data-testid=event-more]').element)
+    await click(menuItem('Archive'))
     expect(mocked.updateEvent).toHaveBeenCalledWith('event1', { status: 'archived' })
     expect(wrapper.text()).toContain('This event is archived')
-    expect(wrapper.text()).toContain('Restore')
+    await openMenu(wrapper.get('[data-testid=event-more]').element)
+    expect(menuItem('Restore')).toBeTruthy()
   })
 
   it('M8-02: users without a role see the event, but no teams and no registration', async () => {
     const { wrapper } = await mountView(EventDetailView, { props: { id: 'event1' } })
     expect(wrapper.text()).not.toContain('Register a team')
     expect(wrapper.text()).not.toContain('Registration')
-    expect(wrapper.findAll('[role=tab]').map((t) => t.text())).toEqual(['Overview', 'Categories'])
+    expect(eventNav(wrapper.element).sections).toEqual(['Overview', 'Categories', 'Schedule'])
     expect(wrapper.text()).not.toContain('Archive')
     expect(wrapper.text()).not.toContain('Staff')
   })
@@ -93,7 +106,7 @@ describe('event views', () => {
       props: { id: 'event1' },
       path: '/?tab=staff',
     })
-    expect(coach.wrapper.get('[role=tab][data-state=active]').text()).toBe('Overview')
+    expect(eventNav(coach.wrapper.element).current).toBe('Overview')
     coach.wrapper.unmount()
 
     const { wrapper } = await mountView(EventDetailView, {
@@ -101,8 +114,8 @@ describe('event views', () => {
       session: { roles: [makeRole('head_judge', 'event1')] },
       path: '/?tab=teams',
     })
-    expect(wrapper.get('[role=tab][data-state=active]').text()).toBe('Teams')
-    // Reviewing has one home: the review page, linked from the event header.
+    expect(eventNav(wrapper.element).current).toBe('Teams')
+    // Reviewing has one home: the review page, linked from the event navigation.
     expect(wrapper.text()).not.toContain('Scores')
     expect(wrapper.get('a[href*="event=event1"]').text()).toContain('Review scores')
   })
@@ -115,18 +128,62 @@ describe('event views', () => {
     })
     await flushPromises()
     expect(router.currentRoute.value.query.tab).toBe('assignments')
-    expect(wrapper.get('[role=tab][data-state=active]').text()).toBe('Assignments')
-    expect(wrapper.findAll('[role=tab]').map((t) => t.text())).toEqual([
+    expect(eventNav(wrapper.element).current).toBe('Assignments')
+    // M11-17: the planner and print center sit with the assignments.
+    expect(eventNav(wrapper.element).sections).toEqual([
       'Overview',
       'Setup',
       'Categories',
       'Teams',
       'Staff',
       'Assignments',
+      'Planner',
+      'Print',
       'Public results',
       'Messages',
       'Activity',
     ])
+  })
+
+  it('M11-T21: a draft opens on Setup for its managers, on Overview for everyone else', async () => {
+    mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
+    templates.getSetupStatus.mockResolvedValue({ complete: false, steps: [] })
+    const manager = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    expect(eventNav(manager.wrapper.element).current).toBe('Setup')
+    manager.wrapper.unmount()
+
+    const judge = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('judge', 'event1')] },
+    })
+    expect(eventNav(judge.wrapper.element).current).toBe('Overview')
+    judge.wrapper.unmount()
+
+    mocked.getEvent.mockResolvedValue(makeEvent())
+    const published = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    expect(eventNav(published.wrapper.element).current).toBe('Overview')
+  })
+
+  it('M11-T17: the header holds actions; places are links in the event navigation', async () => {
+    const { wrapper } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    // At most the event name links home (off the event page); no other place is in the header.
+    const links = wrapper.get('header').findAll('a')
+    expect(links.every((a) => a.attributes('data-testid') === 'event-title-link')).toBe(true)
+    const nav = wrapper.get('[data-testid=event-nav]')
+    // The test router serves each named route at /__{name}/{id}.
+    expect(nav.get('[data-section=planner]').attributes('href')).toBe('/__event-planner/event1')
+    expect(nav.get('[data-section=print]').attributes('href')).toBe('/__event-print/event1')
+    expect(nav.get('[data-outbound=review]').attributes('href')).toContain('event=event1')
+    expect(nav.get('[data-outbound=live]').attributes('href')).toBe('/__live-event/event1')
   })
 
   it('M11-T15: publishes a complete setup at once', async () => {

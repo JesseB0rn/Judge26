@@ -10,7 +10,7 @@ import {
   getRoundPhases,
   placePhase,
 } from '../support/backend'
-import { login, logout } from '../support/pages'
+import { login, logout, section } from '../support/pages'
 
 // M4-14: multi-day schedule planner. The grid's time axis starts at 08:00 (default day hours)
 // and shows 1.6 px per minute.
@@ -21,11 +21,17 @@ const body = (page: Page, dayId: string) =>
   page.locator(`section[data-day="${dayId}"] .planner-body`)
 const item = (page: Page, key: string) => page.locator(`[data-item^="${key}"]`).first()
 
-/** Viewport point of a time in a day's first column. */
+/** Viewport point of a time in a day's first column, scrolled to mid-screen when off it. */
 async function point(page: Page, dayId: string, time: string) {
-  const box = (await body(page, dayId).boundingBox())!
   const [h, m] = time.split(':').map(Number)
-  return { x: box.x + 60, y: box.y + (h! * 60 + m! - AXIS_START) * PX_PER_MINUTE }
+  const offset = (h! * 60 + m! - AXIS_START) * PX_PER_MINUTE
+  let box = (await body(page, dayId).boundingBox())!
+  const height = page.viewportSize()!.height
+  if (box.y + offset < 40 || box.y + offset > height - 120) {
+    await page.evaluate((dy) => window.scrollBy(0, dy), box.y + offset - height / 2)
+    box = (await body(page, dayId).boundingBox())!
+  }
+  return { x: box.x + 60, y: box.y + offset }
 }
 
 async function drag(page: Page, from: { x: number; y: number }, to: { x: number; y: number }) {
@@ -54,7 +60,7 @@ test.describe('Schedule planner', () => {
 
     await login(page, manager.email, manager.password)
     await page.goto(`/events/${event.id}/planner`)
-    await expect(page.getByRole('heading', { name: 'Schedule planner' })).toBeVisible()
+    await expect(section(page, 'Planner')).toHaveAttribute('aria-current', 'page')
     await expect(page.locator('section[data-day]')).toHaveCount(2)
 
     // Drag the unplaced scoring run from the tray into day 1 at 10:00 (M4-14-09).
@@ -140,7 +146,8 @@ test.describe('Schedule planner', () => {
 
     await login(page, visitor.email, visitor.password)
     await page.goto(`/events/${event.id}/planner`)
-    await expect(page.getByRole('heading', { name: 'Schedule', exact: true })).toBeVisible()
+    // Read-only users find the planner as "Schedule" in the event navigation (M11-17).
+    await expect(section(page, 'Schedule')).toHaveAttribute('aria-current', 'page')
     await expect(page.getByTestId('planner-grid')).toContainText('Lunch')
     await expect(page.getByTestId('planner-grid')).not.toContainText('Judges briefing')
     await expect(page.getByRole('button', { name: 'New block' })).toHaveCount(0)

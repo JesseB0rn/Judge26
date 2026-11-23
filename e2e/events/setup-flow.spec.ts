@@ -13,7 +13,7 @@ import {
   unique,
   updateRound,
 } from '../support/backend'
-import { login } from '../support/pages'
+import { login, moreAction, section } from '../support/pages'
 
 // M11 exit criteria (docs/specifications/M11-setup-flow.md): an empty event set up to published
 // by following the setup checklist, every round added and timed on the Categories tab, every link
@@ -90,7 +90,7 @@ test.describe('M11 event setup flow', () => {
     await expect(row.locator('[data-round=R1]')).toContainText('10:00')
 
     // The checklist: categories and rounds done; the round is timed; the planner and back.
-    await page.getByRole('tab', { name: 'Setup' }).click()
+    await section(page, 'Setup').click()
     await expect(step(page, 'categories')).toHaveAttribute('data-done', 'true')
     await expect(step(page, 'rounds')).toHaveAttribute('data-done', 'true')
     await expect(step(page, 'schedule').locator('[data-line=timed]')).toContainText(
@@ -98,14 +98,13 @@ test.describe('M11 event setup flow', () => {
     )
     await step(page, 'schedule').getByTestId('schedule-timed-link').click()
     await expect(page).toHaveURL(new RegExp(`/events/${eventId}/planner`))
-    await page.getByTestId('back-link').click()
+    // M11-15: the planner is in the event frame; Setup is one click away in its navigation.
+    await expect(section(page, 'Planner')).toHaveAttribute('aria-current', 'page')
+    await section(page, 'Setup').click()
     await expect(page).toHaveURL(/tab=setup/)
     await step(page, 'schedule').getByTestId('schedule-placed-link').click()
     await expect(page).toHaveURL(/tab=assignments/)
-    await expect(page.getByRole('tab', { name: 'Assignments' })).toHaveAttribute(
-      'data-state',
-      'active',
-    )
+    await expect(section(page, 'Assignments')).toHaveAttribute('aria-current', 'page')
 
     // M11-13 / M11-T15: publishing an incomplete setup asks first.
     await page.getByTestId('header-publish').click()
@@ -114,7 +113,7 @@ test.describe('M11 event setup flow', () => {
     await expect(dialog.getByTestId('publish-open-steps')).not.toContainText('Rounds')
     await dialog.getByRole('button', { name: 'Publish anyway' }).click()
     await expect(page.getByTestId('header-publish')).toHaveCount(0)
-    await page.getByRole('tab', { name: 'Setup' }).click()
+    await section(page, 'Setup').click()
     await expect(step(page, 'publish')).toHaveAttribute('data-done', 'true')
   })
 
@@ -139,7 +138,7 @@ test.describe('M11 event setup flow', () => {
 
     await login(page, admin.email, admin.password)
     await page.goto(`/events/${source.id}`)
-    await page.getByRole('button', { name: 'Save as template' }).click()
+    await moreAction(page, 'Save as template')
     const templateName = unique('M11 template')
     let dialog = page.getByRole('dialog')
     await dialog.getByLabel('Name').fill(templateName)

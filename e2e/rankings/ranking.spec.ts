@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { createApprovedTeam, createEvent, createUser, unique } from '../support/backend'
-import { login } from '../support/pages'
+import { login, section } from '../support/pages'
 
 async function enterResult(
   page: Page,
@@ -32,7 +32,7 @@ test.describe('M3 rounds and ranking', () => {
 
     await login(page, manager.email, manager.password)
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('tab', { name: 'Categories' }).click()
+    await section(page, 'Categories').click()
     await page.getByRole('link', { name: 'Rounds and ranking for RM-J' }).click()
     await expect(page.getByText('Configure the ranking to see results.')).toBeVisible()
 

@@ -50,7 +50,8 @@
     "reviewScores": "Verifica punteggi",
     "planner": "Pianificatore",
     "archivedNotice": "Questo evento è archiviato. I suoi dati sono di sola lettura.",
-    "details": "Dettagli"
+    "details": "Dettagli",
+    "more": "Altro"
   },
   "tabs": {
     "overview": "Panoramica",
@@ -62,6 +63,10 @@
     "messages": "Messaggi",
     "activity": "Attività",
     "staff": "Staff"
+  },
+  "nav": {
+    "label": "Evento",
+    "print": "Stampa"
   },
   "list": {
     "description": "Le competizioni a cui ha accesso.",

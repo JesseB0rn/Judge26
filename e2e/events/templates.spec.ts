@@ -8,7 +8,7 @@ import {
   createUser,
   unique,
 } from '../support/backend'
-import { login } from '../support/pages'
+import { login, moreAction } from '../support/pages'
 
 // M8-D: event templates and the setup checklist (M8-T12 – M8-T14).
 test.describe('M8-D event templates', () => {
@@ -27,7 +27,7 @@ test.describe('M8-D event templates', () => {
 
     // Save to the library (M8-21).
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('button', { name: 'Save as template' }).click()
+    await moreAction(page, 'Save as template')
     let dialog = page.getByRole('dialog')
     await dialog.getByLabel('Name').fill(templateName)
     // The file download (M8-22, M8-T12).

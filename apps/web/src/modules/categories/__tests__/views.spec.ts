@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises } from '@vue/test-utils'
 import {
   buttonByText,
   click,
@@ -7,7 +6,9 @@ import {
   makeCategory,
   makeEvent,
   makeRole,
+  menuItem,
   mountView,
+  openMenu,
 } from '@/test/utils'
 import * as api from '../api'
 import * as eventsApi from '@/modules/events/api'
@@ -17,20 +18,6 @@ import CategoryLibraryView from '../views/CategoryLibraryView.vue'
 vi.mock('../api')
 vi.mock('@/modules/events/api')
 const mocked = vi.mocked(api)
-
-/** Opens a dropdown menu from its trigger, as the keyboard does. */
-async function openMenu(trigger: Element) {
-  trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
-  await flushPromises()
-}
-
-function menuItem(text: string) {
-  const item = [...document.querySelectorAll<HTMLElement>('[role=menuitem]')].find((el) =>
-    el.textContent?.includes(text),
-  )
-  if (!item) throw new Error(`No menu item "${text}"`)
-  return item
-}
 
 const template = makeCategory({ id: 'tpl', event: '', code: 'FI-TPL', name: 'Future Innovators' })
 

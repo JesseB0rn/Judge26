@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { useMediaQuery } from '@vueuse/core'
 import {
   AlertTriangleIcon,
-  ArrowLeftIcon,
   CalendarDaysIcon,
   ColumnsIcon,
   PlusIcon,
@@ -28,9 +27,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { eventBackTarget } from '@/shared/composables/useQueryRefs'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
-import PageHeader from '@/shared/components/PageHeader.vue'
+import EventFrame from '@/modules/events/components/EventFrame.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { formatDay } from '@/shared/format'
 import { getEvent } from '@/modules/events/api'
@@ -508,56 +506,13 @@ onBeforeUnmount(() => {
   window.removeEventListener('afterprint', endPrint)
   endPrint()
 })
-
-// M11-08: Back returns to the event page the planner was opened from (a tab), else the event.
-const backLink = computed(
-  () => eventBackTarget(route.query.from) ?? { name: 'event', params: { id: props.id } },
-)
 </script>
 
 <template>
   <ErrorAlert v-if="!data" :error="loadError" />
   <Skeleton v-if="!data && loading" class="h-10 w-1/2" />
   <template v-if="data && event">
-    <PageHeader
-      class="print:hidden"
-      :title="data.can_edit ? t('planner.view.title') : t('events.tabs.schedule')"
-      :description="`${event.name}${event.venue ? ' · ' + event.venue : ''}`"
-    >
-      <template #actions>
-        <LiveIndicator
-          class="self-center print:hidden"
-          :status="live.status.value"
-          :stale="false"
-        />
-        <Button as-child variant="outline" class="print:hidden">
-          <RouterLink :to="backLink" data-testid="back-link"
-            ><ArrowLeftIcon />
-            {{ typeof backLink === 'string' ? t('common.back') : t('events.event') }}</RouterLink
-          >
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" class="print:hidden">
-              <PrinterIcon /> {{ t('planner.view.print') }}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{{ t('planner.view.printHint') }}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem @select="print('landscape')">
-              <RectangleHorizontalIcon /> {{ t('planner.view.printLandscape') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem @select="print('portrait')">
-              <RectangleVerticalIcon /> {{ t('planner.view.printPortrait') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button v-if="editable" class="print:hidden" :disabled="!days.length" @click="newBlock()">
-          <PlusIcon /> {{ t('planner.block.new') }}
-        </Button>
-      </template>
-    </PageHeader>
+    <EventFrame v-model:event="event" :event-id="props.id" section="planner" />
 
     <ErrorAlert :error="loadError" class="mb-3" />
 
@@ -615,17 +570,41 @@ const backLink = computed(
           {{ t('planner.view.moveLater') }}
           <span class="text-xs text-muted-foreground">{{ t('planner.view.moveLaterHint') }}</span>
         </label>
+      </template>
+      <!-- M11-18: the planner's own actions, now that the event frame holds the header. -->
+      <div class="ml-auto flex items-center gap-2">
         <Button
+          v-if="editable"
           variant="ghost"
           size="sm"
-          class="ml-auto"
           :disabled="!undoStack.length || saving"
           :title="t('planner.view.undoTitle')"
           @click="undo"
         >
           <Undo2Icon /> {{ t('diagram.undo') }}
         </Button>
-      </template>
+        <LiveIndicator :status="live.status.value" :stale="false" />
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline" size="sm">
+              <PrinterIcon /> {{ t('planner.view.print') }}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>{{ t('planner.view.printHint') }}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @select="print('landscape')">
+              <RectangleHorizontalIcon /> {{ t('planner.view.printLandscape') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="print('portrait')">
+              <RectangleVerticalIcon /> {{ t('planner.view.printPortrait') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button v-if="editable" size="sm" :disabled="!days.length" @click="newBlock()">
+          <PlusIcon /> {{ t('planner.block.new') }}
+        </Button>
+      </div>
     </div>
 
     <details

@@ -1,7 +1,6 @@
 {
   "title": "Druckcenter",
   "description": "Ausdrucke für den Austragungsort: eine A4-Seite pro Team oder Tisch. Drucken oder als PDF speichern.",
-  "back": "Event",
   "kind": "Ausdruck",
   "kinds": {
     "parking": "Roboter-Parkplatzschilder",

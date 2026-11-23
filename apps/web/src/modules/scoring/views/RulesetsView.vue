@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import EventFrame from '@/modules/events/components/EventFrame.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
@@ -255,25 +256,18 @@ onMounted(() => load())
   <ErrorAlert :error="loadError" />
   <Skeleton v-if="loading && !category" class="h-10 w-1/2" />
   <template v-else-if="category">
+    <!-- M11-15: a category of an event is shown in the event frame, under Categories. -->
+    <EventFrame v-if="event" :event-id="event.id" :event="event" section="categories" />
     <PageHeader
       :title="t('scoring.view.title', { category: category.name })"
-      :description="
-        event
-          ? `${category.code} · ${event.name}`
-          : `${category.code} · ${t('categories.template')}`
-      "
+      :description="event ? category.code : `${category.code} · ${t('categories.template')}`"
+      :sub="!!event"
     >
       <template #actions>
         <Button v-if="fromBack" as-child variant="outline">
           <RouterLink :to="fromBack" data-testid="back-link">{{ t('common.back') }}</RouterLink>
         </Button>
-        <Button v-else-if="event" as-child variant="outline">
-          <RouterLink
-            :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
-            >{{ t('rankings.view.backToEvent') }}</RouterLink
-          >
-        </Button>
-        <Button v-else as-child variant="outline">
+        <Button v-else-if="!event" as-child variant="outline">
           <RouterLink :to="{ name: 'category-library' }">{{
             t('rankings.view.backToLibrary')
           }}</RouterLink>

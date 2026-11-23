@@ -1,23 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
-import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
-import {
-  ArchiveIcon,
-  ArchiveRestoreIcon,
-  CalendarRangeIcon,
-  ClipboardListIcon,
-  LibraryIcon,
-  PencilIcon,
-  PrinterIcon,
-  RadioIcon,
-  SendIcon,
-} from '@lucide/vue'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
+import { computed, ref, watch } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import EventCategoriesTab from '@/modules/categories/components/EventCategoriesTab.vue'
 import EventTeamsTab from '@/modules/teams/components/EventTeamsTab.vue'
 import EventScheduleTab from '@/modules/scheduling/components/EventScheduleTab.vue'
@@ -26,27 +10,19 @@ import EventMessagesTab from '@/modules/communication/components/EventMessagesTa
 import AuditLogTable from '@/modules/administration/components/AuditLogTable.vue'
 import PublicationPanel from '@/modules/live/components/PublicationPanel.vue'
 import EventSetupChecklist from '@/modules/templates/components/EventSetupChecklist.vue'
-import SaveTemplateDialog from '@/modules/templates/components/SaveTemplateDialog.vue'
-import ErrorAlert from '@/shared/components/ErrorAlert.vue'
-import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
-import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
 import { useQueryRefs } from '@/shared/composables/useQueryRefs'
-import type { EventRecord, EventStatus } from '@/shared/types/records'
-import { getEvent, updateEvent } from '../api'
+import type { EventRecord } from '@/shared/types/records'
 import CompetitionDays from '../components/CompetitionDays.vue'
-import EventFormDialog from '../components/EventFormDialog.vue'
-import EventStatusBadge from '../components/EventStatusBadge.vue'
-import PublishDialog from '../components/PublishDialog.vue'
+import EventFrame from '../components/EventFrame.vue'
+import { canSee, defaultTab, EVENT_TABS, eventAccess, type EventTab } from '../nav'
 
 const props = defineProps<{ id: string }>()
 const session = useSessionStore()
-const route = useRoute()
-const { data: event, loading, error, load } = useLoader(() => getEvent(props.id))
-const editing = ref(false)
-const savingTemplate = ref(false)
-// The open tab lives in the URL: a refresh or "back" returns to the same panel.
-const { tab } = useQueryRefs({ tab: 'overview' })
+// Loaded by the frame, which also replaces it after Edit, Publish or Archive.
+const event = ref<EventRecord>()
+// The open section lives in the URL: a refresh or "back" returns to the same panel.
+const { tab } = useQueryRefs({ tab: '' })
 // M11-14: the Assignments tab was `schedule`; old links still open it.
 watch(
   tab,
@@ -56,142 +32,30 @@ watch(
   { immediate: true },
 )
 
-const canManage = computed(() => session.canManageEvent(props.id))
-const isStaff = computed(() => session.isEventStaff(props.id))
-const canReview = computed(
-  () => canManage.value || session.rolesFor(props.id).includes('head_judge'),
-)
-// A link to a tab this user cannot see (or an old one) opens the overview instead of nothing.
-const visibleTab = computed(() => {
-  const allowed: Record<string, boolean> = {
-    overview: true,
-    setup: canManage.value,
-    categories: true,
-    teams: isStaff.value,
-    assignments: isStaff.value,
-    publication: canManage.value,
-    messages: canManage.value,
-    activity: canManage.value,
-    staff: canManage.value,
-  }
-  return allowed[tab.value] ? tab.value : 'overview'
+const access = computed(() => eventAccess(session, props.id, event.value?.status ?? ''))
+const canManage = computed(() => access.value.canManage)
+const isStaff = computed(() => access.value.isStaff)
+// No `?tab=` opens the landing section (M11-21); a section this user cannot see, or an old
+// link, opens the overview instead of nothing.
+const visibleTab = computed<EventTab>(() => {
+  const value = tab.value
+  if (!value) return defaultTab(access.value)
+  const known = (EVENT_TABS as readonly string[]).includes(value)
+  return known && canSee(value as EventTab, access.value) ? (value as EventTab) : 'overview'
 })
 const archived = computed(() => event.value?.status === 'archived')
 
-const setStatus = useSubmit(
-  async (status: EventStatus) => {
-    event.value = await updateEvent(props.id, { status })
-  },
-  { success: () => t('events.detail.updated') },
-)
-
-// M11-13: Publish (header and checklist) asks first while the setup is incomplete.
-const publishDialog = ref<InstanceType<typeof PublishDialog>>()
-const publishing = computed(() => setStatus.pending.value || !!publishDialog.value?.checking)
+const frame = ref<InstanceType<typeof EventFrame>>()
+const publishing = computed(() => !!frame.value?.publishing)
 function requestPublish() {
-  void publishDialog.value?.start()
+  frame.value?.requestPublish()
 }
-
-function onSaved(saved: EventRecord) {
-  event.value = saved
-}
-
-onMounted(load)
-watch(() => props.id, load)
 </script>
 
 <template>
-  <ErrorAlert :error="error" />
-  <Skeleton v-if="loading && !event" class="h-10 w-1/2" />
-  <template v-if="event">
-    <PageHeader
-      :title="event.name"
-      :description="
-        t('events.detail.seasonLine', { season: event.season }) +
-        (event.venue ? ' · ' + event.venue : '')
-      "
-    >
-      <template #actions>
-        <EventStatusBadge :status="event.status" class="self-center" />
-        <template v-if="canManage">
-          <Button v-if="!archived" variant="outline" @click="editing = true"
-            ><PencilIcon /> {{ t('common.edit') }}</Button
-          >
-          <Button
-            v-if="event.status === 'draft'"
-            :disabled="publishing"
-            data-testid="header-publish"
-            @click="requestPublish"
-          >
-            <SendIcon /> {{ t('events.detail.publish') }}
-          </Button>
-          <Button variant="outline" @click="savingTemplate = true">
-            <LibraryIcon /> {{ t('templates.save.button') }}
-          </Button>
-          <Button v-if="!archived" variant="outline" @click="setStatus.run('archived')">
-            <ArchiveIcon /> {{ t('events.detail.archive') }}
-          </Button>
-          <Button v-else variant="outline" @click="setStatus.run('published')">
-            <ArchiveRestoreIcon /> {{ t('events.detail.restore') }}
-          </Button>
-        </template>
-        <Button v-if="canReview && !archived" as-child variant="outline">
-          <RouterLink :to="{ name: 'review', query: { event: event.id } }">
-            <ClipboardListIcon /> {{ t('events.detail.reviewScores') }}
-          </RouterLink>
-        </Button>
-        <Button v-if="canReview" as-child variant="outline">
-          <RouterLink
-            :to="{ name: 'event-print', params: { id: event.id } }"
-            data-testid="print-link"
-          >
-            <PrinterIcon /> {{ t('print.title') }}
-          </RouterLink>
-        </Button>
-        <Button v-if="isStaff || event.status !== 'draft'" as-child variant="outline">
-          <RouterLink
-            :to="{
-              name: 'event-planner',
-              params: { id: event.id },
-              query: { from: route.fullPath },
-            }"
-          >
-            <CalendarRangeIcon />
-            {{ canManage && !archived ? t('events.detail.planner') : t('events.tabs.schedule') }}
-          </RouterLink>
-        </Button>
-        <Button v-if="event.status !== 'draft'" as-child variant="outline">
-          <RouterLink :to="{ name: 'live-event', params: { id: event.id } }">
-            <RadioIcon /> {{ t('shell.nav.live') }}
-          </RouterLink>
-        </Button>
-      </template>
-    </PageHeader>
-
-    <ErrorAlert :error="setStatus.error.value" />
-    <Alert v-if="archived" class="mb-4">
-      <AlertDescription>{{ t('events.detail.archivedNotice') }}</AlertDescription>
-    </Alert>
-
-    <Tabs :model-value="visibleTab" @update:model-value="tab = String($event)">
-      <!-- M11-14: tabs follow the setup order. -->
-      <TabsList>
-        <TabsTrigger value="overview">{{ t('events.tabs.overview') }}</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="setup">{{ t('templates.setup.title') }}</TabsTrigger>
-        <TabsTrigger value="categories">{{ t('events.tabs.categories') }}</TabsTrigger>
-        <TabsTrigger v-if="isStaff" value="teams">{{ t('events.tabs.teams') }}</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="staff">{{ t('events.tabs.staff') }}</TabsTrigger>
-        <TabsTrigger v-if="isStaff" value="assignments">{{
-          t('events.tabs.assignments')
-        }}</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="publication">{{
-          t('events.tabs.publication')
-        }}</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="messages">{{ t('events.tabs.messages') }}</TabsTrigger>
-        <TabsTrigger v-if="canManage" value="activity">{{ t('events.tabs.activity') }}</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="overview" class="grid gap-4 md:grid-cols-2">
+  <EventFrame ref="frame" v-model:event="event" :event-id="id" :section="visibleTab">
+    <template v-if="event">
+      <div v-if="visibleTab === 'overview'" class="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader
             ><CardTitle>{{ t('events.detail.details') }}</CardTitle></CardHeader
@@ -209,49 +73,48 @@ watch(() => props.id, load)
           </CardContent>
         </Card>
         <CompetitionDays :event-id="event.id" :editable="canManage && !archived" />
-      </TabsContent>
+      </div>
 
-      <TabsContent v-if="canManage" value="setup">
-        <EventSetupChecklist :event="event" :publishing="publishing" @publish="requestPublish" />
-      </TabsContent>
+      <EventSetupChecklist
+        v-else-if="visibleTab === 'setup'"
+        :event="event"
+        :publishing="publishing"
+        @publish="requestPublish"
+      />
 
-      <TabsContent value="categories">
-        <EventCategoriesTab :event="event" :editable="canManage && !archived" />
-      </TabsContent>
+      <EventCategoriesTab
+        v-else-if="visibleTab === 'categories'"
+        :event="event"
+        :editable="canManage && !archived"
+      />
 
-      <TabsContent v-if="isStaff" value="teams">
-        <EventTeamsTab :event="event" :can-manage="canManage && !archived" />
-      </TabsContent>
+      <EventTeamsTab
+        v-else-if="visibleTab === 'teams' && isStaff"
+        :event="event"
+        :can-manage="canManage && !archived"
+      />
 
-      <TabsContent v-if="isStaff" value="assignments">
-        <EventScheduleTab :event="event" :can-manage="canManage && !archived" />
-      </TabsContent>
+      <EventScheduleTab
+        v-else-if="visibleTab === 'assignments' && isStaff"
+        :event="event"
+        :can-manage="canManage && !archived"
+      />
 
-      <TabsContent v-if="canManage" value="publication">
-        <PublicationPanel :event="event" :editable="!archived" />
-      </TabsContent>
+      <PublicationPanel
+        v-else-if="visibleTab === 'publication'"
+        :event="event"
+        :editable="!archived"
+      />
 
-      <TabsContent v-if="canManage" value="messages">
-        <EventMessagesTab :event="event" :editable="!archived" />
-      </TabsContent>
+      <EventMessagesTab
+        v-else-if="visibleTab === 'messages'"
+        :event="event"
+        :editable="!archived"
+      />
 
-      <TabsContent v-if="canManage" value="activity">
-        <AuditLogTable :event-id="event.id" />
-      </TabsContent>
+      <AuditLogTable v-else-if="visibleTab === 'activity'" :event-id="event.id" />
 
-      <TabsContent v-if="canManage" value="staff">
-        <EventStaffTab :event="event" :editable="!archived" />
-      </TabsContent>
-    </Tabs>
-
-    <EventFormDialog v-model:open="editing" :event="event" @saved="onSaved" />
-    <PublishDialog
-      v-if="canManage"
-      ref="publishDialog"
-      :event="event"
-      :publishing="setStatus.pending.value"
-      @publish="setStatus.run('published')"
-    />
-    <SaveTemplateDialog v-if="canManage" v-model:open="savingTemplate" :event="event" />
-  </template>
+      <EventStaffTab v-else-if="visibleTab === 'staff'" :event="event" :editable="!archived" />
+    </template>
+  </EventFrame>
 </template>

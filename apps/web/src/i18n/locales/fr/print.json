@@ -1,7 +1,6 @@
 {
   "title": "Centre d’impression",
   "description": "Impressions pour le lieu : une page A4 par équipe ou par table. À imprimer ou à enregistrer en PDF.",
-  "back": "Événement",
   "kind": "Impression",
   "kinds": {
     "parking": "Étiquettes de parking des robots",

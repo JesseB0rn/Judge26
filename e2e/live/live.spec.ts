@@ -14,7 +14,7 @@ import {
   unique,
   updateRound,
 } from '../support/backend'
-import { login } from '../support/pages'
+import { login, section } from '../support/pages'
 
 /**
  * An event with two teams on one table in R1 (Saturday). The manager is only created when a test
@@ -103,7 +103,7 @@ test.describe('M6 live competition and public interface', () => {
 
     await login(page, ctx.manager!.email, ctx.manager!.password)
     await page.goto(`/events/${ctx.event.id}`)
-    await page.getByRole('tab', { name: 'Public results' }).click()
+    await section(page, 'Public results').click()
     const row = page.locator('[data-testid=publication] [data-category="RoboMission Junior"]')
     await row.getByRole('button', { name: 'Publish current ranking' }).click()
     await expect(row.getByTestId('published-at')).toBeVisible()
