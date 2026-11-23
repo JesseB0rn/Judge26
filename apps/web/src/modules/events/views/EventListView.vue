@@ -9,23 +9,31 @@ import {
   TableBody,
   TableCell,
   TableEmpty,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
+import SortableTableHead from '@/shared/components/SortableTableHead.vue'
 import { useSessionStore } from '@/shared/auth/session'
 import { useLoader } from '@/shared/composables/useSubmit'
+import { useSort } from '@/shared/composables/useSort'
 import type { EventRecord } from '@/shared/types/records'
 import { listEvents } from '../api'
 import NewEventDialog from '../components/NewEventDialog.vue'
 import EventStatusBadge from '../components/EventStatusBadge.vue'
+import { EVENT_STATUS_LABELS } from '../lib'
 
 const session = useSessionStore()
 const router = useRouter()
 const { data: events, loading, error, load } = useLoader(listEvents)
 const creating = ref(false)
+const { sorted, toggle, directionOf } = useSort(events, {
+  name: (event) => event.name,
+  season: (event) => event.season,
+  venue: (event) => event.venue,
+  status: (event) => EVENT_STATUS_LABELS[event.status],
+})
 
 function onCreated(event: EventRecord) {
   // A new event opens its setup checklist (M8-20).
@@ -48,14 +56,26 @@ onMounted(load)
   <Table data-testid="event-list">
     <TableHeader>
       <TableRow>
-        <TableHead>{{ t('events.event') }}</TableHead>
-        <TableHead>{{ t('events.season') }}</TableHead>
-        <TableHead class="hidden sm:table-cell">{{ t('events.venue') }}</TableHead>
-        <TableHead>{{ t('common.status') }}</TableHead>
+        <SortableTableHead :direction="directionOf('name')" @toggle="toggle('name')">
+          {{ t('events.event') }}
+        </SortableTableHead>
+        <SortableTableHead :direction="directionOf('season')" @toggle="toggle('season')">
+          {{ t('events.season') }}
+        </SortableTableHead>
+        <SortableTableHead
+          class="hidden sm:table-cell"
+          :direction="directionOf('venue')"
+          @toggle="toggle('venue')"
+        >
+          {{ t('events.venue') }}
+        </SortableTableHead>
+        <SortableTableHead :direction="directionOf('status')" @toggle="toggle('status')">
+          {{ t('common.status') }}
+        </SortableTableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="event in events" :key="event.id">
+      <TableRow v-for="event in sorted" :key="event.id">
         <TableCell class="font-medium">
           <RouterLink :to="{ name: 'event', params: { id: event.id } }" class="hover:underline">
             {{ event.name }}

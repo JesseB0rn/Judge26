@@ -18,9 +18,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import SortableTableHead from '@/shared/components/SortableTableHead.vue'
 import FormField from '@/shared/components/FormField.vue'
 import { useSessionStore } from '@/shared/auth/session'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
+import { useSort } from '@/shared/composables/useSort'
 import { formatDateTime } from '@/shared/format'
 import { ROLE_LABELS, type EventRecord, type Role } from '@/shared/types/records'
 import {
@@ -47,6 +49,12 @@ const roles = computed<Role[]>(() =>
 )
 
 const { data: staff, loading, error, load } = useLoader(() => listStaff(props.event.id))
+const { sorted, toggle, directionOf } = useSort(staff, {
+  name: (m) => m.user.name,
+  email: (m) => m.user.email,
+  role: (m) => ROLE_LABELS[m.role],
+  status: (m) => t(`administration.staff.status.${m.status}`),
+})
 const form = reactive({ name: '', email: '', role: 'judge' as Role })
 const importOpen = ref(false)
 
@@ -115,10 +123,22 @@ onMounted(load)
       <Table data-testid="event-staff">
         <TableHeader>
           <TableRow>
-            <TableHead>{{ t('common.name') }}</TableHead>
-            <TableHead class="hidden sm:table-cell">{{ t('auth.email') }}</TableHead>
-            <TableHead>{{ t('administration.staff.role') }}</TableHead>
-            <TableHead>{{ t('common.status') }}</TableHead>
+            <SortableTableHead :direction="directionOf('name')" @toggle="toggle('name')">
+              {{ t('common.name') }}
+            </SortableTableHead>
+            <SortableTableHead
+              class="hidden sm:table-cell"
+              :direction="directionOf('email')"
+              @toggle="toggle('email')"
+            >
+              {{ t('auth.email') }}
+            </SortableTableHead>
+            <SortableTableHead :direction="directionOf('role')" @toggle="toggle('role')">
+              {{ t('administration.staff.role') }}
+            </SortableTableHead>
+            <SortableTableHead :direction="directionOf('status')" @toggle="toggle('status')">
+              {{ t('common.status') }}
+            </SortableTableHead>
             <TableHead class="w-0"
               ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
             >
@@ -126,7 +146,7 @@ onMounted(load)
         </TableHeader>
         <TableBody>
           <TableRow
-            v-for="m in staff"
+            v-for="m in sorted"
             :key="`${m.id}-${m.user.id}-${m.role}`"
             :data-staff="m.user.email"
           >
