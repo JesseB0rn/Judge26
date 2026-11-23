@@ -321,3 +321,11 @@ export async function uploadRoundFile(
   form.append('file', new Blob([bytes], { type }), name)
   return pb.send(`/api/rounds/${roundId}/file`, { method: 'POST', body: form })
 }
+
+/** The category of an event with the given code (M11: categories created in the UI). */
+export async function getCategoryByCode(eventId: string, code: string) {
+  const pb = await superuser()
+  return pb
+    .collection('categories')
+    .getFirstListItem(pb.filter('event = {:event} && code = {:code}', { event: eventId, code }))
+}

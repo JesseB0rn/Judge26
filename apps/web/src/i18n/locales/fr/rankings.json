@@ -156,7 +156,12 @@
     "scoring": "Phase d’évaluation (minutes)",
     "total": "Durée totale du tour : {minutes} minutes.",
     "save": "Enregistrer le tour",
-    "add": "Ajouter un tour"
+    "add": "Ajouter un tour",
+    "noDays": "Cet événement n’a pas encore de jour de compétition : les tours ne peuvent pas recevoir de jour.",
+    "noDaysLink": "Ajouter des jours dans l’onglet Aperçu",
+    "startsAt": "Début de la manche d’évaluation",
+    "startsAtHint": "Facultatif. Place le tour dans le planificateur d’horaire ; la journée va de {from} à {to}.",
+    "timeNotSaved": "Le tour a été enregistré, mais pas son heure de début : {reason}"
   },
   "export": {
     "title": "classement {category}",
@@ -183,7 +188,6 @@
     "snapshotPublished": "Classement figé publié.",
     "title": "Tours et classement : {category}",
     "backToPlanner": "Retour au planificateur",
-    "backToEvent": "Retour à l’événement",
     "backToLibrary": "Retour à la bibliothèque",
     "results": "Résultats",
     "configuration": "Configuration",

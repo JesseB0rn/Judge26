@@ -24,6 +24,10 @@ test.describe('M10-F setup and live', () => {
     const row = page.getByTestId('setup-checklist').locator('[data-step=publish]')
     await expect(row).toHaveAttribute('data-done', 'false')
     await row.getByTestId('setup-publish').click()
+    // M11-13: the setup is incomplete, so publishing asks first.
+    const confirm = page.getByTestId('publish-dialog')
+    await expect(confirm.getByTestId('publish-open-steps')).toContainText('Competition days')
+    await confirm.getByRole('button', { name: 'Publish anyway' }).click()
     await expect(row).toHaveAttribute('data-done', 'true')
     await expect(row.getByTestId('setup-publish')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Publish' })).toHaveCount(0)

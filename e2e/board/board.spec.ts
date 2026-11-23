@@ -140,7 +140,7 @@ test.describe('M8-E assignment board', () => {
     const ctx = await setup()
     await login(page, ctx.manager.email, ctx.manager.password)
     await page.goto(`/events/${ctx.event.id}/board`)
-    await expect(page).toHaveURL(/tab=schedule/)
+    await expect(page).toHaveURL(/tab=assignments/)
     await expect(page.getByTestId('assignment-board')).toBeVisible()
 
     await page.getByRole('button', { name: 'Add a table to RoboMission Junior' }).click()

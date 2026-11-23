@@ -2,8 +2,14 @@
 import { devMailboxEnabled } from '@/modules/communication/devMailbox'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { EyeIcon, LogOutIcon } from '@lucide/vue'
+import { ChevronDownIcon, EyeIcon, LogOutIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Toaster } from '@/components/ui/sonner'
 import { useSessionStore } from '@/shared/auth/session'
 import { config } from '@/shared/config/env'
@@ -75,6 +81,22 @@ const admin = computed(() =>
     : [],
 )
 
+// M11-19: the pages of an event are not children of /events in the router, but they are in
+// the user's mind; Events stays current on all of them.
+const EVENT_PAGES = new Set([
+  'event',
+  'event-planner',
+  'event-print',
+  'category-ranking',
+  'category-ranking-report',
+  'category-scoring',
+  'team',
+  'team-new',
+])
+const inEvent = computed(() => EVENT_PAGES.has(String(route.name)))
+// M11-20: the admin pages share one menu; its button is current on any of them.
+const inAdmin = computed(() => admin.value.some((l) => route.path.startsWith(l.to)))
+
 const linkClass =
   'shrink-0 rounded-md px-2.5 py-1.5 text-sm whitespace-nowrap text-muted-foreground hover:bg-muted hover:text-foreground'
 const workClass = 'font-semibold text-foreground'
@@ -107,24 +129,24 @@ const activeClass = '!bg-foreground !text-background font-medium'
             v-for="link in browse"
             :key="link.to"
             :to="link.to"
-            :class="linkClass"
+            :class="[linkClass, link.to === '/events' && inEvent && activeClass]"
             :active-class="activeClass"
             >{{ link.label }}</RouterLink
           >
           <template v-if="admin.length">
             <span class="mx-1 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
-            <span
-              class="shrink-0 px-1 text-xs font-medium tracking-wider text-muted-foreground uppercase"
-              >{{ t('shell.nav.admin') }}</span
-            >
-            <RouterLink
-              v-for="link in admin"
-              :key="link.to"
-              :to="link.to"
-              :class="linkClass"
-              :active-class="activeClass"
-              >{{ link.label }}</RouterLink
-            >
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                :class="[linkClass, 'inline-flex items-center gap-1', inAdmin && activeClass]"
+                data-testid="admin-menu"
+                >{{ t('shell.nav.admin') }} <ChevronDownIcon class="size-3.5" aria-hidden="true"
+              /></DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem v-for="link in admin" :key="link.to" as-child>
+                  <RouterLink :to="link.to">{{ link.label }}</RouterLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </template>
         </nav>
         <div class="ml-auto flex h-14 items-center gap-2">

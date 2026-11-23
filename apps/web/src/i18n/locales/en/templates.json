@@ -31,8 +31,6 @@
     "managerHint": "Only admins keep templates in the library. Download the file and give it to an admin, or upload it on another installation."
   },
   "create": {
-    "button": "From template",
-    "title": "New event from template",
     "description": "All dates move so the template’s first day falls on the day you choose. The new event does not change when the template changes.",
     "template": "Template",
     "chooseTemplate": "Choose a template",
@@ -83,16 +81,18 @@
         "done": "no judges | 1 judge | {count} judges"
       },
       "tables": {
-        "title": "Tables",
+        "title": "Tables and judges",
         "todo": "Create tables for each category on the assignment board and put the judges on them.",
         "missing": "Without an active table: {codes}",
         "done": "no active tables | 1 active table | {count} active tables",
-        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge"
+        "withoutJudges": "no tables without a judge | 1 table without a judge | {count} tables without a judge",
+        "withoutJudgesNamed": "Every table has a judge | {names} has no judge | {names} have no judge"
       },
       "schedule": {
         "title": "Schedule",
         "todo": "Place every team on a table and time every round in the planner.",
-        "progress": "{placed} of {expected} games placed · {timed} of {rounds} rounds timed"
+        "placed": "{placed} of {expected} games placed",
+        "timed": "{timed} of {rounds} rounds timed"
       },
       "publish": {
         "title": "Publish",

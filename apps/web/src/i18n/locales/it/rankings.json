@@ -156,7 +156,12 @@
     "scoring": "Fase di valutazione (minuti)",
     "total": "Durata totale del turno: {minutes} minuti.",
     "save": "Salva il turno",
-    "add": "Aggiungi turno"
+    "add": "Aggiungi turno",
+    "noDays": "Questo evento non ha ancora un giorno di gara: ai turni non si può assegnare un giorno.",
+    "noDaysLink": "Aggiungere giorni nella scheda Panoramica",
+    "startsAt": "Inizio della manche di valutazione",
+    "startsAtHint": "Facoltativo. Colloca il turno nel pianificatore del programma; la giornata va dalle {from} alle {to}.",
+    "timeNotSaved": "Il turno è stato salvato, ma non l’orario di inizio: {reason}"
   },
   "export": {
     "title": "classifica {category}",
@@ -183,7 +188,6 @@
     "snapshotPublished": "Istantanea della classifica pubblicata.",
     "title": "Turni e classifica: {category}",
     "backToPlanner": "Torna al pianificatore",
-    "backToEvent": "Torna all’evento",
     "backToLibrary": "Torna alla biblioteca",
     "results": "Risultati",
     "configuration": "Configurazione",

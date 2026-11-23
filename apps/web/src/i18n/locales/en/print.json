@@ -1,7 +1,6 @@
 {
   "title": "Print center",
   "description": "Printouts for the venue: one A4 page per team or table. Print them or save them as PDF.",
-  "back": "Event",
   "kind": "Printout",
   "kinds": {
     "parking": "Robot parking labels",

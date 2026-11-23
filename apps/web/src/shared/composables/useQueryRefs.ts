@@ -52,3 +52,9 @@ export function backTarget(from: unknown): string | undefined {
   if (typeof from !== 'string' || from.startsWith('//')) return undefined
   return BACK_PREFIXES.some((p) => from.startsWith(p)) ? from : undefined
 }
+
+/** M11-08: an event page (a tab of it, or its planner) a `from` query value returns to. */
+export function eventBackTarget(from: unknown): string | undefined {
+  const target = backTarget(from)
+  return target?.startsWith('/events/') ? target : undefined
+}

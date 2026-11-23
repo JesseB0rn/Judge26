@@ -135,6 +135,10 @@
     },
     "passwordConfirm": {
       "mismatch": "Les mots de passe ne correspondent pas."
+    },
+    "first_day": {
+      "invalid_range": "Le jour doit se terminer après son début.",
+      "invalid_day": "Le premier jour n’a pas pu être créé."
     }
   },
   "invitation_invalid": "Ce lien d’invitation n’est pas valable.",
@@ -184,5 +188,7 @@
   "check_off_managers_only": "Seuls les responsables de l’événement peuvent désactiver le contrôle du robot.",
   "checks_recorded": "Des contrôles du robot ont déjà été saisis ; le mode de contrôle ne peut plus changer.",
   "read_only": "Ce champ est défini par la libération ou la clôture.",
-  "print_not_allowed": "Seuls les responsables de l’événement et les juges principaux peuvent utiliser le centre d’impression."
+  "print_not_allowed": "Seuls les responsables de l’événement et les juges principaux peuvent utiliser le centre d’impression.",
+  "event_create_draft": "Un nouvel événement est toujours créé en brouillon.",
+  "invalid_time": "Indiquez les heures au format HH:MM."
 }

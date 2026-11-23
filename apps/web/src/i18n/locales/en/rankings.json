@@ -156,7 +156,12 @@
     "scoring": "Scoring phase (minutes)",
     "total": "Total round duration: {minutes} minutes.",
     "save": "Save round",
-    "add": "Add round"
+    "add": "Add round",
+    "noDays": "This event has no competition day yet, so rounds cannot be given a day.",
+    "noDaysLink": "Add days on the Overview tab",
+    "startsAt": "Start of the scoring run",
+    "startsAtHint": "Optional. Places the round in the planner; the day runs {from}–{to}.",
+    "timeNotSaved": "The round was saved, but not its start time: {reason}"
   },
   "export": {
     "title": "ranking {category}",
@@ -183,7 +188,6 @@
     "snapshotPublished": "Ranking snapshot published.",
     "title": "Rounds & ranking: {category}",
     "backToPlanner": "Back to planner",
-    "backToEvent": "Back to event",
     "backToLibrary": "Back to library",
     "results": "Results",
     "configuration": "Configuration",

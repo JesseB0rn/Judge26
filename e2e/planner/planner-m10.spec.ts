@@ -8,7 +8,7 @@ import {
   createEvent,
   createUser,
 } from '../support/backend'
-import { login } from '../support/pages'
+import { login, section } from '../support/pages'
 
 // M10-D: planner editing from the trial run (M10-T33 – M10-T38). The grid's time axis starts at
 // 08:00, shows 1.6 px per minute and has 168 px wide columns.
@@ -55,7 +55,7 @@ async function setup() {
 
 async function openPlanner(page: Page, eventId: string) {
   await page.goto(`/events/${eventId}/planner`)
-  await expect(page.getByRole('heading', { name: 'Schedule planner' })).toBeVisible()
+  await expect(section(page, 'Planner')).toHaveAttribute('aria-current', 'page')
 }
 
 test.describe('M10-D schedule planner', () => {

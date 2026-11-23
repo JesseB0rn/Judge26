@@ -30,5 +30,7 @@
   "refresh": "Aggiorna",
   "loading": "Caricamento…",
   "yes": "sì",
-  "no": "no"
+  "no": "no",
+  "back": "Indietro",
+  "delete": "Elimina"
 }

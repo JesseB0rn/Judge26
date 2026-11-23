@@ -23,11 +23,12 @@ import { getCategory, listGameRules, listRulesets } from '@/modules/scoring/api'
 import { activeVersionForRound } from '@/modules/scoring/lib'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
 import ExportButtons from '@/shared/export/ExportButtons.vue'
+import EventFrame from '@/modules/events/components/EventFrame.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { toAppError, type AppError } from '@/shared/api/errors'
 import { useSessionStore } from '@/shared/auth/session'
 import { useSubmit } from '@/shared/composables/useSubmit'
-import { backTarget, useQueryRefs } from '@/shared/composables/useQueryRefs'
+import { eventBackTarget, useQueryRefs } from '@/shared/composables/useQueryRefs'
 import { formatDateTime } from '@/shared/format'
 import type {
   CategoryRecord,
@@ -79,10 +80,9 @@ const route = useRoute()
 const editRound = computed(() =>
   typeof route.query.round === 'string' ? route.query.round : undefined,
 )
-const plannerBack = computed(() => {
-  const from = backTarget(route.query.from)
-  return from?.startsWith('/events/') ? from : undefined
-})
+// M11-08: Back returns to the page this one was opened from, else to the event's Categories tab.
+const fromBack = computed(() => eventBackTarget(route.query.from))
+const fromPlanner = computed(() => !!fromBack.value?.split('?')[0]?.endsWith('/planner'))
 const editor = ref<'visual' | 'json'>('visual')
 
 const event = computed(() => category.value?.expand?.event)
@@ -258,25 +258,20 @@ onMounted(load)
   <ErrorAlert :error="loadError" />
   <Skeleton v-if="loading && !category" class="h-10 w-1/2" />
   <template v-else-if="category">
+    <!-- M11-15: a category of an event is shown in the event frame, under Categories. -->
+    <EventFrame v-if="event" :event-id="event.id" :event="event" section="categories" />
     <PageHeader
       :title="t('rankings.view.title', { category: category.name })"
-      :description="
-        event
-          ? `${category.code} · ${event.name}`
-          : `${category.code} · ${t('categories.template')}`
-      "
+      :description="event ? category.code : `${category.code} · ${t('categories.template')}`"
+      :sub="!!event"
     >
       <template #actions>
-        <Button v-if="plannerBack" as-child variant="outline">
-          <RouterLink :to="plannerBack">{{ t('rankings.view.backToPlanner') }}</RouterLink>
+        <Button v-if="fromBack" as-child variant="outline">
+          <RouterLink :to="fromBack" data-testid="back-link">{{
+            fromPlanner ? t('rankings.view.backToPlanner') : t('common.back')
+          }}</RouterLink>
         </Button>
-        <Button v-if="event" as-child variant="outline">
-          <RouterLink
-            :to="{ name: 'event', params: { id: event.id }, query: { tab: 'categories' } }"
-            >{{ t('rankings.view.backToEvent') }}</RouterLink
-          >
-        </Button>
-        <Button v-else as-child variant="outline">
+        <Button v-else-if="!event" as-child variant="outline">
           <RouterLink :to="{ name: 'category-library' }">{{
             t('rankings.view.backToLibrary')
           }}</RouterLink>
@@ -394,6 +389,7 @@ onMounted(load)
           :game-rules="gameRules"
           :editable="canManage"
           :edit-round="editRound"
+          :event-id="category.event || undefined"
           @changed="loadResults"
         />
       </TabsContent>

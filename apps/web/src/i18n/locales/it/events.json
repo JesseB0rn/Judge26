@@ -34,7 +34,12 @@
       "seconds": "Solo secondi (95s)"
     },
     "allowTeamRefusal": "Le squadre possono rifiutare di confermare un foglio di punteggio",
-    "allowTeamRefusalHint": "Il giudice annota allora il motivo. Se disattivato, ogni foglio richiede la conferma della squadra."
+    "allowTeamRefusalHint": "Il giudice annota allora il motivo. Se disattivato, ogni foglio richiede la conferma della squadra.",
+    "firstDay": "Primo giorno di gara",
+    "firstDayHint": "Facoltativo. Altri giorni si aggiungono nella scheda Panoramica.",
+    "dayStart": "Inizio",
+    "dayEnd": "Fine",
+    "draftNotice": "Un nuovo evento inizia come bozza. Lo pubblichi dalla pagina dell’evento a configurazione terminata."
   },
   "detail": {
     "updated": "Evento aggiornato.",
@@ -45,7 +50,8 @@
     "reviewScores": "Verifica punteggi",
     "planner": "Pianificatore",
     "archivedNotice": "Questo evento è archiviato. I suoi dati sono di sola lettura.",
-    "details": "Dettagli"
+    "details": "Dettagli",
+    "more": "Altro"
   },
   "tabs": {
     "overview": "Panoramica",
@@ -58,8 +64,25 @@
     "activity": "Attività",
     "staff": "Staff"
   },
+  "nav": {
+    "label": "Evento",
+    "print": "Stampa"
+  },
   "list": {
     "description": "Le competizioni a cui ha accesso.",
     "empty": "Nessun evento disponibile."
+  },
+  "publish": {
+    "title": "Pubblicare prima che la configurazione sia terminata?",
+    "description": "Questi passi della configurazione sono ancora aperti. Squadre e pubblico vedono l’evento appena è pubblicato.",
+    "goToSetup": "Vai alla configurazione",
+    "anyway": "Pubblica comunque"
+  },
+  "newEvent": {
+    "startFrom": "Punto di partenza",
+    "empty": "Evento vuoto",
+    "emptyHint": "Configurare giorni, categorie e turni passo dopo passo.",
+    "template": "Da un modello",
+    "templateHint": "Riprendere giorni, categorie, regolamenti, turni e tavoli dalla biblioteca."
   }
 }

@@ -20,7 +20,7 @@ import type { EventRecord, EventTemplateRecord } from '@/shared/types/records'
 import { deleteEventTemplate, listEventTemplates, uploadEventTemplate } from '../api'
 import { downloadTemplate, templateSummary } from '../lib'
 import EditTemplateDialog from '../components/EditTemplateDialog.vue'
-import NewEventFromTemplateDialog from '../components/NewEventFromTemplateDialog.vue'
+import NewEventDialog from '@/modules/events/components/NewEventDialog.vue'
 
 /** Template library (M8-24): upload, download, rename, delete, and start new events. */
 const router = useRouter()
@@ -162,9 +162,5 @@ onMounted(load)
     </TableBody>
   </Table>
   <EditTemplateDialog v-model:open="editOpen" :template="editing" @saved="load" />
-  <NewEventFromTemplateDialog
-    v-model:open="createOpen"
-    :template-id="creatingFrom"
-    @created="onCreated"
-  />
+  <NewEventDialog v-model:open="createOpen" :template-id="creatingFrom" @created="onCreated" />
 </template>

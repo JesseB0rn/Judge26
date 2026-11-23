@@ -1,7 +1,6 @@
 {
   "title": "Centro di stampa",
   "description": "Stampe per la sede: una pagina A4 per squadra o tavolo. Da stampare o salvare come PDF.",
-  "back": "Evento",
   "kind": "Stampa",
   "kinds": {
     "parking": "Etichette di parcheggio dei robot",

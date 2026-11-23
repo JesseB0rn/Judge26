@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { createUser, unique } from '../support/backend'
-import { login } from '../support/pages'
+import { login, moreAction, section } from '../support/pages'
 
 test.describe('M1 event administration', () => {
   test('admin creates an event with two days, categories from a template and staff', async ({
@@ -13,10 +13,9 @@ test.describe('M1 event administration', () => {
     await login(page, admin.email, admin.password)
 
     // Template in the category library (M1-08/09).
-    await page
-      .getByRole('navigation', { name: 'Main' })
-      .getByRole('link', { name: 'Categories' })
-      .click()
+    // M11-20: the admin pages are behind one Admin menu.
+    await page.getByTestId('admin-menu').click()
+    await page.getByRole('menuitem', { name: 'Categories' }).click()
     await page.getByRole('button', { name: 'New template' }).click()
     let dialog = page.getByRole('dialog')
     await dialog.getByLabel('Name').fill('Future Innovators')
@@ -29,12 +28,11 @@ test.describe('M1 event administration', () => {
     await page.getByRole('button', { name: 'New event' }).click()
     dialog = page.getByRole('dialog')
     await dialog.getByLabel('Name').fill(eventName)
-    await dialog.getByLabel('Status').selectOption('published')
     await dialog.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('heading', { name: eventName })).toBeVisible()
     // A new event opens its setup checklist (M8-20); the days are on the overview.
     await expect(page.getByTestId('setup-checklist')).toBeVisible()
-    await page.getByRole('tab', { name: 'Overview' }).click()
+    await section(page, 'Overview').click()
 
     // Two competition days (M1-07, M1-T06).
     for (const [date, label] of [
@@ -49,7 +47,7 @@ test.describe('M1 event administration', () => {
     await expect(page.getByTestId('competition-days').locator('li')).toHaveCount(2)
 
     // Category from template (M1-T07).
-    await page.getByRole('tab', { name: 'Categories' }).click()
+    await section(page, 'Categories').click()
     await page.getByRole('button', { name: 'Add from template' }).click()
     dialog = page.getByRole('dialog')
     await dialog
@@ -57,10 +55,11 @@ test.describe('M1 event administration', () => {
       .selectOption({ label: `${templateCode} – Future Innovators` })
     await dialog.getByLabel('Code').fill('FI')
     await dialog.getByRole('button', { name: 'Copy' }).click()
-    await expect(page.getByRole('cell', { name: 'FI', exact: true })).toBeVisible()
+    // M11-01: the category is a row of the categories grid.
+    await expect(page.locator('tr[data-category="FI"]')).toBeVisible()
 
     // Staff (M1-05, M8-B): an existing account is added to the event right away.
-    await page.getByRole('tab', { name: 'Staff' }).click()
+    await section(page, 'Staff').click()
     const invite = page.getByTestId('invite-form')
     await invite.getByLabel('Name').fill('Jo Judge')
     await invite.getByLabel('Email').fill(judge.email)
@@ -83,7 +82,7 @@ test.describe('M1 event administration', () => {
     // Archive (M1-T12).
     await page.goto('/events')
     await page.getByRole('link', { name: eventName }).click()
-    await page.getByRole('button', { name: 'Archive' }).click()
+    await moreAction(page, 'Archive')
     await expect(page.getByText('This event is archived')).toBeVisible()
   })
 })

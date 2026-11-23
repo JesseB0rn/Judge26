@@ -31,8 +31,6 @@
     "managerHint": "Seuls les admins gèrent les modèles de la bibliothèque. Téléchargez le fichier et transmettez-le à un admin, ou importez-le sur une autre installation."
   },
   "create": {
-    "button": "À partir d’un modèle",
-    "title": "Nouvel événement à partir d’un modèle",
     "description": "Toutes les dates sont décalées pour que le premier jour du modèle tombe sur le jour choisi. Le nouvel événement ne change pas si le modèle est modifié.",
     "template": "Modèle",
     "chooseTemplate": "Choisir un modèle",
@@ -83,16 +81,18 @@
         "done": "aucun juge | 1 juge | {count} juges"
       },
       "tables": {
-        "title": "Tables",
+        "title": "Tables et juges",
         "todo": "Créez des tables pour chaque catégorie sur le tableau d’attribution et attribuez-y les juges.",
         "missing": "Sans table active : {codes}",
         "done": "aucune table active | 1 table active | {count} tables actives",
-        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge"
+        "withoutJudges": "aucune table sans juge | 1 table sans juge | {count} tables sans juge",
+        "withoutJudgesNamed": "Chaque table a un ou une juge | {names} n’a pas de juge | {names} n’ont pas de juge"
       },
       "schedule": {
         "title": "Horaire",
         "todo": "Placez chaque équipe sur une table et fixez l’heure de chaque manche dans le planificateur.",
-        "progress": "{placed} passages placés sur {expected} · {timed} manches planifiées sur {rounds}"
+        "placed": "{placed} passages placés sur {expected}",
+        "timed": "{timed} manches planifiées sur {rounds}"
       },
       "publish": {
         "title": "Publier",

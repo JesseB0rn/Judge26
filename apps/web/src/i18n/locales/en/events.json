@@ -34,7 +34,12 @@
       "seconds": "Seconds only (95s)"
     },
     "allowTeamRefusal": "Teams may refuse to confirm a score sheet",
-    "allowTeamRefusalHint": "The judge then records the reason. When off, every score sheet needs the team’s confirmation."
+    "allowTeamRefusalHint": "The judge then records the reason. When off, every score sheet needs the team’s confirmation.",
+    "firstDay": "First competition day",
+    "firstDayHint": "Optional. More days can be added on the Overview tab.",
+    "dayStart": "Starts",
+    "dayEnd": "Ends",
+    "draftNotice": "A new event starts as a draft. Publish it from the event page once the setup is done."
   },
   "detail": {
     "updated": "Event updated.",
@@ -45,7 +50,8 @@
     "reviewScores": "Review scores",
     "planner": "Planner",
     "archivedNotice": "This event is archived. Its records are read-only.",
-    "details": "Details"
+    "details": "Details",
+    "more": "More"
   },
   "tabs": {
     "overview": "Overview",
@@ -58,8 +64,25 @@
     "activity": "Activity",
     "staff": "Staff"
   },
+  "nav": {
+    "label": "Event",
+    "print": "Print"
+  },
   "list": {
     "description": "Competitions you can access.",
     "empty": "No events available."
+  },
+  "publish": {
+    "title": "Publish before the setup is done?",
+    "description": "These setup steps are still open. Teams and the public see the event once it is published.",
+    "goToSetup": "Go to setup",
+    "anyway": "Publish anyway"
+  },
+  "newEvent": {
+    "startFrom": "Start from",
+    "empty": "Empty event",
+    "emptyHint": "Set up days, categories and rounds step by step.",
+    "template": "From a template",
+    "templateHint": "Copy days, categories, rulesets, rounds and tables from the library."
   }
 }

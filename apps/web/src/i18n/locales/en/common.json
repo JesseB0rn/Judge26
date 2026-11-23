@@ -30,5 +30,7 @@
   "refresh": "Refresh",
   "loading": "Loading…",
   "yes": "yes",
-  "no": "no"
+  "no": "no",
+  "back": "Back",
+  "delete": "Delete"
 }

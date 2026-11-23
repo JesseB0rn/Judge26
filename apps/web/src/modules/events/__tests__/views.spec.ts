@@ -1,7 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
-import { buttonByText, click, fill, makeEvent, makeRole, mountView } from '@/test/utils'
+import {
+  buttonByText,
+  click,
+  eventNav,
+  fill,
+  makeEvent,
+  makeRole,
+  menuItem,
+  mountView,
+  openMenu,
+} from '@/test/utils'
 import * as api from '../api'
+import * as templatesApi from '@/modules/templates/api'
 import EventListView from '../views/EventListView.vue'
 import EventDetailView from '../views/EventDetailView.vue'
 import CompetitionDays from '../components/CompetitionDays.vue'
@@ -10,8 +21,10 @@ vi.mock('../api')
 vi.mock('@/modules/categories/api')
 vi.mock('@/modules/teams/api')
 vi.mock('@/modules/administration/api')
+vi.mock('@/modules/templates/api')
 
 const mocked = vi.mocked(api)
+const templates = vi.mocked(templatesApi)
 
 describe('event views', () => {
   beforeEach(() => {
@@ -46,15 +59,20 @@ describe('event views', () => {
     const decimals = 'select[data-testid=time-decimals]'
     expect(document.querySelector<HTMLSelectElement>(decimals)!.value).toBe('0')
     await fill(decimals, '1')
+    // M11-10: no status field, the server makes it a draft. M11-11: optional first day.
+    expect(document.querySelector('[role=dialog]')!.textContent).not.toContain('Status')
+    expect(document.querySelector('[data-testid=draft-notice]')).not.toBeNull()
+    await fill('[data-testid=first-day-date]', '2026-06-13')
     await click(buttonByText('Save'))
     expect(mocked.createEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Swiss Final',
-        status: 'draft',
         season: new Date().getFullYear(),
         time_decimals: 1,
+        first_day: { date: '2026-06-13', starts_at: '08:00', ends_at: '18:00' },
       }),
     )
+    expect(mocked.createEvent.mock.calls[0]![0]).not.toHaveProperty('status')
     expect(router.currentRoute.value.name).toBe('event')
   })
 
@@ -65,17 +83,20 @@ describe('event views', () => {
       session: { roles: [makeRole('event_manager', 'event1')] },
     })
     expect(wrapper.text()).toContain('Edit')
-    await click(buttonByText('Archive'))
+    // M11-16: Archive is in the More menu; the header holds actions only.
+    await openMenu(wrapper.get('[data-testid=event-more]').element)
+    await click(menuItem('Archive'))
     expect(mocked.updateEvent).toHaveBeenCalledWith('event1', { status: 'archived' })
     expect(wrapper.text()).toContain('This event is archived')
-    expect(wrapper.text()).toContain('Restore')
+    await openMenu(wrapper.get('[data-testid=event-more]').element)
+    expect(menuItem('Restore')).toBeTruthy()
   })
 
   it('M8-02: users without a role see the event, but no teams and no registration', async () => {
     const { wrapper } = await mountView(EventDetailView, { props: { id: 'event1' } })
     expect(wrapper.text()).not.toContain('Register a team')
     expect(wrapper.text()).not.toContain('Registration')
-    expect(wrapper.findAll('[role=tab]').map((t) => t.text())).toEqual(['Overview', 'Categories'])
+    expect(eventNav(wrapper.element).sections).toEqual(['Overview', 'Categories', 'Schedule'])
     expect(wrapper.text()).not.toContain('Archive')
     expect(wrapper.text()).not.toContain('Staff')
   })
@@ -85,7 +106,7 @@ describe('event views', () => {
       props: { id: 'event1' },
       path: '/?tab=staff',
     })
-    expect(coach.wrapper.get('[role=tab][data-state=active]').text()).toBe('Overview')
+    expect(eventNav(coach.wrapper.element).current).toBe('Overview')
     coach.wrapper.unmount()
 
     const { wrapper } = await mountView(EventDetailView, {
@@ -93,20 +114,133 @@ describe('event views', () => {
       session: { roles: [makeRole('head_judge', 'event1')] },
       path: '/?tab=teams',
     })
-    expect(wrapper.get('[role=tab][data-state=active]').text()).toBe('Teams')
-    // Reviewing has one home: the review page, linked from the event header.
+    expect(eventNav(wrapper.element).current).toBe('Teams')
+    // Reviewing has one home: the review page, linked from the event navigation.
     expect(wrapper.text()).not.toContain('Scores')
     expect(wrapper.get('a[href*="event=event1"]').text()).toContain('Review scores')
   })
 
-  it('publishes draft events', async () => {
+  it('M11-T16: old schedule links open the Assignments tab; tabs follow the setup order', async () => {
+    const { wrapper, router } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('admin')] },
+      path: '/?tab=schedule',
+    })
+    await flushPromises()
+    expect(router.currentRoute.value.query.tab).toBe('assignments')
+    expect(eventNav(wrapper.element).current).toBe('Assignments')
+    // M11-17: the planner and print center sit with the assignments.
+    expect(eventNav(wrapper.element).sections).toEqual([
+      'Overview',
+      'Setup',
+      'Categories',
+      'Teams',
+      'Staff',
+      'Assignments',
+      'Planner',
+      'Print',
+      'Public results',
+      'Messages',
+      'Activity',
+    ])
+  })
+
+  it('M11-T21: a draft opens on Setup for its managers, on Overview for everyone else', async () => {
+    mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
+    templates.getSetupStatus.mockResolvedValue({ complete: false, steps: [] })
+    const manager = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    expect(eventNav(manager.wrapper.element).current).toBe('Setup')
+    manager.wrapper.unmount()
+
+    const judge = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('judge', 'event1')] },
+    })
+    expect(eventNav(judge.wrapper.element).current).toBe('Overview')
+    judge.wrapper.unmount()
+
+    mocked.getEvent.mockResolvedValue(makeEvent())
+    const published = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    expect(eventNav(published.wrapper.element).current).toBe('Overview')
+  })
+
+  it('M11-T17: the header holds actions; places are links in the event navigation', async () => {
+    const { wrapper } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    // At most the event name links home (off the event page); no other place is in the header.
+    const links = wrapper.get('header').findAll('a')
+    expect(links.every((a) => a.attributes('data-testid') === 'event-title-link')).toBe(true)
+    const nav = wrapper.get('[data-testid=event-nav]')
+    // The test router serves each named route at /__{name}/{id}.
+    expect(nav.get('[data-section=planner]').attributes('href')).toBe('/__event-planner/event1')
+    expect(nav.get('[data-section=print]').attributes('href')).toBe('/__event-print/event1')
+    expect(nav.get('[data-outbound=review]').attributes('href')).toContain('event=event1')
+    expect(nav.get('[data-outbound=live]').attributes('href')).toBe('/__live-event/event1')
+  })
+
+  it('M11-T15: publishes a complete setup at once', async () => {
     mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
     mocked.updateEvent.mockResolvedValue(makeEvent({ status: 'published' }))
+    templates.getSetupStatus.mockResolvedValue({
+      complete: false,
+      steps: [
+        { key: 'days', done: true, needs: [] },
+        { key: 'publish', done: false, needs: ['schedule'] },
+      ],
+    })
     await mountView(EventDetailView, {
       props: { id: 'event1' },
       session: { roles: [makeRole('admin')] },
     })
     await click(buttonByText('Publish'))
+    await flushPromises()
+    expect(document.querySelector('[data-testid=publish-dialog]')).toBeNull()
+    expect(mocked.updateEvent).toHaveBeenCalledWith('event1', { status: 'published' })
+  })
+
+  it('M11-T15: asks first when the setup is incomplete, listing the open steps', async () => {
+    mocked.getEvent.mockResolvedValue(makeEvent({ status: 'draft' }))
+    mocked.updateEvent.mockResolvedValue(makeEvent({ status: 'published' }))
+    templates.getSetupStatus.mockResolvedValue({
+      complete: false,
+      steps: [
+        { key: 'days', done: true, needs: [] },
+        { key: 'rounds', done: false, needs: ['days', 'categories'] },
+        { key: 'schedule', done: false, needs: ['rounds'] },
+        { key: 'publish', done: false, needs: ['schedule'] },
+      ],
+    })
+    const { router } = await mountView(EventDetailView, {
+      props: { id: 'event1' },
+      session: { roles: [makeRole('admin')] },
+    })
+    const confirm = vi.spyOn(window, 'confirm')
+    await click(buttonByText('Publish'))
+    await flushPromises()
+    const steps = document.querySelector('[data-testid=publish-open-steps]')!.textContent
+    expect(steps).toContain('Rounds')
+    expect(steps).toContain('Schedule')
+    expect(steps).not.toContain('Competition days')
+    expect(mocked.updateEvent).not.toHaveBeenCalled()
+    expect(confirm).not.toHaveBeenCalled()
+
+    await click(buttonByText('Go to setup'))
+    await flushPromises()
+    expect(router.currentRoute.value.query.tab).toBe('setup')
+    expect(mocked.updateEvent).not.toHaveBeenCalled()
+
+    await click(buttonByText('Publish'))
+    await flushPromises()
+    await click(buttonByText('Publish anyway'))
+    await flushPromises()
     expect(mocked.updateEvent).toHaveBeenCalledWith('event1', { status: 'published' })
   })
 

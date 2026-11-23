@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { createEvent, createUser } from '../support/backend'
-import { login } from '../support/pages'
+import { login, section } from '../support/pages'
 
 // Saving a ruleset reloads the rulesets list, whose M2 access rule slows down with the amount of
 // events, roles and teams in the shared test database (~1.5 s per list by the end of a full run;
@@ -18,7 +18,7 @@ test.describe('M2 scoring rulesets', () => {
     await login(page, manager.email, manager.password)
 
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('tab', { name: 'Categories' }).click()
+    await section(page, 'Categories').click()
     await page.getByRole('link', { name: 'Scoring rules for RM-J' }).click()
     await expect(page.getByText('No scoring ruleset yet')).toBeVisible()
 

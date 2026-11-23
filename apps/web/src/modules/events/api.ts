@@ -1,7 +1,7 @@
 import { pb } from '@/shared/api/pocketbase'
 import type { CompetitionDayRecord, EventRecord } from '@/shared/types/records'
 
-export type EventInput = Pick<EventRecord, 'name' | 'season' | 'venue' | 'description' | 'status'> &
+export type EventInput = Pick<EventRecord, 'name' | 'season' | 'venue' | 'description'> &
   Pick<Partial<EventRecord>, 'time_decimals' | 'time_seconds_only' | 'allow_team_refusal'>
 
 const events = () => pb.collection<EventRecord>('events')
@@ -15,11 +15,19 @@ export function getEvent(id: string) {
   return events().getOne(id)
 }
 
-export function createEvent(data: EventInput) {
+/** M11-11: the optional first competition day sent when creating an event. */
+export interface FirstDayInput {
+  date: string
+  starts_at: string
+  ends_at: string
+}
+
+/** M11-10: a new event is always a draft; the server sets the status. */
+export function createEvent(data: EventInput & { first_day?: FirstDayInput }) {
   return events().create(data)
 }
 
-export function updateEvent(id: string, data: Partial<EventInput>) {
+export function updateEvent(id: string, data: Partial<EventInput & Pick<EventRecord, 'status'>>) {
   return events().update(id, data)
 }
 

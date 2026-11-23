@@ -25,6 +25,10 @@ export const eventRoutes: RouteRecordRaw[] = [
   {
     // The assignment board (M8-E) lives in the Schedule tab; keep earlier links working.
     path: '/events/:id/board',
-    redirect: (to) => ({ name: 'event', params: { id: to.params.id }, query: { tab: 'schedule' } }),
+    redirect: (to) => ({
+      name: 'event',
+      params: { id: to.params.id },
+      query: { tab: 'assignments' },
+    }),
   },
 ]

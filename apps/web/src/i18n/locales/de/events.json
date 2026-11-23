@@ -34,7 +34,12 @@
       "seconds": "Nur Sekunden (95s)"
     },
     "allowTeamRefusal": "Teams dürfen die Bestätigung des Bewertungsbogens verweigern",
-    "allowTeamRefusalHint": "Die Schiedsrichterin oder der Schiedsrichter hält dann den Grund fest. Ausgeschaltet braucht jeder Bogen die Bestätigung des Teams."
+    "allowTeamRefusalHint": "Die Schiedsrichterin oder der Schiedsrichter hält dann den Grund fest. Ausgeschaltet braucht jeder Bogen die Bestätigung des Teams.",
+    "firstDay": "Erster Wettbewerbstag",
+    "firstDayHint": "Optional. Weitere Tage fügen Sie im Tab Übersicht hinzu.",
+    "dayStart": "Beginn",
+    "dayEnd": "Ende",
+    "draftNotice": "Ein neuer Anlass beginnt als Entwurf. Veröffentlichen Sie ihn auf der Anlassseite, sobald die Einrichtung fertig ist."
   },
   "detail": {
     "updated": "Anlass aktualisiert.",
@@ -45,7 +50,8 @@
     "reviewScores": "Punkte prüfen",
     "planner": "Planer",
     "archivedNotice": "Dieser Anlass ist archiviert. Seine Daten können nur gelesen werden.",
-    "details": "Details"
+    "details": "Details",
+    "more": "Mehr"
   },
   "tabs": {
     "overview": "Übersicht",
@@ -58,8 +64,25 @@
     "activity": "Aktivität",
     "staff": "Personal"
   },
+  "nav": {
+    "label": "Anlass",
+    "print": "Drucken"
+  },
   "list": {
     "description": "Wettbewerbe, auf die Sie Zugriff haben.",
     "empty": "Keine Anlässe verfügbar."
+  },
+  "publish": {
+    "title": "Veröffentlichen, bevor die Einrichtung fertig ist?",
+    "description": "Diese Einrichtungsschritte sind noch offen. Teams und Öffentlichkeit sehen den Anlass, sobald er veröffentlicht ist.",
+    "goToSetup": "Zur Einrichtung",
+    "anyway": "Trotzdem veröffentlichen"
+  },
+  "newEvent": {
+    "startFrom": "Ausgangspunkt",
+    "empty": "Leerer Anlass",
+    "emptyHint": "Tage, Kategorien und Runden Schritt für Schritt einrichten.",
+    "template": "Aus einer Vorlage",
+    "templateHint": "Tage, Kategorien, Bewertungsregeln, Runden und Tische aus der Bibliothek übernehmen."
   }
 }

@@ -31,8 +31,6 @@
     "managerHint": "Solo gli admin gestiscono i modelli nella biblioteca. Scarichi il file e lo consegni a un admin, oppure lo carichi su un’altra installazione."
   },
   "create": {
-    "button": "Da modello",
-    "title": "Nuovo evento da modello",
     "description": "Tutte le date si spostano in modo che il primo giorno del modello cada nel giorno scelto. Il nuovo evento non cambia se il modello viene modificato.",
     "template": "Modello",
     "chooseTemplate": "Scelga un modello",
@@ -83,16 +81,18 @@
         "done": "nessun giudice | 1 giudice | {count} giudici"
       },
       "tables": {
-        "title": "Tavoli",
+        "title": "Tavoli e giudici",
         "todo": "Crei i tavoli per ogni categoria sulla tavola delle assegnazioni e vi assegni i giudici.",
         "missing": "Senza tavolo attivo: {codes}",
         "done": "nessun tavolo attivo | 1 tavolo attivo | {count} tavoli attivi",
-        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice"
+        "withoutJudges": "nessun tavolo senza giudice | 1 tavolo senza giudice | {count} tavoli senza giudice",
+        "withoutJudgesNamed": "Ogni tavolo ha un giudice | {names} non ha un giudice | {names} non hanno un giudice"
       },
       "schedule": {
         "title": "Programma",
         "todo": "Assegni ogni squadra a un tavolo e fissi l’orario di ogni manche nel pianificatore.",
-        "progress": "{placed} di {expected} prove assegnate · {timed} di {rounds} manche con orario"
+        "placed": "{placed} di {expected} prove assegnate",
+        "timed": "{timed} di {rounds} manche con orario"
       },
       "publish": {
         "title": "Pubblica",

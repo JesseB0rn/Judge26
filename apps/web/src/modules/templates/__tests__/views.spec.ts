@@ -6,7 +6,7 @@ import type { EventTemplateRecord } from '@/shared/types/records'
 import * as api from '../api'
 import * as lib from '../lib'
 import EventSetupChecklist from '../components/EventSetupChecklist.vue'
-import NewEventFromTemplateDialog from '../components/NewEventFromTemplateDialog.vue'
+import NewEventDialog from '@/modules/events/components/NewEventDialog.vue'
 import SaveTemplateDialog from '../components/SaveTemplateDialog.vue'
 import TemplateLibraryView from '../views/TemplateLibraryView.vue'
 
@@ -117,14 +117,22 @@ describe('template library (M8-24)', () => {
   })
 })
 
-describe('new event from template (M8-23)', () => {
+describe('new event from template (M8-23, M11-12)', () => {
   it('asks for name and first day and creates the event', async () => {
     mocked.createEventFromTemplate.mockResolvedValue(makeEvent({ id: 'new' }))
-    const { wrapper } = await mountView(NewEventFromTemplateDialog, {
+    const { wrapper } = await mountView(NewEventDialog, {
       props: { open: false },
       session: admin,
     })
     await wrapper.setProps({ open: true })
+    await flushPromises()
+    // M11-T14: admins choose at the top; an empty event is the default.
+    const mode = document.querySelector('[data-testid=new-event-mode]')!
+    expect(mode.textContent).toContain('Empty event')
+    expect(document.querySelector('[data-testid=template-summary]')).toBeNull()
+    const fromTemplate = mode.querySelector<HTMLInputElement>('input[value=template]')!
+    fromTemplate.checked = true
+    fromTemplate.dispatchEvent(new Event('change'))
     await flushPromises()
     // The only template is preselected.
     expect(document.querySelector('[data-testid=template-summary]')?.textContent).toContain(
@@ -138,6 +146,32 @@ describe('new event from template (M8-23)', () => {
       first_day: '2027-05-15',
     })
     expect(wrapper.emitted('created')?.[0]).toEqual([makeEvent({ id: 'new' })])
+  })
+
+  it('the library opens the same dialog on its template', async () => {
+    const { wrapper } = await mountView(NewEventDialog, {
+      props: { open: false, templateId: 'tpl1' },
+      session: admin,
+    })
+    await wrapper.setProps({ open: true })
+    await flushPromises()
+    const checked = document.querySelector<HTMLInputElement>(
+      '[data-testid=new-event-mode] input:checked',
+    )
+    expect(checked?.value).toBe('template')
+    expect(document.querySelector('[data-testid=template-summary]')).not.toBeNull()
+  })
+
+  it('M11-T14: without the admin role only an empty event is offered', async () => {
+    const { wrapper } = await mountView(NewEventDialog, {
+      props: { open: false, templateId: 'tpl1' },
+      session: { roles: [makeRole('event_manager', 'event1')] },
+    })
+    await wrapper.setProps({ open: true })
+    await flushPromises()
+    expect(document.querySelector('[data-testid=new-event-mode]')).toBeNull()
+    expect(document.querySelector('[data-testid=first-day]')).not.toBeNull()
+    expect(mocked.listEventTemplates).not.toHaveBeenCalled()
   })
 })
 
@@ -181,7 +215,13 @@ describe('setup checklist (M8-20)', () => {
       steps: [
         { key: 'days', done: true, needs: [], count: 2 },
         { key: 'categories', done: false, needs: [], count: 2, missing: ['RME'] },
-        { key: 'rounds', done: false, needs: ['categories'], count: 0, missing: ['RMJ', 'RME'] },
+        {
+          key: 'rounds',
+          done: false,
+          needs: ['days', 'categories'],
+          count: 0,
+          missing: ['RMJ', 'RME'],
+        },
         { key: 'teams', done: true, needs: ['categories'], count: 12 },
         { key: 'judges', done: true, needs: [], count: 3 },
         {
@@ -190,6 +230,7 @@ describe('setup checklist (M8-20)', () => {
           needs: ['categories', 'judges'],
           count: 2,
           tables_without_judges: 1,
+          tables_without_judges_names: ['Table 2'],
         },
         {
           key: 'schedule',
@@ -225,14 +266,30 @@ describe('setup checklist (M8-20)', () => {
     expect(step('categories').text()).toContain('Without a published ruleset: RME')
     expect(step('rounds').text()).toContain('Needs Categories and rulesets first.')
     expect(step('teams').text()).not.toContain('Needs')
-    expect(step('tables').text()).toContain('1 table without a judge')
+    // M11-09: the tables without a judge are named.
+    expect(step('tables').text()).toContain('Table 2 has no judge')
     expect(step('tables').text()).toContain('Needs Categories and rulesets first.')
     expect(step('judges').text()).toContain('3 judges')
-    expect(step('schedule').text()).toContain('4 of 36 games placed · 0 of 3 rounds timed')
+    // M11-06 / M11-T08: placing and timing are separate lines with their own links.
+    const line = (key: string) => step('schedule').get(`[data-line=${key}]`)
+    expect(line('placed').text()).toContain('4 of 36 games placed')
+    expect(line('placed').get('a').attributes('href')).toContain('tab=assignments')
+    expect(line('timed').text()).toContain('0 of 3 rounds timed')
+    expect(line('timed').get('a').text()).toContain('Planner')
+    // Rounds and categories open the Categories tab, where both are visible.
+    expect(step('rounds').find('a').attributes('href')).toContain('tab=categories')
+    expect(step('categories').find('a').attributes('href')).toContain('tab=categories')
     // Days and teams are done, so the schedule only waits for rounds and tables.
-    expect(step('schedule').text()).toContain('Needs Rounds, Tables first.')
-    expect(step('tables').find('a').attributes('href')).toContain('tab=schedule')
+    expect(step('schedule').text()).toContain('Needs Rounds, Tables and judges first.')
+    expect(step('tables').find('a').attributes('href')).toContain('tab=assignments')
     expect(step('publish').find('a').exists()).toBe(false)
+    // M11-08: the planner returns to the checklist.
+    const planner = step('schedule')
+      .findAll('a')
+      .find((a) => a.attributes('href')?.includes('__event-planner'))!
+    expect(decodeURIComponent(planner.attributes('href')!)).toContain(
+      'from=/events/event1?tab=setup',
+    )
   })
 
   it('M10-30 / M10-T45: the publish row publishes like the header button', async () => {

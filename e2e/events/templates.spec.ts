@@ -8,7 +8,7 @@ import {
   createUser,
   unique,
 } from '../support/backend'
-import { login } from '../support/pages'
+import { login, moreAction } from '../support/pages'
 
 // M8-D: event templates and the setup checklist (M8-T12 – M8-T14).
 test.describe('M8-D event templates', () => {
@@ -27,7 +27,7 @@ test.describe('M8-D event templates', () => {
 
     // Save to the library (M8-21).
     await page.goto(`/events/${event.id}`)
-    await page.getByRole('button', { name: 'Save as template' }).click()
+    await moreAction(page, 'Save as template')
     let dialog = page.getByRole('dialog')
     await dialog.getByLabel('Name').fill(templateName)
     // The file download (M8-22, M8-T12).
@@ -62,9 +62,11 @@ test.describe('M8-D event templates', () => {
 
     // New event from the template with a new first day (M8-23, M8-T13).
     await page.goto('/events')
-    await page.getByRole('button', { name: 'From template' }).click()
+    // M11-12: one New event dialog; admins choose a template at the top.
+    await page.getByRole('button', { name: 'New event' }).click()
     dialog = page.getByRole('dialog')
-    await dialog.getByLabel('Template').selectOption({ label: templateName })
+    await dialog.getByLabel('From a template').check()
+    await dialog.getByLabel('Template', { exact: true }).selectOption({ label: templateName })
     await dialog.getByLabel('Name').fill(newName)
     await dialog.getByLabel('First day').fill('2027-05-15')
     await dialog.getByRole('button', { name: 'Create event' }).click()
@@ -77,10 +79,10 @@ test.describe('M8-D event templates', () => {
     // Judges are not part of a template, so the copied tables wait for them (M9-C).
     await expect(checklist.locator('[data-step=judges]')).toHaveAttribute('data-done', 'false')
     await expect(checklist.locator('[data-step=tables]')).toHaveAttribute('data-done', 'false')
-    await expect(checklist.locator('[data-step=tables]')).toContainText('1 table without a judge')
+    await expect(checklist.locator('[data-step=tables]')).toContainText(/Table .* has no judge/)
     await expect(checklist.locator('[data-step=tables]')).toContainText(/Needs .*Judges first\./)
     await expect(checklist.locator('[data-step=schedule]')).toContainText(
-      'Needs Tables, Teams first.',
+      'Needs Tables and judges, Teams first.',
     )
 
     await checklist.getByRole('link', { name: 'Open: Competition days' }).click()

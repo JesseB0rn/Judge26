@@ -806,7 +806,11 @@ function setupStatus(app, eventId) {
     'role_assignments',
     'event = {:e} && (role = "judge" || role = "head_judge") && user.preview_of = ""',
   )
-  const tablesWithoutJudges = tables.filter((t) => !t.getStringSlice('judges').length).length
+  // M11-09: name the tables still without a judge (a template copies tables, not judges).
+  const tablesWithoutJudges = tables
+    .filter((t) => !t.getStringSlice('judges').length)
+    .sort((a, b) => a.getInt('position') - b.getInt('position'))
+    .map((t) => t.getString('name'))
   const placed = list(
     app,
     'games',
@@ -828,7 +832,8 @@ function setupStatus(app, eventId) {
     {
       key: 'rounds',
       done: hasCategories && !withoutRounds.length,
-      needs: ['categories'],
+      // M11-07: the round form needs a day and a game (a category with a ruleset).
+      needs: ['days', 'categories'],
       count: rounds,
       missing: withoutRounds,
     },
@@ -838,11 +843,12 @@ function setupStatus(app, eventId) {
     { key: 'judges', done: judges > 0, needs: [], count: judges },
     {
       key: 'tables',
-      done: hasCategories && !withoutTables.length && tablesWithoutJudges === 0,
+      done: hasCategories && !withoutTables.length && tablesWithoutJudges.length === 0,
       needs: ['categories', 'judges'],
       count: tables.length,
       missing: withoutTables,
-      tables_without_judges: tablesWithoutJudges,
+      tables_without_judges: tablesWithoutJudges.length,
+      tables_without_judges_names: tablesWithoutJudges,
     },
     {
       key: 'schedule',

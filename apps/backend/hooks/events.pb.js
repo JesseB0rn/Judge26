@@ -14,3 +14,12 @@ onRecordDelete((e) => {
   for (const team of teams) e.app.delete(team)
   e.next()
 }, 'events')
+
+// M11-10, M11-11: a new event is a draft; an optional first day is created right after it.
+onRecordCreateRequest((e) => {
+  const events = require(`${__hooks}/lib/events.js`)
+  events.requireDraft(e)
+  const day = events.firstDay(e)
+  e.next()
+  if (day) events.createFirstDay(e.app, e.record, day)
+}, 'events')

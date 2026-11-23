@@ -1,4 +1,6 @@
+import { t } from '@/i18n'
 import { pb } from '@/shared/api/pocketbase'
+import { AppError } from '@/shared/api/errors'
 import type {
   CategoryRecord,
   CompetitionDayRecord,
@@ -41,6 +43,46 @@ export function updateRound(id: string, data: RoundInput) {
 
 export function deleteRound(id: string) {
   return pb.collection('rounds').delete(id)
+}
+
+/** The scoring phase of a round: its day and start place the round in the planner. */
+export interface ScoringPhaseVersion {
+  id: string
+  day: string
+  /** HH:MM, or "" when not timed. */
+  starts_at: string
+  updated: string
+}
+
+export async function getScoringPhase(roundId: string): Promise<ScoringPhaseVersion | undefined> {
+  const found = await pb.collection('round_phases').getList<ScoringPhaseVersion>(1, 1, {
+    filter: pb.filter('round = {:round} && phase = "scoring"', { round: roundId }),
+    fields: 'id,day,starts_at,updated',
+  })
+  return found.items[0]
+}
+
+/**
+ * M11-05: times a round from its form, exactly as moving its scoring phase in the planner
+ * (M4-14) would: the update carries a version and gets the planner's 409 and validation errors.
+ * Call after saving the round. Saving the round may itself move the phase (its day and duration
+ * follow the round), so the phase is read again; a start that differs from the one the form
+ * showed (`read`) was changed in the planner meanwhile and is reported as a conflict.
+ */
+export async function timeRound(
+  roundId: string,
+  startsAt: string,
+  read?: Pick<ScoringPhaseVersion, 'starts_at'>,
+) {
+  const phase = await getScoringPhase(roundId)
+  if (!phase) throw new AppError('not_found', t('errors.kind.not_found'))
+  if (read && phase.starts_at !== read.starts_at) {
+    throw new AppError('conflict', t('server.changed_meanwhile'), { status: 409 })
+  }
+  return pb.collection('round_phases').update<ScoringPhaseVersion>(phase.id, {
+    starts_at: startsAt,
+    expected_updated: phase.updated,
+  })
 }
 
 export function listApprovedTeams(categoryId: string) {

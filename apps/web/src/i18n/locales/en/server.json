@@ -135,6 +135,10 @@
     },
     "passwordConfirm": {
       "mismatch": "The passwords do not match."
+    },
+    "first_day": {
+      "invalid_range": "The day must end after it starts.",
+      "invalid_day": "The first day could not be created."
     }
   },
   "invitation_invalid": "This invitation link is not valid.",
@@ -184,5 +188,7 @@
   "check_off_managers_only": "Only event managers can turn the robot check off.",
   "checks_recorded": "Robot checks were already recorded; the check mode can no longer change.",
   "read_only": "This field is set by the release or completion action.",
-  "print_not_allowed": "Only event managers and head judges can use the print center."
+  "print_not_allowed": "Only event managers and head judges can use the print center.",
+  "event_create_draft": "A new event is always created as a draft.",
+  "invalid_time": "Times must be given as HH:MM."
 }

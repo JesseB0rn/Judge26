@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { createEvent, createUser, unique } from '../support/backend'
-import { login } from '../support/pages'
+import { login, section } from '../support/pages'
 
 async function fillTeam(page: Page, name: string, birthYears: number[]) {
   await page.getByLabel('Team name').fill(name)
@@ -56,7 +56,7 @@ test.describe('M8-A teams', () => {
     await expect(page.getByRole('link', { name: 'My teams' })).toHaveCount(0)
     await page.goto(`/events/${event.id}`)
     await expect(page.getByRole('heading', { name: event.name })).toBeVisible()
-    await expect(page.getByRole('tab', { name: 'Teams' })).toHaveCount(0)
+    await expect(section(page, 'Teams')).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Register a team' })).toHaveCount(0)
     await expect(page.locator('body')).not.toContainText(/coach/i)
   })

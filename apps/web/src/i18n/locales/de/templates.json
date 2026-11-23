@@ -31,8 +31,6 @@
     "managerHint": "Nur Admins führen Vorlagen in der Bibliothek. Die Datei herunterladen und einem Admin geben oder in einer anderen Installation hochladen."
   },
   "create": {
-    "button": "Aus Vorlage",
-    "title": "Neuer Anlass aus Vorlage",
     "description": "Alle Daten verschieben sich so, dass der erste Tag der Vorlage auf den gewählten Tag fällt. Der neue Anlass ändert sich nicht, wenn die Vorlage geändert wird.",
     "template": "Vorlage",
     "chooseTemplate": "Vorlage wählen",
@@ -83,16 +81,18 @@
         "done": "keine Schiedsrichter/innen | 1 Schiedsrichter/in | {count} Schiedsrichter/innen"
       },
       "tables": {
-        "title": "Tische",
+        "title": "Tische und Schiedsrichter/innen",
         "todo": "Auf der Zuteilungstafel Tische für jede Kategorie anlegen und die Schiedsrichter/innen zuteilen.",
         "missing": "Ohne aktiven Tisch: {codes}",
         "done": "keine aktiven Tische | 1 aktiver Tisch | {count} aktive Tische",
-        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in"
+        "withoutJudges": "keine Tische ohne Schiedsrichter/in | 1 Tisch ohne Schiedsrichter/in | {count} Tische ohne Schiedsrichter/in",
+        "withoutJudgesNamed": "Jeder Tisch hat eine Schiedsrichterin oder einen Schiedsrichter | {names} hat noch keine Schiedsrichterin oder keinen Schiedsrichter | {names} haben noch keine Schiedsrichterin oder keinen Schiedsrichter"
       },
       "schedule": {
         "title": "Zeitplan",
         "todo": "Jedes Team einem Tisch zuteilen und jede Runde im Planer zeitlich festlegen.",
-        "progress": "{placed} von {expected} Läufen zugeteilt · {timed} von {rounds} Runden terminiert"
+        "placed": "{placed} von {expected} Läufen zugeteilt",
+        "timed": "{timed} von {rounds} Runden terminiert"
       },
       "publish": {
         "title": "Veröffentlichen",

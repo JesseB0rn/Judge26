@@ -6,7 +6,9 @@ import {
   makeCategory,
   makeEvent,
   makeRole,
+  menuItem,
   mountView,
+  openMenu,
 } from '@/test/utils'
 import * as api from '../api'
 import * as eventsApi from '@/modules/events/api'
@@ -24,6 +26,14 @@ describe('category views', () => {
     vi.resetAllMocks()
     mocked.listEventCategories.mockResolvedValue([makeCategory()])
     mocked.listTemplates.mockResolvedValue([template])
+    for (const loader of [
+      mocked.listEventRounds,
+      mocked.listEventScoringPhases,
+      mocked.listEventGameRules,
+      mocked.listEventRulesetStates,
+      mocked.listEventDays,
+    ] as ReturnType<typeof vi.fn>[])
+      loader.mockResolvedValue([])
     vi.mocked(eventsApi.listEvents).mockResolvedValue([
       makeEvent(),
       makeEvent({ id: 'old', status: 'archived' }),
@@ -70,7 +80,8 @@ describe('category views', () => {
       props: { event: makeEvent(), editable: true },
       session: { roles: [makeRole('admin')] },
     })
-    await click(wrapper.get('button[aria-label="Save RM-J as template"]').element as HTMLElement)
+    await openMenu(wrapper.get('button[aria-label="More actions for RM-J"]').element)
+    await click(menuItem('Save as template'))
     await click(buttonByText('Copy'))
     expect(mocked.copyCategory).toHaveBeenCalledWith('cat1', { event: '', code: undefined })
   })
@@ -80,7 +91,8 @@ describe('category views', () => {
     const { wrapper } = await mountView(EventCategoriesTab, {
       props: { event: makeEvent(), editable: true },
     })
-    await click(wrapper.get('button[aria-label="Delete RM-J"]').element as HTMLElement)
+    await openMenu(wrapper.get('button[aria-label="More actions for RM-J"]').element)
+    await click(menuItem('Delete'))
     expect(mocked.deleteCategory).toHaveBeenCalledWith('cat1')
   })
 

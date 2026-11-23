@@ -9,7 +9,7 @@ test.describe('M1 permissions in the UI', () => {
     await login(page, judge.email, judge.password)
     await page.goto('/admin/users')
     await expect(page.getByRole('heading', { name: 'Access denied' })).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'Main' })).not.toContainText('Users')
+    await expect(page.getByTestId('admin-menu')).toHaveCount(0)
   })
 
   test('M1-T05: a judge cannot open another event', async ({ page }) => {
