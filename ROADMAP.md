@@ -2781,10 +2781,12 @@ checklist stays a list and its links go straight to the work and back.
 ### Tracking
 
 -   [ ] **M11-A** Categories grid and setup flow alignment (M11-01 to M11-14)
+-   [ ] **M11-B** Event workspace navigation (M11-15 to M11-21)
 
 The user flow analysis behind this epic (logical steps against UI paths,
 with five gaps and six friction points) and the implementation plan are in
-`docs/specifications/M11-setup-flow.md`.
+`docs/specifications/M11-setup-flow.md`. The navigation review behind M11-B
+(seven findings, N1 to N7) is in `docs/specifications/M11-event-navigation.md`.
 
 ### M11-A --- Categories grid and setup flow alignment
 
@@ -2925,6 +2927,56 @@ friction points F1 to F6 (see the specification).
                                          languages are updated.
   ------------------------------------------------------------------------------
 
+
+### M11-B --- Event workspace navigation
+
+Each requirement answers one finding of the navigation review: N1 to N7
+(see `docs/specifications/M11-event-navigation.md`).
+
+  ------------------------------------------------------------------------------
+  ID         Feature               Pri   Acceptance criteria
+  ---------  --------------------  ----  ---------------------------------------
+  M11-15     One event frame       P1    The event page, the planner, the print
+                                         center and a category's ranking and
+                                         rules pages show the same event header
+                                         and event navigation. Off the event
+                                         page, the event name links to it.
+
+  M11-16     Actions in the        P1    The event header holds actions only:
+             header                      Publish (drafts), Edit, and a More menu
+                                         with Save as template and Archive or
+                                         Restore. Below 640 px Edit and More are
+                                         icons; the header does not wrap.
+
+  M11-17     Places in the         P1    The event navigation holds places only,
+             navigation                  as links with `aria-current`, in four
+                                         groups: Overview, Setup · Categories,
+                                         Teams, Staff · Assignments, Planner,
+                                         Print · Public results, Messages,
+                                         Activity. Visibility per role is
+                                         unchanged. Review scores and Live
+                                         results end the row, marked as leaving
+                                         the event.
+
+  M11-18     Section toolbars      P2    The planner's live indicator, Print and
+                                         New block sit in its toolbar; the print
+                                         center has no back link of its own.
+                                         Replaces the planner's Back of M11-08.
+
+  M11-19     Events stays current  P1    The main navigation marks Events on
+                                         every page of the event frame and on
+                                         team pages.
+
+  M11-20     Admin menu            P1    The admin pages are one Admin menu in
+                                         the main navigation, current on any
+                                         admin page.
+
+  M11-21     Drafts open on Setup  P2    An event manager opening a draft
+                                         without `?tab=` lands on Setup; all
+                                         other cases land on Overview. An
+                                         explicit `?tab=` wins.
+  ------------------------------------------------------------------------------
+
 ### Tests
 
 API changes are tested in `apps/backend/tests/m11-*.test.ts`, the grid and
@@ -3002,6 +3054,21 @@ in `e2e` (empty event and from a template).
   M11-T16    M11-14     Open an old `?tab=schedule`  Assignments tab shown; URL
                         link and                     uses `assignments`; tabs in
                         `/events/{id}/board`         setup order
+  M11-T17    M11-15,    Manager opens the planner,   Same header and navigation
+             M11-16,    the print center and a       on each, current item
+             M11-17     category's ranking page      marked; header has no links
+                                                     but the event name
+  M11-T18    M11-18     Planner opened from the      Planner current in the
+                        checklist; then Setup        navigation; Setup opens the
+                                                     checklist in one click
+  M11-T19    M11-19     Open the planner             Events marked in the main
+                                                     navigation
+  M11-T20    M11-20     Admin and coach sign in      Admin sees one Admin menu
+                                                     with all admin pages; coach
+                                                     sees none
+  M11-T21    M11-21     Manager, judge open a        Manager on Setup, judge on
+                        draft; manager a published   Overview; published on
+                        event                        Overview
   ------------------------------------------------------------------------------
 
 ### Open questions
