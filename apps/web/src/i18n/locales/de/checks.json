@@ -6,7 +6,7 @@
   "confirmed": "Bestätigt",
   "open": "Offen",
   "checked": "Kontrolliert",
-  "readyState": "Tisch",
+  "readyState": "Status",
   "ofTotal": "{done} von {total}",
   "ready": "Bereit",
   "notReady": "Nicht bereit",

@@ -293,9 +293,12 @@ const shownFile = ref('')
               <h3 class="font-semibold">{{ round.name }} · {{ round.category.code }}</h3>
               <p class="text-sm text-muted-foreground">{{ dayLabel(round.day) }}</p>
             </div>
-            <label class="flex items-center gap-2 text-sm">
+            <label
+              class="flex w-full flex-col items-start gap-1 text-sm sm:w-auto sm:flex-row sm:items-center sm:gap-2"
+            >
               {{ t('checks.mode.label') }}
               <NativeSelect
+                class="w-full sm:w-auto"
                 :model-value="round.check_mode"
                 :disabled="readOnly || round.checks_recorded || busy === `mode:${round.id}`"
                 data-testid="check-mode-select"
@@ -325,8 +328,8 @@ const shownFile = ref('')
             <table class="w-full text-sm">
               <thead class="text-left text-muted-foreground">
                 <tr>
-                  <th class="py-1 font-medium">{{ t('teams.mine.table') }}</th>
-                  <th class="py-1 font-medium">{{ t('checks.checked') }}</th>
+                  <th class="py-1 pr-3 font-medium">{{ t('teams.mine.table') }}</th>
+                  <th class="py-1 pr-3 font-medium whitespace-nowrap">{{ t('checks.checked') }}</th>
                   <th class="py-1 font-medium">{{ t('checks.readyState') }}</th>
                 </tr>
               </thead>
@@ -338,8 +341,8 @@ const shownFile = ref('')
                   :data-table="tb.name"
                   :data-ready="!!tb.ready"
                 >
-                  <td class="py-2 font-medium">{{ tb.name }}</td>
-                  <td class="py-2 tabular-nums" data-testid="table-checked">
+                  <td class="py-2 pr-3 font-medium break-words">{{ tb.name }}</td>
+                  <td class="py-2 pr-3 tabular-nums whitespace-nowrap" data-testid="table-checked">
                     {{ t('checks.ofTotal', { done: tb.checked, total: tb.total }) }}
                   </td>
                   <td class="py-2">
