@@ -86,7 +86,8 @@ test.describe('M8-B invitations', () => {
     await form.getByRole('button', { name: 'Invite' }).click()
     await expect(page.getByText('1 invited')).toBeVisible()
 
-    await page.getByRole('link', { name: 'Mailbox (dev)' }).click()
+    await page.getByTestId('admin-menu').click()
+    await page.getByRole('menuitem', { name: 'Mailbox (dev)' }).click()
     await expect(page.getByTestId('mailbox-list')).toContainText(email)
     await page
       .getByTestId('mailbox-list')

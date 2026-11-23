@@ -60,7 +60,9 @@ describe('App routing', () => {
     })
     const header = wrapper.find('header').text()
     expect(header).toContain('test')
-    expect(header).toContain('Users')
+    // M11-20: the admin pages are behind one Admin menu.
+    expect(header).toContain('Admin')
+    expect(wrapper.find('[data-testid=admin-menu]').exists()).toBe(true)
     expect(header).toContain('Ada Admin')
     expect(wrapper.text()).toContain('Welcome, Ada Admin')
   })
@@ -69,6 +71,6 @@ describe('App routing', () => {
     const { wrapper } = await mountAt('/', (s) => {
       s.user = makeUser()
     })
-    expect(wrapper.find('header').text()).not.toContain('Users')
+    expect(wrapper.find('[data-testid=admin-menu]').exists()).toBe(false)
   })
 })
