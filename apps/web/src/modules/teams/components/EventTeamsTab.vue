@@ -11,14 +11,15 @@ import {
   TableBody,
   TableCell,
   TableEmpty,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
 import { listEventCategories } from '@/modules/categories/api'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import SortableTableHead from '@/shared/components/SortableTableHead.vue'
 import ExportButtons from '@/shared/export/ExportButtons.vue'
 import { useLoader } from '@/shared/composables/useSubmit'
+import { useSort } from '@/shared/composables/useSort'
 import type { EventRecord, TeamStatus } from '@/shared/types/records'
 import { listEventTeams } from '../api'
 import { listEventTeamDocuments } from '../documents'
@@ -55,6 +56,21 @@ const filtered = computed(() =>
       (!statusFilter.value || t.status === statusFilter.value) &&
       (!categoryFilter.value || t.category === categoryFilter.value),
   ),
+)
+
+// Sorted by name by default, like the API returns them; the export keeps the filtered order.
+const { sorted, toggle, directionOf } = useSort(
+  filtered,
+  {
+    name: (team) => team.name,
+    category: (team) => team.expand?.category?.code,
+    organization: (team) => team.organization,
+    contact: (team) => team.coach_name || team.coach_email,
+    members: (team) => team.members?.length ?? 0,
+    documents: (team) => documentCounts.value.get(team.id) ?? 0,
+    status: (team) => TEAM_STATUS_LABELS[team.status],
+  },
+  { key: 'name', direction: 'asc' },
 )
 
 // Export (M7-05, M7-06): the teams as filtered, with their members on a second sheet.
@@ -107,17 +123,43 @@ onMounted(() => Promise.all([load(), categories.load(), documents.load()]))
     <Table data-testid="event-teams">
       <TableHeader>
         <TableRow>
-          <TableHead>{{ t('teams.team') }}</TableHead>
-          <TableHead>{{ t('teams.category') }}</TableHead>
-          <TableHead class="hidden md:table-cell">{{ t('teams.organization') }}</TableHead>
-          <TableHead class="hidden lg:table-cell">{{ t('teams.contact') }}</TableHead>
-          <TableHead>{{ t('teams.members') }}</TableHead>
-          <TableHead class="hidden sm:table-cell">{{ t('teams.documents.title') }}</TableHead>
-          <TableHead>{{ t('common.status') }}</TableHead>
+          <SortableTableHead :direction="directionOf('name')" @toggle="toggle('name')">
+            {{ t('teams.team') }}
+          </SortableTableHead>
+          <SortableTableHead :direction="directionOf('category')" @toggle="toggle('category')">
+            {{ t('teams.category') }}
+          </SortableTableHead>
+          <SortableTableHead
+            class="hidden md:table-cell"
+            :direction="directionOf('organization')"
+            @toggle="toggle('organization')"
+          >
+            {{ t('teams.organization') }}
+          </SortableTableHead>
+          <SortableTableHead
+            class="hidden lg:table-cell"
+            :direction="directionOf('contact')"
+            @toggle="toggle('contact')"
+          >
+            {{ t('teams.contact') }}
+          </SortableTableHead>
+          <SortableTableHead :direction="directionOf('members')" @toggle="toggle('members')">
+            {{ t('teams.members') }}
+          </SortableTableHead>
+          <SortableTableHead
+            class="hidden sm:table-cell"
+            :direction="directionOf('documents')"
+            @toggle="toggle('documents')"
+          >
+            {{ t('teams.documents.title') }}
+          </SortableTableHead>
+          <SortableTableHead :direction="directionOf('status')" @toggle="toggle('status')">
+            {{ t('common.status') }}
+          </SortableTableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow v-for="team in filtered" :key="team.id" :data-team="team.name">
+        <TableRow v-for="team in sorted" :key="team.id" :data-team="team.name">
           <TableCell class="font-medium">
             <RouterLink :to="{ name: 'team', params: { id: team.id } }" class="hover:underline">
               {{ team.name }}

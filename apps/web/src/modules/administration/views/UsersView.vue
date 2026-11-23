@@ -15,9 +15,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import ErrorAlert from '@/shared/components/ErrorAlert.vue'
+import SortableTableHead from '@/shared/components/SortableTableHead.vue'
 import PageHeader from '@/shared/components/PageHeader.vue'
 import { useSessionStore } from '@/shared/auth/session'
 import { useLoader, useSubmit } from '@/shared/composables/useSubmit'
+import { useSort } from '@/shared/composables/useSort'
 import { ROLE_LABELS, type RoleAssignmentRecord } from '@/shared/types/records'
 import { assignRole, listRoleAssignments, listUsers, removeRole, type AdminUser } from '../api'
 
@@ -37,6 +39,17 @@ const rolesByUser = computed(() => {
 })
 const adminAssignment = (user: AdminUser) =>
   rolesByUser.value.get(user.id)?.find((r) => r.role === 'admin')
+
+// Sorts the loaded page of users; the search narrows the list on the server.
+const { sorted, toggle, directionOf } = useSort(() => data.value?.users, {
+  name: (user) => user.name,
+  email: (user) => user.email,
+  roles: (user) =>
+    (rolesByUser.value.get(user.id) ?? [])
+      .map((r) => ROLE_LABELS[r.role])
+      .sort()
+      .join(', '),
+})
 
 const toggleAdmin = useSubmit(async (user: AdminUser) => {
   const existing = adminAssignment(user)
@@ -62,16 +75,22 @@ onMounted(load)
   <Table data-testid="users">
     <TableHeader>
       <TableRow>
-        <TableHead>{{ t('common.name') }}</TableHead>
-        <TableHead>{{ t('auth.email') }}</TableHead>
-        <TableHead>{{ t('administration.users.roles') }}</TableHead>
+        <SortableTableHead :direction="directionOf('name')" @toggle="toggle('name')">
+          {{ t('common.name') }}
+        </SortableTableHead>
+        <SortableTableHead :direction="directionOf('email')" @toggle="toggle('email')">
+          {{ t('auth.email') }}
+        </SortableTableHead>
+        <SortableTableHead :direction="directionOf('roles')" @toggle="toggle('roles')">
+          {{ t('administration.users.roles') }}
+        </SortableTableHead>
         <TableHead class="w-0"
           ><span class="sr-only">{{ t('common.actions') }}</span></TableHead
         >
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="user in data?.users" :key="user.id">
+      <TableRow v-for="user in sorted" :key="user.id">
         <TableCell>{{ user.name || '–' }}</TableCell>
         <TableCell>
           {{ user.email }}
