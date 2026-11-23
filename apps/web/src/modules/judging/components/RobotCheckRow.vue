@@ -31,10 +31,10 @@ defineProps<{
       <ScanSearchIcon v-else class="size-5" aria-hidden="true" />
     </span>
     <span class="min-w-0 flex-1">
-      <span class="block truncate text-base font-semibold"
+      <span class="block text-base font-semibold"
         >{{ t('judging.check.title') }} · {{ block.round.name }} · {{ block.category.code }}</span
       >
-      <span class="block truncate text-sm text-muted-foreground">
+      <span class="block text-sm text-muted-foreground">
         {{ checkWhen(block)
         }}<template v-if="showTable && block.table"> · {{ block.table.name }}</template> ·
         {{ t('judging.check.teams', block.teams.length)

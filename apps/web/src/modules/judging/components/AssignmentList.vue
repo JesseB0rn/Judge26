@@ -85,35 +85,43 @@ function time(row: Assignment) {
               >
                 {{ row.sequence || '–' }}
               </span>
-              <span class="min-w-0 flex-1">
-                <!-- M10-04: the whole name; it wraps instead of being cut off. -->
-                <span class="block text-base font-semibold break-words hyphens-auto">{{
-                  row.team.name
-                }}</span>
-                <span class="block truncate text-sm text-muted-foreground">
-                  <template v-if="showTable"
-                    >{{ row.table?.name ?? t('judging.noTable') }} · </template
-                  >{{ row.round.name
-                  }}<template v-if="row.attempt > 1">
-                    · {{ t('judging.attempt', { attempt: row.attempt }) }}</template
+              <!-- On phones the result and status move under the name so it keeps the width. -->
+              <span class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                <span class="min-w-0 sm:flex-1">
+                  <!-- M10-04: the whole name; it wraps instead of being cut off. -->
+                  <span class="block text-base font-semibold break-words hyphens-auto">{{
+                    row.team.name
+                  }}</span>
+                  <span class="block truncate text-sm text-muted-foreground">
+                    <template v-if="showTable"
+                      >{{ row.table?.name ?? t('judging.noTable') }} · </template
+                    >{{ row.round.name
+                    }}<template v-if="row.attempt > 1">
+                      · {{ t('judging.attempt', { attempt: row.attempt }) }}</template
+                    >
+                  </span>
+                </span>
+                <span class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap sm:gap-3">
+                  <span
+                    v-if="result(row)"
+                    class="flex items-baseline gap-2 tabular-nums sm:block sm:text-right"
                   >
+                    <span class="block text-lg font-semibold">{{ result(row) }}</span>
+                    <span v-if="time(row)" class="block font-mono text-xs text-muted-foreground">{{
+                      time(row)
+                    }}</span>
+                  </span>
+                  <!-- M10-B: scoring of this game is locked until the check, release or parts check. -->
+                  <LockIcon
+                    v-if="gateOf(row) && scoreState(row) === 'open'"
+                    class="size-5 shrink-0 text-amber-700"
+                    role="img"
+                    :aria-label="gateLabel(gateOf(row))"
+                    :data-gate="gateOf(row)"
+                  />
+                  <ScoreStateBadge :state="scoreState(row)" />
                 </span>
               </span>
-              <span v-if="result(row)" class="text-right tabular-nums">
-                <span class="block text-lg font-semibold">{{ result(row) }}</span>
-                <span v-if="time(row)" class="block font-mono text-xs text-muted-foreground">{{
-                  time(row)
-                }}</span>
-              </span>
-              <!-- M10-B: scoring of this game is locked until the check, release or parts check. -->
-              <LockIcon
-                v-if="gateOf(row) && scoreState(row) === 'open'"
-                class="size-5 shrink-0 text-amber-700"
-                role="img"
-                :aria-label="gateLabel(gateOf(row))"
-                :data-gate="gateOf(row)"
-              />
-              <ScoreStateBadge :state="scoreState(row)" />
               <ChevronRightIcon class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </RouterLink>
           </li>

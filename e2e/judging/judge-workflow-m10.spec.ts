@@ -117,7 +117,7 @@ test.describe('M10-A judge workflow', () => {
       await expect(el).toContainText(long)
       return el.evaluate((e) => e.scrollWidth <= e.clientWidth + 1)
     }
-    expect(await fits('[data-testid=up-next] .text-2xl')).toBe(true)
+    expect(await fits('[data-testid=up-next-name]')).toBe(true)
     expect(await fits(`[data-game="${ctx.first.id}"] .font-semibold`)).toBe(true)
     await page.getByTestId('up-next').click()
     expect(await fits('[data-testid=team-name]')).toBe(true)

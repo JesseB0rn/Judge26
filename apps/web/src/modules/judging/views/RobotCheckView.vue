@@ -431,8 +431,9 @@ onBeforeUnmount(() => {
             class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-xl font-bold tabular-nums"
             >{{ current.sequence }}</span
           >
-          <span class="min-w-0 flex-1">
-            <span class="block text-2xl font-bold break-words hyphens-auto">{{
+          <!-- basis-52: on a phone the Score button wraps below instead of crushing the name. -->
+          <span class="min-w-0 flex-1 basis-52">
+            <span class="block text-xl font-bold break-words hyphens-auto sm:text-2xl">{{
               current.name
             }}</span>
             <span class="block text-sm text-muted-foreground">{{

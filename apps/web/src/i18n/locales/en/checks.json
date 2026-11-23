@@ -6,7 +6,7 @@
   "confirmed": "Confirmed",
   "open": "Open",
   "checked": "Checked",
-  "readyState": "Table",
+  "readyState": "Status",
   "ofTotal": "{done} of {total}",
   "ready": "Ready",
   "notReady": "Not ready",

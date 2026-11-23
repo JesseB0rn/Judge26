@@ -266,17 +266,17 @@ const context = (row: Assignment) =>
     <RouterLink
       v-else-if="nextCheck"
       :to="checkRoute(nextCheck, route.fullPath, seat)"
-      class="flex items-center gap-4 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
+      class="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
       data-testid="up-next"
     >
-      <span class="min-w-0 flex-1">
+      <span class="min-w-0 flex-1 basis-52">
         <span class="block text-xs font-semibold tracking-wider text-muted-foreground uppercase">{{
           t('judging.dashboard.upNext')
         }}</span>
-        <span class="block truncate text-2xl font-bold"
+        <span class="block text-xl font-bold break-words sm:text-2xl"
           >{{ t('judging.check.title') }} · {{ nextCheck.round.name }}</span
         >
-        <span class="block truncate text-muted-foreground"
+        <span class="block text-muted-foreground"
           >{{ nextCheck.category.code }} · {{ checkWhen(nextCheck) }} ·
           {{ t('judging.check.teams', nextCheck.teams.length) }}</span
         >
@@ -290,17 +290,19 @@ const context = (row: Assignment) =>
     <RouterLink
       v-else-if="nextGame"
       :to="{ name: 'judging-game', params: { id: nextGame.id }, query: { from: route.fullPath } }"
-      class="flex items-center gap-4 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
+      class="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border-2 border-foreground/80 p-4 hover:bg-muted/50"
       data-testid="up-next"
     >
-      <span class="min-w-0 flex-1">
+      <span class="min-w-0 flex-1 basis-52">
         <span class="block text-xs font-semibold tracking-wider text-muted-foreground uppercase">{{
           t('judging.dashboard.upNext')
         }}</span>
-        <span class="block text-2xl font-bold break-words hyphens-auto">{{
-          nextGame.team.name
-        }}</span>
-        <span class="block truncate text-muted-foreground">{{ context(nextGame) }}</span>
+        <span
+          class="block text-xl font-bold break-words hyphens-auto sm:text-2xl"
+          data-testid="up-next-name"
+          >{{ nextGame.team.name }}</span
+        >
+        <span class="block text-muted-foreground">{{ context(nextGame) }}</span>
         <span
           v-if="gateOf(nextGame) && scoreState(nextGame) === 'open'"
           class="mt-1 flex items-center gap-1 text-sm font-medium text-amber-800"
