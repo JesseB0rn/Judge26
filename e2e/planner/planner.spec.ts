@@ -28,7 +28,8 @@ async function point(page: Page, dayId: string, time: string) {
   let box = (await body(page, dayId).boundingBox())!
   const height = page.viewportSize()!.height
   if (box.y + offset < 40 || box.y + offset > height - 120) {
-    await page.evaluate((dy) => window.scrollBy(0, dy), box.y + offset - height / 2)
+    // A string runs in the page; the e2e project has no DOM types.
+    await page.evaluate(`scrollBy(0, ${Math.round(box.y + offset - height / 2)})`)
     box = (await body(page, dayId).boundingBox())!
   }
   return { x: box.x + 60, y: box.y + offset }
